@@ -13,17 +13,17 @@ type StatCardProps = {
 
 export function StatCard({ title, value, description, icon: Icon, trend, className }: StatCardProps) {
   return (
-    <Card className={cn("border-slate-200 shadow-sm", className)}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-slate-600">{title}</CardTitle>
-        <div className="rounded-lg bg-[#DFF7F0] p-2">
-          <Icon className="h-4 w-4 text-[#16A085]" />
+    <Card className={cn("premium-card border-slate-200/80 shadow-[var(--shadow-soft)]", className)}>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+        <CardTitle className="text-sm font-medium leading-snug text-slate-600">{title}</CardTitle>
+        <div className="rounded-xl bg-[var(--brand-green-light)] p-2.5">
+          <Icon className="h-4 w-4 text-[var(--brand-green)]" />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-[#0F3D4A]">{value}</div>
-        {description && <p className="mt-1 text-xs text-slate-500">{description}</p>}
-        {trend && <p className="mt-1 text-xs font-medium text-[#16A085]">{trend}</p>}
+        <div className="text-3xl font-bold tracking-tight text-[var(--brand-navy)]">{value}</div>
+        {description && <p className="mt-1.5 text-xs leading-relaxed text-slate-500">{description}</p>}
+        {trend && <p className="mt-2 text-xs font-semibold text-[var(--brand-green)]">{trend}</p>}
       </CardContent>
     </Card>
   );

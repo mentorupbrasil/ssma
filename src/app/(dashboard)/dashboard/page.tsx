@@ -84,7 +84,7 @@ export default async function DashboardPage() {
     <div>
       <PageHeader title="Visão geral" description="Indicadores e atividades recentes">
         <Link href="/dashboard/encaminhamentos/novo">
-          <Button className="bg-[#16A085] hover:bg-[#138d75]">
+          <Button variant="brand" className="rounded-xl">
             <Plus className="mr-2 h-4 w-4" /> Novo encaminhamento
           </Button>
         </Link>

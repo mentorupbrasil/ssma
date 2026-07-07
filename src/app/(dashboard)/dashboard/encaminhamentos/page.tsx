@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { DataTable } from "@/components/dashboard/DataTable";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CLINICAL_EXAM_LABELS } from "@/types";
@@ -25,11 +26,11 @@ export default async function EncaminhamentosPage() {
     <div>
       <PageHeader title="Encaminhamentos" description="Gestão de encaminhamentos online e internos">
         <Link href="/dashboard/encaminhamentos/novo">
-          <Button className="bg-[#16A085] hover:bg-[#138d75]"><Plus className="mr-2 h-4 w-4" /> Novo</Button>
+          <Button variant="brand"><Plus className="mr-2 h-4 w-4" /> Novo</Button>
         </Link>
       </PageHeader>
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <DataTable>
         <Table>
           <TableHeader>
             <TableRow>
@@ -45,7 +46,9 @@ export default async function EncaminhamentosPage() {
             {referrals.map((r) => (
               <TableRow key={r.id}>
                 <TableCell>
-                  <Link href={`/dashboard/encaminhamentos/${r.id}`} className="font-medium text-[#16A085] hover:underline">{r.protocol}</Link>
+                  <Link href={`/dashboard/encaminhamentos/${r.id}`} className="font-semibold text-[var(--brand-green)] hover:underline">
+                    {r.protocol}
+                  </Link>
                 </TableCell>
                 <TableCell>{r.company.tradeName ?? r.company.legalName}</TableCell>
                 <TableCell>{r.patient.fullName}</TableCell>
@@ -56,7 +59,7 @@ export default async function EncaminhamentosPage() {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </DataTable>
     </div>
   );
 }

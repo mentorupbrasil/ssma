@@ -8,11 +8,11 @@ export async function DashboardShell({ children }: { children: React.ReactNode }
   if (!session?.user) redirect("/login");
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
+    <div className="flex min-h-screen bg-[var(--brand-bg)]">
       <Sidebar user={session.user} />
       <div className="flex flex-1 flex-col lg:pl-0">
         <Topbar userName={session.user.name} />
-        <main className="flex-1 p-4 pb-20 sm:p-6 lg:pb-6">{children}</main>
+        <main className="flex-1 p-4 pb-24 sm:p-6 lg:pb-8">{children}</main>
       </div>
     </div>
   );

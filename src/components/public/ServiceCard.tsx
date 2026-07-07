@@ -12,28 +12,32 @@ type ServiceCardProps = {
 
 export function ServiceCard({ name, description, audience, deliveryTime }: ServiceCardProps) {
   return (
-    <Card className="group h-full border-slate-200 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-      <CardHeader>
-        <CardTitle className="text-lg text-[#0F3D4A]">{name}</CardTitle>
+    <Card className="premium-card-hover group h-full border-slate-200/80">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-semibold text-[var(--brand-navy)] transition group-hover:text-[var(--brand-green)]">
+          {name}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-slate-600">{description}</p>
+        <p className="text-sm leading-relaxed text-slate-600">{description}</p>
         {audience && (
-          <p className="text-xs text-slate-500">
-            <span className="font-medium">Indicado para:</span> {audience}
+          <p className="text-xs leading-relaxed text-slate-500">
+            <span className="font-semibold text-slate-700">Indicado para:</span> {audience}
           </p>
         )}
         {deliveryTime && (
           <p className="text-xs text-slate-500">
-            <span className="font-medium">Prazo médio:</span> {deliveryTime}
+            <span className="font-semibold text-slate-700">Prazo médio:</span> {deliveryTime}
           </p>
         )}
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
           <Link href="/contato?tipo=orcamento">
-            <Button size="sm" variant="outline">Solicitar orçamento</Button>
+            <Button size="sm" variant="outline" className="rounded-lg">
+              Solicitar orçamento
+            </Button>
           </Link>
           <Link href="/encaminhamento-online">
-            <Button size="sm" className="bg-[#16A085] hover:bg-[#138d75]">
+            <Button size="sm" variant="brand" className="rounded-lg">
               Encaminhamento
               <ArrowRight className="ml-1 h-3 w-3" />
             </Button>

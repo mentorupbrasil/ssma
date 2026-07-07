@@ -1,5 +1,4 @@
 import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS } from "@/types";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type StatusBadgeProps = {
@@ -14,32 +13,45 @@ const LABEL_MAPS = {
   document: DOCUMENT_STATUS_LABELS,
 };
 
-const COLOR_MAP = {
-  ...REFERRAL_STATUS_COLORS,
-  NOVO: "bg-blue-100 text-blue-800",
-  EM_CONTATO: "bg-amber-100 text-amber-800",
-  PROPOSTA_ENVIADA: "bg-purple-100 text-purple-800",
-  FECHADO: "bg-emerald-100 text-emerald-800",
-  PERDIDO: "bg-slate-100 text-slate-600",
-  AGENDADO: "bg-blue-100 text-blue-800",
-  CONFIRMADO: "bg-purple-100 text-purple-800",
-  REALIZADO: "bg-emerald-100 text-emerald-800",
-  FALTOU: "bg-red-100 text-red-800",
-  PENDENTE: "bg-amber-100 text-amber-800",
-  EM_ELABORACAO: "bg-blue-100 text-blue-800",
-  CONCLUIDO: "bg-emerald-100 text-emerald-800",
-  ENTREGUE: "bg-emerald-100 text-emerald-800",
-  CANCELADO: "bg-slate-100 text-slate-600",
+const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
+  NOVO: { bg: "bg-blue-50", text: "text-blue-800", dot: "bg-blue-500" },
+  EM_ANALISE: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
+  AGUARDANDO_AGENDAMENTO: { bg: "bg-orange-50", text: "text-orange-800", dot: "bg-orange-500" },
+  AGENDADO: { bg: "bg-violet-50", text: "text-violet-800", dot: "bg-violet-500" },
+  EM_ATENDIMENTO: { bg: "bg-cyan-50", text: "text-cyan-800", dot: "bg-cyan-500" },
+  CONCLUIDO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  CANCELADO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
+  EM_CONTATO: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
+  PROPOSTA_ENVIADA: { bg: "bg-purple-50", text: "text-purple-800", dot: "bg-purple-500" },
+  FECHADO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  PERDIDO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
+  CONFIRMADO: { bg: "bg-violet-50", text: "text-violet-800", dot: "bg-violet-500" },
+  REALIZADO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  FALTOU: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
+  PENDENTE: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
+  EM_ELABORACAO: { bg: "bg-blue-50", text: "text-blue-800", dot: "bg-blue-500" },
+  ENTREGUE: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
 };
 
 export function StatusBadge({ status, type = "referral" }: StatusBadgeProps) {
   const labels = LABEL_MAPS[type];
   const label = labels[status as keyof typeof labels] ?? status;
-  const color = COLOR_MAP[status as keyof typeof COLOR_MAP] ?? "bg-slate-100 text-slate-700";
+  const colors = COLOR_MAP[status] ?? {
+    bg: "bg-slate-100",
+    text: "text-slate-700",
+    dot: "bg-slate-400",
+  };
 
   return (
-    <Badge variant="secondary" className={cn("font-medium", color)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+        colors.bg,
+        colors.text
+      )}
+    >
+      <span className={cn("h-1.5 w-1.5 rounded-full", colors.dot)} />
       {label}
-    </Badge>
+    </span>
   );
 }

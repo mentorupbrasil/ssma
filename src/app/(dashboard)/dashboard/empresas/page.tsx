@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { DataTable } from "@/components/dashboard/DataTable";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCNPJ } from "@/lib/helpers";
@@ -17,11 +18,11 @@ export default async function EmpresasPage() {
     <div>
       <PageHeader title="Empresas" description="Gestão de empresas clientes">
         <Link href="/dashboard/empresas/novo">
-          <Button className="bg-[#16A085] hover:bg-[#138d75]"><Plus className="mr-2 h-4 w-4" /> Nova empresa</Button>
+          <Button variant="brand"><Plus className="mr-2 h-4 w-4" /> Nova empresa</Button>
         </Link>
       </PageHeader>
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <DataTable>
         <Table>
           <TableHeader>
             <TableRow>
@@ -52,7 +53,7 @@ export default async function EmpresasPage() {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </DataTable>
     </div>
   );
 }
