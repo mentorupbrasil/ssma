@@ -125,13 +125,15 @@ export function Header() {
                   Falar com especialista
                 </Button>
               </a>
-              <a
-                href={`tel:${clinic.phone}`}
-                className="flex items-center justify-center gap-2 py-2 text-sm text-slate-600"
-              >
-                <Phone className="h-4 w-4 text-[var(--brand-green)]" />
-                {clinic.phone}
-              </a>
+              {clinic.phone && (
+                <a
+                  href={`tel:${clinic.phone}`}
+                  className="flex items-center justify-center gap-2 py-2 text-sm text-slate-600"
+                >
+                  <Phone className="h-4 w-4 text-[var(--brand-green)]" />
+                  {clinic.phone}
+                </a>
+              )}
             </div>
           </SheetContent>
         </Sheet>

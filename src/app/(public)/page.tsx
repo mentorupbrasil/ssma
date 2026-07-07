@@ -1,7 +1,3 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { CTASection } from "@/components/public/CTASection";
 import { ComplianceSection } from "@/components/public/ComplianceSection";
@@ -10,15 +6,14 @@ import { TestimonialsSection } from "@/components/public/TestimonialsSection";
 import { TopClinicalExams } from "@/components/public/TopClinicalExams";
 import { ProcessSection } from "@/components/public/ProcessSection";
 import { DifferentialsSection } from "@/components/public/DifferentialsSection";
+import { LocationSection } from "@/components/public/LocationSection";
 import { HomeHero } from "@/components/public/HomeHero";
 import { FAQ_ITEMS } from "@/data/services";
 import { TRUST_PILLARS } from "@/data/marketing";
-import { getClinicInfo } from "@/lib/helpers";
-import { prisma } from "@/lib/prisma";
+import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 export default async function HomePage() {
   const clinic = getClinicInfo();
-  const exams = await prisma.exam.findMany({ where: { active: true }, take: 6 });
 
   return (
     <>
@@ -61,62 +56,16 @@ export default async function HomePage() {
       <TestimonialsSection />
 
       <CTASection
-        title="Pronto para colocar a saúde ocupacional da sua empresa em dia?"
-        description="Fale com um especialista ou solicite orçamento sem compromisso."
-        primaryHref="/contato?tipo=orcamento"
-        primaryLabel="Solicitar orçamento"
-        secondaryHref="/encaminhamento-online"
-        secondaryLabel="Encaminhamento online"
+        title="Pronto para regularizar a saúde ocupacional da sua empresa?"
+        description="Fale com um especialista e veja como organizar exames, documentos e encaminhamentos em um fluxo mais ágil e seguro."
+        primaryLabel="Solicitar orçamento sem compromisso"
+        secondaryHref={whatsappLink(
+          `Olá! Gostaria de falar com um especialista em SST da ${clinic.name}.`
+        )}
+        secondaryLabel="Falar com especialista"
       />
 
-      <section className="section-padding bg-white">
-        <div className="container-page">
-          <SectionTitle
-            eyebrow="Preparo"
-            title="Preparo de exames"
-            description="Consulte o preparo e compartilhe com seus colaboradores."
-          />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {exams.map((exam) => (
-              <Card key={exam.id} className="premium-card-hover border-slate-200/80">
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold text-[var(--brand-navy)]">{exam.name}</h3>
-                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">
-                    {exam.preparation}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="mt-10 text-center">
-            <Link href="/exames">
-              <Button variant="outline" size="lg" className="rounded-xl">
-                Ver todos os exames
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-padding">
-        <div className="container-page">
-          <SectionTitle eyebrow="Localização" title="Onde estamos" />
-          <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-[var(--shadow-card)]">
-            <iframe
-              src={clinic.mapsEmbed}
-              width="100%"
-              height="400"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Localização"
-            />
-          </div>
-          <p className="mt-5 text-center text-slate-600">{clinic.address}</p>
-        </div>
-      </section>
+      <LocationSection />
 
       <section className="section-padding bg-white">
         <div className="container-page max-w-3xl">

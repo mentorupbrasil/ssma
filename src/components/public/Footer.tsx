@@ -42,36 +42,48 @@ export function Footer() {
         <div>
           <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-white">Contato</h4>
           <ul className="space-y-4 text-sm">
-            <li className="flex items-start gap-3">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-green)]" />
-              {clinic.address}
-            </li>
-            <li className="flex items-center gap-3">
-              <Phone className="h-4 w-4 text-[var(--brand-green)]" />
-              {clinic.phone}
-            </li>
-            <li className="flex items-center gap-3">
-              <Mail className="h-4 w-4 text-[var(--brand-green)]" />
-              {clinic.email}
-            </li>
-            <li className="flex items-center gap-3">
-              <Clock className="h-4 w-4 text-[var(--brand-green)]" />
-              {clinic.hours}
-            </li>
+            {clinic.hasAddress && (
+              <li className="flex items-start gap-3">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-green)]" />
+                {clinic.address}
+              </li>
+            )}
+            {clinic.phone && (
+              <li className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-[var(--brand-green)]" />
+                {clinic.phone}
+              </li>
+            )}
+            {clinic.email && (
+              <li className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-[var(--brand-green)]" />
+                {clinic.email}
+              </li>
+            )}
+            {clinic.hours && (
+              <li className="flex items-center gap-3">
+                <Clock className="h-4 w-4 text-[var(--brand-green)]" />
+                {clinic.hours}
+              </li>
+            )}
           </ul>
         </div>
 
         <div>
           <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-white">Redes sociais</h4>
-          <a
-            href={clinic.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm transition hover:bg-white/10 hover:text-white"
-          >
-            <Share2 className="h-4 w-4 text-[var(--brand-green)]" />
-            Instagram
-          </a>
+          {clinic.instagram ? (
+            <a
+              href={clinic.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm transition hover:bg-white/10 hover:text-white"
+            >
+              <Share2 className="h-4 w-4 text-[var(--brand-green)]" />
+              Instagram
+            </a>
+          ) : (
+            <p className="text-sm text-slate-500">Redes sociais em breve</p>
+          )}
         </div>
       </div>
       <div className="border-t border-white/10 py-5 text-center text-xs text-slate-500">
