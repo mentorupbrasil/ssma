@@ -18,7 +18,7 @@ import {
   Menu,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { UserRole } from "@prisma/client";
+import type { UserRole } from "@/types/roles";
 import { DASHBOARD_NAV, hasPermission } from "@/lib/permissions";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
