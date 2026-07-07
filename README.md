@@ -68,13 +68,10 @@ No painel Vercel → **Settings → Environment Variables**, adicione:
 | `DATABASE_URL` | Connection string do Neon PostgreSQL |
 | `AUTH_SECRET` | String aleatória segura (`openssl rand -base64 32`) |
 | `NEXTAUTH_URL` | URL do site (ex: `https://ssma.vercel.app`) |
-| `NEXT_PUBLIC_CLINIC_NAME` | Nome da clínica |
-| `NEXT_PUBLIC_CLINIC_PHONE` | Telefone |
-| `NEXT_PUBLIC_CLINIC_WHATSAPP` | WhatsApp (só números, ex: `5511999999999`) |
-| `NEXT_PUBLIC_CLINIC_EMAIL` | E-mail |
-| `NEXT_PUBLIC_CLINIC_ADDRESS` | Endereço |
 
 Marque todas para **Production**, **Preview** e **Development**.
+
+Dados da clínica (endereço, WhatsApp, horários, mapa) ficam em `src/config/clinic.ts` — não precisam de variáveis no Vercel.
 
 ### 2. Deploy
 
@@ -122,7 +119,7 @@ prisma/
 
 ## Renomear a clínica
 
-Altere as variáveis `NEXT_PUBLIC_CLINIC_*` no `.env` ou a tabela `Setting` no banco.
+Edite o objeto `CLINIC_SITE` em `src/config/clinic.ts`.
 
 ## Licença
 

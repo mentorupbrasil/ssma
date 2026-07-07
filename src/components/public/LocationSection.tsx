@@ -3,7 +3,7 @@ import { Clock, ExternalLink, MapPin, MessageCircle, Phone } from "lucide-react"
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { Button } from "@/components/ui/button";
 import {
-  formatAddressLines,
+  formatClinicAddressLines,
   formatOpeningHoursLines,
   getClinicSiteConfig,
 } from "@/config/clinic";
@@ -12,7 +12,7 @@ import { formatPhone, whatsappLink } from "@/lib/helpers";
 export function LocationSection() {
   const clinic = getClinicSiteConfig();
   const addressLines = clinic.hasAddress
-    ? formatAddressLines(clinic.fullAddress)
+    ? formatClinicAddressLines(clinic)
     : ["Endereço em atualização"];
   const hoursLines = formatOpeningHoursLines(clinic.openingHours);
 
@@ -34,7 +34,6 @@ export function LocationSection() {
                 width="100%"
                 height="100%"
                 className="location-map-frame"
-                style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -43,9 +42,11 @@ export function LocationSection() {
             ) : (
               <div className="location-map-placeholder">
                 <MapPin className="location-map-placeholder-icon" strokeWidth={1.5} />
-                <p className="location-map-placeholder-title">Mapa da clínica</p>
+                <p className="location-map-placeholder-title">Localização da clínica</p>
                 <p className="location-map-placeholder-desc">
-                  Configure o endereço ou as coordenadas no painel de configuração.
+                  {clinic.hasMapLink
+                    ? "Use o botão abaixo para abrir a localização no Google Maps."
+                    : "Endereço disponível ao lado para consulta e orientação de acesso."}
                 </p>
               </div>
             )}

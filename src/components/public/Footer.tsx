@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import {
   FacebookIcon,
   InstagramIcon,
   LinkedinIcon,
   YoutubeIcon,
 } from "@/components/public/SocialIcons";
-import { formatAddressLines, formatOpeningHoursLines, getClinicSiteConfig } from "@/config/clinic";
-import { getClinicInfo } from "@/lib/helpers";
+import { getClinicSiteConfig } from "@/config/clinic";
+import { formatPhone, getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 const SOCIAL_ICONS = [
   { icon: InstagramIcon, label: "Instagram" },
@@ -19,8 +19,6 @@ const SOCIAL_ICONS = [
 export function Footer() {
   const clinic = getClinicInfo();
   const config = getClinicSiteConfig();
-  const addressLines = config.hasAddress ? formatAddressLines(config.fullAddress) : [];
-  const hoursLines = formatOpeningHoursLines(config.openingHours);
 
   return (
     <footer className="site-footer mt-auto border-t border-white/10 bg-[var(--brand-navy)] text-slate-300">
@@ -60,40 +58,28 @@ export function Footer() {
         <div>
           <h4 className="footer-column-title">Contato</h4>
           <ul className="space-y-3.5 text-sm">
-            {addressLines.length > 0 && (
+            {config.hasWhatsApp && (
               <li className="flex items-start gap-3">
-                <MapPin className="footer-contact-icon" strokeWidth={1.75} />
-                <span className="leading-relaxed text-slate-400">
-                  {addressLines.map((line) => (
-                    <span key={line} className="block">
-                      {line}
-                    </span>
-                  ))}
-                </span>
-              </li>
-            )}
-            {clinic.phone && (
-              <li className="flex items-center gap-3">
-                <Phone className="footer-contact-icon" strokeWidth={1.75} />
-                <span className="text-slate-400">{clinic.phone}</span>
+                <MessageCircle className="footer-contact-icon" strokeWidth={1.75} />
+                <a
+                  href={whatsappLink(`Olá! Gostaria de falar com a ${clinic.name}.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="leading-relaxed text-slate-400 transition hover:text-white"
+                >
+                  {formatPhone(config.whatsapp)}
+                </a>
               </li>
             )}
             {clinic.email && (
-              <li className="flex items-center gap-3">
-                <Mail className="footer-contact-icon" strokeWidth={1.75} />
-                <span className="text-slate-400">{clinic.email}</span>
-              </li>
-            )}
-            {hoursLines.length > 0 && (
               <li className="flex items-start gap-3">
-                <Clock className="footer-contact-icon" strokeWidth={1.75} />
-                <span className="leading-relaxed text-slate-400">
-                  {hoursLines.map((line) => (
-                    <span key={line} className="block">
-                      {line}
-                    </span>
-                  ))}
-                </span>
+                <Mail className="footer-contact-icon" strokeWidth={1.75} />
+                <a
+                  href={`mailto:${clinic.email}`}
+                  className="break-all leading-relaxed text-slate-400 transition hover:text-white"
+                >
+                  {clinic.email}
+                </a>
               </li>
             )}
           </ul>

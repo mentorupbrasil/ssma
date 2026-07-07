@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Clock, ExternalLink, MapPin, MessageCircle, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  formatAddressLines,
+  formatClinicAddressLines,
   formatOpeningHoursLines,
   getClinicSiteConfig,
 } from "@/config/clinic";
@@ -10,6 +10,7 @@ import { formatPhone, whatsappLink } from "@/lib/helpers";
 
 export function ContactInfoPanel() {
   const clinic = getClinicSiteConfig();
+  const hoursLines = formatOpeningHoursLines(clinic.openingHours);
 
   return (
     <div className="contact-info-panel">
@@ -21,7 +22,13 @@ export function ContactInfoPanel() {
               <MapPin strokeWidth={1.75} />
               Endereço
             </dt>
-            <dd>{clinic.fullAddress}</dd>
+            <dd>
+              {formatClinicAddressLines(clinic).map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+            </dd>
           </div>
         )}
         {clinic.phone && (
@@ -47,7 +54,15 @@ export function ContactInfoPanel() {
             <Clock strokeWidth={1.75} />
             Horário
           </dt>
-          <dd>{clinic.openingHours || "Horário de atendimento a confirmar"}</dd>
+          <dd>
+            {hoursLines.length > 0
+              ? hoursLines.map((line) => (
+                  <span key={line} className="block">
+                    {line}
+                  </span>
+                ))
+              : "Horário de atendimento a confirmar"}
+          </dd>
         </div>
         {clinic.hasWhatsApp && (
           <div className="contact-info-item">

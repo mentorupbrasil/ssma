@@ -18,9 +18,24 @@ export type ClinicSiteConfig = {
   hasMapLink: boolean;
 };
 
-function env(key: string): string {
-  return process.env[key]?.trim() ?? "";
-}
+/** Dados institucionais da clínica — editar aqui quando necessário. */
+const CLINIC_SITE = {
+  clinicName: "Unimetra",
+  address: "Rua João Lisboa, nº 779, Centro (entre as ruas Ceará e Rio Grande do Norte)",
+  city: "Imperatriz",
+  state: "MA",
+  postalCode: "65900-630",
+  phone: "",
+  whatsapp: "5599992033813",
+  email: "contato@unimetra.com.br",
+  instagram: "",
+  openingHours:
+    "Segunda a Sexta-feira: 07:00 – 11:30 · 14:00 – 17:30 | Sábado e Domingo: Fechado",
+  googleMapsExternalUrl: "https://maps.app.goo.gl/XDip6f7qFYn7L9JR8",
+  googleMapsEmbedUrl: "",
+  mapsLat: "-5.524725",
+  mapsLng: "-47.479393",
+} as const;
 
 function buildFullAddress(
   address: string,
@@ -28,51 +43,99 @@ function buildFullAddress(
   state: string,
   postalCode: string
 ): string {
-  if (!address) return "";
-
-  let result = address;
-  if (postalCode && !address.includes(postalCode)) {
-    result = `${result} · CEP ${postalCode}`;
-  }
-
-  const cityState = [city, state].filter(Boolean).join(" – ");
-  if (cityState && !address.toLowerCase().includes(city.toLowerCase())) {
-    result = `${result} · ${cityState}`;
-  }
-
-  return result;
+  const street = normalizeStreetAddress(address, city, state, postalCode);
+  const locality = formatLocalityLine(city, state, postalCode);
+  return [street, locality].filter(Boolean).join(" · ");
 }
 
-/** Links curtos (goo.gl) não funcionam em iframe — só como link externo. */
-function isShortOrShareMapsUrl(url: string): boolean {
-  return (
-    url.includes("goo.gl") ||
-    url.includes("maps.app.goo.gl") ||
-    (url.includes("google.com/maps") &&
-      !url.includes("/embed") &&
-      !url.includes("output=embed"))
+function stripAccents(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function includesNormalized(haystack: string, needle: string): boolean {
+  if (!needle) return false;
+  return stripAccents(haystack.toLowerCase()).includes(stripAccents(needle.toLowerCase()));
+}
+
+function normalizeStreetAddress(
+  address: string,
+  city: string,
+  state: string,
+  postalCode: string
+): string {
+  if (!address) return "";
+
+  let street = address.split("|")[0]?.trim() ?? address.trim();
+  street = street.replace(/\bCEP\s*:?\s*\d{5}-?\d{3}\b/gi, "").trim();
+
+  if (city && state) {
+    const cityStateSuffix = new RegExp(
+      `[,\\s·]*${city.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[–-]\\s*${state.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`,
+      "i"
+    );
+    street = street.replace(cityStateSuffix, "").trim();
+  }
+
+  if (city) {
+    const citySuffix = new RegExp(
+      `[,\\s·]*${city.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*(?:[–-]\\s*${state.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*)?$`,
+      "i"
+    );
+    street = street.replace(citySuffix, "").trim();
+  }
+
+  if (postalCode) {
+    const digits = postalCode.replace(/\D/g, "");
+    if (digits.length === 8 && includesNormalized(street, digits)) {
+      street = street.replace(new RegExp(`\\b${digits.slice(0, 5)}-?${digits.slice(5)}\\b`, "g"), "").trim();
+    }
+  }
+
+  return street.replace(/[,·\s]+$/g, "").trim();
+}
+
+function formatLocalityLine(city: string, state: string, postalCode: string): string {
+  const cityState = [city, state].filter(Boolean).join(" – ");
+  const cep = postalCode ? `CEP ${postalCode.replace(/\D/g, "").replace(/(\d{5})(\d{3})/, "$1-$2")}` : "";
+  return [cityState, cep].filter(Boolean).join(" · ");
+}
+
+/** Endereço em linhas legíveis — evita repetição de cidade, estado e CEP. */
+export function formatClinicAddressLines(
+  config: Pick<ClinicSiteConfig, "address" | "city" | "state" | "postalCode">
+): string[] {
+  const street = normalizeStreetAddress(
+    config.address,
+    config.city,
+    config.state,
+    config.postalCode
   );
+  const locality = formatLocalityLine(config.city, config.state, config.postalCode);
+  const lines = [street, locality].filter(Boolean);
+  return lines.length > 0 ? lines : ["Endereço em atualização"];
+}
+
+function isEmbeddableMapsUrl(url: string): boolean {
+  if (!url) return false;
+  return url.includes("output=embed") || url.includes("/maps/embed");
 }
 
 function buildMapsEmbedUrl(options: {
   embed: string;
-  external: string;
+  lat: string;
+  lng: string;
   address: string;
   city: string;
   state: string;
-  lat: string;
-  lng: string;
 }): string {
-  const { embed, external, address, city, state, lat, lng } = options;
-
-  if (embed && !isShortOrShareMapsUrl(embed)) {
-    return embed;
-  }
-
-  const externalUrl = external || (isShortOrShareMapsUrl(embed) ? embed : "");
+  const { embed, lat, lng, address, city, state } = options;
 
   if (lat && lng) {
-    return `https://www.google.com/maps?q=${lat},${lng}&hl=pt-BR&z=16&output=embed`;
+    return `https://www.google.com/maps?q=${encodeURIComponent(`${lat},${lng}`)}&hl=pt-BR&z=16&output=embed`;
+  }
+
+  if (embed && isEmbeddableMapsUrl(embed)) {
+    return embed;
   }
 
   const query = [address, city, state].filter(Boolean).join(", ");
@@ -83,36 +146,33 @@ function buildMapsEmbedUrl(options: {
   return "";
 }
 
-function resolveMapsExternalUrl(embed: string, external: string): string {
-  if (external) return external;
-  if (isShortOrShareMapsUrl(embed)) return embed;
-  return "";
-}
-
-/** Dados institucionais e de localização — preencher via .env. */
+/** Dados institucionais e de localização da clínica. */
 export function getClinicSiteConfig(): ClinicSiteConfig {
-  const clinicName = env("NEXT_PUBLIC_CLINIC_NAME") || "Unimetra";
-  const address = env("NEXT_PUBLIC_CLINIC_ADDRESS");
-  const city = env("NEXT_PUBLIC_CLINIC_CITY");
-  const state = env("NEXT_PUBLIC_CLINIC_STATE");
-  const postalCode = env("NEXT_PUBLIC_CLINIC_POSTAL_CODE");
-  const whatsapp = env("NEXT_PUBLIC_CLINIC_WHATSAPP");
-  const embedRaw = env("NEXT_PUBLIC_CLINIC_MAPS_EMBED");
-  const externalRaw = env("NEXT_PUBLIC_CLINIC_MAPS_URL");
-  const lat = env("NEXT_PUBLIC_CLINIC_MAPS_LAT");
-  const lng = env("NEXT_PUBLIC_CLINIC_MAPS_LNG");
-
-  const googleMapsEmbedUrl = buildMapsEmbedUrl({
-    embed: embedRaw,
-    external: externalRaw,
+  const {
+    clinicName,
     address,
     city,
     state,
-    lat,
-    lng,
-  });
+    postalCode,
+    phone,
+    whatsapp,
+    email,
+    instagram,
+    openingHours,
+    googleMapsExternalUrl,
+    googleMapsEmbedUrl: embedRaw,
+    mapsLat,
+    mapsLng,
+  } = CLINIC_SITE;
 
-  const googleMapsExternalUrl = resolveMapsExternalUrl(embedRaw, externalRaw);
+  const googleMapsEmbedUrl = buildMapsEmbedUrl({
+    embed: embedRaw,
+    lat: mapsLat,
+    lng: mapsLng,
+    address,
+    city,
+    state,
+  });
 
   return {
     clinicName,
@@ -121,11 +181,11 @@ export function getClinicSiteConfig(): ClinicSiteConfig {
     state,
     postalCode,
     fullAddress: buildFullAddress(address, city, state, postalCode),
-    phone: env("NEXT_PUBLIC_CLINIC_PHONE"),
+    phone,
     whatsapp,
-    email: env("NEXT_PUBLIC_CLINIC_EMAIL"),
-    instagram: env("NEXT_PUBLIC_CLINIC_INSTAGRAM"),
-    openingHours: env("NEXT_PUBLIC_CLINIC_OPENING_HOURS"),
+    email,
+    instagram,
+    openingHours,
     googleMapsEmbedUrl,
     googleMapsExternalUrl,
     hasAddress: Boolean(address),
@@ -135,20 +195,45 @@ export function getClinicSiteConfig(): ClinicSiteConfig {
   };
 }
 
-/** Quebra horários separados por | ou quebra de linha. */
+/** Quebra horários separados por |, quebra de linha ou blocos de dias. */
 export function formatOpeningHoursLines(hours: string): string[] {
   if (!hours) return [];
-  return hours
-    .split(/\||\n/)
-    .map((line) => line.trim())
+
+  const normalized = hours.replace(/\s+/g, " ").trim();
+  const segments = normalized.includes("|")
+    ? normalized.split("|")
+    : normalized.split(/(?=(?:Segunda|Terça|Quarta|Quinta|Sexta|Sábado|Domingo)\b)/i);
+
+  return segments
+    .map((segment) => formatOpeningHoursSegment(segment.trim()))
     .filter(Boolean);
+}
+
+function formatOpeningHoursSegment(segment: string): string {
+  if (!segment) return "";
+
+  const withColon = segment.match(/^([^:]+:\s*)(.+)$/);
+  if (!withColon) return segment;
+
+  const prefix = withColon[1];
+  let times = withColon[2].trim();
+
+  times = times.replace(
+    /(\d{1,2}:\d{2}\s*[–-]\s*\d{1,2}:\d{2})\s+(\d{1,2}:\d{2})/g,
+    "$1 · $2"
+  );
+
+  return `${prefix}${times}`;
 }
 
 /** Quebra endereço longo em linhas legíveis. */
 export function formatAddressLines(address: string): string[] {
   if (!address) return [];
   if (address.includes(" · ")) {
-    return address.split(" · ").map((p) => p.trim()).filter(Boolean);
+    return address
+      .split(" · ")
+      .map((part) => part.trim())
+      .filter(Boolean);
   }
   return [address];
 }
