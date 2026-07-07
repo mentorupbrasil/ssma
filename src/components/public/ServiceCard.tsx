@@ -3,7 +3,7 @@ import { ArrowRight, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export type ServiceCardCtaVariant = "clinical" | "technical" | "exam";
+export type ServiceCardCtaVariant = "clinical" | "technical" | "exam" | "training";
 
 type ServiceCardProps = {
   name: string;
@@ -28,13 +28,16 @@ export function ServiceCard({
   ctaVariant = "clinical",
   className,
 }: ServiceCardProps) {
-  const isTechnical = ctaVariant === "technical";
-  const isExam = ctaVariant === "exam";
   const proposalHref = `/contato?tipo=orcamento&servico=${encodeURIComponent(name)}`;
   const detailsHref = `/contato?servico=${encodeURIComponent(name)}`;
+  const trainingHref = `/contato?tipo=orcamento&servico=${encodeURIComponent(name)}&categoria=treinamento`;
   const preparoHref = preparoSlug
     ? `/exames?exame=${encodeURIComponent(preparoSlug)}`
     : "/exames";
+
+  const isTechnical = ctaVariant === "technical";
+  const isExam = ctaVariant === "exam";
+  const isTraining = ctaVariant === "training";
 
   return (
     <article
@@ -42,6 +45,7 @@ export function ServiceCard({
         "service-card group",
         isTechnical && "service-card--technical",
         isExam && "service-card--exam",
+        isTraining && "service-card--training",
         className
       )}
     >
@@ -78,7 +82,7 @@ export function ServiceCard({
         </Link>
       )}
       <div className="service-card-actions">
-        {isTechnical ? (
+        {isTechnical && (
           <>
             <Link href={proposalHref} className="service-card-action-link">
               <Button size="sm" variant="brand" className="service-card-btn w-full rounded-lg">
@@ -92,7 +96,23 @@ export function ServiceCard({
               </Button>
             </Link>
           </>
-        ) : (
+        )}
+        {isTraining && (
+          <>
+            <Link href={trainingHref} className="service-card-action-link">
+              <Button size="sm" variant="brand" className="service-card-btn w-full rounded-lg">
+                Solicitar treinamento
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
+            </Link>
+            <Link href={proposalHref} className="service-card-action-link">
+              <Button size="sm" variant="outline" className="service-card-btn w-full rounded-lg">
+                Solicitar orçamento
+              </Button>
+            </Link>
+          </>
+        )}
+        {(ctaVariant === "clinical" || ctaVariant === "exam") && (
           <>
             <Link href="/encaminhamento-online" className="service-card-action-link">
               <Button size="sm" variant="brand" className="service-card-btn w-full rounded-lg">
@@ -100,7 +120,7 @@ export function ServiceCard({
                 <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
             </Link>
-            <Link href="/contato?tipo=orcamento" className="service-card-action-link">
+            <Link href={proposalHref} className="service-card-action-link">
               <Button size="sm" variant="outline" className="service-card-btn w-full rounded-lg">
                 Solicitar orçamento
               </Button>

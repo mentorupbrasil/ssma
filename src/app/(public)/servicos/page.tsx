@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   BookOpen,
   ClipboardList,
@@ -13,6 +14,7 @@ import { ServiceCard } from "@/components/public/ServiceCard";
 import { ServicesQuickNav } from "@/components/public/ServicesQuickNav";
 import { CTASection } from "@/components/public/CTASection";
 import { PageSection } from "@/components/public/PageSection";
+import { Button } from "@/components/ui/button";
 import { SERVICE_CATEGORIES } from "@/data/services";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
@@ -44,7 +46,29 @@ export default function ServicosPage() {
         eyebrow="Portfólio completo"
         title="Soluções em Saúde e Segurança do Trabalho"
         description="PCMSO, ASO, laudos, exames e documentação ocupacional para empresas que precisam de conformidade, agilidade e organização."
-      />
+        layout="stack"
+        className="services-page-hero"
+      >
+        <Link href="/contato?tipo=orcamento">
+          <Button variant="brand" className="rounded-xl">
+            Solicitar orçamento
+          </Button>
+        </Link>
+        <a
+          href={whatsappLink(
+            `Olá! Gostaria de falar com um especialista da ${clinic.name} sobre serviços de SST.`
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Button
+            variant="outline"
+            className="rounded-xl border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+          >
+            Falar com especialista
+          </Button>
+        </a>
+      </PageHero>
 
       <ServicesQuickNav items={QUICK_NAV_ITEMS} />
 
@@ -57,9 +81,11 @@ export default function ServicosPage() {
             id={category.id}
             variant={index % 2 === 0 ? "white" : "default"}
             className={cn(
-              "services-section",
+              "services-section services-section--anchor",
               category.id === "seguranca-trabalho" && "services-section--safety",
-              category.id === "exames-complementares" && "services-section--exams"
+              category.id === "exames-complementares" && "services-section--exams",
+              category.id === "documentacao" && "services-section--docs",
+              category.id === "treinamentos" && "services-section--training"
             )}
           >
             <SectionTitle
@@ -69,12 +95,7 @@ export default function ServicosPage() {
               align="left"
               className="services-section-title"
             />
-            <div
-              className={cn(
-                "services-grid",
-                category.cardVariant === "technical" && "services-grid--technical"
-              )}
-            >
+            <div className="services-grid">
               {category.services.map((service) => (
                 <ServiceCard
                   key={service.name}

@@ -11,7 +11,7 @@ export type ServiceCategory = {
   id: string;
   title: string;
   description?: string;
-  cardVariant?: "clinical" | "technical" | "exam";
+  cardVariant?: "clinical" | "technical" | "exam" | "training";
   services: ServiceItem[];
 };
 
@@ -21,6 +21,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     title: "Medicina Ocupacional",
     description:
       "Serviços clínicos e programas médicos para admissão, acompanhamento e regularização da saúde ocupacional dos colaboradores.",
+    cardVariant: "clinical",
     services: [
       {
         name: "ASO Admissional",
@@ -268,29 +269,38 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     id: "documentacao",
     title: "Documentação",
     description:
-      "Emissão, organização e controle dos documentos ocupacionais exigidos para empresas.",
+      "Emissão, organização e controle dos documentos ocupacionais exigidos para conformidade legal e rotina do RH.",
+    cardVariant: "technical",
     services: [
       {
         name: "Eventos de SST no eSocial",
-        description: "Apoio ao envio e organização dos eventos de SST exigidos pelo eSocial.",
+        badge: "Digital",
+        description:
+          "Apoio ao envio e organização dos eventos de SST exigidos pelo eSocial.",
         audience: "Empresas que precisam manter conformidade digital.",
         deliveryTime: "Conforme calendário e escopo.",
       },
       {
         name: "Organização documental ocupacional",
-        description: "Estruturação de ASO, laudos, programas e documentos para o RH.",
+        badge: "Gestão",
+        description:
+          "Estruturação de ASO, laudos, programas e documentos para facilitar a rotina do RH.",
         audience: "Empresas que buscam mais clareza na gestão documental.",
         deliveryTime: "Conforme diagnóstico inicial.",
       },
       {
         name: "Controle de ASO e laudos",
-        description: "Acompanhamento de validade, emissão e arquivo de documentos técnicos.",
+        badge: "Controle",
+        description:
+          "Acompanhamento de validade, emissão e arquivo de documentos técnicos.",
         audience: "Empresas com volume recorrente de colaboradores.",
         deliveryTime: "Contínuo.",
       },
       {
         name: "Arquivo técnico ocupacional",
-        description: "Guarda organizada de prontuários, laudos e registros exigidos pela legislação.",
+        badge: "Arquivo",
+        description:
+          "Guarda organizada de prontuários, laudos e registros exigidos pela legislação.",
         audience: "Empresas que precisam de rastreabilidade documental.",
         deliveryTime: "Conforme contrato.",
       },
@@ -300,29 +310,38 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     id: "treinamentos",
     title: "Treinamentos",
     description:
-      "Capacitação em segurança do trabalho, integração e conformidade para colaboradores e gestores.",
+      "Capacitações em segurança do trabalho, integração e conformidade para equipes e gestores.",
+    cardVariant: "training",
     services: [
       {
         name: "Palestras em SST",
-        description: "Conteúdos educativos sobre saúde ocupacional, riscos e prevenção.",
+        badge: "Palestra",
+        description:
+          "Conteúdos educativos sobre saúde ocupacional, riscos e prevenção no ambiente de trabalho.",
         audience: "Empresas de todos os portes.",
         deliveryTime: "Conforme programação.",
       },
       {
         name: "Treinamento de CIPA",
-        description: "Capacitação para membros da Comissão Interna de Prevenção de Acidentes.",
+        badge: "CIPA",
+        description:
+          "Capacitação para membros da Comissão Interna de Prevenção de Acidentes.",
         audience: "Empresas obrigadas ou que desejam estruturar a CIPA.",
         deliveryTime: "Conforme calendário.",
       },
       {
         name: "Integração em segurança do trabalho",
-        description: "Orientação inicial sobre riscos, EPIs e procedimentos da empresa.",
+        badge: "Integração",
+        description:
+          "Orientação inicial sobre riscos, EPIs e procedimentos de segurança da empresa.",
         audience: "Empresas com admissões recorrentes.",
         deliveryTime: "No dia ou conforme agenda.",
       },
       {
         name: "Capacitação NR-6 (EPI)",
-        description: "Treinamento sobre uso, guarda, conservação e substituição de EPIs.",
+        badge: "NR-6",
+        description:
+          "Treinamento sobre uso, guarda, conservação e substituição de equipamentos de proteção.",
         audience: "Colaboradores expostos a riscos que exigem EPI.",
         deliveryTime: "Conforme programação.",
       },
