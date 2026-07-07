@@ -3,16 +3,28 @@ import { cn } from "@/lib/utils";
 type PageHeroProps = {
   title: string;
   description?: string;
+  supportingText?: string;
   eyebrow?: string;
   children?: React.ReactNode;
   className?: string;
+  layout?: "split" | "stack";
 };
 
-export function PageHero({ title, description, eyebrow, children, className }: PageHeroProps) {
+export function PageHero({
+  title,
+  description,
+  supportingText,
+  eyebrow,
+  children,
+  className,
+  layout = "split",
+}: PageHeroProps) {
+  const isStacked = layout === "stack";
+
   return (
     <section
       className={cn(
-        "page-hero-offset relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#124a5a] to-[#0f3d4a]",
+        "page-hero-offset scroll-mt-[var(--header-height)] relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#124a5a] to-[#0f3d4a]",
         className
       )}
     >
@@ -24,19 +36,43 @@ export function PageHero({ title, description, eyebrow, children, className }: P
             {eyebrow}
           </p>
         )}
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        {isStacked ? (
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15]">
               {title}
             </h1>
             {description && (
-              <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200/95 sm:text-lg">
                 {description}
               </p>
             )}
+            {supportingText && (
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300/90 sm:text-[0.9375rem]">
+                {supportingText}
+              </p>
+            )}
+            {children && <div className="mt-6 flex flex-wrap gap-3">{children}</div>}
           </div>
-          {children && <div className="flex shrink-0 flex-wrap gap-3">{children}</div>}
-        </div>
+        ) : (
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15]">
+                {title}
+              </h1>
+              {description && (
+                <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+                  {description}
+                </p>
+              )}
+              {supportingText && (
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300/90 sm:text-[0.9375rem]">
+                  {supportingText}
+                </p>
+              )}
+            </div>
+            {children && <div className="flex shrink-0 flex-wrap gap-3">{children}</div>}
+          </div>
+        )}
       </div>
     </section>
   );

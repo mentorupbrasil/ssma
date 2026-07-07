@@ -15,7 +15,6 @@ const NAV_ITEMS = [
   { href: "/exames", label: "Exames" },
   { href: "/empresas", label: "Empresas" },
   { href: "/encaminhamento-online", label: "Encaminhamento" },
-  { href: "/instalacoes", label: "Instalações" },
   { href: "/contato", label: "Contato" },
 ];
 

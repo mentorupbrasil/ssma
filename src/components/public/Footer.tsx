@@ -1,22 +1,19 @@
 import Link from "next/link";
+import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import {
-  MapPin,
-  Phone,
-  Mail,
-  Clock,
-  Instagram,
-  Facebook,
-  Linkedin,
-  Youtube,
-} from "lucide-react";
+  FacebookIcon,
+  InstagramIcon,
+  LinkedinIcon,
+  YoutubeIcon,
+} from "@/components/public/SocialIcons";
 import { formatAddressLines, formatOpeningHoursLines, getClinicSiteConfig } from "@/config/clinic";
 import { getClinicInfo } from "@/lib/helpers";
 
 const SOCIAL_ICONS = [
-  { icon: Instagram, label: "Instagram" },
-  { icon: Facebook, label: "Facebook" },
-  { icon: Linkedin, label: "LinkedIn" },
-  { icon: Youtube, label: "YouTube" },
+  { icon: InstagramIcon, label: "Instagram" },
+  { icon: FacebookIcon, label: "Facebook" },
+  { icon: LinkedinIcon, label: "LinkedIn" },
+  { icon: YoutubeIcon, label: "YouTube" },
 ] as const;
 
 export function Footer() {
@@ -115,7 +112,7 @@ export function Footer() {
                 title={`${label} em breve`}
                 aria-label={`${label} em breve`}
               >
-                <Icon strokeWidth={1.75} />
+                <Icon className="h-[1.1rem] w-[1.1rem]" />
               </span>
             ))}
           </div>

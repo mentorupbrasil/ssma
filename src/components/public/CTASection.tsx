@@ -50,7 +50,7 @@ export function CTASection({
   className,
 }: CTASectionProps) {
   return (
-    <section className={cn("final-cta-section", className)}>
+    <section className={cn("final-cta-section scroll-mt-[var(--header-height)]", className)}>
       <div className="final-cta-section-glow" aria-hidden />
       <div className="container-page relative">
         <div className="final-cta-section-inner">

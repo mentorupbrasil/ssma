@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 type PageSectionProps = {
   children: ReactNode;
+  id?: string;
   className?: string;
   variant?: "default" | "muted" | "white";
   containerClassName?: string;
@@ -10,12 +11,14 @@ type PageSectionProps = {
 
 export function PageSection({
   children,
+  id,
   className,
   variant = "default",
   containerClassName,
 }: PageSectionProps) {
   return (
     <section
+      id={id}
       className={cn(
         "page-section scroll-mt-[var(--header-height)]",
         variant === "muted" && "page-section-muted",
