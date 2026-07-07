@@ -1,59 +1,73 @@
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { ArrowRight, ShieldAlert } from "lucide-react";
 import { COMPLIANCE_DOCS } from "@/data/marketing";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { Button } from "@/components/ui/button";
+import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 export function ComplianceSection() {
+  const clinic = getClinicInfo();
+
   return (
-    <section className="section-padding bg-white">
+    <section className="compliance-section bg-white">
       <div className="container-page">
-        <div className="mb-10 flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50/80 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-            <div>
-              <p className="font-semibold text-amber-900">Evite multas e autuações</p>
-              <p className="mt-1 text-sm text-amber-800/90">
+        <div className="compliance-alert">
+          <div className="compliance-alert-content">
+            <div className="compliance-alert-icon" aria-hidden>
+              <ShieldAlert className="h-5 w-5 text-amber-700" strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[0.9375rem] font-semibold tracking-tight text-[var(--brand-navy)]">
+                Evite multas e autuações
+              </p>
+              <p className="mt-0.5 text-sm leading-snug text-slate-600">
                 Empresas irregulares estão sujeitas a penalidades em fiscalizações do MTE e
                 inconsistências no eSocial.
               </p>
             </div>
           </div>
-          <Link href="/contato?tipo=orcamento" className="shrink-0">
-            <Button variant="brand" className="w-full rounded-xl sm:w-auto">
+          <a
+            href={whatsappLink(
+              `Olá! Gostaria de falar com um especialista em SST da ${clinic.name}.`
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="compliance-alert-action shrink-0"
+          >
+            <Button variant="outline" size="sm" className="compliance-alert-btn w-full sm:w-auto">
               Falar com especialista
             </Button>
-          </Link>
+          </a>
         </div>
 
         <SectionTitle
           eyebrow="Obrigatoriedade legal"
           title="Esses documentos são exigidos para sua empresa"
-          description="Mantenha sua operação em dia com programas, laudos e exames conforme a legislação trabalhista."
+          description="Mantenha sua operação em dia com programas, laudos, exames e eventos obrigatórios conforme a legislação trabalhista."
+          className="compliance-section-title"
         />
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {COMPLIANCE_DOCS.map((doc) => (
-            <div
-              key={doc.sigla}
-              className="premium-card-hover group border-slate-200/80 p-5"
-            >
-              <div className="mb-4 inline-flex rounded-xl bg-[var(--brand-green-light)] p-3 transition group-hover:bg-[var(--brand-green)]/15">
-                <doc.icon className="h-6 w-6 text-[var(--brand-green)]" />
+        <div className="compliance-docs-grid">
+          {COMPLIANCE_DOCS.map((doc) => {
+            const Icon = doc.icon;
+            return (
+              <div key={doc.sigla} className="compliance-doc-card group">
+                <div className="compliance-doc-card-icon">
+                  <Icon strokeWidth={1.75} />
+                </div>
+                <p className="compliance-doc-sigla">{doc.sigla}</p>
+                <h3 className="compliance-doc-title">{doc.name}</h3>
+                <p className="compliance-doc-desc">{doc.description}</p>
               </div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[var(--brand-green)]">
-                {doc.sigla}
-              </p>
-              <h3 className="mt-1 font-semibold text-[var(--brand-navy)]">{doc.name}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{doc.description}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="mt-10 text-center">
+        <div className="compliance-section-cta">
           <Link href="/servicos">
-            <Button variant="outline" size="lg" className="rounded-xl">
+            <Button variant="outline" size="lg" className="compliance-cta-btn group">
               Ver todos os serviços
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-250 group-hover:translate-x-0.5" />
             </Button>
           </Link>
         </div>

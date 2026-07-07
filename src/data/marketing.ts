@@ -18,31 +18,32 @@ export const COMPLIANCE_DOCS: ComplianceDoc[] = [
   {
     sigla: "PCMSO",
     name: "Programa de Controle Médico",
-    description: "Obrigatório para empresas com riscos ocupacionais (NR-7).",
+    description: "Obrigatório para empresas com riscos ocupacionais conforme a NR-7.",
     icon: Stethoscope,
   },
   {
     sigla: "ASO",
     name: "Atestado de Saúde Ocupacional",
-    description: "Admissional, periódico, demissional e demais tipos legais.",
+    description:
+      "Admissional, periódico, demissional, retorno ao trabalho e mudança de função.",
     icon: ClipboardList,
   },
   {
     sigla: "PGR",
     name: "Programa de Gerenciamento de Riscos",
-    description: "Identificação e controle de riscos no ambiente de trabalho.",
+    description: "Identificação, avaliação e controle dos riscos no ambiente de trabalho.",
     icon: Shield,
   },
   {
     sigla: "LTCAT",
-    name: "Laudo Técnico das Condições Ambientais",
-    description: "Documentação para aposentadoria especial e enquadramentos.",
+    name: "Laudo Técnico das Condições Ambientais do Trabalho",
+    description: "Documento essencial para aposentadoria especial, PPP e enquadramentos.",
     icon: FileText,
   },
   {
     sigla: "eSocial",
-    name: "Eventos SST no eSocial",
-    description: "Envio correto de leiautes ocupacionais ao governo.",
+    name: "Eventos de SST no eSocial",
+    description: "Envio correto das informações ocupacionais exigidas pelo governo.",
     icon: Database,
   },
 ];
