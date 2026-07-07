@@ -43,25 +43,25 @@ export function HomeHero() {
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-40" />
 
       <div className="container-page relative">
-        <div className="grid items-center gap-12 pb-12 lg:grid-cols-2 lg:gap-14 xl:gap-20 xl:pb-16">
+        <div className="grid items-center gap-8 pb-7 lg:grid-cols-2 lg:gap-10 lg:pb-8 xl:gap-14">
           {/* Texto */}
           <div className="animate-fade-up order-2 lg:order-1">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
+            <p className="mb-3.5 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
               <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" />
               Saúde e Segurança do Trabalho · Atendimento empresarial
             </p>
 
-            <h1 className="max-w-xl text-[1.85rem] font-bold leading-[1.12] tracking-tight text-white sm:text-4xl lg:text-[2.5rem] xl:text-[2.75rem] xl:leading-[1.1]">
+            <h1 className="max-w-xl text-[1.85rem] font-bold leading-[1.12] tracking-tight text-white sm:text-4xl lg:text-[2.35rem] lg:leading-[1.12] xl:text-[2.5rem]">
               Regularize sua empresa e evite{" "}
               <span className="text-gradient-hero">multas na fiscalização</span>
             </h1>
 
-            <p className="mt-5 max-w-lg text-[0.95rem] leading-relaxed text-slate-300/95 sm:text-base lg:text-[1.05rem] lg:leading-relaxed">
+            <p className="mt-4 max-w-lg text-[0.95rem] leading-relaxed text-slate-300/95 sm:text-base lg:text-[1rem] lg:leading-relaxed">
               PCMSO, ASO, exames ocupacionais e portal digital para o RH — com conformidade
               legal, laudos em dia e suporte ao eSocial SST.
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-3.5 flex flex-wrap gap-2">
               {CHIPS.map((tag) => (
                 <span
                   key={tag}
@@ -72,7 +72,7 @@ export function HomeHero() {
               ))}
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <a
                 href={whatsappLink(
                   `Olá! Gostaria de falar com um especialista em SST da ${clinic.name}.`
@@ -93,7 +93,7 @@ export function HomeHero() {
               </Link>
             </div>
 
-            <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.08] pt-6">
+            <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.08] pt-4">
               {TRUST_ITEMS.map((item) => (
                 <li key={item.label} className="inline-flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
                   <item.icon className="h-3.5 w-3.5 text-[var(--brand-green)]/80" strokeWidth={1.5} />
@@ -104,18 +104,20 @@ export function HomeHero() {
           </div>
 
           {/* Visual institucional */}
-          <div className="animate-fade-up-delay order-1 lg:order-2 lg:pl-4 xl:pl-8">
+          <div className="animate-fade-up-delay order-1 lg:order-2 lg:pl-2 xl:pl-6">
             <HeroInstitutionalVisual />
           </div>
         </div>
 
         {/* Cards inferiores */}
-        <div className="grid gap-3 border-t border-white/[0.08] pt-10 pb-12 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:pb-14">
+        <div className="grid gap-3 border-t border-white/[0.08] pt-7 pb-9 sm:grid-cols-2 sm:gap-3.5 lg:grid-cols-4 lg:pb-10">
           {QUICK_CARDS.map((card) => (
             <div key={card.title} className="hero-feature-card">
-              <card.icon className="mb-3 h-5 w-5 text-[var(--brand-green)]/90" strokeWidth={1.5} />
-              <h3 className="text-sm font-semibold text-white/95">{card.title}</h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-slate-400">{card.desc}</p>
+              <span className="hero-feature-card-icon">
+                <card.icon className="h-4 w-4 text-[var(--brand-green)]" strokeWidth={2} />
+              </span>
+              <h3 className="text-sm font-semibold text-white">{card.title}</h3>
+              <p className="mt-1 text-xs leading-relaxed text-slate-300/90">{card.desc}</p>
             </div>
           ))}
         </div>
