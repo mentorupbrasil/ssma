@@ -1,0 +1,111 @@
+# Unimetra — Medicina e Segurança do Trabalho
+
+Plataforma completa com **site institucional premium** + **painel interno** para clínicas de medicina ocupacional.
+
+## Stack
+
+- Next.js 16 (App Router) + TypeScript
+- Tailwind CSS 4 + shadcn/ui
+- Prisma ORM + Neon PostgreSQL
+- Auth.js (NextAuth v5) + bcryptjs
+- React Hook Form + Zod
+- Deploy: Vercel
+
+## Funcionalidades
+
+### Site público
+- Home comercial com CTAs, FAQ, mapa e preparo de exames
+- Serviços por categoria
+- Exames com busca e filtro
+- Encaminhamento online (formulário em 6 etapas → salva no banco)
+- Blog/atualizações
+- Política de privacidade e termos (LGPD)
+
+### Painel `/dashboard`
+- Login com perfis: ADMIN, RECEPCAO, MEDICO, TECNICO, FINANCEIRO, EMPRESA, VISUALIZADOR
+- Dashboard com indicadores reais
+- CRUD: empresas, pacientes, encaminhamentos
+- Agenda, exames, orçamentos/leads, documentos, usuários, configurações, auditoria
+
+## Instalação
+
+```bash
+# 1. Clonar e instalar
+git clone https://github.com/mentorupbrasil/ssma.git
+cd ssma
+npm install
+
+# 2. Configurar ambiente
+cp .env.example .env
+# Edite DATABASE_URL e AUTH_SECRET
+
+# 3. Banco de dados
+npm run db:push
+npm run db:seed
+
+# 4. Rodar
+npm run dev
+```
+
+Acesse: http://localhost:3000
+
+## Credenciais demo (seed)
+
+| Perfil   | E-mail              | Senha          |
+|----------|---------------------|----------------|
+| Admin    | admin@demo.com      | Admin@123      |
+| Recepção | recepcao@demo.com   | Recepcao@123   |
+| Empresa  | empresa@demo.com    | Empresa@123    |
+
+## Deploy na Vercel
+
+1. Conecte o repositório GitHub `mentorupbrasil/ssma`
+2. Configure as variáveis de ambiente:
+   - `DATABASE_URL` (Neon PostgreSQL)
+   - `AUTH_SECRET` (gere com `openssl rand -base64 32`)
+   - `NEXTAUTH_URL` (URL da Vercel)
+   - `NEXT_PUBLIC_CLINIC_*` (dados institucionais)
+3. Deploy automático a cada push
+
+Após deploy, rode o seed uma vez:
+```bash
+npx vercel env pull
+npm run db:push
+npm run db:seed
+```
+
+## Estrutura
+
+```
+src/
+├── app/(public)/     # Site institucional
+├── app/(auth)/       # Login
+├── app/(dashboard)/  # Painel privado
+├── actions/          # Server Actions
+├── components/       # UI reutilizável
+├── data/             # Conteúdo estático
+├── lib/              # Auth, Prisma, permissões
+├── schemas/          # Validações Zod
+└── types/            # Tipos e labels
+prisma/
+├── schema.prisma
+└── seed.ts
+```
+
+## Segurança e LGPD
+
+- Senhas com bcryptjs (12 rounds)
+- Middleware protegendo `/dashboard`
+- Controle de acesso por perfil
+- Logs de auditoria
+- Consentimento em formulários públicos
+- Dados fictícios no seed
+- MVP sem prontuário médico completo
+
+## Renomear a clínica
+
+Altere as variáveis `NEXT_PUBLIC_CLINIC_*` no `.env` ou a tabela `Setting` no banco.
+
+## Licença
+
+Projeto privado — MentorUp Brasil / Unimetra.
