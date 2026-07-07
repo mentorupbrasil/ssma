@@ -4,6 +4,9 @@ import {
   ClipboardList,
   Stethoscope,
   Database,
+  Smartphone,
+  Users,
+  Clock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -94,9 +97,29 @@ export const EMPLOYEE_RANGES = [
   { value: "500+", label: "Mais de 500 colaboradores" },
 ] as const;
 
-export const TRUST_PILLARS = [
-  { title: "Conformidade legal", desc: "Atendimento alinhado às NRs e exigências do eSocial." },
-  { title: "Portal empresarial", desc: "Encaminhamento e acompanhamento 100% digital." },
-  { title: "Equipe especializada", desc: "Profissionais habilitados em medicina e segurança do trabalho." },
-  { title: "Atendimento ágil", desc: "Fluxo organizado para o RH com prazos claros." },
-] as const;
+export const TRUST_PILLARS: {
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+}[] = [
+  {
+    title: "Conformidade legal",
+    desc: "Atendimento alinhado às NRs e exigências do eSocial.",
+    icon: Shield,
+  },
+  {
+    title: "Portal empresarial",
+    desc: "Encaminhamento e acompanhamento 100% digital.",
+    icon: Smartphone,
+  },
+  {
+    title: "Equipe especializada",
+    desc: "Profissionais habilitados em medicina e segurança do trabalho.",
+    icon: Users,
+  },
+  {
+    title: "Atendimento ágil",
+    desc: "Fluxo organizado para o RH com prazos claros.",
+    icon: Clock,
+  },
+];
