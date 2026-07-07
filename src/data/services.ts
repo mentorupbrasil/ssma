@@ -88,7 +88,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     id: "seguranca-trabalho",
     title: "Segurança do Trabalho",
     description:
-      "Laudos, programas, análises e treinamentos para manter sua empresa regularizada e com os riscos ocupacionais sob controle.",
+      "Laudos, programas e análises para manter sua empresa regularizada e com os riscos ocupacionais sob controle.",
     cardVariant: "technical",
     services: [
       {
@@ -154,14 +154,6 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
           "Representação gráfica dos riscos ambientais por setor, facilitando a comunicação preventiva.",
         audience: "Empresas com gestão de SST estruturada.",
         deliveryTime: "10 a 15 dias úteis.",
-      },
-      {
-        name: "Palestras e Treinamentos",
-        badge: "Treinamento",
-        description:
-          "Capacitações em segurança do trabalho e saúde ocupacional para equipes e empresas.",
-        audience: "Empresas de todos os portes.",
-        deliveryTime: "Conforme programação.",
       },
     ],
   },
@@ -303,47 +295,6 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
           "Guarda organizada de prontuários, laudos e registros exigidos pela legislação.",
         audience: "Empresas que precisam de rastreabilidade documental.",
         deliveryTime: "Conforme contrato.",
-      },
-    ],
-  },
-  {
-    id: "treinamentos",
-    title: "Treinamentos",
-    description:
-      "Capacitações em segurança do trabalho, integração e conformidade para equipes e gestores.",
-    cardVariant: "training",
-    services: [
-      {
-        name: "Palestras em SST",
-        badge: "Palestra",
-        description:
-          "Conteúdos educativos sobre saúde ocupacional, riscos e prevenção no ambiente de trabalho.",
-        audience: "Empresas de todos os portes.",
-        deliveryTime: "Conforme programação.",
-      },
-      {
-        name: "Treinamento de CIPA",
-        badge: "CIPA",
-        description:
-          "Capacitação para membros da Comissão Interna de Prevenção de Acidentes.",
-        audience: "Empresas obrigadas ou que desejam estruturar a CIPA.",
-        deliveryTime: "Conforme calendário.",
-      },
-      {
-        name: "Integração em segurança do trabalho",
-        badge: "Integração",
-        description:
-          "Orientação inicial sobre riscos, EPIs e procedimentos de segurança da empresa.",
-        audience: "Empresas com admissões recorrentes.",
-        deliveryTime: "No dia ou conforme agenda.",
-      },
-      {
-        name: "Capacitação NR-6 (EPI)",
-        badge: "NR-6",
-        description:
-          "Treinamento sobre uso, guarda, conservação e substituição de equipamentos de proteção.",
-        audience: "Colaboradores expostos a riscos que exigem EPI.",
-        deliveryTime: "Conforme programação.",
       },
     ],
   },

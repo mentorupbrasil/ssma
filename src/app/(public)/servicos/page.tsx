@@ -3,7 +3,6 @@ import {
   BookOpen,
   ClipboardList,
   FlaskConical,
-  GraduationCap,
   Shield,
   Stethoscope,
   type LucideIcon,
@@ -26,7 +25,6 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "seguranca-trabalho": Shield,
   "exames-complementares": FlaskConical,
   documentacao: ClipboardList,
-  treinamentos: GraduationCap,
 };
 
 const QUICK_NAV_ITEMS = [
@@ -34,7 +32,6 @@ const QUICK_NAV_ITEMS = [
   { id: "seguranca-trabalho", label: "Segurança do Trabalho" },
   { id: "exames-complementares", label: "Exames Complementares" },
   { id: "documentacao", label: "Documentação" },
-  { id: "treinamentos", label: "Treinamentos" },
 ];
 
 export default function ServicosPage() {
@@ -84,8 +81,7 @@ export default function ServicosPage() {
               "services-section services-section--anchor",
               category.id === "seguranca-trabalho" && "services-section--safety",
               category.id === "exames-complementares" && "services-section--exams",
-              category.id === "documentacao" && "services-section--docs",
-              category.id === "treinamentos" && "services-section--training"
+              category.id === "documentacao" && "services-section--docs"
             )}
           >
             <SectionTitle
