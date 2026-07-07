@@ -1,41 +1,102 @@
+import {
+  BookOpen,
+  ClipboardList,
+  FlaskConical,
+  GraduationCap,
+  Shield,
+  Stethoscope,
+  type LucideIcon,
+} from "lucide-react";
 import { PageHero } from "@/components/public/PageHero";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { ServiceCard } from "@/components/public/ServiceCard";
+import { ServicesQuickNav } from "@/components/public/ServicesQuickNav";
 import { CTASection } from "@/components/public/CTASection";
 import { PageSection } from "@/components/public/PageSection";
 import { SERVICE_CATEGORIES } from "@/data/services";
+import { getClinicInfo, whatsappLink } from "@/lib/helpers";
+import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Serviços" };
 
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  "medicina-ocupacional": Stethoscope,
+  "seguranca-trabalho": Shield,
+  "exames-complementares": FlaskConical,
+  documentacao: ClipboardList,
+  treinamentos: GraduationCap,
+};
+
+const QUICK_NAV_ITEMS = [
+  { id: "medicina-ocupacional", label: "Medicina Ocupacional" },
+  { id: "seguranca-trabalho", label: "Segurança do Trabalho" },
+  { id: "exames-complementares", label: "Exames Complementares" },
+  { id: "documentacao", label: "Documentação" },
+  { id: "treinamentos", label: "Treinamentos" },
+];
+
 export default function ServicosPage() {
+  const clinic = getClinicInfo();
+
   return (
     <>
       <PageHero
         eyebrow="Portfólio completo"
         title="Soluções em Saúde e Segurança do Trabalho"
-        description="PCMSO, ASO, laudos, exames e documentação ocupacional com equipe habilitada e conformidade legal."
+        description="PCMSO, ASO, laudos, exames e documentação ocupacional para empresas que precisam de conformidade, agilidade e organização."
       />
 
-      {SERVICE_CATEGORIES.map((category, index) => (
-        <PageSection key={category.id} variant={index % 2 === 0 ? "default" : "white"}>
-          <SectionTitle
-            eyebrow="Serviços"
-            title={category.title}
-            align="left"
-            className="!mb-8 md:!mb-9"
-          />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {category.services.map((service) => (
-              <ServiceCard key={service.name} {...service} />
-            ))}
-          </div>
-        </PageSection>
-      ))}
+      <ServicesQuickNav items={QUICK_NAV_ITEMS} />
+
+      {SERVICE_CATEGORIES.map((category, index) => {
+        const CategoryIcon = CATEGORY_ICONS[category.id] ?? BookOpen;
+
+        return (
+          <PageSection
+            key={category.id}
+            id={category.id}
+            variant={index % 2 === 0 ? "white" : "default"}
+            className={cn(
+              "services-section",
+              category.id === "seguranca-trabalho" && "services-section--safety",
+              category.id === "exames-complementares" && "services-section--exams"
+            )}
+          >
+            <SectionTitle
+              eyebrow="Serviços"
+              title={category.title}
+              description={category.description}
+              align="left"
+              className="services-section-title"
+            />
+            <div
+              className={cn(
+                "services-grid",
+                category.cardVariant === "technical" && "services-grid--technical"
+              )}
+            >
+              {category.services.map((service) => (
+                <ServiceCard
+                  key={service.name}
+                  {...service}
+                  icon={CategoryIcon}
+                  ctaVariant={category.cardVariant ?? "clinical"}
+                />
+              ))}
+            </div>
+          </PageSection>
+        );
+      })}
 
       <CTASection
-        title="Precisa de um serviço específico?"
-        description="Nossa equipe pode montar uma proposta personalizada para sua empresa."
+        className="services-final-cta"
+        title="Precisa regularizar exames, laudos ou documentos ocupacionais?"
+        description="Nossa equipe monta uma proposta personalizada conforme o porte da sua empresa, riscos ocupacionais e serviços necessários."
         primaryLabel="Solicitar orçamento sem compromisso"
+        secondaryHref={whatsappLink(
+          `Olá! Gostaria de falar com um especialista da ${clinic.name} sobre serviços de SST.`
+        )}
+        secondaryLabel="Falar com especialista"
       />
     </>
   );

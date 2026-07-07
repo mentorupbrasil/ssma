@@ -1,42 +1,113 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+export type ServiceCardCtaVariant = "clinical" | "technical" | "exam";
 
 type ServiceCardProps = {
   name: string;
   description: string;
   audience?: string;
   deliveryTime?: string;
+  badge?: string;
+  preparoSlug?: string;
+  icon?: LucideIcon;
+  ctaVariant?: ServiceCardCtaVariant;
+  className?: string;
 };
 
-export function ServiceCard({ name, description, audience, deliveryTime }: ServiceCardProps) {
+export function ServiceCard({
+  name,
+  description,
+  audience,
+  deliveryTime,
+  badge,
+  preparoSlug,
+  icon: Icon,
+  ctaVariant = "clinical",
+  className,
+}: ServiceCardProps) {
+  const isTechnical = ctaVariant === "technical";
+  const isExam = ctaVariant === "exam";
+  const proposalHref = `/contato?tipo=orcamento&servico=${encodeURIComponent(name)}`;
+  const detailsHref = `/contato?servico=${encodeURIComponent(name)}`;
+  const preparoHref = preparoSlug
+    ? `/exames?exame=${encodeURIComponent(preparoSlug)}`
+    : "/exames";
+
   return (
-    <div className="page-feature-card group flex h-full flex-col">
-      <h3 className="page-feature-card-title text-base">{name}</h3>
-      <p className="page-feature-card-desc mt-2 flex-grow">{description}</p>
-      {audience && (
-        <p className="mt-3 text-xs leading-relaxed text-slate-500">
-          <span className="font-semibold text-slate-700">Indicado para:</span> {audience}
-        </p>
+    <article
+      className={cn(
+        "service-card group",
+        isTechnical && "service-card--technical",
+        isExam && "service-card--exam",
+        className
       )}
-      {deliveryTime && (
-        <p className="mt-1.5 text-xs text-slate-500">
-          <span className="font-semibold text-slate-700">Prazo médio:</span> {deliveryTime}
-        </p>
-      )}
-      <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-        <Link href="/contato?tipo=orcamento">
-          <Button size="sm" variant="outline" className="rounded-lg">
-            Solicitar orçamento
-          </Button>
-        </Link>
-        <Link href="/encaminhamento-online">
-          <Button size="sm" variant="brand" className="rounded-lg">
-            Encaminhamento
-            <ArrowRight className="ml-1 h-3 w-3" />
-          </Button>
-        </Link>
+    >
+      <div className="service-card-header">
+        {Icon && (
+          <div className="service-card-icon" aria-hidden>
+            <Icon strokeWidth={1.75} />
+          </div>
+        )}
+        {badge && <span className="service-card-badge">{badge}</span>}
       </div>
-    </div>
+      <h3 className="service-card-title">{name}</h3>
+      <p className="service-card-desc">{description}</p>
+      {(audience || deliveryTime) && (
+        <dl className="service-card-meta">
+          {audience && (
+            <div className="service-card-meta-row">
+              <dt>Indicado para</dt>
+              <dd>{audience}</dd>
+            </div>
+          )}
+          {deliveryTime && (
+            <div className="service-card-meta-row">
+              <dt>Prazo médio</dt>
+              <dd>{deliveryTime}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+      {isExam && (
+        <Link href={preparoHref} className="service-card-preparo-link">
+          Ver preparo do exame
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+        </Link>
+      )}
+      <div className="service-card-actions">
+        {isTechnical ? (
+          <>
+            <Link href={proposalHref} className="service-card-action-link">
+              <Button size="sm" variant="brand" className="service-card-btn w-full rounded-lg">
+                Solicitar proposta
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
+            </Link>
+            <Link href={detailsHref} className="service-card-action-link">
+              <Button size="sm" variant="outline" className="service-card-btn w-full rounded-lg">
+                Ver detalhes
+              </Button>
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link href="/encaminhamento-online" className="service-card-action-link">
+              <Button size="sm" variant="brand" className="service-card-btn w-full rounded-lg">
+                Fazer encaminhamento
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
+            </Link>
+            <Link href="/contato?tipo=orcamento" className="service-card-action-link">
+              <Button size="sm" variant="outline" className="service-card-btn w-full rounded-lg">
+                Solicitar orçamento
+              </Button>
+            </Link>
+          </>
+        )}
+      </div>
+    </article>
   );
 }

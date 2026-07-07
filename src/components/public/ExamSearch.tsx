@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { ExamCard } from "@/components/public/ExamCard";
 import { Search } from "lucide-react";
@@ -9,6 +10,7 @@ import { EXAM_CATEGORY_LABELS } from "@/types";
 type Exam = {
   id: string;
   name: string;
+  slug: string;
   category: string;
   preparation: string | null;
   deliveryTime: string | null;
@@ -16,13 +18,25 @@ type Exam = {
 };
 
 export function ExamSearch({ exams }: { exams: Exam[] }) {
+  const searchParams = useSearchParams();
+  const examParam = searchParams.get("exame");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
+
+  useEffect(() => {
+    if (!examParam) return;
+    const match = exams.find((exam) => exam.slug === examParam);
+    setSearch(match?.name ?? examParam.replace(/-/g, " "));
+  }, [examParam, exams]);
 
   const categories = useMemo(() => [...new Set(exams.map((e) => e.category))], [exams]);
 
   const filtered = exams.filter((exam) => {
-    const matchSearch = exam.name.toLowerCase().includes(search.toLowerCase());
+    const query = search.trim().toLowerCase();
+    const matchSearch =
+      !query ||
+      exam.name.toLowerCase().includes(query) ||
+      exam.slug.toLowerCase().includes(query.replace(/\s+/g, "-"));
     const matchCategory = category === "all" || exam.category === category;
     return matchSearch && matchCategory;
   });

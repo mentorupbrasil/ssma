@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { ExamSearch } from "@/components/public/ExamSearch";
 import { PageHero } from "@/components/public/PageHero";
 import { TopClinicalExams } from "@/components/public/TopClinicalExams";
@@ -32,7 +33,13 @@ export default async function ExamesPage() {
           align="left"
           className="!mb-6 md:!mb-7"
         />
-        <ExamSearch exams={exams} />
+        <Suspense
+          fallback={
+            <p className="py-10 text-center text-sm text-slate-500">Carregando catálogo de exames...</p>
+          }
+        >
+          <ExamSearch exams={exams} />
+        </Suspense>
       </PageSection>
 
       <CTASection
