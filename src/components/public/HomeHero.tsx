@@ -11,7 +11,7 @@ import {
   Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HeroPortalMockup } from "@/components/public/HeroPortalMockup";
+import { HeroInstitutionalVisual } from "@/components/public/HeroInstitutionalVisual";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 const QUICK_CARDS = [
@@ -38,27 +38,25 @@ export function HomeHero() {
 
   return (
     <section className="hero-section relative overflow-hidden bg-[var(--brand-navy)]">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(22,160,133,0.22),transparent_55%)]" />
-      <div className="absolute -right-24 top-16 h-80 w-80 rounded-full bg-[var(--brand-green)]/10 blur-3xl" />
-      <div className="absolute -left-16 bottom-0 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_0%,rgba(22,160,133,0.14),transparent_50%)]" />
+      <div className="absolute -right-32 top-24 h-72 w-72 rounded-full bg-[var(--brand-green)]/[0.07] blur-3xl" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-40" />
 
       <div className="container-page relative">
-        {/* Main hero grid */}
-        <div className="grid items-center gap-10 pb-10 pt-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12 xl:gap-16 xl:pb-14">
-          {/* Left column */}
-          <div className="animate-fade-up max-w-2xl lg:max-w-none">
-            <p className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-medium text-emerald-100 backdrop-blur sm:text-sm">
-              <BadgeCheck className="h-4 w-4 shrink-0 text-[var(--brand-green)]" />
-              <span>Saúde e Segurança do Trabalho · Atendimento empresarial</span>
+        <div className="grid items-center gap-12 pb-12 lg:grid-cols-2 lg:gap-14 xl:gap-20 xl:pb-16">
+          {/* Texto */}
+          <div className="animate-fade-up order-2 lg:order-1">
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
+              <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" />
+              Saúde e Segurança do Trabalho · Atendimento empresarial
             </p>
 
-            <h1 className="text-[2rem] font-extrabold leading-[1.1] tracking-tight text-white sm:text-4xl lg:text-[2.65rem] xl:text-[3rem] xl:leading-[1.08]">
+            <h1 className="max-w-xl text-[1.85rem] font-bold leading-[1.12] tracking-tight text-white sm:text-4xl lg:text-[2.5rem] xl:text-[2.75rem] xl:leading-[1.1]">
               Regularize sua empresa e evite{" "}
               <span className="text-gradient-hero">multas na fiscalização</span>
             </h1>
 
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg sm:leading-relaxed">
+            <p className="mt-5 max-w-lg text-[0.95rem] leading-relaxed text-slate-300/95 sm:text-base lg:text-[1.05rem] lg:leading-relaxed">
               PCMSO, ASO, exames ocupacionais e portal digital para o RH — com conformidade
               legal, laudos em dia e suporte ao eSocial SST.
             </p>
@@ -67,64 +65,57 @@ export function HomeHero() {
               {CHIPS.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-white/20 bg-white/[0.07] px-3 py-1.5 text-[0.7rem] font-medium text-slate-200 sm:text-xs"
+                  className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-[0.7rem] font-medium text-slate-300 sm:text-xs"
                 >
                   {tag}
                 </span>
               ))}
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
                 href={whatsappLink(
                   `Olá! Gostaria de falar com um especialista em SST da ${clinic.name}.`
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto"
+                className="sm:flex-1 sm:flex-none"
               >
-                <Button variant="brand" size="lg" className="w-full rounded-xl px-6 sm:w-auto">
+                <Button variant="brand" size="lg" className="w-full rounded-xl sm:w-auto sm:min-w-[200px]">
                   <Phone className="mr-2 h-4 w-4" />
                   Falar com especialista
                 </Button>
               </a>
-              <Link href="/contato?tipo=orcamento" className="w-full sm:w-auto">
-                <Button variant="outline-light" size="lg" className="w-full rounded-xl px-6 sm:w-auto">
+              <Link href="/contato?tipo=orcamento" className="sm:flex-1 sm:flex-none">
+                <Button variant="outline-light" size="lg" className="w-full rounded-xl sm:w-auto sm:min-w-[200px]">
                   Solicitar orçamento
                 </Button>
               </Link>
             </div>
 
-            <ul className="mt-8 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-3">
+            <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.08] pt-6">
               {TRUST_ITEMS.map((item) => (
-                <li
-                  key={item.label}
-                  className="inline-flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.06] px-3.5 py-2.5 text-sm text-slate-200 backdrop-blur-sm"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--brand-green)]/15">
-                    <item.icon className="h-4 w-4 text-[var(--brand-green)]" />
-                  </span>
-                  <span className="font-medium">{item.label}</span>
+                <li key={item.label} className="inline-flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
+                  <item.icon className="h-3.5 w-3.5 text-[var(--brand-green)]/80" strokeWidth={1.5} />
+                  <span>{item.label}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Right column — portal mockup */}
-          <div className="animate-fade-up-delay w-full lg:justify-self-end lg:pt-2 xl:max-w-[34rem] xl:justify-self-center">
-            <HeroPortalMockup variant="hero" />
+          {/* Visual institucional */}
+          <div className="animate-fade-up-delay order-1 lg:order-2 lg:pl-4 xl:pl-8">
+            <HeroInstitutionalVisual />
           </div>
         </div>
 
-        {/* Feature cards */}
-        <div className="grid gap-4 pb-12 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:pb-16 xl:pb-20">
+        {/* Cards inferiores */}
+        <div className="grid gap-3 border-t border-white/[0.08] pt-10 pb-12 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 lg:pb-14">
           {QUICK_CARDS.map((card) => (
-            <div key={card.title} className="hero-feature-card group">
-              <div className="hero-feature-card-icon">
-                <card.icon className="h-5 w-5 text-[var(--brand-green)]" />
-              </div>
-              <h3 className="text-base font-semibold text-white sm:text-lg">{card.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-300/90">{card.desc}</p>
+            <div key={card.title} className="hero-feature-card">
+              <card.icon className="mb-3 h-5 w-5 text-[var(--brand-green)]/90" strokeWidth={1.5} />
+              <h3 className="text-sm font-semibold text-white/95">{card.title}</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-slate-400">{card.desc}</p>
             </div>
           ))}
         </div>

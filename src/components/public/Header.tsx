@@ -59,9 +59,14 @@ export function Header() {
             </Button>
           </Link>
           <a href={whatsappLink(SPECIALIST_MSG)} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" size="sm" className="rounded-lg border-[var(--brand-green)]/30 text-[var(--brand-navy)]">
-              <MessageCircle className="mr-1.5 h-4 w-4 text-[var(--brand-green)]" />
-              Especialista
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-lg border-[var(--brand-green)]/30 px-2.5 text-xs text-[var(--brand-navy)] lg:px-3 lg:text-sm"
+            >
+              <MessageCircle className="mr-1.5 h-4 w-4 shrink-0 text-[var(--brand-green)]" />
+              <span className="hidden sm:inline">Falar com especialista</span>
+              <span className="sm:hidden">Especialista</span>
             </Button>
           </a>
           <Link href="/contato?tipo=orcamento">

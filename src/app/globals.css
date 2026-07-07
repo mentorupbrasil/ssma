@@ -154,50 +154,58 @@
 
   .hero-section {
     margin-top: calc(-1 * var(--header-height));
-    padding-top: calc(var(--header-height) + 2rem);
+    padding-top: calc(var(--header-height) + 2.5rem);
   }
 
   @media (min-width: 768px) {
     .hero-section {
-      padding-top: calc(var(--header-height) + 2.75rem);
+      padding-top: calc(var(--header-height) + 3rem);
     }
   }
 
   @media (min-width: 1024px) {
     .hero-section {
-      padding-top: calc(var(--header-height) + 3.25rem);
+      padding-top: calc(var(--header-height) + 3.5rem);
     }
   }
 
   @media (min-width: 1280px) {
     .hero-section {
-      padding-top: calc(var(--header-height) + 3.75rem);
+      padding-top: calc(var(--header-height) + 4rem);
     }
   }
 
+  .hero-visual-panel {
+    background: rgb(15 61 74 / 0.6);
+  }
+
+  .hero-float-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background: rgb(10 47 58 / 0.75);
+    backdrop-filter: blur(12px);
+    padding: 0.65rem 0.75rem;
+    font-size: 0.65rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: rgb(226 232 240 / 0.9);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+  }
+
   .hero-feature-card {
-    border-radius: 1rem;
-    border: 1px solid rgb(255 255 255 / 0.14);
-    background: linear-gradient(
-      145deg,
-      rgb(255 255 255 / 0.11) 0%,
-      rgb(255 255 255 / 0.05) 100%
-    );
-    padding: 1.35rem 1.25rem;
-    box-shadow:
-      0 1px 0 rgb(255 255 255 / 0.06) inset,
-      0 12px 32px rgb(0 0 0 / 0.12);
-    transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+    border-radius: 0.875rem;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    background: rgb(255 255 255 / 0.04);
+    padding: 1.25rem 1.15rem;
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
+    transition: border-color 0.2s ease, background 0.2s ease;
   }
 
   .hero-feature-card:hover {
-    border-color: rgb(22 160 133 / 0.35);
-    background: linear-gradient(
-      145deg,
-      rgb(255 255 255 / 0.14) 0%,
-      rgb(255 255 255 / 0.07) 100%
-    );
-    transform: translateY(-2px);
+    border-color: rgb(22 160 133 / 0.25);
+    background: rgb(255 255 255 / 0.06);
   }
 
   .hero-feature-card-icon {
