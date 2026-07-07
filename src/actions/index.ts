@@ -1,33 +1,86 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { referralFormSchema } from "@/schemas";
+import {
+  referralFormSchema,
+  companySchema,
+  patientSchema,
+  referralStatusSchema,
+  leadStatusSchema,
+  appointmentSchema,
+  contactActionSchema,
+} from "@/schemas";
 import { createAuditLog, generateProtocol } from "@/lib/server";
 import { ExamCategory } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import {
+  requireSession,
+  requirePermission,
+  getCompanyFilter,
+  assertReferralAccess,
+  actionError,
+  isPrismaUniqueError,
+  isEmpresaUser,
+} from "@/lib/authz";
 
-export async function submitReferral(data: unknown) {
+type ActionResult<T extends Record<string, unknown> = Record<string, unknown>> =
+  | ({ success: true } & T)
+  | { success: false; error: string };
+
+export async function submitReferral(
+  data: unknown,
+  options?: { source?: "online" | "dashboard" }
+): Promise<ActionResult<{ protocol: string }>> {
   const parsed = referralFormSchema.safeParse(data);
   if (!parsed.success) {
-    return { success: false as const, error: "Dados inválidos. Verifique o formulário." };
+    return { success: false, error: "Dados inválidos. Verifique o formulário." };
   }
 
   const d = parsed.data;
-  const doc = d.companyDocument;
+  let source: "online" | "portal" | "dashboard" = options?.source ?? "online";
+  let sessionUserId: string | undefined;
+
+  if (source !== "online") {
+    try {
+      const session = await requirePermission("referrals.manage");
+      sessionUserId = session.user.id;
+      source = isEmpresaUser(session) ? "portal" : "dashboard";
+
+      if (isEmpresaUser(session) && session.user.companyId) {
+        const company = await prisma.company.findUnique({
+          where: { id: session.user.companyId },
+        });
+        if (!company || company.cnpj !== d.companyDocument) {
+          return {
+            success: false,
+            error: "Empresa do encaminhamento deve ser a sua empresa vinculada.",
+          };
+        }
+      }
+    } catch (e) {
+      return { success: false, error: actionError(e, "Não autorizado.") };
+    }
+  }
 
   try {
     const protocol = await generateProtocol();
 
     let company = await prisma.company.findFirst({
-      where: { cnpj: doc },
+      where: { cnpj: d.companyDocument },
     });
 
     if (!company) {
+      if (source !== "online") {
+        return {
+          success: false,
+          error: "Empresa não cadastrada. Cadastre a empresa antes do encaminhamento interno.",
+        };
+      }
       company = await prisma.company.create({
         data: {
           legalName: d.companyName,
           tradeName: d.companyName,
-          cnpj: doc,
+          cnpj: d.companyDocument,
           email: d.companyEmail,
           phone: d.companyPhone,
           responsibleName: d.authorizerName,
@@ -63,6 +116,7 @@ export async function submitReferral(data: unknown) {
           companyId: company.id,
           jobTitle: d.jobTitle,
           department: d.department,
+          phone: d.patientPhone ?? patient.phone,
         },
       });
     }
@@ -89,179 +143,345 @@ export async function submitReferral(data: unknown) {
         companyPhone: d.companyPhone,
         companyEmail: d.companyEmail,
         consentAccepted: true,
-        source: "online",
+        source,
         exams: { create: examItems },
       },
     });
 
     await createAuditLog({
+      userId: sessionUserId,
       action: "CREATE",
       entity: "Referral",
       entityId: referral.id,
-      details: `Encaminhamento online ${protocol}`,
+      details: `Encaminhamento ${source} ${protocol}`,
     });
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/encaminhamentos");
 
-    return { success: true as const, protocol };
+    return { success: true, protocol };
   } catch (error) {
     console.error("submitReferral error:", error);
-    return { success: false as const, error: "Erro ao enviar encaminhamento. Tente novamente." };
+    if (isPrismaUniqueError(error)) {
+      return { success: false, error: "CPF ou CNPJ já cadastrado com dados conflitantes." };
+    }
+    return { success: false, error: "Erro ao enviar encaminhamento. Tente novamente." };
   }
 }
 
-export async function submitContact(data: {
-  name: string;
-  email: string;
-  phone: string;
-  companyName?: string;
-  message?: string;
-  type?: "CONTATO" | "ORCAMENTO";
-}) {
+export async function submitContact(data: unknown): Promise<ActionResult> {
+  const parsed = contactActionSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: "Dados inválidos. Verifique o formulário." };
+  }
+
+  const d = parsed.data;
+
   try {
     await prisma.lead.create({
       data: {
-        type: data.type === "ORCAMENTO" ? "ORCAMENTO" : "CONTATO",
+        type: d.type === "ORCAMENTO" ? "ORCAMENTO" : "CONTATO",
         status: "NOVO",
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        companyName: data.companyName,
-        message: data.message,
+        name: d.name,
+        email: d.email,
+        phone: d.phone,
+        companyName: d.companyName,
+        message: [d.employees && `Colaboradores: ${d.employees}`, d.message]
+          .filter(Boolean)
+          .join("\n") || undefined,
       },
     });
 
     await createAuditLog({
       action: "CREATE",
       entity: "Lead",
-      details: `Contato de ${data.name}`,
+      details: `Contato de ${d.name}`,
     });
 
     revalidatePath("/dashboard/orcamentos");
-    return { success: true as const };
+    return { success: true };
   } catch {
-    return { success: false as const, error: "Erro ao enviar mensagem." };
+    return { success: false, error: "Erro ao enviar mensagem." };
   }
 }
 
-export async function updateReferralStatus(id: string, status: string) {
+export async function updateReferralStatus(
+  id: string,
+  status: string
+): Promise<ActionResult> {
+  const statusParsed = referralStatusSchema.safeParse(status);
+  if (!statusParsed.success) {
+    return { success: false, error: "Status inválido." };
+  }
+
   try {
+    const session = await requirePermission("referrals.manage");
+    if (session.user.role === "EMPRESA") {
+      throw new Error("FORBIDDEN");
+    }
+    await assertReferralAccess(session, id);
+
     await prisma.referral.update({
       where: { id },
-      data: { status: status as never },
+      data: { status: statusParsed.data },
     });
 
     await createAuditLog({
+      userId: session.user.id,
       action: "UPDATE",
       entity: "Referral",
       entityId: id,
-      details: `Status alterado para ${status}`,
+      details: `Status alterado para ${statusParsed.data}`,
     });
 
     revalidatePath("/dashboard/encaminhamentos");
-    return { success: true as const };
-  } catch {
-    return { success: false as const, error: "Erro ao atualizar status." };
+    revalidatePath(`/dashboard/encaminhamentos/${id}`);
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: actionError(error, "Erro ao atualizar status.") };
   }
 }
 
-export async function updateLeadStatus(id: string, status: string) {
+export async function updateLeadStatus(id: string, status: string): Promise<ActionResult> {
+  const statusParsed = leadStatusSchema.safeParse(status);
+  if (!statusParsed.success) {
+    return { success: false, error: "Status inválido." };
+  }
+
   try {
+    const session = await requirePermission("leads.manage");
+
     await prisma.lead.update({
       where: { id },
-      data: { status: status as never },
+      data: { status: statusParsed.data },
     });
 
     await createAuditLog({
+      userId: session.user.id,
       action: "UPDATE",
       entity: "Lead",
       entityId: id,
-      details: `Status alterado para ${status}`,
+      details: `Status alterado para ${statusParsed.data}`,
     });
 
     revalidatePath("/dashboard/orcamentos");
-    return { success: true as const };
-  } catch {
-    return { success: false as const, error: "Erro ao atualizar." };
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: actionError(error, "Erro ao atualizar.") };
   }
 }
 
-export async function createCompany(data: {
-  legalName: string;
-  tradeName?: string;
-  cnpj: string;
-  email?: string;
-  phone?: string;
-  whatsapp?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  responsibleName?: string;
-  notes?: string;
-}) {
+export async function createCompany(data: unknown): Promise<ActionResult<{ id: string }>> {
+  const parsed = companySchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: "Dados inválidos. Verifique o formulário." };
+  }
+
   try {
+    const session = await requirePermission("companies.manage");
+
     const company = await prisma.company.create({
       data: {
-        ...data,
-        cnpj: data.cnpj.replace(/\D/g, ""),
+        ...parsed.data,
+        cnpj: parsed.data.cnpj,
         status: "ACTIVE",
       },
     });
 
     await createAuditLog({
+      userId: session.user.id,
       action: "CREATE",
       entity: "Company",
       entityId: company.id,
     });
 
     revalidatePath("/dashboard/empresas");
-    return { success: true as const, id: company.id };
-  } catch {
-    return { success: false as const, error: "Erro ao cadastrar empresa." };
+    return { success: true, id: company.id };
+  } catch (error) {
+    if (isPrismaUniqueError(error)) {
+      return { success: false, error: "CNPJ já cadastrado." };
+    }
+    return { success: false, error: actionError(error, "Erro ao cadastrar empresa.") };
   }
 }
 
-export async function createPatient(data: {
-  fullName: string;
-  cpf: string;
-  rg?: string;
-  birthDate?: string;
-  gender?: string;
-  phone?: string;
-  email?: string;
-  companyId?: string;
-  jobTitle?: string;
-  department?: string;
-  notes?: string;
-}) {
+export async function createPatient(data: unknown): Promise<ActionResult<{ id: string }>> {
+  const parsed = patientSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: "Dados inválidos. Verifique o formulário." };
+  }
+
   try {
+    const session = await requirePermission("patients.manage");
+    const d = parsed.data;
+
+    let companyId = d.companyId || undefined;
+    if (isEmpresaUser(session)) {
+      if (!session.user.companyId) {
+        return { success: false, error: "Usuário empresa sem vínculo. Contate o suporte." };
+      }
+      companyId = session.user.companyId;
+    }
+
     const patient = await prisma.patient.create({
       data: {
-        fullName: data.fullName,
-        cpf: data.cpf.replace(/\D/g, ""),
-        rg: data.rg,
-        birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
-        gender: data.gender,
-        phone: data.phone,
-        email: data.email,
-        companyId: data.companyId || undefined,
-        jobTitle: data.jobTitle,
-        department: data.department,
-        notes: data.notes,
+        fullName: d.fullName,
+        cpf: d.cpf,
+        rg: d.rg,
+        birthDate: d.birthDate ? new Date(d.birthDate) : undefined,
+        gender: d.gender,
+        phone: d.phone,
+        email: d.email || undefined,
+        companyId,
+        jobTitle: d.jobTitle,
+        department: d.department,
+        notes: d.notes,
         status: "ACTIVE",
       },
     });
 
     await createAuditLog({
+      userId: session.user.id,
       action: "CREATE",
       entity: "Patient",
       entityId: patient.id,
     });
 
     revalidatePath("/dashboard/pacientes");
-    return { success: true as const, id: patient.id };
+    return { success: true, id: patient.id };
+  } catch (error) {
+    if (isPrismaUniqueError(error)) {
+      return { success: false, error: "CPF já cadastrado." };
+    }
+    return { success: false, error: actionError(error, "Erro ao cadastrar paciente.") };
+  }
+}
+
+export async function createAppointment(data: unknown): Promise<ActionResult<{ id: string }>> {
+  const parsed = appointmentSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: "Dados inválidos. Verifique o formulário." };
+  }
+
+  try {
+    const session = await requirePermission("appointments.manage");
+    const d = parsed.data;
+
+    const patient = await prisma.patient.findUnique({
+      where: { id: d.patientId },
+      select: { companyId: true, fullName: true },
+    });
+    if (!patient) {
+      return { success: false, error: "Paciente não encontrado." };
+    }
+
+    if (isEmpresaUser(session) && patient.companyId !== session.user.companyId) {
+      return { success: false, error: "Paciente não pertence à sua empresa." };
+    }
+
+    const companyId = d.companyId ?? patient.companyId ?? undefined;
+
+    if (d.referralId) {
+      await assertReferralAccess(session, d.referralId);
+    }
+
+    const appointment = await prisma.appointment.create({
+      data: {
+        title: d.title,
+        scheduledAt: new Date(d.scheduledAt),
+        status: d.status,
+        type: d.type,
+        notes: d.notes,
+        patientId: d.patientId,
+        companyId,
+        referralId: d.referralId || undefined,
+      },
+    });
+
+    if (d.referralId) {
+      await prisma.referral.update({
+        where: { id: d.referralId },
+        data: { status: "AGENDADO" },
+      });
+    }
+
+    await createAuditLog({
+      userId: session.user.id,
+      action: "CREATE",
+      entity: "Appointment",
+      entityId: appointment.id,
+      details: `Agendamento: ${d.title}`,
+    });
+
+    revalidatePath("/dashboard/agenda");
+    revalidatePath("/dashboard");
+    if (d.referralId) {
+      revalidatePath("/dashboard/encaminhamentos");
+      revalidatePath(`/dashboard/encaminhamentos/${d.referralId}`);
+    }
+
+    return { success: true, id: appointment.id };
+  } catch (error) {
+    return { success: false, error: actionError(error, "Erro ao criar agendamento.") };
+  }
+}
+
+export async function getEmpresaPrefill() {
+  try {
+    const session = await requirePermission("referrals.manage");
+    if (!isEmpresaUser(session) || !session.user.companyId) {
+      return null;
+    }
+    const company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
+    });
+    if (!company) return null;
+    return {
+      companyName: company.tradeName ?? company.legalName,
+      companyDocument: company.cnpj,
+      companyPhone: company.phone ?? "",
+      companyEmail: company.email ?? "",
+      authorizerName: company.responsibleName ?? session.user.name,
+    };
   } catch {
-    return { success: false as const, error: "Erro ao cadastrar paciente." };
+    return null;
+  }
+}
+
+export async function getAppointmentFormData() {
+  try {
+    const session = await requirePermission("appointments.manage");
+    const companyFilter = getCompanyFilter(session);
+
+    const [patients, companies, referrals] = await Promise.all([
+      prisma.patient.findMany({
+        where: { ...companyFilter, status: "ACTIVE" },
+        select: { id: true, fullName: true, companyId: true },
+        orderBy: { fullName: "asc" },
+        take: 200,
+      }),
+      prisma.company.findMany({
+        where: companyFilter.companyId
+          ? { id: companyFilter.companyId, status: "ACTIVE" }
+          : { status: "ACTIVE" },
+        select: { id: true, legalName: true, tradeName: true },
+        orderBy: { legalName: "asc" },
+        take: 200,
+      }),
+      prisma.referral.findMany({
+        where: {
+          ...companyFilter,
+          status: { in: ["NOVO", "EM_ANALISE", "AGUARDANDO_AGENDAMENTO"] },
+        },
+        select: { id: true, protocol: true, patientId: true },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      }),
+    ]);
+
+    return { patients, companies, referrals };
+  } catch {
+    return { patients: [], companies: [], referrals: [] };
   }
 }

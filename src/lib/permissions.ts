@@ -10,7 +10,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   VISUALIZADOR: "Visualizador",
 };
 
-type Permission =
+export type Permission =
   | "dashboard.view"
   | "companies.manage"
   | "patients.manage"

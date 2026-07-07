@@ -215,6 +215,48 @@ async function main() {
     skipDuplicates: true,
   });
 
+  const onlineReferral = await prisma.referral.findUnique({
+    where: { protocol: "UNI-2026-000004" },
+  });
+  if (!onlineReferral) {
+    await prisma.referral.create({
+      data: {
+        protocol: "UNI-2026-000004",
+        companyId: company2.id,
+        patientId: patient2.id,
+        clinicalExamType: "PERIODICO",
+        status: "NOVO",
+        authorizerName: "Ana Costa",
+        companyPhone: "(11) 3000-2000",
+        companyEmail: "rh@beta-demo.com.br",
+        consentAccepted: true,
+        source: "online",
+        exams: {
+          create: [{ examName: "Acuidade visual", category: ExamCategory.COMPLEMENTAR }],
+        },
+      },
+    });
+  }
+
+  await prisma.document.createMany({
+    data: [
+      {
+        title: "ASO — Carlos Eduardo Santos",
+        type: "ASO",
+        status: "PENDENTE",
+        companyId: company1.id,
+        patientId: patient1.id,
+      },
+      {
+        title: "PCMSO — Alfa Indústria",
+        type: "PCMSO",
+        status: "CONCLUIDO",
+        companyId: company1.id,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
   for (const post of BLOG_POSTS) {
     await prisma.blogPost.upsert({
       where: { slug: post.slug },

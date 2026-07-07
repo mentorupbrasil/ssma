@@ -22,6 +22,7 @@ export function Footer() {
           <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-white">Links úteis</h4>
           <ul className="space-y-3 text-sm">
             {[
+              ["/sobre", "Sobre nós"],
               ["/servicos", "Serviços"],
               ["/exames", "Exames e preparos"],
               ["/encaminhamento-online", "Encaminhamento online"],

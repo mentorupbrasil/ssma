@@ -130,3 +130,50 @@ export const userSchema = z.object({
   companyId: z.string().optional(),
   status: z.enum(["ACTIVE", "INACTIVE"]),
 });
+
+export const referralStatusSchema = z.enum([
+  "NOVO",
+  "EM_ANALISE",
+  "AGUARDANDO_AGENDAMENTO",
+  "AGENDADO",
+  "EM_ATENDIMENTO",
+  "CONCLUIDO",
+  "CANCELADO",
+]);
+
+export const leadStatusSchema = z.enum([
+  "NOVO",
+  "EM_CONTATO",
+  "PROPOSTA_ENVIADA",
+  "FECHADO",
+  "PERDIDO",
+]);
+
+export const appointmentStatusSchema = z.enum([
+  "AGENDADO",
+  "CONFIRMADO",
+  "REALIZADO",
+  "FALTOU",
+  "CANCELADO",
+]);
+
+export const appointmentSchema = z.object({
+  title: z.string().min(2, "Título obrigatório"),
+  scheduledAt: z.string().min(1, "Data/hora obrigatória"),
+  patientId: z.string().min(1, "Paciente obrigatório"),
+  companyId: z.string().optional(),
+  referralId: z.string().optional(),
+  type: z.string().optional(),
+  notes: z.string().optional(),
+  status: appointmentStatusSchema.default("AGENDADO"),
+});
+
+export const contactActionSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(10),
+  companyName: z.string().optional(),
+  employees: z.string().optional(),
+  message: z.string().optional(),
+  type: z.enum(["CONTATO", "ORCAMENTO"]).optional(),
+});

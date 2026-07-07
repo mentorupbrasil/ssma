@@ -3,9 +3,15 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
+import { requireAuthSession } from "@/lib/page-auth";
+import { getCompanyFilter } from "@/lib/authz";
 
 export default async function DocumentosPage() {
+  const session = await requireAuthSession();
+  const companyFilter = getCompanyFilter(session);
+
   const documents = await prisma.document.findMany({
+    where: companyFilter.companyId ? { companyId: companyFilter.companyId } : undefined,
     include: { company: true, patient: true, referral: true },
     orderBy: { createdAt: "desc" },
   });

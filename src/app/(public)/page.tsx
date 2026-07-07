@@ -14,52 +14,44 @@ import {
   BadgeCheck,
   Zap,
   Lock,
+  Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { CTASection } from "@/components/public/CTASection";
+import { ComplianceSection } from "@/components/public/ComplianceSection";
+import { PortalShowcase } from "@/components/public/PortalShowcase";
+import { TestimonialsSection } from "@/components/public/TestimonialsSection";
+import { TopClinicalExams } from "@/components/public/TopClinicalExams";
+import { MediaPlaceholder } from "@/components/public/MediaPlaceholder";
 import { FAQ_ITEMS } from "@/data/services";
+import { TRUST_PILLARS } from "@/data/marketing";
+import { siteMedia } from "@/config/media";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { prisma } from "@/lib/prisma";
 
 const QUICK_CARDS = [
-  { icon: FileCheck, title: "PCMSO", desc: "Programa completo de saúde ocupacional" },
-  { icon: Stethoscope, title: "ASO", desc: "Atestados em conformidade com NR-7" },
-  { icon: FlaskConical, title: "Exames", desc: "Laboratório próprio e resultados ágeis" },
-  { icon: HardHat, title: "Segurança", desc: "PGR, LTCAT, laudos e treinamentos" },
-];
-
-const TRUST_STATS = [
-  { value: "500+", label: "Empresas atendidas" },
-  { value: "10k+", label: "Exames por ano" },
-  { value: "98%", label: "Satisfação empresarial" },
-];
-
-const SOLUTIONS = [
-  "Medicina ocupacional",
-  "Segurança do trabalho",
-  "Exames complementares",
-  "Gestão de documentos ocupacionais",
-  "Encaminhamento online",
-  "Atendimento para empresas",
+  { icon: FileCheck, title: "PCMSO", desc: "Programa completo conforme NR-7" },
+  { icon: Stethoscope, title: "ASO", desc: "Todos os tipos legais de exame clínico" },
+  { icon: FlaskConical, title: "Exames", desc: "Laboratório e complementares integrados" },
+  { icon: HardHat, title: "SST", desc: "PGR, LTCAT, laudos e segurança do trabalho" },
 ];
 
 const STEPS = [
-  "Empresa solicita orçamento",
-  "Clínica cadastra a empresa",
-  "Empresa encaminha colaboradores",
-  "Colaborador realiza exames",
-  "Clínica acompanha status e documentos",
+  { title: "Primeiro contato", desc: "Você solicita orçamento ou fala com nosso especialista." },
+  { title: "Diagnóstico", desc: "Analisamos riscos, porte e necessidades da sua empresa." },
+  { title: "Proposta", desc: "Montamos um plano sob medida com prazos claros." },
+  { title: "Execução digital", desc: "Encaminhamentos, exames e acompanhamento pelo portal." },
 ];
 
 const DIFFERENTIALS = [
-  { icon: Clock, title: "Atendimento ágil", desc: "Fluxo organizado e prazos claros para o RH." },
-  { icon: Users, title: "Equipe especializada", desc: "Médicos e técnicos com foco ocupacional." },
-  { icon: Building2, title: "Estrutura climatizada", desc: "Ambiente confortável e acolhedor." },
-  { icon: FlaskConical, title: "Laboratório próprio", desc: "Resultados mais rápidos e integrados." },
-  { icon: Smartphone, title: "Gestão digital", desc: "Encaminhamentos e acompanhamento online." },
-  { icon: Shield, title: "Apoio ao SOC", desc: "Integração quando necessário." },
+  { icon: Clock, title: "Atendimento ágil", desc: "Fluxo organizado para o RH, sem filas desnecessárias." },
+  { icon: Users, title: "Equipe especializada", desc: "Médicos e técnicos com foco em medicina ocupacional." },
+  { icon: Building2, title: "Estrutura completa", desc: "Ambiente climatizado e preparado para exames." },
+  { icon: FlaskConical, title: "Laboratório integrado", desc: "Resultados mais rápidos e processo unificado." },
+  { icon: Smartphone, title: "Portal empresarial", desc: "Encaminhamento e status online — diferencial real." },
+  { icon: Shield, title: "Conformidade legal", desc: "PCMSO, ASO, eSocial e documentação em dia." },
 ];
 
 export default async function HomePage() {
@@ -68,131 +60,136 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero */}
+      {/* Hero — copy de conversão */}
       <section className="relative overflow-hidden bg-[var(--brand-navy)]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(22,160,133,0.22),transparent_55%)]" />
         <div className="absolute -right-20 top-20 h-72 w-72 rounded-full bg-[var(--brand-green)]/10 blur-3xl" />
-        <div className="absolute -left-10 bottom-0 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50" />
 
         <div className="container-page relative py-16 md:py-20 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
             <div className="animate-fade-up">
-              <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-emerald-100 backdrop-blur">
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-emerald-100 backdrop-blur">
                 <BadgeCheck className="h-4 w-4 text-[var(--brand-green)]" />
-                Clínica ocupacional premium · Atendimento empresarial
+                Saúde e Segurança do Trabalho · Atendimento empresarial
               </p>
-              <h1 className="max-w-2xl text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
-                Medicina e Segurança do Trabalho com{" "}
-                <span className="text-gradient-hero">agilidade, tecnologia e confiança</span>
+              <h1 className="max-w-2xl text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.15rem]">
+                Regularize sua empresa e evite{" "}
+                <span className="text-gradient-hero">multas na fiscalização</span>
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
-                Atendimento ocupacional completo para empresas de pequeno, médio e grande porte — com portal digital, encaminhamento online e gestão organizada.
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
+                PCMSO, ASO, exames ocupacionais e portal digital para o RH — com conformidade
+                legal, laudos em dia e suporte ao eSocial SST.
               </p>
 
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium text-slate-300">
+                {["Pequeno, médio e grande porte", "Profissionais habilitados", "Portal empresarial"].map(
+                  (tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5"
+                    >
+                      {tag}
+                    </span>
+                  )
+                )}
+              </div>
+
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Link href="/contato?tipo=orcamento">
+                <a
+                  href={whatsappLink(
+                    "Olá! Gostaria de falar com um especialista em SST da clínica."
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Button variant="brand" size="lg" className="w-full rounded-xl sm:w-auto">
-                    Solicitar orçamento
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <Phone className="mr-2 h-4 w-4" />
+                    Falar com especialista
                   </Button>
-                </Link>
-                <Link href="/encaminhamento-online">
+                </a>
+                <Link href="/contato?tipo=orcamento">
                   <Button variant="outline-light" size="lg" className="w-full rounded-xl sm:w-auto">
-                    Fazer encaminhamento
+                    Solicitar orçamento
                   </Button>
                 </Link>
               </div>
 
               <div className="mt-8 flex flex-wrap gap-4 text-sm text-slate-300">
                 <span className="inline-flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-[var(--brand-green)]" /> Dados protegidos (LGPD)
+                  <Lock className="h-4 w-4 text-[var(--brand-green)]" /> LGPD
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Zap className="h-4 w-4 text-[var(--brand-green)]" /> Encaminhamento digital
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-[var(--brand-green)]" /> Conformidade NR-7
                 </span>
               </div>
             </div>
 
             <div className="animate-fade-up-delay">
-              <div className="premium-card relative overflow-hidden border-white/10 bg-white/95 p-6 shadow-[var(--shadow-elevated)] md:p-8">
-                <div className="absolute right-0 top-0 h-24 w-24 bg-gradient-to-bl from-[var(--brand-green-light)] to-transparent" />
-                <p className="text-sm font-semibold uppercase tracking-wider text-[var(--brand-green)]">
-                  Por que empresas confiam
-                </p>
-                <div className="mt-6 grid gap-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                  {TRUST_STATS.map((stat) => (
-                    <div key={stat.label} className="text-center sm:text-left xl:text-center">
-                      <p className="text-3xl font-bold text-[var(--brand-navy)]">{stat.value}</p>
-                      <p className="mt-1 text-xs font-medium text-slate-500">{stat.label}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-8 space-y-3 border-t border-slate-100 pt-6">
-                  {["Portal para empresas clientes", "Acompanhamento de status em tempo real", "Equipe dedicada ao RH"].map((item) => (
-                    <div key={item} className="flex items-center gap-3 text-sm text-slate-700">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--brand-green)]" />
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <MediaPlaceholder
+                label="Foto ou vídeo da clínica"
+                hint="Coloque em src/config/media.ts → heroImage ou heroVideo"
+                src={siteMedia.heroImage || undefined}
+                variant={siteMedia.heroVideo ? "video" : "photo"}
+                className="shadow-[var(--shadow-elevated)]"
+              />
             </div>
           </div>
 
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {QUICK_CARDS.map((card) => (
               <div
                 key={card.title}
                 className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition hover:border-[var(--brand-green)]/30 hover:bg-white/10"
               >
-                <div className="mb-4 inline-flex rounded-xl bg-[var(--brand-green)]/15 p-2.5 transition group-hover:bg-[var(--brand-green)]/25">
+                <div className="mb-3 inline-flex rounded-xl bg-[var(--brand-green)]/15 p-2.5">
                   <card.icon className="h-5 w-5 text-[var(--brand-green)]" />
                 </div>
                 <h3 className="font-semibold text-white">{card.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{card.desc}</p>
+                <p className="mt-1 text-sm text-slate-400">{card.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      <ComplianceSection />
+      <PortalShowcase />
 
       <section className="section-padding">
         <div className="container-page">
           <SectionTitle
-            eyebrow="Soluções"
-            title="Soluções para sua empresa"
-            description="Tudo que sua empresa precisa para cumprir obrigações legais e cuidar da saúde dos colaboradores."
+            eyebrow="Por que nos escolher"
+            title={`${clinic.name} — SST com tecnologia e confiança`}
+            description="Unimos atendimento clínico de qualidade com gestão digital para empresas."
           />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SOLUTIONS.map((s) => (
-              <div
-                key={s}
-                className="premium-card-hover flex items-center gap-4 p-5"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-green-light)]">
-                  <CheckCircle2 className="h-5 w-5 text-[var(--brand-green)]" />
-                </div>
-                <span className="font-semibold text-[var(--brand-navy)]">{s}</span>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {TRUST_PILLARS.map((p) => (
+              <div key={p.title} className="premium-card-hover border-slate-200/80 p-5 text-center">
+                <h3 className="font-semibold text-[var(--brand-navy)]">{p.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{p.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      <TopClinicalExams />
+
       <section className="section-padding bg-white">
         <div className="container-page">
-          <SectionTitle eyebrow="Processo" title="Como funciona" />
-          <div className="grid gap-8 md:grid-cols-5">
+          <SectionTitle eyebrow="Processo" title="Como funciona na prática" />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((step, i) => (
-              <div key={step} className="relative text-center">
-                {i < STEPS.length - 1 && (
-                  <div className="absolute left-[calc(50%+1.5rem)] top-6 hidden h-px w-[calc(100%-3rem)] bg-slate-200 md:block" />
-                )}
-                <div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-green-light)] text-lg font-bold text-[var(--brand-navy)] shadow-sm">
+              <div key={step.title} className="relative rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
+                <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-green-light)] text-lg font-bold text-[var(--brand-navy)]">
                   {i + 1}
-                </div>
-                <p className="text-sm font-medium leading-relaxed text-slate-700">{step}</p>
+                </span>
+                <h3 className="font-semibold text-[var(--brand-navy)]">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -203,8 +200,8 @@ export default async function HomePage() {
         <div className="container-page">
           <SectionTitle
             eyebrow="Diferenciais"
-            title={`Por que escolher a ${clinic.name}?`}
-            description="Estrutura, tecnologia e equipe dedicada ao atendimento ocupacional."
+            title="O que nos diferencia no mercado"
+            description="Estrutura física + portal digital integrado — não é só promessa, é produto."
           />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {DIFFERENTIALS.map((d) => (
@@ -222,9 +219,15 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <TestimonialsSection />
+
       <CTASection
-        title="Reduza atrasos, organize encaminhamentos e acompanhe seus exames ocupacionais em um só lugar."
-        description="Solicite um orçamento ou faça seu encaminhamento online agora mesmo."
+        title="Pronto para colocar a saúde ocupacional da sua empresa em dia?"
+        description="Fale com um especialista ou solicite orçamento sem compromisso."
+        primaryHref="/contato?tipo=orcamento"
+        primaryLabel="Solicitar orçamento"
+        secondaryHref="/encaminhamento-online"
+        secondaryLabel="Encaminhamento online"
       />
 
       <section className="section-padding bg-white">
@@ -232,7 +235,7 @@ export default async function HomePage() {
           <SectionTitle
             eyebrow="Preparo"
             title="Preparo de exames"
-            description="Consulte rapidamente o preparo necessário para cada exame."
+            description="Consulte o preparo e compartilhe com seus colaboradores."
           />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {exams.map((exam) => (

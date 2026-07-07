@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,17 @@ const STEPS = [
 
 const CLINICAL_OPTIONS = Object.entries(CLINICAL_EXAM_LABELS);
 
-export function ReferralWizard() {
+type ReferralWizardProps = {
+  mode?: "public" | "dashboard";
+  prefill?: Partial<ReferralFormData>;
+  lockCompany?: boolean;
+};
+
+export function ReferralWizard({
+  mode = "public",
+  prefill,
+  lockCompany = false,
+}: ReferralWizardProps) {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -53,12 +63,24 @@ export function ReferralWizard() {
     defaultValues: {
       complementaryExams: [],
       labExams: [],
+      ...prefill,
     },
   });
+
+  useEffect(() => {
+    if (prefill) {
+      Object.entries(prefill).forEach(([key, value]) => {
+        if (value !== undefined) {
+          form.setValue(key as keyof ReferralFormData, value as never);
+        }
+      });
+    }
+  }, [prefill, form]);
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = form;
   const values = watch();
   const progress = ((step + 1) / STEPS.length) * 100;
+  const companyLocked = lockCompany || (mode === "dashboard" && !!prefill?.companyDocument);
 
   const nextStep = async () => {
     const currentSchema = STEPS[step].schema;
@@ -69,12 +91,20 @@ export function ReferralWizard() {
 
   const onSubmit = async (data: ReferralFormData) => {
     setLoading(true);
-    const result = await submitReferral(data);
+    const result = await submitReferral(
+      data,
+      mode === "dashboard" ? { source: "dashboard" } : undefined
+    );
     setLoading(false);
 
     if (result.success) {
-      toast.success("Encaminhamento enviado com sucesso!");
-      router.push(`/encaminhamento-online/sucesso?protocolo=${result.protocol}`);
+      toast.success(`Encaminhamento registrado! Protocolo: ${result.protocol}`);
+      if (mode === "dashboard") {
+        router.push("/dashboard/encaminhamentos");
+        router.refresh();
+      } else {
+        router.push(`/encaminhamento-online/sucesso?protocolo=${result.protocol}`);
+      }
     } else {
       toast.error(result.error);
     }
@@ -136,22 +166,32 @@ export function ReferralWizard() {
           {step === 0 && (
             <>
               <FormField label="Nome da empresa" error={errors.companyName?.message}>
-                <Input className="form-input" {...register("companyName")} />
+                <Input className="form-input" readOnly={companyLocked} {...register("companyName")} />
               </FormField>
               <FormField label="CNPJ/CPF" error={errors.companyDocument?.message}>
-                <Input className="form-input" placeholder="00.000.000/0000-00" {...register("companyDocument")} />
+                <Input
+                  className="form-input"
+                  placeholder="00.000.000/0000-00"
+                  readOnly={companyLocked}
+                  {...register("companyDocument")}
+                />
               </FormField>
               <div className="grid gap-5 sm:grid-cols-2">
                 <FormField label="Telefone" error={errors.companyPhone?.message}>
-                  <Input className="form-input" {...register("companyPhone")} />
+                  <Input className="form-input" readOnly={companyLocked} {...register("companyPhone")} />
                 </FormField>
                 <FormField label="E-mail" error={errors.companyEmail?.message}>
-                  <Input className="form-input" type="email" {...register("companyEmail")} />
+                  <Input className="form-input" type="email" readOnly={companyLocked} {...register("companyEmail")} />
                 </FormField>
               </div>
               <FormField label="Responsável autorizador" error={errors.authorizerName?.message}>
-                <Input className="form-input" {...register("authorizerName")} />
+                <Input className="form-input" readOnly={companyLocked} {...register("authorizerName")} />
               </FormField>
+              {companyLocked && (
+                <p className="text-xs text-slate-500">
+                  Dados da empresa vinculada ao seu perfil — não editáveis.
+                </p>
+              )}
             </>
           )}
 

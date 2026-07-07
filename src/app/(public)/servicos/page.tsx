@@ -11,8 +11,8 @@ export default function ServicosPage() {
     <>
       <PageHero
         eyebrow="Portfólio completo"
-        title="Nossos serviços"
-        description="Soluções completas em medicina ocupacional e segurança do trabalho para empresas de todos os portes."
+        title="Soluções em Saúde e Segurança do Trabalho"
+        description="PCMSO, ASO, laudos, exames e documentação ocupacional com equipe habilitada e conformidade legal."
       />
 
       {SERVICE_CATEGORIES.map((category, index) => (

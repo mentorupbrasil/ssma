@@ -7,9 +7,23 @@ import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CLINICAL_EXAM_LABELS } from "@/types";
+import { requireAuthSession, handleAccessError } from "@/lib/page-auth";
+import { assertCompanyAccess } from "@/lib/authz";
 
-export default async function EmpresaDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EmpresaDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
+  const session = await requireAuthSession();
+
+  try {
+    await assertCompanyAccess(session, id);
+  } catch (error) {
+    handleAccessError(error);
+  }
+
   const company = await prisma.company.findUnique({
     where: { id },
     include: {
@@ -32,19 +46,38 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>Dados cadastrais</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Dados cadastrais</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p><strong>CNPJ:</strong> {formatCNPJ(company.cnpj)}</p>
-            <p><strong>E-mail:</strong> {company.email ?? "—"}</p>
-            <p><strong>Telefone:</strong> {company.phone ? formatPhone(company.phone) : "—"}</p>
-            <p><strong>Responsável:</strong> {company.responsibleName ?? "—"}</p>
-            <p><strong>Endereço:</strong> {[company.address, company.city, company.state].filter(Boolean).join(", ") || "—"}</p>
-            {company.notes && <p><strong>Obs:</strong> {company.notes}</p>}
+            <p>
+              <strong>CNPJ:</strong> {formatCNPJ(company.cnpj)}
+            </p>
+            <p>
+              <strong>E-mail:</strong> {company.email ?? "—"}
+            </p>
+            <p>
+              <strong>Telefone:</strong> {company.phone ? formatPhone(company.phone) : "—"}
+            </p>
+            <p>
+              <strong>Responsável:</strong> {company.responsibleName ?? "—"}
+            </p>
+            <p>
+              <strong>Endereço:</strong>{" "}
+              {[company.address, company.city, company.state].filter(Boolean).join(", ") || "—"}
+            </p>
+            {company.notes && (
+              <p>
+                <strong>Obs:</strong> {company.notes}
+              </p>
+            )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Colaboradores</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Colaboradores</CardTitle>
+          </CardHeader>
           <CardContent>
             {company.patients.length === 0 ? (
               <p className="text-sm text-slate-500">Nenhum colaborador cadastrado.</p>
@@ -52,7 +85,12 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
               <ul className="space-y-2 text-sm">
                 {company.patients.map((p) => (
                   <li key={p.id}>
-                    <Link href={`/dashboard/pacientes/${p.id}`} className="text-[#16A085] hover:underline">{p.fullName}</Link>
+                    <Link
+                      href={`/dashboard/pacientes/${p.id}`}
+                      className="text-[#16A085] hover:underline"
+                    >
+                      {p.fullName}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -62,7 +100,9 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <Card className="mt-6">
-        <CardHeader><CardTitle>Encaminhamentos recentes</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Encaminhamentos recentes</CardTitle>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -77,11 +117,18 @@ export default async function EmpresaDetailPage({ params }: { params: Promise<{ 
               {company.referrals.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell>
-                    <Link href={`/dashboard/encaminhamentos/${r.id}`} className="text-[#16A085] hover:underline">{r.protocol}</Link>
+                    <Link
+                      href={`/dashboard/encaminhamentos/${r.id}`}
+                      className="text-[#16A085] hover:underline"
+                    >
+                      {r.protocol}
+                    </Link>
                   </TableCell>
                   <TableCell>{r.patient.fullName}</TableCell>
                   <TableCell>{CLINICAL_EXAM_LABELS[r.clinicalExamType]}</TableCell>
-                  <TableCell><StatusBadge status={r.status} /></TableCell>
+                  <TableCell>
+                    <StatusBadge status={r.status} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

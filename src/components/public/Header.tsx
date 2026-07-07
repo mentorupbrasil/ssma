@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, Phone, ChevronRight } from "lucide-react";
+import { Menu, Phone, ChevronRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { getClinicInfo } from "@/lib/helpers";
+import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/", label: "Início" },
+  { href: "/sobre", label: "Sobre" },
   { href: "/servicos", label: "Serviços" },
   { href: "/exames", label: "Exames" },
   { href: "/empresas", label: "Empresas" },
@@ -17,6 +18,8 @@ const NAV_ITEMS = [
   { href: "/instalacoes", label: "Instalações" },
   { href: "/contato", label: "Contato" },
 ];
+
+const SPECIALIST_MSG = "Olá! Gostaria de falar com um especialista em SST.";
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -55,6 +58,12 @@ export function Header() {
               Entrar
             </Button>
           </Link>
+          <a href={whatsappLink(SPECIALIST_MSG)} target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="sm" className="rounded-lg border-[var(--brand-green)]/30 text-[var(--brand-navy)]">
+              <MessageCircle className="mr-1.5 h-4 w-4 text-[var(--brand-green)]" />
+              Especialista
+            </Button>
+          </a>
           <Link href="/contato?tipo=orcamento">
             <Button variant="brand" size="sm">
               Solicitar orçamento
@@ -100,6 +109,17 @@ export function Header() {
                   Solicitar orçamento
                 </Button>
               </Link>
+              <a
+                href={whatsappLink(SPECIALIST_MSG)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+              >
+                <Button variant="outline" className="mt-2 w-full rounded-xl">
+                  <MessageCircle className="mr-2 h-4 w-4 text-[var(--brand-green)]" />
+                  Falar com especialista
+                </Button>
+              </a>
               <a
                 href={`tel:${clinic.phone}`}
                 className="flex items-center justify-center gap-2 py-2 text-sm text-slate-600"

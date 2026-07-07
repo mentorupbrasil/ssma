@@ -1,4 +1,7 @@
 import { ExamSearch } from "@/components/public/ExamSearch";
+import { PageHero } from "@/components/public/PageHero";
+import { TopClinicalExams } from "@/components/public/TopClinicalExams";
+import { CTASection } from "@/components/public/CTASection";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Exames e Preparos" };
@@ -11,20 +14,26 @@ export default async function ExamesPage() {
 
   return (
     <>
-      <section className="bg-[#0F3D4A] py-16 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold">Exames e preparos</h1>
-          <p className="mt-4 max-w-2xl text-lg text-slate-300">
-            Consulte o preparo necessário para cada exame e compartilhe com seus colaboradores.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Exames ocupacionais"
+        title="Exames e preparos"
+        description="Consulte o preparo necessário para cada exame. Essenciais para cumprir a legislação e proteger a saúde dos colaboradores."
+      />
 
-      <section className="py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <TopClinicalExams />
+
+      <section className="section-padding bg-white">
+        <div className="container-page">
           <ExamSearch exams={exams} />
         </div>
       </section>
+
+      <CTASection
+        title="Precisa encaminhar colaboradores para exame?"
+        description="Use o encaminhamento online ou fale com nossa equipe."
+        secondaryHref="/encaminhamento-online"
+        secondaryLabel="Encaminhamento online"
+      />
     </>
   );
 }

@@ -1,7 +1,10 @@
 import { Building2, FlaskConical, Stethoscope, Snowflake, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageHero } from "@/components/public/PageHero";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { CTASection } from "@/components/public/CTASection";
+import { MediaPlaceholder } from "@/components/public/MediaPlaceholder";
+import { siteMedia } from "@/config/media";
 
 export const metadata = { title: "Instalações" };
 
@@ -14,51 +17,44 @@ const STRUCTURES = [
   { icon: MapPin, title: "Localização estratégica", desc: "Fácil acesso e estacionamento próximo." },
 ];
 
-const GALLERY = [
-  { color: "from-[#0F3D4A] to-[#1a5568]", label: "Recepção" },
-  { color: "from-[#16A085] to-[#138d75]", label: "Consultório" },
-  { color: "from-slate-600 to-slate-800", label: "Laboratório" },
-  { color: "from-[#0F3D4A] to-[#16A085]", label: "Sala de exames" },
-];
-
 export default function InstalacoesPage() {
   return (
     <>
-      <section className="bg-[#0F3D4A] py-16 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold">Nossas instalações</h1>
-          <p className="mt-4 max-w-2xl text-lg text-slate-300">
-            Estrutura moderna, climatizada e preparada para o atendimento ocupacional.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Estrutura"
+        title="Nossas instalações"
+        description="Estrutura moderna, climatizada e preparada para o atendimento ocupacional."
+      />
 
-      <section className="py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionTitle title="Galeria" />
+      <section className="section-padding">
+        <div className="container-page">
+          <SectionTitle
+            title="Galeria"
+            description="Anexe fotos reais em src/config/media.ts → gallery[].src"
+          />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {GALLERY.map((item) => (
-              <div
+            {siteMedia.gallery.map((item) => (
+              <MediaPlaceholder
                 key={item.label}
-                className={`flex aspect-[4/3] items-end rounded-2xl bg-gradient-to-br ${item.color} p-6`}
-              >
-                <span className="text-lg font-semibold text-white">{item.label}</span>
-              </div>
+                label={item.label}
+                src={item.src || undefined}
+                hint="/public/images/instalacoes/"
+              />
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-white py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="section-padding bg-white">
+        <div className="container-page">
           <SectionTitle title="Estrutura" />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {STRUCTURES.map((s) => (
-              <Card key={s.title} className="border-slate-200">
+              <Card key={s.title} className="premium-card-hover border-slate-200/80">
                 <CardContent className="pt-6">
-                  <s.icon className="mb-4 h-8 w-8 text-[#16A085]" />
-                  <h3 className="font-semibold text-[#0F3D4A]">{s.title}</h3>
-                  <p className="mt-2 text-sm text-slate-600">{s.desc}</p>
+                  <s.icon className="mb-4 h-8 w-8 text-[var(--brand-green)]" />
+                  <h3 className="font-semibold text-[var(--brand-navy)]">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.desc}</p>
                 </CardContent>
               </Card>
             ))}
