@@ -1,13 +1,5 @@
 import Link from "next/link";
-import {
-  Shield,
-  Clock,
-  Users,
-  Building2,
-  FlaskConical,
-  Smartphone,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SectionTitle } from "@/components/public/SectionTitle";
@@ -17,20 +9,12 @@ import { PortalShowcase } from "@/components/public/PortalShowcase";
 import { TestimonialsSection } from "@/components/public/TestimonialsSection";
 import { TopClinicalExams } from "@/components/public/TopClinicalExams";
 import { ProcessSection } from "@/components/public/ProcessSection";
+import { DifferentialsSection } from "@/components/public/DifferentialsSection";
 import { HomeHero } from "@/components/public/HomeHero";
 import { FAQ_ITEMS } from "@/data/services";
 import { TRUST_PILLARS } from "@/data/marketing";
 import { getClinicInfo } from "@/lib/helpers";
 import { prisma } from "@/lib/prisma";
-
-const DIFFERENTIALS = [
-  { icon: Clock, title: "Atendimento ágil", desc: "Fluxo organizado para o RH, sem filas desnecessárias." },
-  { icon: Users, title: "Equipe especializada", desc: "Médicos e técnicos com foco em medicina ocupacional." },
-  { icon: Building2, title: "Estrutura completa", desc: "Ambiente climatizado e preparado para exames." },
-  { icon: FlaskConical, title: "Laboratório integrado", desc: "Resultados mais rápidos e processo unificado." },
-  { icon: Smartphone, title: "Portal empresarial", desc: "Encaminhamento e status online — diferencial real." },
-  { icon: Shield, title: "Conformidade legal", desc: "PCMSO, ASO, eSocial e documentação em dia." },
-];
 
 export default async function HomePage() {
   const clinic = getClinicInfo();
@@ -72,28 +56,7 @@ export default async function HomePage() {
 
       <ProcessSection />
 
-      <section className="section-padding">
-        <div className="container-page">
-          <SectionTitle
-            eyebrow="Diferenciais"
-            title="O que nos diferencia no mercado"
-            description="Estrutura física + portal digital integrado — não é só promessa, é produto."
-          />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {DIFFERENTIALS.map((d) => (
-              <Card key={d.title} className="premium-card-hover border-slate-200/80">
-                <CardContent className="pt-6">
-                  <div className="mb-4 inline-flex rounded-xl bg-[var(--brand-green-light)] p-3">
-                    <d.icon className="h-6 w-6 text-[var(--brand-green)]" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-[var(--brand-navy)]">{d.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{d.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      <DifferentialsSection />
 
       <TestimonialsSection />
 

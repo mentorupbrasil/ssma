@@ -7,6 +7,8 @@ import {
   Smartphone,
   Users,
   Clock,
+  Building2,
+  FlaskConical,
   type LucideIcon,
 } from "lucide-react";
 
@@ -121,5 +123,42 @@ export const TRUST_PILLARS: {
     title: "Atendimento ágil",
     desc: "Fluxo organizado para o RH com prazos claros.",
     icon: Clock,
+  },
+];
+
+export const MARKET_DIFFERENTIALS: {
+  title: string;
+  desc: string;
+  icon: LucideIcon;
+}[] = [
+  {
+    title: "Atendimento ágil",
+    desc: "Fluxo organizado para reduzir filas, atrasos e retrabalho do RH.",
+    icon: Clock,
+  },
+  {
+    title: "Equipe especializada",
+    desc: "Médicos e técnicos com atuação focada em Medicina e Segurança do Trabalho.",
+    icon: Users,
+  },
+  {
+    title: "Estrutura completa",
+    desc: "Atendimento, exames e documentos ocupacionais em um fluxo mais integrado.",
+    icon: Building2,
+  },
+  {
+    title: "Laboratório integrado",
+    desc: "Mais praticidade para realizar exames e centralizar resultados.",
+    icon: FlaskConical,
+  },
+  {
+    title: "Portal empresarial",
+    desc: "Encaminhamentos, status e histórico online para empresas clientes.",
+    icon: Smartphone,
+  },
+  {
+    title: "Conformidade legal",
+    desc: "PCMSO, ASO, PGR, LTCAT, PPP e eSocial SST com mais organização.",
+    icon: Shield,
   },
 ];
