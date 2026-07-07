@@ -43,9 +43,9 @@ export function HomeHero() {
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-40" />
 
       <div className="container-page relative">
-        <div className="grid items-center gap-8 pb-7 lg:grid-cols-2 lg:gap-10 lg:pb-8 xl:gap-14">
+        <div className="hero-main-grid grid items-start gap-8 pb-7 sm:items-center lg:grid-cols-2 lg:items-center lg:gap-10 lg:pb-8 xl:gap-14">
           {/* Texto */}
-          <div className="animate-fade-up order-2 lg:order-1">
+          <div className="animate-fade-up order-2 lg:order-1 lg:self-center">
             <p className="mb-3.5 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
               <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" />
               Saúde e Segurança do Trabalho · Atendimento empresarial
@@ -104,8 +104,8 @@ export function HomeHero() {
           </div>
 
           {/* Visual institucional */}
-          <div className="animate-fade-up-delay order-1 lg:order-2 lg:pl-2 xl:pl-6">
-            <HeroInstitutionalVisual />
+          <div className="animate-fade-up-delay order-1 flex justify-center lg:order-2 lg:justify-end lg:self-center lg:pl-2 xl:pl-6">
+            <HeroInstitutionalVisual className="w-full" />
           </div>
         </div>
 
