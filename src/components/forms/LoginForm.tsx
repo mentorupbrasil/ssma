@@ -109,7 +109,7 @@ function LoginForm() {
 
 export function LoginPageClient() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] px-4 pb-8 pt-[var(--header-height)]">
       <Suspense fallback={<div className="text-slate-500">Carregando...</div>}>
         <LoginForm />
       </Suspense>

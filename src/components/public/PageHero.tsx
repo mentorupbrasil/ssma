@@ -5,14 +5,20 @@ type PageHeroProps = {
   description?: string;
   eyebrow?: string;
   children?: React.ReactNode;
+  className?: string;
 };
 
-export function PageHero({ title, description, eyebrow, children }: PageHeroProps) {
+export function PageHero({ title, description, eyebrow, children, className }: PageHeroProps) {
   return (
-    <section className="relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#124a5a] to-[#0f3d4a]">
+    <section
+      className={cn(
+        "page-hero-offset relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#124a5a] to-[#0f3d4a]",
+        className
+      )}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(22,160,133,0.18),transparent_55%)]" />
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-60" />
-      <div className="container-page relative py-14 md:py-16 lg:py-20">
+      <div className="container-page relative pb-12 pt-2 md:pb-14 lg:pb-16">
         {eyebrow && (
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300/90">
             {eyebrow}

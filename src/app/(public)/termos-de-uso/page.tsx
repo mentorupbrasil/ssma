@@ -6,7 +6,7 @@ export default function TermosPage() {
   const clinic = getClinicInfo();
 
   return (
-    <article className="py-16">
+    <article className="page-content-offset py-16">
       <div className="prose prose-slate mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold text-[#0F3D4A]">Termos de Uso</h1>
         <p className="text-slate-600">Última atualização: {new Date().toLocaleDateString("pt-BR")}</p>

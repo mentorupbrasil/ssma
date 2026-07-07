@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { PageHero } from "@/components/public/PageHero";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -15,15 +16,13 @@ export default async function AtualizacoesPage() {
 
   return (
     <>
-      <section className="bg-[#0F3D4A] py-16 text-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold">Atualizações</h1>
-          <p className="mt-4 text-lg text-slate-300">Notícias sobre saúde ocupacional, segurança do trabalho e a clínica.</p>
-        </div>
-      </section>
+      <PageHero
+        title="Atualizações"
+        description="Notícias sobre saúde ocupacional, segurança do trabalho e a clínica."
+      />
 
-      <section className="py-16">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:grid-cols-2 lg:grid-cols-3 sm:px-6 lg:px-8">
+      <section className="section-padding">
+        <div className="container-page grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
             <Link key={post.id} href={`/atualizacoes/${post.slug}`}>
               <Card className="h-full border-slate-200 transition hover:-translate-y-1 hover:shadow-md">

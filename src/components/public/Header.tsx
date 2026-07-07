@@ -26,8 +26,8 @@ export function Header() {
   const clinic = getClinicInfo();
 
   return (
-    <header className="glass-header sticky top-0 z-50">
-      <div className="container-page flex h-[4.25rem] items-center justify-between">
+    <header className="glass-header">
+      <div className="container-page flex h-full items-center justify-between">
         <Link href="/" className="group flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-navy)] text-sm font-bold text-white shadow-sm transition group-hover:shadow-md">
             U

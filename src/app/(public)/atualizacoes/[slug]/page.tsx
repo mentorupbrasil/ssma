@@ -19,7 +19,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (!post) notFound();
 
   return (
-    <article className="py-16">
+    <article className="page-content-offset py-16">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <Link href="/atualizacoes">
           <Button variant="ghost" size="sm" className="mb-6">
