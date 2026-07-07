@@ -1,57 +1,83 @@
-import { Quote } from "lucide-react";
-import { siteMedia } from "@/config/media";
+import {
+  Briefcase,
+  Building2,
+  ClipboardList,
+  Factory,
+  FileCheck,
+  HardHat,
+  HeartPulse,
+  Stethoscope,
+  Users,
+  Wrench,
+} from "lucide-react";
 import { SectionTitle } from "@/components/public/SectionTitle";
-import { MediaPlaceholder } from "@/components/public/MediaPlaceholder";
+
+const RESULT_BENEFITS = [
+  {
+    title: "Menos retrabalho para o RH",
+    desc: "Encaminhamentos online e acompanhamento de status reduzem ligações, planilhas e controles manuais.",
+    icon: ClipboardList,
+  },
+  {
+    title: "Exames com fluxo mais organizado",
+    desc: "Admissional, periódico, demissional, retorno ao trabalho e mudança de função em um processo mais claro.",
+    icon: Stethoscope,
+  },
+  {
+    title: "Documentos ocupacionais em dia",
+    desc: "PCMSO, ASO, PGR, LTCAT, PPP e eSocial SST com mais controle e previsibilidade.",
+    icon: FileCheck,
+  },
+] as const;
+
+const BUSINESS_SEGMENTS = [
+  { label: "Indústrias", icon: Factory },
+  { label: "Comércio", icon: Building2 },
+  { label: "Construção civil", icon: HardHat },
+  { label: "Clínicas", icon: HeartPulse },
+  { label: "Escritórios", icon: Briefcase },
+  { label: "Prestadores de serviço", icon: Wrench },
+  { label: "Empresas terceirizadas", icon: Users },
+] as const;
 
 export function TestimonialsSection() {
   return (
-    <section className="section-padding bg-white">
+    <section className="results-section scroll-mt-[var(--header-height)] bg-white">
       <div className="container-page">
         <SectionTitle
-          eyebrow="Depoimentos"
-          title="O que dizem nossos clientes"
-          description="Substitua os textos e anexe fotos/logos reais quando disponíveis."
+          eyebrow="Resultados para empresas"
+          title="Mais organização para o RH e mais segurança para sua empresa"
+          description="Centralize encaminhamentos, acompanhe exames e mantenha documentos ocupacionais em dia com um fluxo mais claro e digital."
+          className="results-section-title"
         />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {siteMedia.testimonials.map((t, i) => (
-            <div key={i} className="premium-card flex flex-col border-slate-200/80 p-6">
-              <Quote className="mb-4 h-8 w-8 text-[var(--brand-green)]/40" />
-              <p className="flex-1 text-sm leading-relaxed text-slate-600">&ldquo;{t.quote}&rdquo;</p>
-              <div className="mt-6 flex items-center gap-3 border-t border-slate-100 pt-5">
-                <MediaPlaceholder
-                  label="Foto"
-                  variant="avatar"
-                  src={t.photo || undefined}
-                  className="h-12 w-12 shrink-0 !aspect-auto !rounded-full !p-0"
-                  hint="/public/images/depoimentos/"
-                />
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-[var(--brand-navy)]">{t.name}</p>
-                  <p className="truncate text-xs text-slate-500">
-                    {t.role} · {t.company}
-                  </p>
+        <div className="results-benefits-grid">
+          {RESULT_BENEFITS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="results-benefit-card group">
+                <div className="results-benefit-icon">
+                  <Icon strokeWidth={1.75} />
                 </div>
+                <h3 className="results-benefit-title">{item.title}</h3>
+                <p className="results-benefit-desc">{item.desc}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="mt-12">
-          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Empresas que confiam em nós
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            {siteMedia.clientLogos.map((logo, i) => (
-              <MediaPlaceholder
-                key={i}
-                label={`Logo ${i + 1}`}
-                variant="logo"
-                src={logo || undefined}
-                className="h-14 w-28 !aspect-auto"
-                hint="/public/images/logos/"
-              />
-            ))}
+        <div className="results-segments">
+          <h3 className="results-segments-heading">Atendimento para diferentes segmentos</h3>
+          <div className="results-segments-grid">
+            {BUSINESS_SEGMENTS.map((segment) => {
+              const Icon = segment.icon;
+              return (
+                <span key={segment.label} className="results-segment-chip">
+                  <Icon className="results-segment-icon" strokeWidth={1.75} />
+                  {segment.label}
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>

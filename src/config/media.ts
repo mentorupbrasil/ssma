@@ -17,34 +17,15 @@ export const siteMedia = {
     { label: "Laboratório", src: "" },
     { label: "Sala de exames", src: "" },
   ],
-  testimonials: [
-    {
-      quote:
-        "O portal facilitou muito o dia a dia do RH. Encaminhamos colaboradores online e acompanhamos o status sem precisar ligar toda hora.",
-      name: "Nome do responsável",
-      role: "Gerente de RH",
-      company: "Empresa parceira",
-      photo: "",
-      logo: "",
-    },
-    {
-      quote:
-        "Atendimento ágil e equipe que entende de conformidade. Nos ajudou a organizar exames admissionais e periódicos.",
-      name: "Nome do responsável",
-      role: "Diretora Administrativa",
-      company: "Empresa parceira",
-      photo: "",
-      logo: "",
-    },
-    {
-      quote:
-        "Estrutura confortável e processo digital que reduziu retrabalho na nossa operação.",
-      name: "Nome do responsável",
-      role: "Coordenador de SST",
-      company: "Empresa parceira",
-      photo: "",
-      logo: "",
-    },
-  ],
-  clientLogos: ["", "", "", "", ""],
+  /** Depoimentos reais — preencher quando houver conteúdo aprovado para publicação. */
+  testimonials: [] as {
+    quote: string;
+    name: string;
+    role: string;
+    company: string;
+    photo: string;
+    logo: string;
+  }[],
+  /** Logos de clientes — preencher apenas com autorização para exibição pública. */
+  clientLogos: [] as string[],
 } as const;

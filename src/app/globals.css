@@ -1138,6 +1138,202 @@
     flex-grow: 1;
   }
 
+  /* Results / social proof (benefit-based) */
+  .results-section {
+    padding: 2.75rem 0 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .results-section {
+      padding: 3rem 0 3.25rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .results-section {
+      padding: 3.25rem 0 3.5rem;
+    }
+  }
+
+  .results-section-title {
+    margin-bottom: 1.5rem !important;
+    max-width: 44rem;
+  }
+
+  @media (min-width: 768px) {
+    .results-section-title {
+      margin-bottom: 1.75rem !important;
+    }
+  }
+
+  .results-section-title h2 {
+    font-size: clamp(1.6rem, 2.3vw, 2.1rem);
+    line-height: 1.2;
+  }
+
+  .results-section-title p:last-child {
+    margin-top: 0.65rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgb(71 85 105);
+  }
+
+  .results-benefits-grid {
+    display: grid;
+    gap: 0.875rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .results-benefits-grid {
+      gap: 1rem;
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .results-benefits-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .results-benefit-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: 0.875rem;
+    border: 1px solid rgb(226 232 240 / 0.95);
+    background: linear-gradient(180deg, rgb(255 255 255) 0%, rgb(248 250 252 / 0.55) 100%);
+    padding: 1.2rem 1.15rem 1.25rem;
+    box-shadow:
+      0 1px 0 rgb(255 255 255) inset,
+      0 1px 2px rgb(15 23 42 / 0.04),
+      0 4px 16px rgb(15 23 42 / 0.04);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease,
+      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .results-benefit-card:hover {
+    border-color: rgb(22 160 133 / 0.28);
+    box-shadow:
+      0 1px 0 rgb(255 255 255) inset,
+      0 0 0 1px rgb(22 160 133 / 0.08),
+      0 8px 24px rgb(15 23 42 / 0.07);
+    transform: translateY(-2px);
+  }
+
+  .results-benefit-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: 0.85rem;
+    border-radius: 0.7rem;
+    background: linear-gradient(145deg, rgb(236 253 245) 0%, rgb(209 250 229 / 0.55) 100%);
+    border: 1px solid rgb(22 160 133 / 0.15);
+    box-shadow: 0 1px 2px rgb(22 160 133 / 0.08);
+    transition:
+      background 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .results-benefit-icon svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    color: var(--brand-green);
+  }
+
+  .results-benefit-card:hover .results-benefit-icon {
+    background: linear-gradient(145deg, rgb(209 250 229 / 0.75) 0%, rgb(167 243 208 / 0.45) 100%);
+    border-color: rgb(22 160 133 / 0.28);
+    box-shadow: 0 2px 8px rgb(22 160 133 / 0.12);
+  }
+
+  .results-benefit-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--brand-navy);
+    letter-spacing: -0.01em;
+  }
+
+  .results-benefit-desc {
+    margin-top: 0.45rem;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: rgb(71 85 105);
+    flex-grow: 1;
+  }
+
+  .results-segments {
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgb(226 232 240 / 0.8);
+  }
+
+  @media (min-width: 768px) {
+    .results-segments {
+      margin-top: 2rem;
+      padding-top: 1.75rem;
+    }
+  }
+
+  .results-segments-heading {
+    margin-bottom: 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+  }
+
+  .results-segments-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .results-segments-grid {
+      gap: 0.625rem;
+    }
+  }
+
+  .results-segment-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-radius: 9999px;
+    border: 1px solid rgb(226 232 240 / 0.95);
+    background: rgb(255 255 255);
+    padding: 0.45rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--brand-navy);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+    transition:
+      border-color 0.25s ease,
+      background 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .results-segment-chip:hover {
+    border-color: rgb(22 160 133 / 0.28);
+    background: rgb(240 253 250 / 0.65);
+    box-shadow: 0 2px 8px rgb(22 160 133 / 0.08);
+  }
+
+  .results-segment-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    color: var(--brand-green);
+    flex-shrink: 0;
+  }
+
   .glass-header {
     position: fixed;
     top: 0;
