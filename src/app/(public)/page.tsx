@@ -16,18 +16,12 @@ import { ComplianceSection } from "@/components/public/ComplianceSection";
 import { PortalShowcase } from "@/components/public/PortalShowcase";
 import { TestimonialsSection } from "@/components/public/TestimonialsSection";
 import { TopClinicalExams } from "@/components/public/TopClinicalExams";
+import { ProcessSection } from "@/components/public/ProcessSection";
 import { HomeHero } from "@/components/public/HomeHero";
 import { FAQ_ITEMS } from "@/data/services";
 import { TRUST_PILLARS } from "@/data/marketing";
 import { getClinicInfo } from "@/lib/helpers";
 import { prisma } from "@/lib/prisma";
-
-const STEPS = [
-  { title: "Primeiro contato", desc: "Você solicita orçamento ou fala com nosso especialista." },
-  { title: "Diagnóstico", desc: "Analisamos riscos, porte e necessidades da sua empresa." },
-  { title: "Proposta", desc: "Montamos um plano sob medida com prazos claros." },
-  { title: "Execução digital", desc: "Encaminhamentos, exames e acompanhamento pelo portal." },
-];
 
 const DIFFERENTIALS = [
   { icon: Clock, title: "Atendimento ágil", desc: "Fluxo organizado para o RH, sem filas desnecessárias." },
@@ -76,22 +70,7 @@ export default async function HomePage() {
 
       <TopClinicalExams />
 
-      <section className="section-padding bg-white">
-        <div className="container-page">
-          <SectionTitle eyebrow="Processo" title="Como funciona na prática" />
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((step, i) => (
-              <div key={step.title} className="relative rounded-2xl border border-slate-200 bg-slate-50/50 p-6">
-                <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-green-light)] text-lg font-bold text-[var(--brand-navy)]">
-                  {i + 1}
-                </span>
-                <h3 className="font-semibold text-[var(--brand-navy)]">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ProcessSection />
 
       <section className="section-padding">
         <div className="container-page">
