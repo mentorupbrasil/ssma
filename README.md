@@ -59,20 +59,38 @@ Acesse: http://localhost:3000
 
 ## Deploy na Vercel
 
-1. Conecte o repositório GitHub `mentorupbrasil/ssma`
-2. Configure as variáveis de ambiente:
-   - `DATABASE_URL` (Neon PostgreSQL)
-   - `AUTH_SECRET` (gere com `openssl rand -base64 32`)
-   - `NEXTAUTH_URL` (URL da Vercel)
-   - `NEXT_PUBLIC_CLINIC_*` (dados institucionais)
-3. Deploy automático a cada push
+### 1. Variáveis de ambiente (obrigatório antes do deploy)
 
-Após deploy, rode o seed uma vez:
+No painel Vercel → **Settings → Environment Variables**, adicione:
+
+| Variável | Valor |
+|----------|--------|
+| `DATABASE_URL` | Connection string do Neon PostgreSQL |
+| `AUTH_SECRET` | String aleatória segura (`openssl rand -base64 32`) |
+| `NEXTAUTH_URL` | URL do site (ex: `https://ssma.vercel.app`) |
+| `NEXT_PUBLIC_CLINIC_NAME` | Nome da clínica |
+| `NEXT_PUBLIC_CLINIC_PHONE` | Telefone |
+| `NEXT_PUBLIC_CLINIC_WHATSAPP` | WhatsApp (só números, ex: `5511999999999`) |
+| `NEXT_PUBLIC_CLINIC_EMAIL` | E-mail |
+| `NEXT_PUBLIC_CLINIC_ADDRESS` | Endereço |
+
+Marque todas para **Production**, **Preview** e **Development**.
+
+### 2. Deploy
+
+1. Conecte o repositório GitHub `mentorupbrasil/ssma`
+2. Confirme que as variáveis acima estão salvas
+3. Faça redeploy (Deployments → ⋮ → Redeploy)
+
+### 3. Banco de dados (uma vez após o primeiro deploy)
+
 ```bash
-npx vercel env pull
+npx vercel env pull .env.local
 npm run db:push
 npm run db:seed
 ```
+
+Ou rode `db:push` e `db:seed` localmente usando a mesma `DATABASE_URL` do Neon.
 
 ## Estrutura
 
