@@ -114,10 +114,10 @@ export function HomeHero() {
           {QUICK_CARDS.map((card) => (
             <div key={card.title} className="hero-feature-card">
               <span className="hero-feature-card-icon">
-                <card.icon className="h-4 w-4 text-[var(--brand-green)]" strokeWidth={2} />
+                <card.icon strokeWidth={2} />
               </span>
-              <h3 className="text-sm font-semibold text-white">{card.title}</h3>
-              <p className="mt-1 text-xs leading-relaxed text-slate-300/90">{card.desc}</p>
+              <h3>{card.title}</h3>
+              <p>{card.desc}</p>
             </div>
           ))}
         </div>
