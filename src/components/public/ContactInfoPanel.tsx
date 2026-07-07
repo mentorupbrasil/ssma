@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Clock, ExternalLink, MapPin, MessageCircle, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getClinicSiteConfig } from "@/config/clinic";
+import {
+  formatAddressLines,
+  formatOpeningHoursLines,
+  getClinicSiteConfig,
+} from "@/config/clinic";
 import { formatPhone, whatsappLink } from "@/lib/helpers";
 
 export function ContactInfoPanel() {

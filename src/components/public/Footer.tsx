@@ -1,26 +1,47 @@
 import Link from "next/link";
-import { Share2, MapPin, Phone, Mail, Clock } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Instagram,
+  Facebook,
+  Linkedin,
+  Youtube,
+} from "lucide-react";
+import { formatAddressLines, formatOpeningHoursLines, getClinicSiteConfig } from "@/config/clinic";
 import { getClinicInfo } from "@/lib/helpers";
+
+const SOCIAL_ICONS = [
+  { icon: Instagram, label: "Instagram" },
+  { icon: Facebook, label: "Facebook" },
+  { icon: Linkedin, label: "LinkedIn" },
+  { icon: Youtube, label: "YouTube" },
+] as const;
 
 export function Footer() {
   const clinic = getClinicInfo();
+  const config = getClinicSiteConfig();
+  const addressLines = config.hasAddress ? formatAddressLines(config.fullAddress) : [];
+  const hoursLines = formatOpeningHoursLines(config.openingHours);
 
   return (
-    <footer className="mt-auto border-t border-white/10 bg-[var(--brand-navy)] text-slate-300">
-      <div className="container-page grid gap-12 py-16 lg:grid-cols-4">
+    <footer className="site-footer mt-auto border-t border-white/10 bg-[var(--brand-navy)] text-slate-300">
+      <div className="container-page grid gap-10 py-14 lg:grid-cols-4 lg:gap-12 lg:py-16">
         <div>
-          <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-green)] text-lg font-bold text-white">
+          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-green)] text-lg font-bold text-white shadow-sm">
             U
           </div>
           <h3 className="text-lg font-bold text-white">{clinic.name}</h3>
           <p className="mt-3 text-sm leading-relaxed text-slate-400">
-            Medicina e Segurança do Trabalho com agilidade, tecnologia e confiança para empresas de todos os portes.
+            Medicina e Segurança do Trabalho com agilidade, tecnologia e confiança para empresas
+            de todos os portes.
           </p>
         </div>
 
         <div>
-          <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-white">Links úteis</h4>
-          <ul className="space-y-3 text-sm">
+          <h4 className="footer-column-title">Links úteis</h4>
+          <ul className="space-y-2.5 text-sm">
             {[
               ["/sobre", "Sobre nós"],
               ["/servicos", "Serviços"],
@@ -40,53 +61,68 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-white">Contato</h4>
-          <ul className="space-y-4 text-sm">
-            {clinic.hasAddress && (
+          <h4 className="footer-column-title">Contato</h4>
+          <ul className="space-y-3.5 text-sm">
+            {addressLines.length > 0 && (
               <li className="flex items-start gap-3">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-green)]" />
-                {clinic.address}
+                <MapPin className="footer-contact-icon" strokeWidth={1.75} />
+                <span className="leading-relaxed text-slate-400">
+                  {addressLines.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </span>
               </li>
             )}
             {clinic.phone && (
               <li className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-[var(--brand-green)]" />
-                {clinic.phone}
+                <Phone className="footer-contact-icon" strokeWidth={1.75} />
+                <span className="text-slate-400">{clinic.phone}</span>
               </li>
             )}
             {clinic.email && (
               <li className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-[var(--brand-green)]" />
-                {clinic.email}
+                <Mail className="footer-contact-icon" strokeWidth={1.75} />
+                <span className="text-slate-400">{clinic.email}</span>
               </li>
             )}
-            {clinic.hours && (
-              <li className="flex items-center gap-3">
-                <Clock className="h-4 w-4 text-[var(--brand-green)]" />
-                {clinic.hours}
+            {hoursLines.length > 0 && (
+              <li className="flex items-start gap-3">
+                <Clock className="footer-contact-icon" strokeWidth={1.75} />
+                <span className="leading-relaxed text-slate-400">
+                  {hoursLines.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </span>
               </li>
             )}
           </ul>
         </div>
 
         <div>
-          <h4 className="mb-5 text-sm font-semibold uppercase tracking-wider text-white">Redes sociais</h4>
-          {clinic.instagram ? (
-            <a
-              href={clinic.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm transition hover:bg-white/10 hover:text-white"
-            >
-              <Share2 className="h-4 w-4 text-[var(--brand-green)]" />
-              Instagram
-            </a>
-          ) : (
-            <p className="text-sm text-slate-500">Redes sociais em breve</p>
-          )}
+          <h4 className="footer-column-title">Redes sociais</h4>
+          <p className="mb-4 text-sm leading-relaxed text-slate-400">
+            Acompanhe novidades e conteúdos sobre saúde ocupacional.
+          </p>
+          <div className="footer-social-grid" aria-label="Redes sociais">
+            {SOCIAL_ICONS.map(({ icon: Icon, label }) => (
+              <span
+                key={label}
+                className="footer-social-icon"
+                title={`${label} em breve`}
+                aria-label={`${label} em breve`}
+              >
+                <Icon strokeWidth={1.75} />
+              </span>
+            ))}
+          </div>
         </div>
       </div>
-      <div className="border-t border-white/10 py-5 text-center text-xs text-slate-500">
+
+      <div className="border-t border-white/10 py-4 text-center text-xs text-slate-500">
         © {new Date().getFullYear()} {clinic.name}. Todos os direitos reservados.
       </div>
     </footer>

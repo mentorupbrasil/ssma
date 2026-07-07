@@ -1,12 +1,20 @@
 import Link from "next/link";
-import { Clock, ExternalLink, MapPin, MessageCircle } from "lucide-react";
+import { Clock, ExternalLink, MapPin, MessageCircle, Phone } from "lucide-react";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { Button } from "@/components/ui/button";
-import { getClinicSiteConfig } from "@/config/clinic";
+import {
+  formatAddressLines,
+  formatOpeningHoursLines,
+  getClinicSiteConfig,
+} from "@/config/clinic";
 import { formatPhone, whatsappLink } from "@/lib/helpers";
 
 export function LocationSection() {
   const clinic = getClinicSiteConfig();
+  const addressLines = clinic.hasAddress
+    ? formatAddressLines(clinic.fullAddress)
+    : ["Endereço em atualização"];
+  const hoursLines = formatOpeningHoursLines(clinic.openingHours);
 
   return (
     <section className="location-section scroll-mt-[var(--header-height)]">
@@ -37,43 +45,96 @@ export function LocationSection() {
                 <MapPin className="location-map-placeholder-icon" strokeWidth={1.5} />
                 <p className="location-map-placeholder-title">Mapa da clínica</p>
                 <p className="location-map-placeholder-desc">
-                  O mapa será exibido quando o endereço e a URL do Google Maps forem configurados.
+                  Configure o endereço ou as coordenadas no painel de configuração.
                 </p>
               </div>
             )}
           </div>
 
           <div className="location-info-card">
-            <h3 className="location-info-card-heading">Informações de atendimento</h3>
+            <div className="location-info-card-header">
+              <div className="location-info-card-header-icon">
+                <MapPin strokeWidth={1.75} />
+              </div>
+              <div>
+                <h3 className="location-info-card-heading">Informações de atendimento</h3>
+                <p className="location-info-card-subheading">{clinic.clinicName}</p>
+              </div>
+            </div>
 
             <dl className="location-info-list">
-              <div className="location-info-item">
-                <dt className="location-info-label">
-                  <MapPin className="location-info-icon" strokeWidth={1.75} />
-                  Endereço da clínica
+              <div className="location-info-row">
+                <dt className="location-info-row-label">
+                  <span className="location-info-row-icon">
+                    <MapPin strokeWidth={1.75} />
+                  </span>
+                  Endereço
                 </dt>
-                <dd className="location-info-value">
-                  {clinic.hasAddress ? clinic.fullAddress : "Endereço em atualização"}
+                <dd className="location-info-row-value">
+                  {addressLines.map((line) => (
+                    <span key={line} className="location-info-line">
+                      {line}
+                    </span>
+                  ))}
                 </dd>
               </div>
 
-              <div className="location-info-item">
-                <dt className="location-info-label">
-                  <Clock className="location-info-icon" strokeWidth={1.75} />
-                  Horário de atendimento
+              <div className="location-info-row">
+                <dt className="location-info-row-label">
+                  <span className="location-info-row-icon">
+                    <Clock strokeWidth={1.75} />
+                  </span>
+                  Horário
                 </dt>
-                <dd className="location-info-value">
-                  {clinic.openingHours || "Horário de atendimento a confirmar"}
+                <dd className="location-info-row-value">
+                  {hoursLines.length > 0 ? (
+                    hoursLines.map((line) => (
+                      <span key={line} className="location-info-line">
+                        {line}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="location-info-line">Horário a confirmar</span>
+                  )}
                 </dd>
               </div>
+
+              {clinic.phone && (
+                <div className="location-info-row">
+                  <dt className="location-info-row-label">
+                    <span className="location-info-row-icon">
+                      <Phone strokeWidth={1.75} />
+                    </span>
+                    Telefone
+                  </dt>
+                  <dd className="location-info-row-value">
+                    <a href={`tel:${clinic.phone.replace(/\D/g, "")}`} className="location-info-link">
+                      {clinic.phone}
+                    </a>
+                  </dd>
+                </div>
+              )}
 
               {clinic.hasWhatsApp && (
-                <div className="location-info-item">
-                  <dt className="location-info-label">
-                    <MessageCircle className="location-info-icon" strokeWidth={1.75} />
+                <div className="location-info-row">
+                  <dt className="location-info-row-label">
+                    <span className="location-info-row-icon">
+                      <MessageCircle strokeWidth={1.75} />
+                    </span>
                     WhatsApp
                   </dt>
-                  <dd className="location-info-value">{formatPhone(clinic.whatsapp)}</dd>
+                  <dd className="location-info-row-value">
+                    <a
+                      href={whatsappLink(
+                        `Olá! Gostaria de falar com a ${clinic.clinicName}.`
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="location-info-link location-info-link-whatsapp"
+                    >
+                      {formatPhone(clinic.whatsapp)}
+                    </a>
+                  </dd>
                 </div>
               )}
             </dl>
@@ -84,6 +145,7 @@ export function LocationSection() {
                   href={clinic.googleMapsExternalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="location-info-action-link"
                 >
                   <Button variant="outline" className="location-info-btn w-full rounded-xl">
                     <ExternalLink className="mr-2 h-4 w-4" />
@@ -98,6 +160,7 @@ export function LocationSection() {
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="location-info-action-link"
                 >
                   <Button variant="brand" className="location-info-btn w-full rounded-xl">
                     <MessageCircle className="mr-2 h-4 w-4" />
@@ -105,7 +168,7 @@ export function LocationSection() {
                   </Button>
                 </a>
               ) : (
-                <Link href="/contato">
+                <Link href="/contato" className="location-info-action-link">
                   <Button variant="brand" className="location-info-btn w-full rounded-xl">
                     Entrar em contato
                   </Button>
