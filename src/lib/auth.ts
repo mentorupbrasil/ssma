@@ -40,24 +40,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        try {
+          if (!credentials?.email || !credentials?.password) return null;
 
-        const email = String(credentials.email).toLowerCase().trim();
-        const password = String(credentials.password);
+          const email = String(credentials.email).toLowerCase().trim();
+          const password = String(credentials.password);
 
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || user.status !== "ACTIVE") return null;
+          const user = await prisma.user.findUnique({ where: { email } });
+          if (!user || user.status !== "ACTIVE") return null;
 
-        const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) return null;
+          const valid = await bcrypt.compare(password, user.passwordHash);
+          if (!valid) return null;
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role as UserRole,
-          companyId: user.companyId,
-        };
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role as UserRole,
+            companyId: user.companyId,
+          };
+        } catch (error) {
+          console.error("authorize error:", error);
+          return null;
+        }
       },
     }),
   ],

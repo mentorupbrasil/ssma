@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+
+dotenv.config({ override: true });
+
 import { PrismaClient, ExamCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { INITIAL_EXAMS } from "../src/data/exams";

@@ -4,14 +4,17 @@ import type { UserRole } from "@/types/roles";
 export const authConfig = {
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   session: { strategy: "jwt" },
-  providers: [],
+  secret: process.env.AUTH_SECRET,
   trustHost: true,
+  providers: [],
   callbacks: {
     jwt({ token, user }) {
       if (user) {
         const u = user as { id: string; role: UserRole; companyId?: string | null };
+        token.sub = u.id;
         token.id = u.id;
         token.role = u.role;
         token.companyId = u.companyId;

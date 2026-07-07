@@ -1,3 +1,9 @@
+import { config as loadEnv } from "dotenv";
+import path from "path";
+
+// Garante que o .env local prevaleça sobre DATABASE_URL vazia no ambiente do sistema (Windows/CI)
+loadEnv({ path: path.join(process.cwd(), ".env"), override: true });
+
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
