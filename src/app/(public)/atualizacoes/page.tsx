@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { PageHero } from "@/components/public/PageHero";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { prisma } from "@/lib/prisma";
+import { PageHero } from "@/components/public/PageHero";
+import { PageSection } from "@/components/public/PageSection";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata = { title: "Atualizações" };
 
@@ -17,28 +17,49 @@ export default async function AtualizacoesPage() {
   return (
     <>
       <PageHero
+        eyebrow="Conteúdo"
         title="Atualizações"
-        description="Notícias sobre saúde ocupacional, segurança do trabalho e a clínica."
+        description="Notícias sobre saúde ocupacional, segurança do trabalho e novidades da clínica."
       />
 
-      <section className="section-padding">
-        <div className="container-page grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <Link key={post.id} href={`/atualizacoes/${post.slug}`}>
-              <Card className="h-full border-slate-200 transition hover:-translate-y-1 hover:shadow-md">
-                <CardContent className="pt-6">
-                  <Badge variant="secondary" className="mb-3 bg-[#DFF7F0] text-[#0F3D4A]">{post.category}</Badge>
-                  <h2 className="text-lg font-semibold text-[#0F3D4A]">{post.title}</h2>
-                  <p className="mt-2 line-clamp-3 text-sm text-slate-600">{post.excerpt}</p>
-                  <p className="mt-4 text-xs text-slate-400">
+      <PageSection>
+        {posts.length === 0 ? (
+          <div className="page-content-card mx-auto max-w-xl text-center">
+            <p className="text-sm font-semibold text-[var(--brand-navy)]">
+              Nenhuma publicação disponível no momento
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Em breve compartilharemos conteúdos sobre SST, conformidade legal e novidades do
+              portal empresarial.
+            </p>
+            <Link
+              href="/contato"
+              className="mt-4 inline-block text-sm font-semibold text-[var(--brand-green)] hover:underline"
+            >
+              Fale conosco
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <Link key={post.id} href={`/atualizacoes/${post.slug}`} className="group block h-full">
+                <article className="page-feature-card h-full">
+                  <Badge className="mb-3 w-fit border border-emerald-200/60 bg-emerald-50 text-[var(--brand-navy)] hover:bg-emerald-50">
+                    {post.category}
+                  </Badge>
+                  <h2 className="page-feature-card-title text-base transition group-hover:text-[var(--brand-green)]">
+                    {post.title}
+                  </h2>
+                  <p className="page-feature-card-desc mt-2 line-clamp-3">{post.excerpt}</p>
+                  <p className="mt-3 text-xs text-slate-400">
                     {format(post.publishedAt, "d 'de' MMMM, yyyy", { locale: ptBR })}
                   </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
+                </article>
+              </Link>
+            ))}
+          </div>
+        )}
+      </PageSection>
     </>
   );
 }

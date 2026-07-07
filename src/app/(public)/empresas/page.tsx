@@ -1,22 +1,32 @@
 import Link from "next/link";
-import { CheckCircle2, Building2, Users, FileText, Clock, MessageSquare, ArrowRight } from "lucide-react";
+import {
+  CheckCircle2,
+  Building2,
+  Users,
+  FileText,
+  Clock,
+  MessageSquare,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { PageHero } from "@/components/public/PageHero";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { CTASection } from "@/components/public/CTASection";
 import { PortalShowcase } from "@/components/public/PortalShowcase";
 import { ComplianceSection } from "@/components/public/ComplianceSection";
+import { PageSection } from "@/components/public/PageSection";
+import { FeatureCard } from "@/components/public/FeatureCard";
+import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 export const metadata = { title: "Empresas" };
 
 const BENEFITS = [
-  { icon: FileText, text: "Encaminhamento online de colaboradores" },
-  { icon: Clock, text: "Controle de exames por status" },
-  { icon: Users, text: "Histórico de atendimentos" },
-  { icon: Building2, text: "Documentos organizados" },
-  { icon: CheckCircle2, text: "Redução de retrabalho" },
-  { icon: MessageSquare, text: "Comunicação rápida com a clínica" },
+  { icon: FileText, title: "Encaminhamento online", text: "Envie colaboradores para exame com protocolo automático." },
+  { icon: Clock, title: "Status em tempo real", text: "Acompanhe cada etapa sem depender de ligações." },
+  { icon: Users, title: "Histórico organizado", text: "Consulte atendimentos e documentos por colaborador." },
+  { icon: Building2, title: "Documentos centralizados", text: "PCMSO, ASO e laudos com mais controle para o RH." },
+  { icon: CheckCircle2, title: "Menos retrabalho", text: "Reduza planilhas, controles manuais e retrabalho operacional." },
+  { icon: MessageSquare, title: "Comunicação ágil", text: "Canal direto com a clínica para demandas do dia a dia." },
 ];
 
 const SIZES = [
@@ -26,15 +36,17 @@ const SIZES = [
   },
   {
     title: "Médias empresas",
-    desc: "Gestão de múltiplos colaboradores com relatórios e acompanhamento de status.",
+    desc: "Gestão de múltiplos colaboradores com acompanhamento de status e documentos.",
   },
   {
     title: "Grandes empresas",
-    desc: "Volume alto, integração com SOC e suporte dedicado para RH.",
+    desc: "Volume elevado, integração com SOC e suporte dedicado para o RH.",
   },
 ];
 
 export default function EmpresasPage() {
+  const clinic = getClinicInfo();
+
   return (
     <>
       <PageHero
@@ -47,59 +59,50 @@ export default function EmpresasPage() {
             Solicitar orçamento
           </Button>
         </Link>
-        <Link href="/login">
+        <Link href="/empresas#portal">
           <Button variant="outline-light" className="rounded-xl">
-            Acessar portal
+            Ver demonstração
           </Button>
         </Link>
       </PageHero>
 
-      <section className="section-padding">
-        <div className="container-page">
-          <SectionTitle title="Benefícios para sua empresa" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {BENEFITS.map((b) => (
-              <div
-                key={b.text}
-                className="premium-card-hover flex items-center gap-3 border-slate-200/80 p-5"
-              >
-                <b.icon className="h-6 w-6 shrink-0 text-[var(--brand-green)]" />
-                <span className="font-medium text-[var(--brand-navy)]">{b.text}</span>
-              </div>
-            ))}
-          </div>
+      <PageSection>
+        <SectionTitle
+          title="Benefícios para sua empresa"
+          description="Mais controle para o RH e mais previsibilidade na rotina ocupacional."
+          className="!mb-8 md:!mb-9"
+        />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {BENEFITS.map((b) => (
+            <FeatureCard key={b.title} icon={b.icon} title={b.title} description={b.text} />
+          ))}
         </div>
-      </section>
+      </PageSection>
 
-      <PortalShowcase />
+      <div id="portal">
+        <PortalShowcase />
+      </div>
 
-      <section className="section-padding bg-white">
-        <div className="container-page">
-          <SectionTitle title="Atendimento por porte" />
-          <div className="grid gap-6 md:grid-cols-3">
-            {SIZES.map((s) => (
-              <Card key={s.title} className="premium-card-hover border-slate-200/80">
-                <CardContent className="pt-6">
-                  <Building2 className="mb-4 h-8 w-8 text-[var(--brand-green)]" />
-                  <h3 className="text-lg font-semibold text-[var(--brand-navy)]">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <PageSection variant="white">
+        <SectionTitle title="Atendimento por porte" className="!mb-8 md:!mb-9" />
+        <div className="grid gap-4 md:grid-cols-3">
+          {SIZES.map((s) => (
+            <FeatureCard key={s.title} icon={Building2} title={s.title} description={s.desc} />
+          ))}
         </div>
-      </section>
+      </PageSection>
 
       <ComplianceSection />
 
-      <section className="section-padding">
-        <div className="container-page max-w-3xl">
+      <PageSection variant="muted">
+        <div className="mx-auto max-w-3xl">
           <SectionTitle
             title="Comece agora"
-            description="Cadastre sua empresa, encaminhe colaboradores e acompanhe tudo pelo painel."
+            description="Cadastre sua empresa, encaminhe colaboradores e acompanhe tudo pelo portal."
+            className="!mb-6"
           />
-          <div className="rounded-2xl border border-slate-200 bg-[var(--brand-mint)]/50 p-8">
-            <ul className="space-y-3 text-slate-700">
+          <div className="page-content-card bg-gradient-to-br from-white to-emerald-50/30">
+            <ul className="space-y-2.5 text-sm text-slate-700">
               {[
                 "Cadastrar colaboradores",
                 "Emitir encaminhamentos online",
@@ -107,13 +110,13 @@ export default function EmpresasPage() {
                 "Consultar preparo de exames",
                 "Solicitar documentos",
               ].map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-[var(--brand-green)]" />
+                <li key={item} className="flex items-center gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--brand-green)]" />
                   {item}
                 </li>
               ))}
             </ul>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/login">
                 <Button variant="navy" className="rounded-xl">
                   Acessar portal
@@ -128,13 +131,16 @@ export default function EmpresasPage() {
             </div>
           </div>
         </div>
-      </section>
+      </PageSection>
 
       <CTASection
         title="Pronto para organizar a saúde ocupacional da sua empresa?"
         description="Fale com um especialista e receba uma proposta personalizada."
-        primaryLabel="Falar com especialista"
-        primaryHref="/contato"
+        primaryLabel="Solicitar orçamento sem compromisso"
+        secondaryHref={whatsappLink(
+          `Olá! Gostaria de falar com um especialista da ${clinic.name}.`
+        )}
+        secondaryLabel="Falar com especialista"
       />
     </>
   );

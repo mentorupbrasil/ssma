@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { Target, Eye, Heart } from "lucide-react";
+import { Target, Eye, Heart, Stethoscope, Shield, Users } from "lucide-react";
 import { PageHero } from "@/components/public/PageHero";
 import { SectionTitle } from "@/components/public/SectionTitle";
-import { MediaPlaceholder } from "@/components/public/MediaPlaceholder";
+import { HeroInstitutionalVisual } from "@/components/public/HeroInstitutionalVisual";
 import { CTASection } from "@/components/public/CTASection";
+import { PageSection } from "@/components/public/PageSection";
+import { FeatureCard } from "@/components/public/FeatureCard";
 import { Button } from "@/components/ui/button";
-import { siteMedia } from "@/config/media";
-import { getClinicInfo } from "@/lib/helpers";
+import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 export const metadata = { title: "Sobre nós" };
 
@@ -28,6 +29,24 @@ const VALUES = [
   },
 ];
 
+const EXPERTISE = [
+  {
+    icon: Stethoscope,
+    title: "Medicina do Trabalho",
+    text: "Exames clínicos ocupacionais, ASO e programas conforme a legislação vigente.",
+  },
+  {
+    icon: Shield,
+    title: "Segurança do Trabalho",
+    text: "Documentação técnica, laudos e suporte à gestão de riscos ocupacionais.",
+  },
+  {
+    icon: Users,
+    title: "Atendimento empresarial",
+    text: "Equipe preparada para orientar RH, gestores e colaboradores em todo o fluxo.",
+  },
+];
+
 export default function SobrePage() {
   const clinic = getClinicInfo();
 
@@ -45,87 +64,69 @@ export default function SobrePage() {
         </Link>
       </PageHero>
 
-      <section className="section-padding">
-        <div className="container-page">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div>
-              <SectionTitle
-                eyebrow="Nossa história"
-                title="SST com foco em resultado para o RH"
-                description="Combinamos atendimento clínico, documentação ocupacional e gestão digital para simplificar a rotina das empresas."
-                align="left"
-                className="mb-0"
-              />
-              <p className="mt-6 text-sm leading-relaxed text-slate-600 sm:text-base">
-                Atuamos com empresas de pequeno, médio e grande porte, oferecendo desde exames
-                ocupacionais até programas de medicina e segurança do trabalho, sempre com
-                atenção à conformidade legal e ao eSocial.
-              </p>
-              <p className="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base">
-                Nosso diferencial é unir estrutura presencial de qualidade com um portal
-                empresarial real — encaminhamento online, acompanhamento de status e organização
-                documental em um só lugar.
-              </p>
-            </div>
-            <MediaPlaceholder
-              label="Foto da equipe ou fachada"
-              hint="Preencha siteMedia.heroImage ou adicione foto em /public/images/sobre/"
-              src={siteMedia.heroImage || undefined}
+      <PageSection>
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
+          <div>
+            <SectionTitle
+              eyebrow="Nossa história"
+              title="SST com foco em resultado para o RH"
+              description="Combinamos atendimento clínico, documentação ocupacional e gestão digital para simplificar a rotina das empresas."
+              align="left"
+              className="!mb-0"
             />
+            <p className="mt-5 text-sm leading-relaxed text-slate-600 sm:text-[0.9375rem]">
+              Atuamos com empresas de pequeno, médio e grande porte, oferecendo desde exames
+              ocupacionais até programas de medicina e segurança do trabalho, sempre com atenção
+              à conformidade legal e ao eSocial.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-[0.9375rem]">
+              Nosso diferencial é unir estrutura presencial de qualidade com um portal
+              empresarial real — encaminhamento online, acompanhamento de status e organização
+              documental em um só lugar.
+            </p>
           </div>
+          <HeroInstitutionalVisual />
         </div>
-      </section>
+      </PageSection>
 
-      <section className="section-padding bg-white">
-        <div className="container-page">
-          <SectionTitle title="Missão, visão e propósito" />
-          <div className="grid gap-6 md:grid-cols-3">
-            {VALUES.map((v) => (
-              <div key={v.title} className="premium-card border-slate-200/80 p-6">
-                <v.icon className="mb-4 h-8 w-8 text-[var(--brand-green)]" />
-                <h3 className="text-lg font-semibold text-[var(--brand-navy)]">{v.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{v.text}</p>
-              </div>
-            ))}
-          </div>
+      <PageSection variant="white">
+        <SectionTitle
+          title="Missão, visão e propósito"
+          className="!mb-8 md:!mb-9"
+        />
+        <div className="grid gap-4 md:grid-cols-3">
+          {VALUES.map((v) => (
+            <FeatureCard key={v.title} icon={v.icon} title={v.title} description={v.text} />
+          ))}
         </div>
-      </section>
+      </PageSection>
 
-      <section className="section-padding">
-        <div className="container-page">
-          <SectionTitle
-            title="Equipe multidisciplinar"
-            description="Substitua nomes e fotos em src/config/media.ts quando tiver o material."
-          />
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {siteMedia.aboutTeam.map((member) => (
-              <div
-                key={member.role}
-                className="premium-card overflow-hidden border-slate-200/80"
-              >
-                <MediaPlaceholder
-                  label={member.name}
-                  src={member.src || undefined}
-                  hint="/public/images/equipe/"
-                  className="!rounded-none !rounded-t-2xl !border-0 !border-b"
-                />
-                <div className="p-5">
-                  <h3 className="font-semibold text-[var(--brand-navy)]">{member.name}</h3>
-                  <p className="text-sm text-[var(--brand-green)]">{member.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      <PageSection variant="muted">
+        <SectionTitle
+          title="Áreas de atuação"
+          description="Equipe multidisciplinar dedicada ao atendimento ocupacional empresarial."
+          className="!mb-8 md:!mb-9"
+        />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {EXPERTISE.map((item) => (
+            <FeatureCard
+              key={item.title}
+              icon={item.icon}
+              title={item.title}
+              description={item.text}
+            />
+          ))}
         </div>
-      </section>
+      </PageSection>
 
       <CTASection
         title="Quer conhecer nossa estrutura e portal empresarial?"
         description="Agende uma visita ou fale com nossa equipe comercial."
-        primaryLabel="Falar com especialista"
-        primaryHref="/contato"
-        secondaryHref="/instalacoes"
-        secondaryLabel="Ver instalações"
+        primaryLabel="Solicitar orçamento sem compromisso"
+        secondaryHref={whatsappLink(
+          `Olá! Gostaria de falar com um especialista da ${clinic.name}.`
+        )}
+        secondaryLabel="Falar com especialista"
       />
     </>
   );

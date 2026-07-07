@@ -6,11 +6,6 @@
 export const siteMedia = {
   heroImage: "",
   heroVideo: "",
-  aboutTeam: [
-    { name: "Nome do responsável", role: "Direção / Medicina do Trabalho", src: "" },
-    { name: "Nome do profissional", role: "Coordenação de SST", src: "" },
-    { name: "Nome do profissional", role: "Recepção e atendimento", src: "" },
-  ],
   gallery: [
     { label: "Recepção", src: "" },
     { label: "Consultório", src: "" },

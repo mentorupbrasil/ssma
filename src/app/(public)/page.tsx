@@ -7,8 +7,8 @@ import { TopClinicalExams } from "@/components/public/TopClinicalExams";
 import { ProcessSection } from "@/components/public/ProcessSection";
 import { DifferentialsSection } from "@/components/public/DifferentialsSection";
 import { LocationSection } from "@/components/public/LocationSection";
+import { FAQSection } from "@/components/public/FAQSection";
 import { HomeHero } from "@/components/public/HomeHero";
-import { FAQ_ITEMS } from "@/data/services";
 import { TRUST_PILLARS } from "@/data/marketing";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
@@ -67,26 +67,7 @@ export default async function HomePage() {
 
       <LocationSection />
 
-      <section className="section-padding bg-white">
-        <div className="container-page max-w-3xl">
-          <SectionTitle eyebrow="FAQ" title="Perguntas frequentes" />
-          <div className="space-y-3">
-            {FAQ_ITEMS.map((item) => (
-              <details
-                key={item.question}
-                className="group premium-card overflow-hidden border-slate-200/80 open:shadow-[var(--shadow-soft)]"
-              >
-                <summary className="cursor-pointer list-none px-6 py-5 font-semibold text-[var(--brand-navy)] transition hover:text-[var(--brand-green)] [&::-webkit-details-marker]:hidden">
-                  {item.question}
-                </summary>
-                <p className="border-t border-slate-100 px-6 pb-5 pt-4 text-sm leading-relaxed text-slate-600">
-                  {item.answer}
-                </p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FAQSection />
     </>
   );
 }

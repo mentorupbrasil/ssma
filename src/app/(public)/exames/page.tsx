@@ -2,6 +2,8 @@ import { ExamSearch } from "@/components/public/ExamSearch";
 import { PageHero } from "@/components/public/PageHero";
 import { TopClinicalExams } from "@/components/public/TopClinicalExams";
 import { CTASection } from "@/components/public/CTASection";
+import { PageSection } from "@/components/public/PageSection";
+import { SectionTitle } from "@/components/public/SectionTitle";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Exames e Preparos" };
@@ -22,17 +24,24 @@ export default async function ExamesPage() {
 
       <TopClinicalExams />
 
-      <section className="section-padding bg-white">
-        <div className="container-page">
-          <ExamSearch exams={exams} />
-        </div>
-      </section>
+      <PageSection variant="white">
+        <SectionTitle
+          eyebrow="Catálogo completo"
+          title="Preparo por exame"
+          description="Busque pelo nome ou filtre por categoria para encontrar orientações de preparo e prazos."
+          align="left"
+          className="!mb-6 md:!mb-7"
+        />
+        <ExamSearch exams={exams} />
+      </PageSection>
 
       <CTASection
         title="Precisa encaminhar colaboradores para exame?"
         description="Use o encaminhamento online ou fale com nossa equipe."
-        secondaryHref="/encaminhamento-online"
-        secondaryLabel="Encaminhamento online"
+        primaryLabel="Fazer encaminhamento online"
+        primaryHref="/encaminhamento-online"
+        secondaryHref="/contato?tipo=orcamento"
+        secondaryLabel="Solicitar orçamento"
       />
     </>
   );
