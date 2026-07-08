@@ -53,6 +53,43 @@ export const COMPLIANCE_DOCS: ComplianceDoc[] = [
   },
 ];
 
+export const EMPRESAS_COMPLIANCE_DOCS: ComplianceDoc[] = [
+  {
+    sigla: "PCMSO",
+    name: "Programa de Controle Médico",
+    description:
+      "Programa obrigatório para monitorar a saúde ocupacional dos colaboradores conforme a NR-7.",
+    icon: Stethoscope,
+  },
+  {
+    sigla: "ASO",
+    name: "Atestado de Saúde Ocupacional",
+    description:
+      "Documento emitido nos exames admissionais, periódicos, demissionais, retorno ao trabalho e mudança de função.",
+    icon: ClipboardList,
+  },
+  {
+    sigla: "PGR",
+    name: "Programa de Gerenciamento de Riscos",
+    description:
+      "Base da gestão de riscos ocupacionais, com identificação e controle dos riscos no ambiente de trabalho.",
+    icon: Shield,
+  },
+  {
+    sigla: "LTCAT",
+    name: "Laudo Técnico das Condições Ambientais",
+    description:
+      "Documento essencial para caracterização de exposição, PPP e fins previdenciários.",
+    icon: FileText,
+  },
+  {
+    sigla: "eSocial",
+    name: "Eventos de SST no eSocial",
+    description: "Envio correto das informações ocupacionais exigidas pelo governo.",
+    icon: Database,
+  },
+];
+
 export const CLINICAL_EXAM_TYPES = [
   {
     type: "ADMISSIONAL",

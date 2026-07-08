@@ -3,14 +3,26 @@ import { ArrowRight, ShieldAlert } from "lucide-react";
 import { COMPLIANCE_DOCS } from "@/data/marketing";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
-export function ComplianceSection() {
+type ComplianceSectionProps = {
+  hideAlert?: boolean;
+  compactTop?: boolean;
+};
+
+export function ComplianceSection({ hideAlert = false, compactTop = false }: ComplianceSectionProps) {
   const clinic = getClinicInfo();
 
   return (
-    <section className="compliance-section bg-white">
+    <section
+      className={cn(
+        "compliance-section bg-white",
+        compactTop && "compliance-section--compact-top"
+      )}
+    >
       <div className="container-page">
+        {!hideAlert && (
         <div className="compliance-alert">
           <div className="compliance-alert-content">
             <div className="compliance-alert-icon" aria-hidden>
@@ -39,6 +51,7 @@ export function ComplianceSection() {
             </Button>
           </a>
         </div>
+        )}
 
         <SectionTitle
           eyebrow="Obrigatoriedade legal"

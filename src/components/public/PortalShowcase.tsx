@@ -4,7 +4,17 @@ import { SectionTitle } from "@/components/public/SectionTitle";
 import { HeroPortalMockup } from "@/components/public/HeroPortalMockup";
 import { Button } from "@/components/ui/button";
 
-export function PortalShowcase() {
+type PortalShowcaseProps = {
+  demoMode?: boolean;
+  primaryHref?: string;
+  secondaryHref?: string;
+};
+
+export function PortalShowcase({
+  demoMode = false,
+  primaryHref = "/empresas",
+  secondaryHref = "/empresas",
+}: PortalShowcaseProps) {
   return (
     <section className="portal-showcase-section scroll-mt-[var(--header-height)] overflow-hidden bg-white">
       <div className="container-page">
@@ -13,7 +23,7 @@ export function PortalShowcase() {
             <SectionTitle
               eyebrow="Diferencial digital"
               title="Portal empresarial que funciona de verdade"
-              description="Encaminhe colaboradores, acompanhe status em tempo real e organize documentos — sem depender de planilhas e ligações."
+              description="Encaminhe colaboradores, acompanhe status em tempo real e organize documentos sem depender de planilhas e ligações."
               align="left"
               className="portal-block-title"
             />
@@ -33,13 +43,13 @@ export function PortalShowcase() {
             </ul>
 
             <div className="portal-showcase-actions">
-              <Link href="/empresas">
+              <Link href={primaryHref}>
                 <Button variant="brand" className="rounded-xl">
                   Conhecer o portal
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/empresas">
+              <Link href={secondaryHref}>
                 <Button variant="outline" className="rounded-xl">
                   Ver demonstração
                 </Button>
@@ -47,8 +57,8 @@ export function PortalShowcase() {
             </div>
           </div>
 
-          <div className="portal-showcase-visual">
-            <HeroPortalMockup variant="inline" />
+          <div id={demoMode ? "portal-demo" : undefined} className="portal-showcase-visual">
+            <HeroPortalMockup variant="inline" demoMode={demoMode} />
           </div>
         </div>
       </div>
