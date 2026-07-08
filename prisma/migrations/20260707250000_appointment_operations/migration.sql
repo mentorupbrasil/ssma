@@ -4,7 +4,7 @@ ALTER TYPE "AppointmentStatus" ADD VALUE IF NOT EXISTS 'CONCLUIDO';
 ALTER TYPE "AppointmentStatus" ADD VALUE IF NOT EXISTS 'REAGENDADO';
 
 -- Migrate legacy REALIZADO to CONCLUIDO
-UPDATE "Appointment" SET status = 'CONCLUIDO' WHERE status = 'REALIZADO';
+UPDATE "Appointment" SET status = 'CONCLUIDO' WHERE status::text = 'REALIZADO';
 
 -- AppointmentHistoryAction enum
 DO $$ BEGIN

@@ -226,7 +226,7 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- === Appointment operations ===
-UPDATE "Appointment" SET status = 'CONCLUIDO' WHERE status = 'REALIZADO';
+UPDATE "Appointment" SET status = 'CONCLUIDO' WHERE status::text = 'REALIZADO';
 
 DO $$ BEGIN
   CREATE TYPE "AppointmentHistoryAction" AS ENUM (
@@ -314,8 +314,8 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- === Company operations ===
-UPDATE "Company" SET status = 'ATIVA' WHERE status = 'ACTIVE';
-UPDATE "Company" SET status = 'INATIVA' WHERE status = 'INACTIVE';
+UPDATE "Company" SET status = 'ATIVA' WHERE status::text = 'ACTIVE';
+UPDATE "Company" SET status = 'INATIVA' WHERE status::text = 'INACTIVE';
 
 DO $$ BEGIN
   CREATE TYPE "CompanySize" AS ENUM ('PEQUENA', 'MEDIA', 'GRANDE');
@@ -404,8 +404,8 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- === Collaborator (Patient) operations ===
-UPDATE "Patient" SET status = 'ATIVO' WHERE status = 'ACTIVE';
-UPDATE "Patient" SET status = 'INATIVO' WHERE status = 'INACTIVE';
+UPDATE "Patient" SET status = 'ATIVO' WHERE status::text = 'ACTIVE';
+UPDATE "Patient" SET status = 'INATIVO' WHERE status::text = 'INACTIVE';
 
 DO $$ BEGIN
   CREATE TYPE "PatientHistoryAction" AS ENUM (

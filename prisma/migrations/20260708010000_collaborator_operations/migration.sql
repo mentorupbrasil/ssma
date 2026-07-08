@@ -5,8 +5,8 @@ ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'AFASTADO';
 ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'DESLIGADO';
 ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'PENDENTE';
 
-UPDATE "Patient" SET status = 'ATIVO' WHERE status = 'ACTIVE';
-UPDATE "Patient" SET status = 'INATIVO' WHERE status = 'INACTIVE';
+UPDATE "Patient" SET status = 'ATIVO' WHERE status::text = 'ACTIVE';
+UPDATE "Patient" SET status = 'INATIVO' WHERE status::text = 'INACTIVE';
 
 DO $$ BEGIN
   CREATE TYPE "PatientHistoryAction" AS ENUM (

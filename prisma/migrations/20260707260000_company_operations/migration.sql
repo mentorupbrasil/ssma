@@ -4,8 +4,8 @@ ALTER TYPE "CompanyStatus" ADD VALUE IF NOT EXISTS 'INATIVA';
 ALTER TYPE "CompanyStatus" ADD VALUE IF NOT EXISTS 'PENDENTE';
 ALTER TYPE "CompanyStatus" ADD VALUE IF NOT EXISTS 'BLOQUEADA';
 
-UPDATE "Company" SET status = 'ATIVA' WHERE status = 'ACTIVE';
-UPDATE "Company" SET status = 'INATIVA' WHERE status = 'INACTIVE';
+UPDATE "Company" SET status = 'ATIVA' WHERE status::text = 'ACTIVE';
+UPDATE "Company" SET status = 'INATIVA' WHERE status::text = 'INACTIVE';
 
 -- New enums
 DO $$ BEGIN
