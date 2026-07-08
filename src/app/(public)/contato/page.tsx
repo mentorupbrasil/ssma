@@ -2,9 +2,13 @@ import { MessageCircle } from "lucide-react";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { ContactQuickActions } from "@/components/public/ContactQuickActions";
 import { ContactInfoPanel } from "@/components/public/ContactInfoPanel";
+import { LocationMap } from "@/components/public/LocationMap";
 import { PageHero } from "@/components/public/PageHero";
 import { PageSection } from "@/components/public/PageSection";
-import { getClinicSiteConfig } from "@/config/clinic";
+import {
+  formatClinicCoordinates,
+  getClinicSiteConfig,
+} from "@/config/clinic";
 import { resolveContactPrefill, CONTACT_WHATSAPP_MESSAGES } from "@/data/contact";
 import { whatsappLink } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
@@ -19,6 +23,8 @@ export default async function ContatoPage({
   const params = await searchParams;
   const clinic = getClinicSiteConfig();
   const prefill = resolveContactPrefill(params);
+  const locationLabel = [clinic.city, clinic.state].filter(Boolean).join(", ");
+  const coordinates = formatClinicCoordinates(clinic.mapsLat, clinic.mapsLng);
 
   return (
     <>
@@ -61,16 +67,17 @@ export default async function ContatoPage({
 
           <div className="space-y-5">
             <ContactInfoPanel />
-            {clinic.hasMapEmbed && (
-              <div id="contato-mapa" className="contact-map-wrap scroll-mt-[calc(var(--header-height)+1rem)]">
-                <iframe
-                  src={clinic.googleMapsEmbedUrl}
-                  width="100%"
-                  height="100%"
-                  className="contact-map-frame"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  title={`Mapa — ${clinic.clinicName}`}
+            {(clinic.hasMapLink || coordinates) && (
+              <div
+                id="contato-mapa"
+                className="contact-map-wrap contact-map-wrap--interactive scroll-mt-[calc(var(--header-height)+1rem)]"
+              >
+                <LocationMap
+                  className="contact-map-interactive"
+                  fillOnExpand
+                  location={locationLabel || clinic.clinicName}
+                  coordinates={coordinates}
+                  mapsUrl={clinic.hasMapLink ? clinic.googleMapsExternalUrl : undefined}
                 />
               </div>
             )}

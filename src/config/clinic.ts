@@ -16,6 +16,8 @@ export type ClinicSiteConfig = {
   hasWhatsApp: boolean;
   hasMapEmbed: boolean;
   hasMapLink: boolean;
+  mapsLat: string;
+  mapsLng: string;
 };
 
 /** Dados institucionais da clínica — editar aqui quando necessário. */
@@ -192,7 +194,20 @@ export function getClinicSiteConfig(): ClinicSiteConfig {
     hasWhatsApp: Boolean(whatsapp),
     hasMapEmbed: Boolean(googleMapsEmbedUrl),
     hasMapLink: Boolean(googleMapsExternalUrl),
+    mapsLat,
+    mapsLng,
   };
+}
+
+/** Coordenadas legíveis para exibição no mapa interativo. */
+export function formatClinicCoordinates(lat: string, lng: string): string {
+  const latNum = parseFloat(lat);
+  const lngNum = parseFloat(lng);
+  if (Number.isNaN(latNum) || Number.isNaN(lngNum)) return "";
+
+  const latHem = latNum >= 0 ? "N" : "S";
+  const lngHem = lngNum >= 0 ? "E" : "W";
+  return `${Math.abs(latNum).toFixed(4)}° ${latHem}, ${Math.abs(lngNum).toFixed(4)}° ${lngHem}`;
 }
 
 /** Quebra horários separados por |, quebra de linha ou blocos de dias. */

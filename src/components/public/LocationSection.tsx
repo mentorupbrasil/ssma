@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Clock, ExternalLink, MapPin, MessageCircle, Phone } from "lucide-react";
 import { SectionTitle } from "@/components/public/SectionTitle";
+import { LocationMap } from "@/components/public/LocationMap";
 import { Button } from "@/components/ui/button";
 import {
   formatClinicAddressLines,
+  formatClinicCoordinates,
   formatOpeningHoursLines,
   getClinicSiteConfig,
 } from "@/config/clinic";
@@ -15,6 +17,8 @@ export function LocationSection() {
     ? formatClinicAddressLines(clinic)
     : ["Endereço em atualização"];
   const hoursLines = formatOpeningHoursLines(clinic.openingHours);
+  const locationLabel = [clinic.city, clinic.state].filter(Boolean).join(", ");
+  const coordinates = formatClinicCoordinates(clinic.mapsLat, clinic.mapsLng);
 
   return (
     <section className="location-section scroll-mt-[var(--header-height)]">
@@ -27,29 +31,14 @@ export function LocationSection() {
         />
 
         <div className="location-grid">
-          <div className="location-map-wrap">
-            {clinic.hasMapEmbed ? (
-              <iframe
-                src={clinic.googleMapsEmbedUrl}
-                width="100%"
-                height="100%"
-                className="location-map-frame"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title={`Mapa — ${clinic.clinicName}`}
-              />
-            ) : (
-              <div className="location-map-placeholder">
-                <MapPin className="location-map-placeholder-icon" strokeWidth={1.5} />
-                <p className="location-map-placeholder-title">Localização da clínica</p>
-                <p className="location-map-placeholder-desc">
-                  {clinic.hasMapLink
-                    ? "Use o botão abaixo para abrir a localização no Google Maps."
-                    : "Endereço disponível ao lado para consulta e orientação de acesso."}
-                </p>
-              </div>
-            )}
+          <div className="location-map-wrap location-map-wrap--interactive">
+            <LocationMap
+              className="location-map-interactive"
+              fillOnExpand
+              location={locationLabel || clinic.clinicName}
+              coordinates={coordinates}
+              mapsUrl={clinic.hasMapLink ? clinic.googleMapsExternalUrl : undefined}
+            />
           </div>
 
           <div className="location-info-card">
