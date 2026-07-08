@@ -105,6 +105,7 @@ export function canAccessRoute(role: UserRole, pathname: string): boolean {
 export const DASHBOARD_NAV = [
   { href: "/dashboard", label: "Visão geral", icon: "LayoutDashboard", permission: "dashboard.view" as Permission },
   { href: "/dashboard/encaminhamentos", label: "Encaminhamentos", icon: "FileText", permission: "referrals.manage" as Permission },
+  { href: "/dashboard/pre-encaminhamentos", label: "Pré-encaminhamentos", icon: "Inbox", permission: "referrals.manage" as Permission },
   { href: "/dashboard/agenda", label: "Agenda", icon: "Calendar", permission: "appointments.manage" as Permission },
   { href: "/dashboard/empresas", label: "Empresas", icon: "Building2", permission: "companies.manage" as Permission },
   { href: "/dashboard/pacientes", label: "Pacientes", icon: "Users", permission: "patients.manage" as Permission },

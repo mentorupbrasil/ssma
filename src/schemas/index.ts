@@ -178,8 +178,10 @@ export type PreReferralFormData = z.infer<typeof preReferralFormSchema>;
 export const preReferralStatusSchema = z.enum([
   "NOVO",
   "EM_ANALISE",
+  "AGUARDANDO_RETORNO",
   "CONVERTIDO",
   "CANCELADO",
+  "DUPLICADO",
 ]);
 
 export const companySchema = z.object({
@@ -251,8 +253,10 @@ export const leadStatusSchema = z.enum([
 export const appointmentStatusSchema = z.enum([
   "AGENDADO",
   "CONFIRMADO",
-  "REALIZADO",
+  "EM_ATENDIMENTO",
+  "CONCLUIDO",
   "FALTOU",
+  "REAGENDADO",
   "CANCELADO",
 ]);
 
@@ -265,6 +269,46 @@ export const appointmentSchema = z.object({
   type: z.string().optional(),
   notes: z.string().optional(),
   status: appointmentStatusSchema.default("AGENDADO"),
+});
+
+export const createAppointmentSchema = z.object({
+  title: z.string().optional(),
+  scheduledAt: z.string().min(1, "Data/hora obrigatória"),
+  endAt: z.string().optional(),
+  patientId: z.string().min(1, "Colaborador obrigatório"),
+  companyId: z.string().optional(),
+  referralId: z.string().optional(),
+  protocol: z.string().optional(),
+  clinicalExamType: z
+    .enum([
+      "ADMISSIONAL",
+      "DEMISSIONAL",
+      "PERIODICO",
+      "MUDANCA_FUNCAO",
+      "RETORNO_TRABALHO",
+    ])
+    .optional(),
+  type: z.string().optional(),
+  notes: z.string().optional(),
+  internalNotes: z.string().optional(),
+  attendanceNotes: z.string().optional(),
+  professionalId: z.string().optional(),
+  roomName: z.string().optional(),
+  examIds: z.array(z.string()).optional(),
+});
+
+export const rescheduleAppointmentSchema = z.object({
+  scheduledAt: z.string().min(1, "Nova data/hora obrigatória"),
+  notes: z.string().min(3, "Informe o motivo do reagendamento"),
+});
+
+export const cancelAppointmentSchema = z.object({
+  notes: z.string().min(3, "Informe o motivo"),
+});
+
+export const addAppointmentNoteSchema = z.object({
+  note: z.string().min(2, "Observação obrigatória"),
+  type: z.enum(["internal", "attendance"]).default("internal"),
 });
 
 export const contactActionSchema = z.object({

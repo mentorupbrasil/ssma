@@ -5614,6 +5614,40 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.referral-stat-grid-5 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .referral-stat-grid-5 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .referral-stat-grid-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.referral-filters-grid-pre-ext {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .referral-filters-grid-pre-ext {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .referral-filters-grid-pre-ext {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .referral-filters-grid-pre {
   grid-template-columns: 1fr;
 }
@@ -5631,5 +5665,51 @@
   border-radius: 0.875rem;
   border: 1px solid rgb(251 191 36 / 0.5);
   background: rgb(255 251 235);
+}
+
+.appointment-card {
+  border-radius: 0.875rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 1rem 1.125rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.appointment-card:hover {
+  border-color: rgb(16 185 129 / 0.35);
+  box-shadow: 0 4px 12px rgb(15 61 74 / 0.06);
+}
+
+.appointment-card-time {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f3d4a;
+  line-height: 1.2;
+}
+
+.appointment-card-title {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #0f3d4a;
+}
+
+.appointment-card-line {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.appointment-card-meta {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.appointment-card-notes {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-style: italic;
 }
 

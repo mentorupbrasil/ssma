@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -102,7 +103,9 @@ export function ReferralDetailContent({
     ? `https://wa.me/55${phone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappMessage)}`
     : null;
 
-  const activeAppointment = referral.appointments.find((a) => a.status !== "CANCELADO");
+  const activeAppointment = referral.appointments.find(
+    (a) => !["CANCELADO", "REAGENDADO", "FALTOU"].includes(a.status)
+  );
 
   const handleCancelAppointment = async () => {
     if (!activeAppointment) return;
@@ -386,15 +389,23 @@ export function ReferralDetailContent({
           {activeAppointment.notes && (
             <p className="mt-1 text-xs text-slate-500">{activeAppointment.notes}</p>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-2 text-red-600"
-            onClick={handleCancelAppointment}
-          >
-            <XCircle className="mr-1.5 h-4 w-4" />
-            Cancelar agendamento
-          </Button>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link
+              href={`/dashboard/agenda?id=${activeAppointment.id}`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              Ver na agenda
+            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600"
+              onClick={handleCancelAppointment}
+            >
+              <XCircle className="mr-1.5 h-4 w-4" />
+              Cancelar agendamento
+            </Button>
+          </div>
         </div>
       )}
 

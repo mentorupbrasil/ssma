@@ -189,3 +189,136 @@ DO $$ BEGIN
     FOREIGN KEY ("uploadedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- === Pre-referral operations (v2) ===
+ALTER TYPE "PreReferralStatus" ADD VALUE IF NOT EXISTS 'AGUARDANDO_RETORNO';
+ALTER TYPE "PreReferralStatus" ADD VALUE IF NOT EXISTS 'DUPLICADO';
+
+ALTER TABLE "PublicReferralRequest" ADD COLUMN IF NOT EXISTS "source" TEXT NOT NULL DEFAULT 'site_pre_referral';
+ALTER TABLE "PublicReferralRequest" ADD COLUMN IF NOT EXISTS "assignedToId" TEXT;
+ALTER TABLE "PublicReferralRequest" ADD COLUMN IF NOT EXISTS "convertedReferralId" TEXT;
+
+DO $$ BEGIN
+  ALTER TABLE "PublicReferralRequest"
+    ADD CONSTRAINT "PublicReferralRequest_assignedToId_fkey"
+    FOREIGN KEY ("assignedToId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS "PreReferralHistory" (
+    "id" TEXT NOT NULL,
+    "preReferralId" TEXT NOT NULL,
+    "action" TEXT NOT NULL,
+    "fromStatus" "PreReferralStatus",
+    "toStatus" "PreReferralStatus",
+    "notes" TEXT,
+    "performedById" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "PreReferralHistory_pkey" PRIMARY KEY ("id")
+);
+
+DO $$ BEGIN
+  ALTER TABLE "PreReferralHistory"
+    ADD CONSTRAINT "PreReferralHistory_preReferralId_fkey"
+    FOREIGN KEY ("preReferralId") REFERENCES "PublicReferralRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "PreReferralHistory"
+    ADD CONSTRAINT "PreReferralHistory_performedById_fkey"
+    FOREIGN KEY ("performedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- === Appointment operations ===
+ALTER TYPE "AppointmentStatus" ADD VALUE IF NOT EXISTS 'EM_ATENDIMENTO';
+ALTER TYPE "AppointmentStatus" ADD VALUE IF NOT EXISTS 'CONCLUIDO';
+ALTER TYPE "AppointmentStatus" ADD VALUE IF NOT EXISTS 'REAGENDADO';
+
+UPDATE "Appointment" SET status = 'CONCLUIDO' WHERE status = 'REALIZADO';
+
+DO $$ BEGIN
+  CREATE TYPE "AppointmentHistoryAction" AS ENUM (
+    'CREATED', 'CONFIRMED', 'RESCHEDULED', 'CANCELLED', 'NO_SHOW',
+    'ATTENDANCE_STARTED', 'COMPLETED', 'NOTE_ADDED', 'STATUS_CHANGED'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "protocol" TEXT;
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "endAt" TIMESTAMP(3);
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "clinicalExamType" "ClinicalExamType";
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "internalNotes" TEXT;
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "attendanceNotes" TEXT;
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "professionalId" TEXT;
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "roomName" TEXT;
+ALTER TABLE "Appointment" ADD COLUMN IF NOT EXISTS "createdByUserId" TEXT;
+
+DO $$ BEGIN
+  ALTER TABLE "Appointment"
+    ADD CONSTRAINT "Appointment_professionalId_fkey"
+    FOREIGN KEY ("professionalId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "Appointment"
+    ADD CONSTRAINT "Appointment_createdByUserId_fkey"
+    FOREIGN KEY ("createdByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS "AppointmentExam" (
+    "id" TEXT NOT NULL,
+    "appointmentId" TEXT NOT NULL,
+    "examId" TEXT NOT NULL,
+    "status" "ReferralExamStatus" NOT NULL DEFAULT 'PENDENTE',
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "AppointmentExam_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS "AppointmentExam_appointmentId_examId_key"
+  ON "AppointmentExam"("appointmentId", "examId");
+
+DO $$ BEGIN
+  ALTER TABLE "AppointmentExam"
+    ADD CONSTRAINT "AppointmentExam_appointmentId_fkey"
+    FOREIGN KEY ("appointmentId") REFERENCES "Appointment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "AppointmentExam"
+    ADD CONSTRAINT "AppointmentExam_examId_fkey"
+    FOREIGN KEY ("examId") REFERENCES "Exam"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS "AppointmentHistory" (
+    "id" TEXT NOT NULL,
+    "appointmentId" TEXT NOT NULL,
+    "action" "AppointmentHistoryAction" NOT NULL,
+    "fromStatus" "AppointmentStatus",
+    "toStatus" "AppointmentStatus",
+    "notes" TEXT,
+    "performedByUserId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "AppointmentHistory_pkey" PRIMARY KEY ("id")
+);
+
+DO $$ BEGIN
+  ALTER TABLE "AppointmentHistory"
+    ADD CONSTRAINT "AppointmentHistory_appointmentId_fkey"
+    FOREIGN KEY ("appointmentId") REFERENCES "Appointment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "AppointmentHistory"
+    ADD CONSTRAINT "AppointmentHistory_performedByUserId_fkey"
+    FOREIGN KEY ("performedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

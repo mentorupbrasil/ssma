@@ -219,7 +219,7 @@ export async function submitPreReferral(
   try {
     const protocol = await generateProtocol();
 
-    await prisma.publicReferralRequest.create({
+    const created = await prisma.publicReferralRequest.create({
       data: {
         protocol,
         companyName: d.companyName,
@@ -237,8 +237,22 @@ export async function submitPreReferral(
         notes: d.notes?.trim() || null,
         consentAccepted: true,
         status: "NOVO",
+        source: "site_pre_referral",
       },
     });
+
+    try {
+      await prisma.preReferralHistory.create({
+        data: {
+          preReferralId: created.id,
+          action: "RECEIVED",
+          toStatus: "NOVO",
+          notes: "Solicitação recebida pelo formulário público",
+        },
+      });
+    } catch {
+      // history table may not exist yet
+    }
 
     await createAuditLog({
       action: "CREATE",
@@ -265,37 +279,11 @@ export async function submitPreReferral(
 
 export async function updatePreReferralStatus(
   id: string,
-  status: unknown
+  status: unknown,
+  notes?: string
 ): Promise<ActionResult> {
-  const parsedStatus = preReferralStatusSchema.safeParse(status);
-  if (!parsedStatus.success) {
-    return { success: false, error: "Status inválido." };
-  }
-
-  try {
-    const session = await requirePermission("referrals.manage");
-
-    await prisma.publicReferralRequest.update({
-      where: { id },
-      data: { status: parsedStatus.data },
-    });
-
-    await createAuditLog({
-      userId: session.user.id,
-      action: "UPDATE",
-      entity: "PublicReferralRequest",
-      entityId: id,
-      details: `Status alterado para ${parsedStatus.data}`,
-    });
-
-    revalidatePath("/dashboard/pre-encaminhamentos");
-    revalidatePath(`/dashboard/pre-encaminhamentos/${id}`);
-    revalidatePath("/dashboard");
-
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: actionError(e, "Não autorizado.") };
-  }
+  const { updatePreReferralStatusWithNotes } = await import("@/actions/pre-referrals");
+  return updatePreReferralStatusWithNotes(id, status, notes);
 }
 
 export async function submitContactMessage(data: unknown): Promise<ActionResult> {
@@ -522,72 +510,21 @@ export async function createPatient(data: unknown): Promise<ActionResult<{ id: s
 }
 
 export async function createAppointment(data: unknown): Promise<ActionResult<{ id: string }>> {
+  const { createAppointmentFull } = await import("@/actions/appointments");
   const parsed = appointmentSchema.safeParse(data);
   if (!parsed.success) {
     return { success: false, error: "Dados inválidos. Verifique o formulário." };
   }
-
-  try {
-    const session = await requirePermission("appointments.manage");
-    const d = parsed.data;
-
-    const patient = await prisma.patient.findUnique({
-      where: { id: d.patientId },
-      select: { companyId: true, fullName: true },
-    });
-    if (!patient) {
-      return { success: false, error: "Paciente não encontrado." };
-    }
-
-    if (isEmpresaUser(session) && patient.companyId !== session.user.companyId) {
-      return { success: false, error: "Paciente não pertence à sua empresa." };
-    }
-
-    const companyId = d.companyId ?? patient.companyId ?? undefined;
-
-    if (d.referralId) {
-      await assertReferralAccess(session, d.referralId);
-    }
-
-    const appointment = await prisma.appointment.create({
-      data: {
-        title: d.title,
-        scheduledAt: new Date(d.scheduledAt),
-        status: d.status,
-        type: d.type,
-        notes: d.notes,
-        patientId: d.patientId,
-        companyId,
-        referralId: d.referralId || undefined,
-      },
-    });
-
-    if (d.referralId) {
-      await prisma.referral.update({
-        where: { id: d.referralId },
-        data: { status: "AGENDADO" },
-      });
-    }
-
-    await createAuditLog({
-      userId: session.user.id,
-      action: "CREATE",
-      entity: "Appointment",
-      entityId: appointment.id,
-      details: `Agendamento: ${d.title}`,
-    });
-
-    revalidatePath("/dashboard/agenda");
-    revalidatePath("/dashboard");
-    if (d.referralId) {
-      revalidatePath("/dashboard/encaminhamentos");
-      revalidatePath(`/dashboard/encaminhamentos/${d.referralId}`);
-    }
-
-    return { success: true, id: appointment.id };
-  } catch (error) {
-    return { success: false, error: actionError(error, "Erro ao criar agendamento.") };
-  }
+  const d = parsed.data;
+  return createAppointmentFull({
+    title: d.title,
+    scheduledAt: d.scheduledAt,
+    patientId: d.patientId,
+    companyId: d.companyId,
+    referralId: d.referralId,
+    type: d.type,
+    notes: d.notes,
+  });
 }
 
 export async function getEmpresaPrefill() {

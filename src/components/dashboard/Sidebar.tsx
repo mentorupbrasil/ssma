@@ -16,6 +16,7 @@ import {
   Shield,
   LogOut,
   Menu,
+  Inbox,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/types/roles";
@@ -37,6 +38,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   UserCog,
   Settings,
   Shield,
+  Inbox,
 };
 
 type SidebarProps = {

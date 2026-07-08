@@ -22,8 +22,11 @@ async function PreEncaminhamentosData({ searchParams }: { searchParams: SearchPa
   const filters = {
     q: getParam(params, "q") || undefined,
     status: getParam(params, "status") || undefined,
+    queue: getParam(params, "queue") || undefined,
     dateFrom: getParam(params, "dateFrom") || undefined,
     dateTo: getParam(params, "dateTo") || undefined,
+    clinicalExamType: getParam(params, "clinicalExamType") || undefined,
+    source: getParam(params, "source") || undefined,
     page: Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1),
   };
 

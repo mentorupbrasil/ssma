@@ -1,93 +1,152 @@
-import Link from "next/link";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Plus } from "lucide-react";
+import { Suspense } from "react";
+import { format, startOfDay, endOfDay } from "date-fns";
+import type { AppointmentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { PageHeader } from "@/components/dashboard/PageHeader";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { requireAuthSession } from "@/lib/page-auth";
-import { getCompanyFilter } from "@/lib/authz";
-import { hasPermission } from "@/lib/permissions";
+import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
+import {
+  buildAppointmentWhere,
+  APPOINTMENT_STAT_CARDS,
+  appointmentIncludeList,
+  serializeAppointmentListItem,
+  type AppointmentViewMode,
+} from "@/lib/appointments";
+import { AgendaClient } from "@/components/dashboard/appointments/AgendaClient";
+import { Loader2 } from "lucide-react";
 
-export default async function AgendaPage() {
+const PAGE_SIZE = 100;
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function getParam(params: Record<string, string | string[] | undefined>, key: string): string {
+  const value = params[key];
+  if (Array.isArray(value)) return value[0] ?? "";
+  return value ?? "";
+}
+
+async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
   const session = await requireAuthSession();
-  const where = getCompanyFilter(session);
+  const isEmpresa = isEmpresaUser(session);
+  const companyScope = getCompanyFilter(session).companyId;
 
-  const appointments = await prisma.appointment.findMany({
-    where,
-    include: { patient: true, company: true, referral: true },
-    orderBy: { scheduledAt: "asc" },
-  });
+  const filters = {
+    q: getParam(params, "q") || undefined,
+    status: getParam(params, "status") || undefined,
+    companyId: getParam(params, "companyId") || undefined,
+    patientId: getParam(params, "patientId") || undefined,
+    clinicalExamType: getParam(params, "clinicalExamType") || undefined,
+    professionalId: getParam(params, "professionalId") || undefined,
+    roomName: getParam(params, "roomName") || undefined,
+    date: getParam(params, "date") || format(new Date(), "yyyy-MM-dd"),
+    dateFrom: getParam(params, "dateFrom") || undefined,
+    dateTo: getParam(params, "dateTo") || undefined,
+    view: (getParam(params, "view") || "day") as AppointmentViewMode,
+  };
 
-  const grouped = appointments.reduce<Record<string, typeof appointments>>((acc, apt) => {
-    const key = format(apt.scheduledAt, "yyyy-MM-dd");
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(apt);
-    return acc;
-  }, {});
+  const professionalScopeId =
+    session.user.role === "MEDICO" ? session.user.id : undefined;
 
-  const canCreate = hasPermission(session.user.role, "appointments.manage");
+  const where = buildAppointmentWhere(filters, companyScope, professionalScopeId);
+
+  const todayStart = startOfDay(new Date());
+  const todayEnd = endOfDay(new Date());
+  const baseWhere = companyScope ? { companyId: companyScope } : {};
+
+  const [total, appointments, countResults, companies, patients, professionals] =
+    await Promise.all([
+      prisma.appointment.count({ where }),
+      prisma.appointment.findMany({
+        where,
+        include: appointmentIncludeList,
+        orderBy: { scheduledAt: "asc" },
+        take: PAGE_SIZE,
+      }),
+      Promise.all(
+        APPOINTMENT_STAT_CARDS.map(async (card) => {
+          if (card.status === "TODAY_AGENDADO") {
+            return {
+              key: card.key,
+              count: await prisma.appointment.count({
+                where: {
+                  ...baseWhere,
+                  status: "AGENDADO",
+                  scheduledAt: { gte: todayStart, lte: todayEnd },
+                  ...(professionalScopeId ? { professionalId: professionalScopeId } : {}),
+                },
+              }),
+            };
+          }
+          return {
+            key: card.key,
+            count: await prisma.appointment.count({
+              where: {
+                ...baseWhere,
+                status: card.status as AppointmentStatus,
+                scheduledAt: { gte: todayStart, lte: todayEnd },
+                ...(professionalScopeId ? { professionalId: professionalScopeId } : {}),
+              },
+            }),
+          };
+        })
+      ),
+      isEmpresa
+        ? Promise.resolve([])
+        : prisma.company.findMany({
+            select: { id: true, legalName: true, tradeName: true },
+            orderBy: { legalName: "asc" },
+            take: 200,
+          }),
+      prisma.patient.findMany({
+        where: companyScope ? { companyId: companyScope, status: "ACTIVE" } : { status: "ACTIVE" },
+        select: { id: true, fullName: true },
+        orderBy: { fullName: "asc" },
+        take: 300,
+      }),
+      prisma.user.findMany({
+        where: { status: "ACTIVE", role: { in: ["MEDICO", "TECNICO", "ADMIN"] } },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+    ]);
+
+  const statusCounts = Object.fromEntries(countResults.map((c) => [c.key, c.count]));
+
+  const items = appointments.map(serializeAppointmentListItem);
+
+  const canManage =
+    session.user.role !== "VISUALIZADOR" &&
+    (session.user.role !== "EMPRESA" || isEmpresa);
 
   return (
-    <div>
-      <PageHeader title="Agenda" description="Agendamentos de atendimentos e exames">
-        {canCreate && (
-          <Link href="/dashboard/agenda/novo">
-            <Button variant="brand">
-              <Plus className="mr-2 h-4 w-4" /> Novo agendamento
-            </Button>
-          </Link>
-        )}
-      </PageHeader>
+    <AgendaClient
+      initialItems={items}
+      initialTotal={total}
+      statusCounts={statusCounts}
+      companies={companies.map((c) => ({
+        id: c.id,
+        name: c.tradeName ?? c.legalName,
+      }))}
+      patients={patients.map((p) => ({ id: p.id, name: p.fullName }))}
+      professionals={professionals}
+      rooms={["Sala 1", "Sala 2", "Sala 3", "Unidade Centro", "Unidade Norte"]}
+      canManage={canManage && session.user.role !== "FINANCEIRO"}
+      userRole={session.user.role}
+      filters={filters}
+    />
+  );
+}
 
-      {Object.keys(grouped).length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-slate-500">
-            Nenhum agendamento encontrado.
-            {canCreate && (
-              <p className="mt-2">
-                <Link href="/dashboard/agenda/novo" className="text-[var(--brand-green)] underline">
-                  Criar primeiro agendamento
-                </Link>
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {Object.entries(grouped).map(([date, items]) => (
-            <div key={date}>
-              <h3 className="mb-3 font-semibold text-[#0F3D4A]">
-                {format(new Date(date), "EEEE, d 'de' MMMM", { locale: ptBR })}
-              </h3>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((a) => (
-                  <Card key={a.id}>
-                    <CardContent className="pt-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="font-medium">{a.title}</p>
-                          <p className="text-sm text-slate-500">{format(a.scheduledAt, "HH:mm")}</p>
-                          {a.patient && <p className="mt-1 text-sm">{a.patient.fullName}</p>}
-                          {a.company && (
-                            <p className="text-xs text-slate-400">{a.company.tradeName}</p>
-                          )}
-                          {a.referral && (
-                            <p className="text-xs text-slate-400">Ref: {a.referral.protocol}</p>
-                          )}
-                        </div>
-                        <StatusBadge status={a.status} type="appointment" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ))}
+export default function AgendaPage({ searchParams }: { searchParams: SearchParams }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
         </div>
-      )}
-    </div>
+      }
+    >
+      <AgendaData searchParams={searchParams} />
+    </Suspense>
   );
 }

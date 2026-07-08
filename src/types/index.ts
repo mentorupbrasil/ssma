@@ -46,9 +46,21 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
 export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
   AGENDADO: "Agendado",
   CONFIRMADO: "Confirmado",
-  REALIZADO: "Realizado",
+  EM_ATENDIMENTO: "Em atendimento",
+  CONCLUIDO: "Concluído",
   FALTOU: "Faltou",
+  REAGENDADO: "Reagendado",
   CANCELADO: "Cancelado",
+};
+
+export const APPOINTMENT_STATUS_COLORS: Record<AppointmentStatus, string> = {
+  AGENDADO: "bg-violet-100 text-violet-800",
+  CONFIRMADO: "bg-blue-100 text-blue-800",
+  EM_ATENDIMENTO: "bg-cyan-100 text-cyan-800",
+  CONCLUIDO: "bg-emerald-100 text-emerald-800",
+  FALTOU: "bg-red-100 text-red-800",
+  REAGENDADO: "bg-amber-100 text-amber-800",
+  CANCELADO: "bg-slate-100 text-slate-600",
 };
 
 export const DOCUMENT_STATUS_LABELS: Record<DocumentStatus, string> = {
@@ -85,15 +97,19 @@ export const EXAM_SELECTION_MODE_LABELS: Record<ExamSelectionMode, string> = {
 export const PRE_REFERRAL_STATUS_LABELS: Record<PreReferralStatus, string> = {
   NOVO: "Novo",
   EM_ANALISE: "Em análise",
+  AGUARDANDO_RETORNO: "Aguardando retorno",
   CONVERTIDO: "Convertido",
   CANCELADO: "Cancelado",
+  DUPLICADO: "Duplicado",
 };
 
 export const PRE_REFERRAL_STATUS_COLORS: Record<PreReferralStatus, string> = {
   NOVO: "bg-blue-100 text-blue-800",
   EM_ANALISE: "bg-amber-100 text-amber-800",
+  AGUARDANDO_RETORNO: "bg-orange-100 text-orange-800",
   CONVERTIDO: "bg-emerald-100 text-emerald-800",
   CANCELADO: "bg-slate-100 text-slate-600",
+  DUPLICADO: "bg-violet-100 text-violet-800",
 };
 
 export const CONTACT_MESSAGE_STATUS_LABELS: Record<ContactMessageStatus, string> = {

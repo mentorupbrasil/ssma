@@ -215,73 +215,16 @@ export async function updateReferralStatusWithNotes(
 
 export async function scheduleReferralAppointment(
   referralId: string,
-  data: { scheduledAt: string; notes?: string }
-): Promise<ActionResult> {
-  try {
-    const session = await requirePermission("referrals.manage");
-    if (session.user.role === "EMPRESA") throw new Error("FORBIDDEN");
-    await assertReferralAccess(session, referralId);
-
-    const referral = await prisma.referral.findUnique({
-      where: { id: referralId },
-      include: { patient: true, company: true },
-    });
-    if (!referral) return { success: false, error: "Encaminhamento não encontrado." };
-
-    const scheduledAt = new Date(data.scheduledAt);
-    if (Number.isNaN(scheduledAt.getTime())) {
-      return { success: false, error: "Data/hora inválida." };
-    }
-
-    const previousStatus = referral.status;
-
-    await prisma.$transaction(async (tx) => {
-      await tx.appointment.create({
-        data: {
-          title: `Atendimento ${referral.protocol}`,
-          scheduledAt,
-          status: "AGENDADO",
-          type: "Exame ocupacional",
-          notes: data.notes?.trim() || null,
-          companyId: referral.companyId,
-          patientId: referral.patientId,
-          referralId: referral.id,
-        },
-      });
-
-      await tx.referral.update({
-        where: { id: referralId },
-        data: {
-          scheduledAt,
-          status: "AGENDADO",
-        },
-      });
-
-      await tx.referralStatusHistory.create({
-        data: {
-          referralId,
-          fromStatus: previousStatus,
-          toStatus: "AGENDADO",
-          notes: data.notes?.trim() || "Agendamento criado",
-          changedById: session.user.id,
-        },
-      });
-    });
-
-    await createAuditLog({
-      userId: session.user.id,
-      action: "CREATE",
-      entity: "Appointment",
-      entityId: referralId,
-      details: `Agendamento para ${scheduledAt.toISOString()}`,
-    });
-
+  data: { scheduledAt: string; notes?: string; professionalId?: string; roomName?: string },
+  options?: { forceConflict?: boolean }
+): Promise<ActionResult<{ id?: string }>> {
+  const { createAppointmentFromReferral } = await import("@/actions/appointments");
+  const result = await createAppointmentFromReferral(referralId, data, options);
+  if (result.success) {
     revalidatePath("/dashboard/encaminhamentos");
-    revalidatePath("/dashboard/agenda");
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: actionError(error, "Erro ao agendar.") };
+    revalidatePath(`/dashboard/encaminhamentos/${referralId}`);
   }
+  return result;
 }
 
 export async function attachReferralDocument(
@@ -365,9 +308,25 @@ export async function cancelReferralAppointment(
     if (!referral) return { success: false, error: "Encaminhamento não encontrado." };
 
     await prisma.$transaction(async (tx) => {
+      const apt = await tx.appointment.findUnique({
+        where: { id: appointmentId },
+        select: { status: true },
+      });
+
       await tx.appointment.update({
         where: { id: appointmentId },
         data: { status: "CANCELADO" },
+      });
+
+      await tx.appointmentHistory.create({
+        data: {
+          appointmentId,
+          action: "CANCELLED",
+          fromStatus: apt?.status,
+          toStatus: "CANCELADO",
+          notes: notes?.trim() || "Agendamento cancelado via encaminhamento",
+          performedByUserId: session.user.id,
+        },
       });
 
       await tx.referral.update({
@@ -449,124 +408,6 @@ export async function deleteReferralDocument(
 export async function convertPreReferralToReferral(
   preReferralId: string
 ): Promise<ActionResult<{ referralId: string; protocol: string }>> {
-  try {
-    const session = await requirePermission("referrals.manage");
-    if (isEmpresaUser(session)) throw new Error("FORBIDDEN");
-
-    const pre = await prisma.publicReferralRequest.findUnique({
-      where: { id: preReferralId },
-    });
-    if (!pre) return { success: false, error: "Pré-encaminhamento não encontrado." };
-    if (pre.status === "CONVERTIDO") {
-      return { success: false, error: "Este pré-encaminhamento já foi convertido." };
-    }
-
-    const protocol = await generateProtocol();
-
-    const clinicalTypeMap: Record<string, ClinicalExamType> = {
-      ADMISSIONAL: "ADMISSIONAL",
-      DEMISSIONAL: "DEMISSIONAL",
-      PERIODICO: "PERIODICO",
-      RETORNO_TRABALHO: "RETORNO_TRABALHO",
-      MUDANCA_FUNCAO: "MUDANCA_FUNCAO",
-      NAO_SEI_INFORMAR: "ADMISSIONAL",
-    };
-
-    const clinicalExamType = clinicalTypeMap[pre.clinicalExamType] ?? "ADMISSIONAL";
-
-    let company = pre.companyDocument
-      ? await prisma.company.findFirst({ where: { cnpj: pre.companyDocument } })
-      : null;
-
-    if (!company) {
-      const cnpjPlaceholder = pre.companyDocument ?? `PRE${Date.now()}`.slice(0, 14);
-      company = await prisma.company.create({
-        data: {
-          legalName: pre.companyName,
-          tradeName: pre.companyName,
-          cnpj: cnpjPlaceholder.padEnd(14, "0").slice(0, 14),
-          email: pre.email,
-          phone: pre.whatsapp,
-          whatsapp: pre.whatsapp,
-          responsibleName: pre.responsibleName,
-          status: "ACTIVE",
-        },
-      });
-    }
-
-    const cpfPlaceholder =
-      pre.employeeDocument?.replace(/\D/g, "") ||
-      `9${String(Date.now()).slice(-10)}`.padStart(11, "1");
-
-    let patient = await prisma.patient.findUnique({ where: { cpf: cpfPlaceholder } });
-    if (!patient) {
-      patient = await prisma.patient.create({
-        data: {
-          fullName: pre.employeeName,
-          cpf: cpfPlaceholder,
-          jobTitle: pre.employeeRole,
-          companyId: company.id,
-          status: "ACTIVE",
-        },
-      });
-    }
-
-    const examItems =
-      pre.examSelectionMode === "SELECIONAR"
-        ? pre.selectedExams.map((name) => ({
-            examName: name,
-            category: "COMPLEMENTAR" as ExamCategory,
-            status: "PENDENTE" as const,
-          }))
-        : [];
-
-    const referral = await prisma.referral.create({
-      data: {
-        protocol,
-        companyId: company.id,
-        patientId: patient.id,
-        clinicalExamType,
-        status: "NOVO",
-        authorizerName: pre.responsibleName,
-        companyPhone: pre.whatsapp,
-        companyEmail: pre.email,
-        internalNotes: pre.notes,
-        consentAccepted: pre.consentAccepted,
-        source: "PRE_REFERRAL",
-        preReferralId: pre.id,
-        assignedToId: session.user.id,
-        exams: { create: examItems },
-        statusHistory: {
-          create: {
-            toStatus: "NOVO",
-            notes: `Convertido do pré-encaminhamento ${pre.protocol}`,
-            changedById: session.user.id,
-          },
-        },
-      },
-    });
-
-    await prisma.publicReferralRequest.update({
-      where: { id: pre.id },
-      data: { status: "CONVERTIDO" },
-    });
-
-    await createAuditLog({
-      userId: session.user.id,
-      action: "CREATE",
-      entity: "Referral",
-      entityId: referral.id,
-      details: `Convertido de ${pre.protocol} → ${protocol}`,
-    });
-
-    revalidatePath("/dashboard/encaminhamentos");
-    revalidatePath("/dashboard/pre-encaminhamentos");
-    return { success: true, referralId: referral.id, protocol };
-  } catch (error) {
-    console.error("convertPreReferral error:", error);
-    if (isPrismaUniqueError(error)) {
-      return { success: false, error: "Conflito de dados ao converter. Verifique CNPJ/CPF." };
-    }
-    return { success: false, error: actionError(error, "Erro ao converter pré-encaminhamento.") };
-  }
+  const { convertPreReferralWithOptions } = await import("@/actions/pre-referrals");
+  return convertPreReferralWithOptions(preReferralId, {});
 }

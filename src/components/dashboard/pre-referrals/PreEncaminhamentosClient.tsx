@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
@@ -10,25 +10,37 @@ import {
   Search,
   MoreHorizontal,
   Eye,
-  ArrowRightCircle,
   MessageCircle,
+  ArrowRightCircle,
+  RefreshCw,
+  XCircle,
   ChevronLeft,
   ChevronRight,
   Loader2,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 import type { PreReferralStatus } from "@prisma/client";
-import type { PreReferralListItem } from "@/lib/pre-referrals";
+import type { PreReferralListItem, PreReferralDetailSerialized } from "@/lib/pre-referrals";
 import {
   PRE_REFERRAL_STAT_CARDS,
   PRE_REFERRAL_STATUS_TABS,
+  PRE_REFERRAL_SOURCE_LABELS,
+  buildPreReferralWhatsAppMessage,
+  getMissingPreReferralFields,
 } from "@/lib/pre-referrals";
 import { PRE_REFERRAL_CLINICAL_EXAM_LABELS } from "@/types";
+import {
+  getPreReferralDetail,
+  logPreReferralWhatsApp,
+  updatePreReferralStatusWithNotes,
+} from "@/actions/pre-referrals";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
-import { PreReferralStatusForm } from "@/components/dashboard/PreReferralStatusForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -38,6 +50,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -45,8 +64,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
+import { PreReferralDetailContent } from "./PreReferralDetailContent";
+import {
+  PreReferralStatusDialog,
+  PreReferralNoteDialog,
+  PreReferralConvertDialog,
+} from "./PreReferralDialogs";
 
-type PreEncaminhamentosClientProps = {
+type Props = {
   items: PreReferralListItem[];
   total: number;
   page: number;
@@ -57,29 +82,48 @@ type PreEncaminhamentosClientProps = {
   filters: {
     q?: string;
     status?: string;
+    queue?: string;
     dateFrom?: string;
     dateTo?: string;
+    clinicalExamType?: string;
+    source?: string;
   };
 };
 
-export function PreEncaminhamentosClient({
-  items,
-  total,
-  page,
-  pageSize,
-  statusCounts,
-  dbReady,
-  loadError,
-  filters,
-}: PreEncaminhamentosClientProps) {
+export function PreEncaminhamentosClient(props: Props) {
+  const {
+    items,
+    total,
+    page,
+    pageSize,
+    statusCounts,
+    dbReady,
+    loadError,
+    filters,
+  } = props;
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const [q, setQ] = useState(filters.q ?? "");
+  const [statusFilter, setStatusFilter] = useState(filters.status ?? "");
   const [dateFrom, setDateFrom] = useState(filters.dateFrom ?? "");
   const [dateTo, setDateTo] = useState(filters.dateTo ?? "");
-  const activeStatus = filters.status ?? "ALL";
+  const [clinicalExamType, setClinicalExamType] = useState(filters.clinicalExamType ?? "");
+  const [source, setSource] = useState(filters.source ?? "");
+
+  const activeTab = filters.queue === "active" ? "QUEUE" : filters.status ?? "ALL";
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<PreReferralDetailSerialized | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const updateFilters = useCallback(
@@ -90,29 +134,76 @@ export function PreEncaminhamentosClient({
         else params.set(key, value);
       });
       if (!updates.page) params.delete("page");
-      startTransition(() => {
-        router.push(`/dashboard/pre-encaminhamentos?${params.toString()}`);
-      });
+      if (updates.status) params.delete("queue");
+      if (updates.queue) params.delete("status");
+      startTransition(() => router.push(`/dashboard/pre-encaminhamentos?${params.toString()}`));
     },
     [router, searchParams]
   );
 
   const handleSearch = () => {
-    updateFilters({ q, dateFrom, dateTo, status: activeStatus });
+    updateFilters({
+      q,
+      status: statusFilter || undefined,
+      dateFrom,
+      dateTo,
+      clinicalExamType,
+      source,
+    });
   };
 
   const clearFilters = () => {
     setQ("");
+    setStatusFilter("");
     setDateFrom("");
     setDateTo("");
+    setClinicalExamType("");
+    setSource("");
     startTransition(() => router.push("/dashboard/pre-encaminhamentos"));
   };
 
+  const loadDetail = useCallback(async (id: string) => {
+    setDetailLoading(true);
+    setDetailError(null);
+    const result = await getPreReferralDetail(id);
+    setDetailLoading(false);
+    if (result.success) setDetail(result.request);
+    else {
+      setDetailError(result.error);
+      setDetail(null);
+    }
+  }, []);
+
+  const openDetail = (id: string) => {
+    setSelectedId(id);
+    loadDetail(id);
+  };
+
+  const refreshDetail = () => {
+    if (selectedId) loadDetail(selectedId);
+    router.refresh();
+  };
+
+  useEffect(() => {
+    const idFromUrl = searchParams.get("id");
+    if (idFromUrl && idFromUrl !== selectedId) openDetail(idFromUrl);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const getWhatsAppUrl = (item: PreReferralListItem) => {
-    const digits = item.whatsapp.replace(/\D/g, "");
-    if (!digits) return null;
-    const message = `Olá! Sobre o pré-encaminhamento ${item.protocol}:\n\nEmpresa: ${item.companyName}\nColaborador: ${item.employeeName}\n\nRecebemos sua solicitação e em breve entraremos em contato.`;
-    return `https://wa.me/55${digits}?text=${encodeURIComponent(message)}`;
+    const message = buildPreReferralWhatsAppMessage({
+      protocol: item.protocol,
+      companyName: item.companyName,
+      employeeName: item.employeeName,
+      clinicalExamType: item.clinicalExamType as never,
+      missingFields: getMissingPreReferralFields(item),
+    });
+    return `https://wa.me/55${item.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
+  };
+
+  const handleWhatsApp = async (item: PreReferralListItem) => {
+    await logPreReferralWhatsApp(item.id);
+    window.open(getWhatsAppUrl(item), "_blank", "noopener,noreferrer");
+    router.refresh();
   };
 
   return (
@@ -121,50 +212,50 @@ export function PreEncaminhamentosClient({
         title="Pré-encaminhamentos"
         description="Solicitações rápidas do site — leads para análise e conversão em encaminhamento oficial"
       >
-        <Link href="/dashboard/encaminhamentos">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Encaminhamentos
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/dashboard/encaminhamentos">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Encaminhamentos
+            </Button>
+          </Link>
+          <Link href="/dashboard/encaminhamentos/novo">
+            <Button variant="brand" size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Criar encaminhamento manual
+            </Button>
+          </Link>
+        </div>
       </PageHeader>
 
       {!dbReady && (
         <div className="referral-db-warning">
           <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
-          <div>
-            <p className="font-semibold text-amber-900">Banco de dados pendente de atualização</p>
-            <p className="mt-1 text-sm text-amber-800">
-              A tabela de pré-encaminhamentos ainda não existe no Neon. No próximo deploy, as
-              migrations serão aplicadas automaticamente. Se o erro persistir, execute{" "}
-              <code className="rounded bg-amber-100 px-1">npx prisma migrate deploy</code> com a{" "}
-              <code className="rounded bg-amber-100 px-1">DATABASE_URL</code> de produção.
-            </p>
-          </div>
+          <p className="text-sm text-amber-900">
+            Banco pendente de atualização. Execute o deploy ou{" "}
+            <code className="rounded bg-amber-100 px-1">npx prisma migrate deploy</code>.
+          </p>
         </div>
       )}
 
       {loadError && (
         <div className="referral-error-state dashboard-surface">
           <p className="font-medium text-slate-700">{loadError}</p>
-          <Button variant="outline" size="sm" className="mt-3" onClick={() => router.refresh()}>
-            Tentar novamente
-          </Button>
         </div>
       )}
 
       {dbReady && !loadError && (
         <>
-          <div className="referral-stat-grid referral-stat-grid-3">
+          <div className="referral-stat-grid referral-stat-grid-5">
             {PRE_REFERRAL_STAT_CARDS.map((card) => (
               <button
                 key={card.status}
                 type="button"
                 className={cn(
                   "referral-stat-card",
-                  activeStatus === card.status && "referral-stat-card-active"
+                  activeTab === card.status && "referral-stat-card-active"
                 )}
-                onClick={() => updateFilters({ status: card.status })}
+                onClick={() => updateFilters({ status: card.status, queue: undefined })}
               >
                 <span className="referral-stat-count">{statusCounts[card.status] ?? 0}</span>
                 <span className="referral-stat-label">{card.label}</span>
@@ -177,12 +268,12 @@ export function PreEncaminhamentosClient({
               <button
                 key={tab.value}
                 type="button"
-                className={cn(
-                  "referral-tab",
-                  activeStatus === tab.value && "referral-tab-active"
-                )}
+                className={cn("referral-tab", activeTab === tab.value && "referral-tab-active")}
                 onClick={() =>
-                  updateFilters({ status: tab.value === "ALL" ? undefined : tab.value })
+                  updateFilters({
+                    status: tab.value === "ALL" || tab.value === "QUEUE" ? undefined : tab.value,
+                    queue: tab.value === "QUEUE" ? "active" : undefined,
+                  })
                 }
               >
                 {tab.label}
@@ -191,39 +282,76 @@ export function PreEncaminhamentosClient({
           </div>
 
           <div className="referral-filters dashboard-surface">
-            <div className="referral-filters-grid referral-filters-grid-pre">
-              <div className="relative col-span-full sm:col-span-2">
+            <div className="referral-filters-grid referral-filters-grid-pre-ext">
+              <div className="relative col-span-full lg:col-span-2">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   className="pl-9"
-                  placeholder="Buscar por protocolo, empresa, colaborador ou CPF"
+                  placeholder="Buscar por protocolo, empresa, responsável, colaborador, telefone ou CPF"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 />
               </div>
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="referral-date-input"
-                aria-label="Data inicial"
-              />
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="referral-date-input"
-                aria-label="Data final"
-              />
+
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-500">Status</Label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="referral-select w-full"
+                >
+                  <option value="">Todos</option>
+                  {PRE_REFERRAL_STAT_CARDS.map((c) => (
+                    <option key={c.status} value={c.status}>{c.label}</option>
+                  ))}
+                  <option value="DUPLICADO">Duplicado</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-500">Tipo de exame</Label>
+                <select
+                  value={clinicalExamType}
+                  onChange={(e) => setClinicalExamType(e.target.value)}
+                  className="referral-select w-full"
+                >
+                  <option value="">Todos</option>
+                  {Object.entries(PRE_REFERRAL_CLINICAL_EXAM_LABELS).map(([v, l]) => (
+                    <option key={v} value={v}>{l}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-500">Origem</Label>
+                <select
+                  value={source}
+                  onChange={(e) => setSource(e.target.value)}
+                  className="referral-select w-full"
+                >
+                  <option value="">Todas</option>
+                  {Object.entries(PRE_REFERRAL_SOURCE_LABELS).map(([v, l]) => (
+                    <option key={v} value={v}>{l}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-500">Data inicial</Label>
+                <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="referral-date-input w-full" />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-500">Data final</Label>
+                <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="referral-date-input w-full" />
+              </div>
             </div>
             <div className="referral-filters-actions">
               <Button variant="brand" size="sm" onClick={handleSearch} disabled={isPending}>
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Filtrar"}
               </Button>
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                Limpar filtros
-              </Button>
+              <Button variant="outline" size="sm" onClick={clearFilters}>Limpar filtros</Button>
             </div>
           </div>
 
@@ -231,14 +359,18 @@ export function PreEncaminhamentosClient({
             {items.length === 0 ? (
               <div className="referral-empty-state">
                 <p className="font-medium text-slate-700">Nenhum pré-encaminhamento encontrado</p>
-                <p className="text-sm text-slate-500">
-                  Quando empresas enviarem pelo formulário público, aparecerão aqui.
+                <p className="max-w-md text-sm text-slate-500">
+                  As solicitações enviadas pelo formulário público aparecerão aqui para análise e
+                  conversão em encaminhamento oficial.
                 </p>
-                <Link href="/encaminhamento-online" className="mt-4">
-                  <Button variant="outline" size="sm">
-                    Ver formulário público
-                  </Button>
-                </Link>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  <Link href="/encaminhamento-online">
+                    <Button variant="outline" size="sm">Ver formulário público</Button>
+                  </Link>
+                  <Link href="/dashboard/encaminhamentos/novo">
+                    <Button variant="brand" size="sm">Criar encaminhamento manual</Button>
+                  </Link>
+                </div>
               </div>
             ) : (
               <Table>
@@ -246,97 +378,86 @@ export function PreEncaminhamentosClient({
                   <TableRow>
                     <TableHead>Protocolo</TableHead>
                     <TableHead>Empresa</TableHead>
-                    <TableHead>Colaborador</TableHead>
-                    <TableHead className="hidden md:table-cell">Função</TableHead>
-                    <TableHead className="hidden lg:table-cell">Tipo</TableHead>
+                    <TableHead className="hidden md:table-cell">Responsável</TableHead>
                     <TableHead className="hidden sm:table-cell">WhatsApp</TableHead>
-                    <TableHead className="hidden sm:table-cell">Data</TableHead>
+                    <TableHead>Colaborador</TableHead>
+                    <TableHead className="hidden lg:table-cell">Tipo de exame</TableHead>
+                    <TableHead className="hidden sm:table-cell">Solicitação</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="w-12">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map((item) => {
-                    const waUrl = getWhatsAppUrl(item);
-                    return (
-                      <TableRow
-                        key={item.id}
-                        className="referral-table-row cursor-pointer"
-                        onClick={() =>
-                          router.push(`/dashboard/pre-encaminhamentos/${item.id}`)
-                        }
-                      >
-                        <TableCell className="font-semibold text-[var(--brand-green)]">
-                          {item.protocol}
-                        </TableCell>
-                        <TableCell>{item.companyName}</TableCell>
-                        <TableCell>{item.employeeName}</TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {item.employeeRole}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {
-                            PRE_REFERRAL_CLINICAL_EXAM_LABELS[
-                              item.clinicalExamType as keyof typeof PRE_REFERRAL_CLINICAL_EXAM_LABELS
-                            ]
-                          }
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {formatPhone(item.whatsapp)}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {format(new Date(item.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <PreReferralStatusForm
-                            requestId={item.id}
-                            currentStatus={item.status}
+                  {items.map((item) => (
+                    <TableRow
+                      key={item.id}
+                      className="referral-table-row cursor-pointer"
+                      onClick={() => openDetail(item.id)}
+                    >
+                      <TableCell className="font-semibold text-[var(--brand-green)]">{item.protocol}</TableCell>
+                      <TableCell>{item.companyName}</TableCell>
+                      <TableCell className="hidden md:table-cell">{item.responsibleName}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{formatPhone(item.whatsapp)}</TableCell>
+                      <TableCell>{item.employeeName}</TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {PRE_REFERRAL_CLINICAL_EXAM_LABELS[item.clinicalExamType as keyof typeof PRE_REFERRAL_CLINICAL_EXAM_LABELS]}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        {format(new Date(item.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      </TableCell>
+                      <TableCell><StatusBadge status={item.status} type="preReferral" /></TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            render={
+                              <Button variant="ghost" size="icon-sm" aria-label="Ações">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            }
                           />
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button variant="ghost" size="icon-sm" aria-label="Ações">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              }
-                            />
-                            <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openDetail(item.id)}>
+                              <Eye className="mr-2 h-4 w-4" /> Ver detalhes
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleWhatsApp(item)}>
+                              <MessageCircle className="mr-2 h-4 w-4" /> Falar no WhatsApp
+                            </DropdownMenuItem>
+                            {item.status === "NOVO" && (
                               <DropdownMenuItem
-                                onClick={() =>
-                                  router.push(`/dashboard/pre-encaminhamentos/${item.id}`)
-                                }
+                                onClick={async () => {
+                                  await updatePreReferralStatusWithNotes(item.id, "EM_ANALISE");
+                                  router.refresh();
+                                }}
                               >
-                                <Eye className="mr-2 h-4 w-4" />
-                                Ver detalhes
+                                <RefreshCw className="mr-2 h-4 w-4" /> Marcar em análise
                               </DropdownMenuItem>
-                              {item.status !== "CONVERTIDO" && item.status !== "CANCELADO" && (
+                            )}
+                            {item.status !== "CONVERTIDO" && item.status !== "CANCELADO" && (
+                              <>
                                 <DropdownMenuItem
-                                  onClick={() =>
-                                    router.push(`/dashboard/pre-encaminhamentos/${item.id}`)
-                                  }
+                                  onClick={() => {
+                                    openDetail(item.id);
+                                    setConvertDialogOpen(true);
+                                  }}
                                 >
-                                  <ArrowRightCircle className="mr-2 h-4 w-4" />
-                                  Converter
+                                  <ArrowRightCircle className="mr-2 h-4 w-4" /> Converter
                                 </DropdownMenuItem>
-                              )}
-                              {waUrl && (
                                 <DropdownMenuItem
-                                  onClick={() =>
-                                    window.open(waUrl, "_blank", "noopener,noreferrer")
-                                  }
+                                  onClick={async () => {
+                                    if (!confirm("Cancelar esta solicitação?")) return;
+                                    await updatePreReferralStatusWithNotes(item.id, "CANCELADO", "Cancelado pela equipe");
+                                    router.refresh();
+                                  }}
                                 >
-                                  <MessageCircle className="mr-2 h-4 w-4" />
-                                  WhatsApp
+                                  <XCircle className="mr-2 h-4 w-4" /> Cancelar
                                 </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             )}
@@ -348,25 +469,73 @@ export function PreEncaminhamentosClient({
                 {total} registro{total !== 1 ? "s" : ""} · Página {page} de {totalPages}
               </p>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1 || isPending}
-                  onClick={() => updateFilters({ page: String(page - 1) })}
-                >
+                <Button variant="outline" size="sm" disabled={page <= 1 || isPending} onClick={() => updateFilters({ page: String(page - 1) })}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages || isPending}
-                  onClick={() => updateFilters({ page: String(page + 1) })}
-                >
+                <Button variant="outline" size="sm" disabled={page >= totalPages || isPending} onClick={() => updateFilters({ page: String(page + 1) })}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           )}
+        </>
+      )}
+
+      <Sheet open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
+        <SheetContent side="right" className="referral-detail-sheet w-full overflow-y-auto sm:max-w-2xl lg:max-w-3xl">
+          <SheetHeader className="border-b pb-4">
+            <SheetTitle>{detail?.protocol ?? "Pré-encaminhamento"}</SheetTitle>
+            <SheetDescription>
+              {detail ? `${detail.companyName} · ${detail.employeeName}` : "Carregando..."}
+            </SheetDescription>
+          </SheetHeader>
+          {detailLoading && (
+            <div className="flex justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
+            </div>
+          )}
+          {detailError && (
+            <div className="referral-error-state">
+              <p>{detailError}</p>
+            </div>
+          )}
+          {detail && !detailLoading && (
+            <PreReferralDetailContent
+              item={detail}
+              canManage
+              onRefresh={refreshDetail}
+              onOpenStatus={() => setStatusDialogOpen(true)}
+              onOpenNote={() => setNoteDialogOpen(true)}
+              onOpenConvert={() => setConvertDialogOpen(true)}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {selectedId && detail && (
+        <>
+          <PreReferralStatusDialog
+            open={statusDialogOpen}
+            onOpenChange={setStatusDialogOpen}
+            preReferralId={selectedId}
+            currentStatus={detail.status}
+            onSuccess={refreshDetail}
+          />
+          <PreReferralNoteDialog
+            open={noteDialogOpen}
+            onOpenChange={setNoteDialogOpen}
+            preReferralId={selectedId}
+            onSuccess={refreshDetail}
+          />
+          <PreReferralConvertDialog
+            open={convertDialogOpen}
+            onOpenChange={setConvertDialogOpen}
+            preReferralId={selectedId}
+            onSuccess={(referralId) => {
+              refreshDetail();
+              router.push(`/dashboard/encaminhamentos?id=${referralId}`);
+            }}
+          />
         </>
       )}
     </div>
