@@ -45,7 +45,6 @@ const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   EM_EMISSAO: { bg: "bg-blue-50", text: "text-blue-800", dot: "bg-blue-500" },
   DISPONIVEL: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   EM_ELABORACAO: { bg: "bg-blue-50", text: "text-blue-800", dot: "bg-blue-500" },
-  CONCLUIDO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   EM_DIA: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   ENTREGUE: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   RESPONDIDO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
@@ -54,7 +53,6 @@ const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   INATIVA: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
   BLOQUEADA: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
   VENCIDO: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
-  EM_DIA: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   EXPIRADO: { bg: "bg-orange-50", text: "text-orange-800", dot: "bg-orange-500" },
   ATIVO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   INATIVO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
@@ -67,7 +65,6 @@ const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   APROVADO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   RECUSADO: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
   CONVERTIDO_ORCAMENTO: { bg: "bg-teal-50", text: "text-teal-800", dot: "bg-teal-500" },
-  AGUARDANDO_RETORNO: { bg: "bg-orange-50", text: "text-orange-800", dot: "bg-orange-500" },
 };
 
 export function StatusBadge({ status, type = "referral" }: StatusBadgeProps) {
