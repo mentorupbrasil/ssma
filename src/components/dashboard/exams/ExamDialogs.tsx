@@ -118,7 +118,12 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
 
     toast.success(isEdit ? "Exame atualizado." : "Exame cadastrado.");
     onOpenChange(false);
-    onSuccess(!isEdit && "examId" in result ? result.examId : exam?.id);
+    const savedExamId = isEdit
+      ? exam?.id
+      : "examId" in result && typeof result.examId === "string"
+        ? result.examId
+        : undefined;
+    onSuccess(savedExamId);
   };
 
   return (
