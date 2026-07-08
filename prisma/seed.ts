@@ -171,7 +171,7 @@ async function main() {
         data: {
           ...ref,
           consentAccepted: true,
-          source: "seed",
+          source: "ADMIN",
           exams: {
             create: [
               { examName: "Audiometria", category: ExamCategory.COMPLEMENTAR },
@@ -234,7 +234,7 @@ async function main() {
         companyPhone: "(11) 3000-2000",
         companyEmail: "rh@beta-demo.com.br",
         consentAccepted: true,
-        source: "online",
+        source: "SITE",
         exams: {
           create: [{ examName: "Acuidade visual", category: ExamCategory.COMPLEMENTAR }],
         },
