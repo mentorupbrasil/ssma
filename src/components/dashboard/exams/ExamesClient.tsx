@@ -468,7 +468,7 @@ export function ExamesClient({
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
@@ -500,14 +500,12 @@ export function ExamesClient({
                             </DropdownMenuItem>
                           )}
                           {item.showOnWebsite && item.status === "ATIVO" && (
-                            <DropdownMenuItem asChild>
-                              <a
-                                href={`/exames?exame=${item.slug}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <ExternalLink className="mr-2 h-4 w-4" /> Visualizar no site
-                              </a>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                window.open(`/exames?exame=${item.slug}`, "_blank", "noopener,noreferrer")
+                              }
+                            >
+                              <ExternalLink className="mr-2 h-4 w-4" /> Visualizar no site
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
