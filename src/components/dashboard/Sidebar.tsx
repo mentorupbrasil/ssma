@@ -26,6 +26,7 @@ import {
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/types/roles";
 import { DASHBOARD_NAV, hasPermission, getRoleLabel } from "@/lib/permissions";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -63,12 +64,10 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
     <div className="flex h-full flex-col bg-white">
       <div className="border-b border-slate-100 p-5">
         <Link href="/dashboard" onClick={onNavigate} className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-navy)] text-sm font-bold text-white shadow-sm">
-            U
-          </div>
-          <div>
+          <BrandLogo height={32} showLink={false} />
+          <div className="min-w-0">
             <p className="text-sm font-bold text-[var(--brand-navy)]">Painel</p>
-            <p className="text-xs font-medium text-slate-500">{getRoleLabel(user.role)}</p>
+            <p className="truncate text-xs font-medium text-slate-500">{getRoleLabel(user.role)}</p>
           </div>
         </Link>
       </div>

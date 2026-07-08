@@ -6,6 +6,7 @@ import { Menu, Phone, ChevronRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -28,12 +29,9 @@ export function Header() {
     <header className="glass-header">
       <div className="container-page flex h-full items-center justify-between">
         <Link href="/" className="group flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-navy)] text-sm font-bold text-white shadow-sm transition group-hover:shadow-md">
-            U
-          </div>
-          <div className="leading-tight">
-            <p className="text-sm font-bold text-[var(--brand-navy)]">{clinic.name}</p>
-            <p className="hidden text-[0.7rem] font-medium uppercase tracking-wider text-slate-500 sm:block">
+          <BrandLogo height={34} priority showLink={false} />
+          <div className="hidden leading-tight sm:block">
+            <p className="text-[0.7rem] font-medium uppercase tracking-wider text-slate-500">
               Medicina do Trabalho
             </p>
           </div>

@@ -8,6 +8,7 @@ import {
 } from "@/components/public/SocialIcons";
 import { getClinicSiteConfig } from "@/config/clinic";
 import { formatPhone, getClinicInfo, whatsappLink } from "@/lib/helpers";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 const SOCIAL_ICONS = [
   { icon: InstagramIcon, label: "Instagram" },
@@ -24,10 +25,9 @@ export function Footer() {
     <footer className="site-footer mt-auto border-t border-white/10 bg-[var(--brand-navy)] text-slate-300">
       <div className="container-page grid gap-10 py-14 lg:grid-cols-4 lg:gap-12 lg:py-16">
         <div>
-          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-green)] text-lg font-bold text-white shadow-sm">
-            U
+          <div className="mb-4">
+            <BrandLogo height={40} showLink href="/" />
           </div>
-          <h3 className="text-lg font-bold text-white">{clinic.name}</h3>
           <p className="mt-3 text-sm leading-relaxed text-slate-400">
             Medicina e Segurança do Trabalho com agilidade, tecnologia e confiança para empresas
             de todos os portes.

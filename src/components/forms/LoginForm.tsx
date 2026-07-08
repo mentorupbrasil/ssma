@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -80,12 +81,12 @@ function LoginForm() {
 
   return (
     <Card className="w-full max-w-md border-slate-200 shadow-lg">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#0F3D4A] text-lg font-bold text-white">
-          U
+      <CardHeader className="items-center space-y-4 text-center">
+        <BrandLogo height={40} showLink href="/" />
+        <div>
+          <CardTitle className="text-2xl text-[var(--brand-navy)]">Entrar no painel</CardTitle>
+          <CardDescription>Acesse com suas credenciais</CardDescription>
         </div>
-        <CardTitle className="text-2xl text-[#0F3D4A]">Entrar no painel</CardTitle>
-        <CardDescription>Acesse com suas credenciais</CardDescription>
       </CardHeader>
       <CardContent>
         {authError && (
