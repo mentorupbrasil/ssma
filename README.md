@@ -66,7 +66,8 @@ No painel Vercel → **Settings → Environment Variables**, adicione:
 
 | Variável | Valor |
 |----------|--------|
-| `DATABASE_URL` | Connection string do Neon PostgreSQL |
+| `DATABASE_URL` | Connection string **pooler** do Neon PostgreSQL |
+| `DIRECT_URL` | Connection string **direta** do Neon (sem `-pooler`) — **obrigatória para migrations no build** |
 | `AUTH_SECRET` | String aleatória segura (`openssl rand -base64 32`) |
 | `AUTH_TRUST_HOST` | `true` |
 | `AUTH_URL` / `NEXTAUTH_URL` | URL do site (ex: `https://ssma.vercel.app`) |
