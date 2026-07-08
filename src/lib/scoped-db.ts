@@ -5,7 +5,7 @@ export function scopedWhere(session: AuthSession, base: Record<string, unknown> 
   return mergeTenantWhere(base, getTenantScope(session));
 }
 
-export async function resolveClinicId(session: AuthSession): Promise<string | null> {
+export async function resolveClinicId(session: AuthSession): Promise<string> {
   const scope = getTenantScope(session);
   if (scope.clinicId) return scope.clinicId;
   return DEFAULT_CLINIC_ID;

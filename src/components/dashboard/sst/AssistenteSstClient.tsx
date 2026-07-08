@@ -38,7 +38,7 @@ export function AssistenteSstClient() {
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-[var(--brand-green)]" />Gerar orientação</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            <Select value={topic} onValueChange={setTopic}>
+            <Select value={topic} onValueChange={(v) => v && setTopic(v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="pcmso">PCMSO</SelectItem>

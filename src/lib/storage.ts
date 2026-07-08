@@ -46,7 +46,7 @@ async function saveBlob(storageKey: string, buffer: Buffer, contentType?: string
       "Content-Type": contentType ?? "application/octet-stream",
       "x-content-type": contentType ?? "application/octet-stream",
     },
-    body: buffer,
+    body: new Uint8Array(buffer),
   });
   if (!res.ok) {
     throw new Error(`Blob upload failed: ${res.statusText}`);

@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Plus, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { FilterBar } from "@/components/dashboard/FilterBar";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -83,7 +82,7 @@ export function TarefasClient({ items, users }: { items: TaskItem[]; users: { id
                 <Input placeholder="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
                 <Textarea placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
                 <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                <Select value={assignedToUserId} onValueChange={setAssignedToUserId}>
+                <Select value={assignedToUserId} onValueChange={(v) => setAssignedToUserId(v ?? "")}>
                   <SelectTrigger><SelectValue placeholder="Responsável" /></SelectTrigger>
                   <SelectContent>
                     {users.map((u) => (
@@ -97,7 +96,6 @@ export function TarefasClient({ items, users }: { items: TaskItem[]; users: { id
           </Dialog>
         }
       />
-      <FilterBar className="mb-4" />
       {items.length === 0 ? (
         <EmptyState title="Nenhuma tarefa" description="Crie tarefas para acompanhar pendências da equipe." />
       ) : (

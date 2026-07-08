@@ -77,13 +77,16 @@ export async function updateClinic(input: {
 export async function upsertGlobalSetting(key: string, value: string): Promise<Result> {
   try {
     await requirePermission("superadmin.access");
-    await prisma.setting.upsert({
-      where: { clinicId_key: { clinicId: null, key } },
-      create: { clinicId: null, key, value },
-      update: { value },
+    const existing = await prisma.setting.findFirst({
+      where: { clinicId: null, key },
     });
+    if (existing) {
+      await prisma.setting.update({ where: { id: existing.id }, data: { value } });
+    } else {
+      await prisma.setting.create({ data: { clinicId: null, key, value } });
+    }
     revalidatePath("/super-admin/configuracoes");
-    return { success: true };
+    return { success: true, id: key };
   } catch (e) {
     return { success: false, error: actionError(e, "Erro ao salvar configuração global.") };
   }

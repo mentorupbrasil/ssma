@@ -70,7 +70,7 @@ export function UsuariosClient({ users, companies }: { users: UserRow[]; compani
                   </SelectContent>
                 </Select>
                 {role === "COMPANY_HR" && (
-                  <Select value={companyId} onValueChange={setCompanyId}>
+                  <Select value={companyId} onValueChange={(v) => setCompanyId(v ?? "")}>
                     <SelectTrigger><SelectValue placeholder="Empresa" /></SelectTrigger>
                     <SelectContent>
                       {companies.map((c) => (
