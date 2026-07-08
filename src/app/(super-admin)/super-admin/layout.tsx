@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UiScale } from "@/components/ui/ui-scale";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { normalizeRole } from "@/lib/tenant";
@@ -32,7 +33,9 @@ export default async function SuperAdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <>
+      <UiScale />
+      <div className="flex min-h-screen bg-slate-50">
       <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white lg:block">
         <div className="border-b border-slate-100 p-5">
           <p className="text-sm font-bold text-[var(--brand-navy)]">Unimetra SaaS</p>
@@ -70,5 +73,6 @@ export default async function SuperAdminLayout({
       </aside>
       <main className="flex-1 p-6 lg:p-8">{children}</main>
     </div>
+    </>
   );
 }
