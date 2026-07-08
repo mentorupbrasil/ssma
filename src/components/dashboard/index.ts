@@ -1,4 +1,6 @@
 export { DashboardShell } from "@/components/dashboard/DashboardShell";
+export { AppShell } from "@/components/dashboard/AppShell";
+export { DashboardPanel } from "@/components/dashboard/DashboardPanel";
 export { Sidebar } from "@/components/dashboard/Sidebar";
 export { Topbar } from "@/components/dashboard/Topbar";
 export { PageHeader as ModuleHeader } from "@/components/dashboard/PageHeader";

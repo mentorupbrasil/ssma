@@ -6,18 +6,12 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, description, children }: PageHeaderProps) {
   return (
-    <div className="mb-8 flex flex-col gap-5 border-b border-slate-200/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[var(--brand-navy)] sm:text-3xl">
-          {title}
-        </h1>
-        {description && (
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-            {description}
-          </p>
-        )}
+    <div className="page-header-shell">
+      <div className="min-w-0 flex-1">
+        <h1 className="page-header-title">{title}</h1>
+        {description && <p className="page-header-desc">{description}</p>}
       </div>
-      {children && <div className="flex flex-wrap gap-2">{children}</div>}
+      {children && <div className="page-header-actions">{children}</div>}
     </div>
   );
 }
