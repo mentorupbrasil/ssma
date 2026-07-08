@@ -518,10 +518,7 @@ function QuotesTab({ company }: { company: CompanyDetailSerialized }) {
                 : "—"}
             </TableCell>
             <TableCell>
-              <StatusBadge
-                status={q.status}
-                type="lead"
-              />
+              <StatusBadge status={q.status} type="quote" />
             </TableCell>
             <TableCell>
               {format(new Date(q.createdAt), "dd/MM/yyyy", { locale: ptBR })}

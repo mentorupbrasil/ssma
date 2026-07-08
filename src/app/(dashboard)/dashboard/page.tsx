@@ -34,6 +34,7 @@ export default async function DashboardPage() {
   const canManagePatients = hasPermission(session.user.role, "patients.manage");
   const canManageAppointments = hasPermission(session.user.role, "appointments.manage");
   const canViewLeads = hasPermission(session.user.role, "leads.manage") && !isEmpresa;
+  const { countPendingQuotes } = await import("@/actions/commercial");
   const canViewDocs = hasPermission(session.user.role, "documents.manage");
 
   const todayStart = new Date();
@@ -83,7 +84,7 @@ export default async function DashboardPage() {
         : Promise.resolve(0),
     prisma.patient.count({ where: { ...companyFilter, status: "ATIVO" } }),
     canViewLeads
-      ? prisma.lead.count({ where: { status: { in: ["NOVO", "EM_CONTATO"] } } })
+      ? countPendingQuotes()
       : Promise.resolve(0),
     canViewDocs
       ? prisma.document.count({

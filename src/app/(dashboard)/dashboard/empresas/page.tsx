@@ -6,7 +6,7 @@ import {
   buildCompanyWhere,
   COMPANY_STAT_CARDS,
   OPEN_REFERRAL_STATUSES,
-  PENDING_LEAD_STATUSES,
+import { PENDING_QUOTE_STATUSES } from "@/lib/commercial";
   serializeCompanyListItem,
 } from "@/lib/companies";
 import { EmpresasClient } from "@/components/dashboard/companies/EmpresasClient";
@@ -90,7 +90,7 @@ async function EmpresasData({ searchParams }: { searchParams: SearchParams }) {
         return {
           key: card.key,
           count: await prisma.company.count({
-            where: { leads: { some: { status: { in: PENDING_LEAD_STATUSES } } } },
+            where: { quotes: { some: { status: { in: PENDING_QUOTE_STATUSES } } } },
           }),
         };
       })

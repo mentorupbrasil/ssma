@@ -4,10 +4,11 @@ import type {
   CompanyContractType,
   CompanyContactType,
   CompanyHistoryAction,
-  DocumentStatus,
   LeadStatus,
   ReferralStatus,
+  DocumentStatus,
 } from "@prisma/client";
+import { PENDING_QUOTE_STATUSES } from "@/lib/commercial";
 import type { Prisma } from "@prisma/client";
 import { startOfDay, endOfDay, parseISO, isValid } from "date-fns";
 import { maskCpf } from "@/lib/referrals";
@@ -73,11 +74,15 @@ export const COMPANY_DOCUMENT_SUMMARY_LABELS = {
 
 export const LEAD_STATUS_EXTENDED_LABELS: Record<LeadStatus, string> = {
   NOVO: "Novo",
-  EM_CONTATO: "Em análise",
-  PROPOSTA_ENVIADA: "Enviado",
-  FECHADO: "Aprovado",
-  PERDIDO: "Recusado",
+  EM_ANALISE: "Em análise",
+  EM_CONTATO: "Em contato",
+  AGUARDANDO_RETORNO: "Aguardando retorno",
+  CONVERTIDO_ORCAMENTO: "Convertido em orçamento",
+  PROPOSTA_ENVIADA: "Proposta enviada",
+  FECHADO: "Fechado",
+  PERDIDO: "Perdido",
   EXPIRADO: "Expirado",
+  ARQUIVADO: "Arquivado",
 };
 
 export const OPEN_REFERRAL_STATUSES: ReferralStatus[] = [
@@ -90,8 +95,6 @@ export const OPEN_REFERRAL_STATUSES: ReferralStatus[] = [
   "AGUARDANDO_DOCUMENTO",
   "ASO_DISPONIVEL",
 ];
-
-export const PENDING_LEAD_STATUSES: LeadStatus[] = ["NOVO", "EM_CONTATO", "PROPOSTA_ENVIADA"];
 
 export type CompanyListFilters = {
   q?: string;
@@ -117,7 +120,7 @@ export function buildCompanyWhere(filters: CompanyListFilters): Prisma.CompanyWh
     } else if (filters.status === "REFERRALS_OPEN") {
       where.referrals = { some: { status: { in: OPEN_REFERRAL_STATUSES } } };
     } else if (filters.status === "QUOTES_PENDING") {
-      where.leads = { some: { status: { in: PENDING_LEAD_STATUSES } } };
+      where.quotes = { some: { status: { in: PENDING_QUOTE_STATUSES } } };
     } else {
       where.status = filters.status as CompanyStatus;
     }
@@ -139,7 +142,7 @@ export function buildCompanyWhere(filters: CompanyListFilters): Prisma.CompanyWh
     where.OR = [
       { documents: { some: { status: { in: ["PENDENTE", "VENCIDO"] } } } },
       { referrals: { some: { status: { in: OPEN_REFERRAL_STATUSES } } } },
-      { leads: { some: { status: { in: PENDING_LEAD_STATUSES } } } },
+      { quotes: { some: { status: { in: PENDING_QUOTE_STATUSES } } } },
     ];
   }
 

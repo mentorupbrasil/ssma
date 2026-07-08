@@ -14,6 +14,7 @@ import {
   appointmentSchema,
 } from "@/schemas";
 import { createAuditLog, generateProtocol } from "@/lib/server";
+import { isQuoteRequestSubject } from "@/lib/commercial";
 import { ExamCategory } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import {
@@ -301,7 +302,7 @@ export async function submitContactMessage(data: unknown): Promise<ActionResult>
   }
 
   try {
-    await prisma.contactMessage.create({
+    const contact = await prisma.contactMessage.create({
       data: {
         name: d.name,
         email,
@@ -312,6 +313,42 @@ export async function submitContactMessage(data: unknown): Promise<ActionResult>
         consentAccepted: true,
         source: "site_contato",
         status: "NOVO",
+        serviceInterest: isQuoteRequestSubject(d.subject) ? d.subject : null,
+      },
+    });
+
+    if (isQuoteRequestSubject(d.subject)) {
+      const lead = await prisma.lead.create({
+        data: {
+          type: "ORCAMENTO",
+          status: "NOVO",
+          name: d.name,
+          email: email ?? undefined,
+          phone: d.phone,
+          companyName: company ?? undefined,
+          serviceInterest: d.message?.trim() || d.subject,
+          serviceTitle: d.subject,
+          message: d.message,
+          source: "site",
+          contactMessageId: contact.id,
+        },
+      });
+      await prisma.commercialHistory.create({
+        data: {
+          entityType: "LEAD",
+          entityId: lead.id,
+          action: "CREATED",
+          notes: "Solicitação recebida pelo site",
+        },
+      });
+    }
+
+    await prisma.commercialHistory.create({
+      data: {
+        entityType: "CONTACT",
+        entityId: contact.id,
+        action: "CREATED",
+        notes: d.subject,
       },
     });
 

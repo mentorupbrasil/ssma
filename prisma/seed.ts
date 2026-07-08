@@ -233,19 +233,54 @@ async function main() {
         email: "roberto@empresa-demo.com",
         phone: "(11) 98000-3000",
         companyName: "Transportes Gama",
+        serviceInterest: "PCMSO e exames ocupacionais",
         message: "Preciso de orçamento para 50 colaboradores",
+        source: "site",
       },
       {
-        type: "CONTATO",
-        status: "EM_CONTATO",
+        type: "ORCAMENTO",
+        status: "EM_ANALISE",
         name: "Patrícia Souza",
         email: "patricia@loja-demo.com",
         phone: "(11) 98000-4000",
-        message: "Gostaria de agendar visita às instalações",
+        companyName: "Beta Comércio",
+        serviceInterest: "Portal empresarial",
+        message: "Gostaria de conhecer o portal para RH",
+        source: "site",
       },
     ],
     skipDuplicates: true,
   });
+
+  const adminUser = await prisma.user.findUnique({ where: { email: "admin@demo.com" } });
+  if (adminUser) {
+    const existingQuote = await prisma.quote.findUnique({ where: { quoteNumber: "ORC-2026-0001" } });
+    if (!existingQuote) {
+      const company1 = await prisma.company.findUnique({ where: { cnpj: "12345678000190" } });
+      await prisma.quote.create({
+        data: {
+          quoteNumber: "ORC-2026-0001",
+          companyId: company1?.id,
+          companyName: "Alfa Indústria",
+          responsibleName: "João Silva",
+          phone: "(11) 3000-1000",
+          email: "rh@alfa-demo.com.br",
+          status: "AGUARDANDO_RESPOSTA",
+          totalAmount: 4500,
+          validUntil: new Date(Date.now() + 30 * 86400000),
+          paymentTerms: "Faturamento mensal",
+          clientNotes: "Proposta válida para até 80 colaboradores ativos.",
+          createdByUserId: adminUser.id,
+          items: {
+            create: [
+              { serviceName: "PCMSO", quantity: 1, totalPrice: 2500, sortOrder: 0 },
+              { serviceName: "Exames complementares", quantity: 1, totalPrice: 2000, sortOrder: 1 },
+            ],
+          },
+        },
+      });
+    }
+  }
 
   const onlineReferral = await prisma.referral.findUnique({
     where: { protocol: "UNI-2026-000004" },

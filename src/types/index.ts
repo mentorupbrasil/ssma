@@ -35,13 +35,28 @@ export const REFERRAL_STATUS_COLORS: Record<ReferralStatus, string> = {
   CANCELADO: "bg-slate-100 text-slate-600",
 };
 
-export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
+export const LEAD_STATUS_LABELS: Record<string, string> = {
   NOVO: "Novo",
+  EM_ANALISE: "Em análise",
   EM_CONTATO: "Em contato",
+  AGUARDANDO_RETORNO: "Aguardando retorno",
+  CONVERTIDO_ORCAMENTO: "Convertido em orçamento",
   PROPOSTA_ENVIADA: "Proposta enviada",
   FECHADO: "Fechado",
   PERDIDO: "Perdido",
   EXPIRADO: "Expirado",
+  ARQUIVADO: "Arquivado",
+};
+
+export const QUOTE_STATUS_LABELS: Record<string, string> = {
+  RASCUNHO: "Rascunho",
+  EM_ANALISE: "Em análise",
+  ENVIADO: "Enviado",
+  AGUARDANDO_RESPOSTA: "Aguardando resposta",
+  APROVADO: "Aprovado",
+  RECUSADO: "Recusado",
+  EXPIRADO: "Expirado",
+  CANCELADO: "Cancelado",
 };
 
 export const COMPANY_STATUS_LABELS: Record<string, string> = {

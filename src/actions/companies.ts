@@ -12,9 +12,9 @@ import {
 import { createAuditLog } from "@/lib/server";
 import {
   OPEN_REFERRAL_STATUSES,
-  PENDING_LEAD_STATUSES,
   type CompanyDetailSerialized,
 } from "@/lib/companies";
+import { PENDING_QUOTE_STATUSES } from "@/lib/commercial";
 import { maskCpf } from "@/lib/referrals";
 import {
   createCompanySchema,
@@ -73,6 +73,7 @@ export async function getCompanyDetail(
         },
         documents: { orderBy: { createdAt: "desc" }, take: 50 },
         leads: { orderBy: { createdAt: "desc" }, take: 30 },
+        quotes: { orderBy: { createdAt: "desc" }, take: 30, include: { items: { select: { serviceName: true } } } },
         contacts: {
           orderBy: { createdAt: "desc" },
           take: 50,
@@ -116,8 +117,8 @@ export async function getCompanyDetail(
           status: { in: ["PENDENTE", "EM_ELABORACAO", "VENCIDO"] },
         },
       }),
-      prisma.lead.count({
-        where: { companyId: id, status: { in: PENDING_LEAD_STATUSES } },
+      prisma.quote.count({
+        where: { companyId: id, status: { in: PENDING_QUOTE_STATUSES } },
       }),
       prisma.appointment.findFirst({
         where: { companyId: id, status: "CONCLUIDO" },
@@ -205,14 +206,14 @@ export async function getCompanyDetail(
         createdAt: d.createdAt.toISOString(),
         fileUrl: d.fileUrl,
       })),
-      quotes: company.leads.map((l) => ({
-        id: l.id,
-        quoteNumber: l.quoteNumber,
-        serviceTitle: l.serviceTitle ?? l.name,
-        estimatedValue: l.estimatedValue,
-        status: l.status,
-        createdAt: l.createdAt.toISOString(),
-        validUntil: l.validUntil?.toISOString() ?? null,
+      quotes: company.quotes.map((q) => ({
+        id: q.id,
+        quoteNumber: q.quoteNumber,
+        serviceTitle: q.items.map((i) => i.serviceName).join(", ") || q.companyName,
+        estimatedValue: q.totalAmount,
+        status: q.status,
+        createdAt: q.createdAt.toISOString(),
+        validUntil: q.validUntil?.toISOString() ?? null,
       })),
       contacts: company.contacts.map((c) => ({
         id: c.id,

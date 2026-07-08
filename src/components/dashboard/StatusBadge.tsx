@@ -1,14 +1,15 @@
-import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS, CONTACT_MESSAGE_STATUS_LABELS, COMPANY_STATUS_LABELS, PATIENT_STATUS_LABELS, EXAM_STATUS_LABELS } from "@/types";
+import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, QUOTE_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS, CONTACT_MESSAGE_STATUS_LABELS, COMPANY_STATUS_LABELS, PATIENT_STATUS_LABELS, EXAM_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 
 type StatusBadgeProps = {
   status: string;
-  type?: "referral" | "lead" | "appointment" | "document" | "preReferral" | "contact" | "company" | "collaborator" | "exam";
+  type?: "referral" | "lead" | "quote" | "appointment" | "document" | "preReferral" | "contact" | "company" | "collaborator" | "exam";
 };
 
 const LABEL_MAPS = {
   referral: REFERRAL_STATUS_LABELS,
   lead: LEAD_STATUS_LABELS,
+  quote: QUOTE_STATUS_LABELS,
   appointment: APPOINTMENT_STATUS_LABELS,
   document: DOCUMENT_STATUS_LABELS,
   preReferral: PRE_REFERRAL_STATUS_LABELS,
@@ -56,6 +57,13 @@ const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   AFASTADO: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
   DESLIGADO: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
   EM_REVISAO: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
+  RASCUNHO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
+  ENVIADO: { bg: "bg-blue-50", text: "text-blue-800", dot: "bg-blue-500" },
+  AGUARDANDO_RESPOSTA: { bg: "bg-orange-50", text: "text-orange-800", dot: "bg-orange-500" },
+  APROVADO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  RECUSADO: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
+  CONVERTIDO_ORCAMENTO: { bg: "bg-teal-50", text: "text-teal-800", dot: "bg-teal-500" },
+  AGUARDANDO_RETORNO: { bg: "bg-orange-50", text: "text-orange-800", dot: "bg-orange-500" },
 };
 
 export function StatusBadge({ status, type = "referral" }: StatusBadgeProps) {

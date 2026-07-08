@@ -198,11 +198,57 @@ enum AppointmentHistoryAction {
 
 enum LeadStatus {
   NOVO
+  EM_ANALISE
   EM_CONTATO
+  AGUARDANDO_RETORNO
+  CONVERTIDO_ORCAMENTO
   PROPOSTA_ENVIADA
   FECHADO
   PERDIDO
   EXPIRADO
+  ARQUIVADO
+}
+
+enum QuoteStatus {
+  RASCUNHO
+  EM_ANALISE
+  ENVIADO
+  AGUARDANDO_RESPOSTA
+  APROVADO
+  RECUSADO
+  EXPIRADO
+  CANCELADO
+}
+
+enum CommercialEntityType {
+  LEAD
+  QUOTE
+  CONTACT
+}
+
+enum CommercialHistoryAction {
+  CREATED
+  STATUS_CHANGED
+  NOTE_ADDED
+  WHATSAPP_OPENED
+  EMAIL_SENT
+  QUOTE_CREATED
+  QUOTE_SENT
+  QUOTE_APPROVED
+  QUOTE_REJECTED
+  QUOTE_DUPLICATED
+  COMPANY_LINKED
+  REFERRAL_CREATED
+  PORTAL_ENABLED
+  ARCHIVED
+}
+
+enum QuoteRejectReason {
+  VALOR
+  SEM_RESPOSTA
+  OUTRO_FORNECEDOR
+  SEM_INTERESSE
+  OUTRO
 }
 
 enum LeadType {
@@ -289,6 +335,10 @@ model User {
   companyHistory CompanyHistory[]
   patientHistory PatientHistory[]
   examHistory    ExamHistory[]
+  assignedLeads  Lead[]              @relation("AssignedLeads")
+  createdQuotes  Quote[]             @relation("QuoteCreatedBy")
+  commercialHistory CommercialHistory[]
+  commercialNotes   CommercialNote[]
   auditLogs      AuditLog[]
   notifications  Notification[]
 }
@@ -322,6 +372,7 @@ model Company {
   users             User[]
   appointments      Appointment[]
   leads             Lead[]
+  quotes            Quote[]
   contacts          CompanyContact[]
   history           CompanyHistory[]
 }
@@ -550,23 +601,101 @@ model AppointmentHistory {
 }
 
 model Lead {
-  id             String     @id @default(cuid())
-  type           LeadType   @default(ORCAMENTO)
-  status         LeadStatus @default(NOVO)
-  quoteNumber    String?
-  name           String
-  email          String?
-  phone          String?
-  companyName    String?
-  serviceTitle   String?
-  message        String?
-  estimatedValue Float?
-  validUntil     DateTime?
-  notes          String?
-  companyId      String?
-  company        Company?   @relation(fields: [companyId], references: [id])
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id                String     @id @default(cuid())
+  type              LeadType   @default(ORCAMENTO)
+  status            LeadStatus @default(NOVO)
+  quoteNumber       String?
+  name              String
+  email             String?
+  phone             String?
+  companyName       String?
+  serviceTitle      String?
+  serviceInterest   String?
+  message           String?
+  estimatedValue    Float?
+  validUntil        DateTime?
+  notes             String?
+  source            String     @default("site")
+  sourcePage        String?
+  interestType      String?
+  companyId         String?
+  company           Company?   @relation(fields: [companyId], references: [id])
+  contactMessageId  String?
+  assignedToUserId  String?
+  assignedTo        User?      @relation("AssignedLeads", fields: [assignedToUserId], references: [id])
+  convertedQuoteId  String?    @unique
+  convertedQuote    Quote?     @relation("LeadConvertedQuote", fields: [convertedQuoteId], references: [id])
+  sourcedQuotes     Quote[]    @relation("QuoteSourceLead")
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+}
+
+model Quote {
+  id                String      @id @default(cuid())
+  quoteNumber       String      @unique
+  companyId         String?
+  company           Company?    @relation(fields: [companyId], references: [id])
+  companyName       String
+  responsibleName   String?
+  phone             String?
+  email             String?
+  cnpj              String?
+  city              String?
+  state             String?
+  status            QuoteStatus @default(RASCUNHO)
+  totalAmount       Float?
+  validUntil        DateTime?
+  paymentTerms      String?
+  internalNotes     String?
+  clientNotes       String?
+  rejectReason      QuoteRejectReason?
+  rejectNotes       String?
+  sourceLeadId      String?
+  sourceLead        Lead?       @relation("QuoteSourceLead", fields: [sourceLeadId], references: [id])
+  convertedFromLead Lead?       @relation("LeadConvertedQuote")
+  createdByUserId   String
+  createdBy         User        @relation("QuoteCreatedBy", fields: [createdByUserId], references: [id])
+  items             QuoteItem[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model QuoteItem {
+  id          String   @id @default(cuid())
+  quoteId     String
+  quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  serviceName String
+  category    String?
+  quantity    Int      @default(1)
+  unitPrice   Float?
+  totalPrice  Float?
+  notes       String?
+  sortOrder   Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CommercialHistory {
+  id                String                  @id @default(cuid())
+  entityType        CommercialEntityType
+  entityId          String
+  action            CommercialHistoryAction
+  fromStatus        String?
+  toStatus          String?
+  notes             String?
+  performedByUserId String?
+  performedBy       User?                   @relation(fields: [performedByUserId], references: [id])
+  createdAt         DateTime                @default(now())
+}
+
+model CommercialNote {
+  id                String               @id @default(cuid())
+  entityType        CommercialEntityType
+  entityId          String
+  content           String
+  createdByUserId   String
+  createdBy         User                 @relation(fields: [createdByUserId], references: [id])
+  createdAt         DateTime             @default(now())
 }
 
 model Document {
@@ -680,6 +809,8 @@ model ContactMessage {
   message         String
   consentAccepted Boolean               @default(false)
   source          String                @default("site_contato")
+  sourcePage      String?
+  serviceInterest String?
   status          ContactMessageStatus  @default(NOVO)
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
