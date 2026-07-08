@@ -58,22 +58,10 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
           "Elaboração e acompanhamento do Programa de Controle Médico de Saúde Ocupacional conforme a NR-7.",
       },
       {
-        name: "Gestão de Absenteísmo",
-        badge: "Gestão",
-        description:
-          "Monitoramento de faltas e afastamentos para apoiar o RH na leitura de impactos na rotina ocupacional.",
-      },
-      {
         name: "PPP",
         badge: "Documento",
         description:
           "Emissão do Perfil Profissiográfico Previdenciário com base no histórico ocupacional do colaborador.",
-      },
-      {
-        name: "Perícias Médicas",
-        badge: "Perícia",
-        description:
-          "Avaliações médicas especializadas para demandas administrativas, ocupacionais ou judiciais específicas.",
       },
     ],
   },
