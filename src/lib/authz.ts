@@ -102,3 +102,10 @@ export function isPrismaUniqueError(error: unknown): boolean {
     (error as { code: string }).code === "P2002"
   );
 }
+
+/** Tabela/coluna ausente — migration ainda não aplicada no banco */
+export function isPrismaSchemaError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null || !("code" in error)) return false;
+  const code = (error as { code: string }).code;
+  return code === "P2021" || code === "P2022" || code === "P2010";
+}

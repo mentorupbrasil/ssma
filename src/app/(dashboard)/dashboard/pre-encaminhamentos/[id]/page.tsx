@@ -2,7 +2,6 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { requirePagePermission } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -14,7 +13,9 @@ import {
   PRE_REFERRAL_CLINICAL_EXAM_LABELS,
   EXAM_SELECTION_MODE_LABELS,
 } from "@/types";
+import { ConvertPreReferralButton } from "@/components/dashboard/referrals/ConvertPreReferralButton";
 import { formatPhone } from "@/lib/helpers";
+import { getPreReferralDetail } from "@/actions/pre-referrals";
 
 export default async function PreEncaminhamentoDetailPage({
   params,
@@ -26,8 +27,22 @@ export default async function PreEncaminhamentoDetailPage({
   const session = await requirePagePermission("referrals.manage");
   if (isEmpresaUser(session)) notFound();
 
-  const request = await prisma.publicReferralRequest.findUnique({ where: { id } });
-  if (!request) notFound();
+  const result = await getPreReferralDetail(id);
+  if (!result.success) {
+    if (result.error.includes("não encontrado")) notFound();
+    return (
+      <div className="referral-error-state dashboard-surface m-4 p-8">
+        <p className="font-medium text-slate-700">{result.error}</p>
+        <Link href="/dashboard/pre-encaminhamentos">
+          <Button variant="outline" size="sm" className="mt-4">
+            Voltar à lista
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const request = result.request;
 
   return (
     <div>
@@ -42,6 +57,16 @@ export default async function PreEncaminhamentoDetailPage({
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <StatusBadge status={request.status} type="preReferral" />
         <PreReferralStatusForm requestId={request.id} currentStatus={request.status} />
+        {request.status !== "CONVERTIDO" && request.status !== "CANCELADO" && (
+          <ConvertPreReferralButton preReferralId={request.id} />
+        )}
+        {request.convertedReferral && (
+          <Link href={`/dashboard/encaminhamentos?id=${request.convertedReferral.id}`}>
+            <Button variant="outline" size="sm">
+              Ver encaminhamento {request.convertedReferral.protocol}
+            </Button>
+          </Link>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -98,7 +123,7 @@ export default async function PreEncaminhamentoDetailPage({
               <p><span className="font-medium text-slate-700">Observações:</span> {request.notes}</p>
             )}
             <p className="text-xs text-slate-500 pt-2">
-              Recebido em {format(request.createdAt, "dd/MM/yyyy 'às' HH:mm")}
+              Recebido em {format(new Date(request.createdAt), "dd/MM/yyyy 'às' HH:mm")}
             </p>
           </CardContent>
         </Card>

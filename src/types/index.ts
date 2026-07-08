@@ -15,6 +15,9 @@ export const REFERRAL_STATUS_LABELS: Record<ReferralStatus, string> = {
   AGUARDANDO_AGENDAMENTO: "Aguardando agendamento",
   AGENDADO: "Agendado",
   EM_ATENDIMENTO: "Em atendimento",
+  AGUARDANDO_RESULTADO: "Aguardando resultado",
+  AGUARDANDO_DOCUMENTO: "Aguardando documento",
+  ASO_DISPONIVEL: "ASO disponível",
   CONCLUIDO: "Concluído",
   CANCELADO: "Cancelado",
 };
@@ -25,6 +28,9 @@ export const REFERRAL_STATUS_COLORS: Record<ReferralStatus, string> = {
   AGUARDANDO_AGENDAMENTO: "bg-orange-100 text-orange-800",
   AGENDADO: "bg-purple-100 text-purple-800",
   EM_ATENDIMENTO: "bg-cyan-100 text-cyan-800",
+  AGUARDANDO_RESULTADO: "bg-sky-100 text-sky-800",
+  AGUARDANDO_DOCUMENTO: "bg-violet-100 text-violet-800",
+  ASO_DISPONIVEL: "bg-emerald-100 text-emerald-800",
   CONCLUIDO: "bg-emerald-100 text-emerald-800",
   CANCELADO: "bg-slate-100 text-slate-600",
 };

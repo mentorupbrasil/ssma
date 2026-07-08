@@ -5330,3 +5330,306 @@
   line-height: 1.6;
   color: rgb(100 116 139);
 }
+
+/* Encaminhamentos — central operacional */
+.referrals-module {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.referral-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .referral-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .referral-stat-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.referral-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: white;
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.referral-stat-card:hover {
+  border-color: rgb(22 160 133 / 0.35);
+  box-shadow: 0 4px 16px rgb(22 160 133 / 0.08);
+}
+
+.referral-stat-card-active {
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 2px rgb(22 160 133 / 0.15);
+}
+
+.referral-stat-count {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--brand-navy);
+  line-height: 1.2;
+}
+
+.referral-stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(100 116 139);
+}
+
+.referral-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: thin;
+}
+
+.referral-tab {
+  flex-shrink: 0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(100 116 139);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+
+.referral-tab:hover {
+  color: var(--brand-navy);
+  background: rgb(248 250 252);
+}
+
+.referral-tab-active {
+  color: var(--brand-green);
+  background: rgb(22 160 133 / 0.08);
+  border-color: rgb(22 160 133 / 0.2);
+}
+
+.referral-filters {
+  padding: 1rem;
+}
+
+.referral-filters-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .referral-filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .referral-filters-grid {
+    grid-template-columns: 2fr repeat(4, minmax(0, 1fr));
+  }
+}
+
+.referral-select,
+.referral-date-input {
+  height: 2.25rem;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.referral-filters-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.referral-table-row:hover {
+  background: rgb(248 250 252 / 0.8);
+}
+
+.referral-empty-state,
+.referral-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.referral-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.referral-detail-sheet {
+  padding: 0;
+}
+
+.referral-detail-sheet [data-slot="sheet-header"] {
+  padding: 1.25rem 1.5rem 0;
+}
+
+.referral-detail-content {
+  padding: 1rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.referral-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.referral-detail-section {
+  border-radius: 0.875rem;
+  border: 1px solid rgb(226 232 240 / 0.8);
+  background: rgb(248 250 252 / 0.5);
+  overflow: hidden;
+}
+
+.referral-detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brand-navy);
+  border-bottom: 1px solid rgb(226 232 240 / 0.8);
+  background: white;
+}
+
+.referral-detail-section-body {
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.referral-detail-row {
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 480px) {
+  .referral-detail-row {
+    grid-template-columns: 9rem 1fr;
+    gap: 0.75rem;
+  }
+}
+
+.referral-detail-label {
+  font-weight: 600;
+  color: rgb(100 116 139);
+}
+
+.referral-detail-value {
+  color: rgb(30 41 59);
+}
+
+.referral-exam-item,
+.referral-doc-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  background: white;
+  border: 1px solid rgb(226 232 240 / 0.7);
+}
+
+.referral-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 0.25rem;
+}
+
+.referral-timeline-item {
+  display: flex;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  position: relative;
+}
+
+.referral-timeline-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 0.3125rem;
+  top: 0.75rem;
+  bottom: 0;
+  width: 2px;
+  background: rgb(226 232 240);
+}
+
+.referral-timeline-dot {
+  flex-shrink: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-top: 0.35rem;
+  border-radius: 9999px;
+  background: rgb(203 213 225);
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px rgb(226 232 240);
+}
+
+.referral-timeline-dot[data-first="true"] {
+  background: var(--brand-green);
+  box-shadow: 0 0 0 2px rgb(22 160 133 / 0.2);
+}
+
+.referral-stat-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.referral-filters-grid-pre {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .referral-filters-grid-pre {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+.referral-db-warning {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.875rem;
+  border: 1px solid rgb(251 191 36 / 0.5);
+  background: rgb(255 251 235);
+}
+

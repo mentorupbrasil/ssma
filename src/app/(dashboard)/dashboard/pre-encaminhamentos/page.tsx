@@ -1,77 +1,76 @@
-import Link from "next/link";
-import { format } from "date-fns";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { Loader2 } from "lucide-react";
 import { requirePagePermission } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
-import { PageHeader } from "@/components/dashboard/PageHeader";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { DataTable } from "@/components/dashboard/DataTable";
-import { PreReferralStatusForm } from "@/components/dashboard/PreReferralStatusForm";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PRE_REFERRAL_CLINICAL_EXAM_LABELS } from "@/types";
-import { formatPhone } from "@/lib/helpers";
+import { loadPreReferralsPageData } from "@/actions/pre-referrals";
+import { PreEncaminhamentosClient } from "@/components/dashboard/pre-referrals/PreEncaminhamentosClient";
 
-export default async function PreEncaminhamentosPage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function getParam(params: Record<string, string | string[] | undefined>, key: string): string {
+  const value = params[key];
+  if (Array.isArray(value)) return value[0] ?? "";
+  return value ?? "";
+}
+
+async function PreEncaminhamentosData({ searchParams }: { searchParams: SearchParams }) {
   const session = await requirePagePermission("referrals.manage");
   if (isEmpresaUser(session)) notFound();
 
-  const requests = await prisma.publicReferralRequest.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const params = await searchParams;
+  const filters = {
+    q: getParam(params, "q") || undefined,
+    status: getParam(params, "status") || undefined,
+    dateFrom: getParam(params, "dateFrom") || undefined,
+    dateTo: getParam(params, "dateTo") || undefined,
+    page: Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1),
+  };
+
+  const result = await loadPreReferralsPageData(filters);
+
+  if (!result.success) {
+    return (
+      <PreEncaminhamentosClient
+        items={[]}
+        total={0}
+        page={1}
+        pageSize={20}
+        statusCounts={{}}
+        dbReady={true}
+        loadError={result.error}
+        filters={filters}
+      />
+    );
+  }
 
   return (
-    <div>
-      <PageHeader
-        title="Pré-encaminhamentos"
-        description="Solicitações rápidas enviadas pelo formulário público — leads para análise e conversão"
-      />
+    <PreEncaminhamentosClient
+      items={result.items}
+      total={result.total}
+      page={result.page}
+      pageSize={result.pageSize}
+      statusCounts={result.statusCounts}
+      dbReady={result.dbReady}
+      filters={filters}
+    />
+  );
+}
 
-      <DataTable>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Protocolo</TableHead>
-              <TableHead>Empresa</TableHead>
-              <TableHead>Colaborador</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>WhatsApp</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {requests.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-sm text-slate-500">
-                  Nenhum pré-encaminhamento recebido ainda.
-                </TableCell>
-              </TableRow>
-            ) : (
-              requests.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/pre-encaminhamentos/${r.id}`}
-                      className="font-semibold text-[var(--brand-green)] hover:underline"
-                    >
-                      {r.protocol}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{r.companyName}</TableCell>
-                  <TableCell>{r.employeeName}</TableCell>
-                  <TableCell>{PRE_REFERRAL_CLINICAL_EXAM_LABELS[r.clinicalExamType]}</TableCell>
-                  <TableCell>{formatPhone(r.whatsapp)}</TableCell>
-                  <TableCell>{format(r.createdAt, "dd/MM/yyyy HH:mm")}</TableCell>
-                  <TableCell>
-                    <PreReferralStatusForm requestId={r.id} currentStatus={r.status} />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </DataTable>
-    </div>
+export default function PreEncaminhamentosPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
+        </div>
+      }
+    >
+      <PreEncaminhamentosData searchParams={searchParams} />
+    </Suspense>
   );
 }

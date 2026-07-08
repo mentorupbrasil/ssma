@@ -53,8 +53,34 @@ enum ReferralStatus {
   AGUARDANDO_AGENDAMENTO
   AGENDADO
   EM_ATENDIMENTO
+  AGUARDANDO_RESULTADO
+  AGUARDANDO_DOCUMENTO
+  ASO_DISPONIVEL
   CONCLUIDO
   CANCELADO
+}
+
+enum ReferralSource {
+  PORTAL
+  ADMIN
+  PRE_REFERRAL
+  SITE
+}
+
+enum ReferralExamStatus {
+  PENDENTE
+  AGENDADO
+  REALIZADO
+  RESULTADO_DISPONIVEL
+  CANCELADO
+}
+
+enum ReferralDocumentType {
+  ASO
+  GUIA
+  LAUDO
+  RESULTADO
+  OUTRO
 }
 
 enum AppointmentStatus {
@@ -138,6 +164,8 @@ model User {
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   assignedReferrals Referral[] @relation("AssignedReferrals")
+  referralStatusChanges ReferralStatusHistory[]
+  referralDocumentsUploaded ReferralDocument[]
   auditLogs      AuditLog[]
   notifications  Notification[]
 }
@@ -211,6 +239,8 @@ model Referral {
   patient           Patient          @relation(fields: [patientId], references: [id])
   clinicalExamType  ClinicalExamType
   status            ReferralStatus   @default(NOVO)
+  requestedDate     DateTime         @default(now())
+  scheduledAt       DateTime?
   authorizerName    String?
   companyPhone      String?
   companyEmail      String?
@@ -218,23 +248,54 @@ model Referral {
   consentAccepted   Boolean          @default(false)
   assignedToId      String?
   assignedTo        User?            @relation("AssignedReferrals", fields: [assignedToId], references: [id])
-  source            String           @default("online")
+  source            ReferralSource   @default(SITE)
+  preReferralId     String?          @unique
+  preReferral       PublicReferralRequest? @relation(fields: [preReferralId], references: [id])
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   exams             ReferralExam[]
   appointments      Appointment[]
   documents         Document[]
+  referralDocuments ReferralDocument[]
+  statusHistory     ReferralStatusHistory[]
+}
+
+model ReferralStatusHistory {
+  id          String          @id @default(cuid())
+  referralId  String
+  referral    Referral        @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  fromStatus  ReferralStatus?
+  toStatus    ReferralStatus
+  notes       String?
+  changedById String?
+  changedBy   User?           @relation(fields: [changedById], references: [id])
+  createdAt   DateTime        @default(now())
+}
+
+model ReferralDocument {
+  id           String              @id @default(cuid())
+  referralId   String
+  referral     Referral            @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  type         ReferralDocumentType @default(OUTRO)
+  fileName     String
+  fileUrl      String
+  uploadedById String?
+  uploadedBy   User?               @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime            @default(now())
 }
 
 model ReferralExam {
-  id         String   @id @default(cuid())
-  referralId String
-  referral   Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
-  examId     String?
-  exam       Exam?    @relation(fields: [examId], references: [id])
-  examName   String
-  category   ExamCategory
-  createdAt  DateTime @default(now())
+  id                String            @id @default(cuid())
+  referralId        String
+  referral          Referral          @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  examId            String?
+  exam              Exam?             @relation(fields: [examId], references: [id])
+  examName          String
+  category          ExamCategory
+  status            ReferralExamStatus @default(PENDENTE)
+  resultAvailableAt DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 }
 
 model Appointment {
@@ -348,6 +409,7 @@ model PublicReferralRequest {
   notes             String?
   consentAccepted   Boolean                     @default(false)
   status            PreReferralStatus           @default(NOVO)
+  referral          Referral?
   createdAt         DateTime                    @default(now())
   updatedAt         DateTime                    @updatedAt
 }

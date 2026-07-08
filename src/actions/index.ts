@@ -40,14 +40,14 @@ export async function submitReferral(
   }
 
   const d = parsed.data;
-  let source: "online" | "portal" | "dashboard" = options?.source ?? "online";
+  let referralSource: "SITE" | "PORTAL" | "ADMIN" = "SITE";
   let sessionUserId: string | undefined;
 
-  if (source !== "online") {
+  if (options?.source !== "online") {
     try {
       const session = await requirePermission("referrals.manage");
       sessionUserId = session.user.id;
-      source = isEmpresaUser(session) ? "portal" : "dashboard";
+      referralSource = isEmpresaUser(session) ? "PORTAL" : "ADMIN";
 
       if (isEmpresaUser(session) && session.user.companyId) {
         const company = await prisma.company.findUnique({
@@ -73,7 +73,7 @@ export async function submitReferral(
     });
 
     if (!company) {
-      if (source !== "online") {
+      if (referralSource !== "SITE") {
         return {
           success: false,
           error: "Empresa não cadastrada. Cadastre a empresa antes do encaminhamento interno.",
@@ -128,10 +128,12 @@ export async function submitReferral(
       ...d.complementaryExams.map((name) => ({
         examName: name,
         category: ExamCategory.COMPLEMENTAR,
+        status: "PENDENTE" as const,
       })),
       ...d.labExams.map((name) => ({
         examName: name,
         category: ExamCategory.LABORATORIAL,
+        status: "PENDENTE" as const,
       })),
     ];
 
@@ -146,8 +148,23 @@ export async function submitReferral(
         companyPhone: d.companyPhone,
         companyEmail: d.companyEmail,
         consentAccepted: true,
-        source,
+        source: referralSource,
+        assignedToId: sessionUserId,
         exams: { create: examItems },
+        statusHistory: sessionUserId
+          ? {
+              create: {
+                toStatus: "NOVO",
+                notes: "Encaminhamento criado",
+                changedById: sessionUserId,
+              },
+            }
+          : {
+              create: {
+                toStatus: "NOVO",
+                notes: "Encaminhamento criado pelo site",
+              },
+            },
       },
     });
 
@@ -156,7 +173,7 @@ export async function submitReferral(
       action: "CREATE",
       entity: "Referral",
       entityId: referral.id,
-      details: `Encaminhamento ${source} ${protocol}`,
+      details: `Encaminhamento ${referralSource} ${protocol}`,
     });
 
     revalidatePath("/dashboard");
@@ -382,40 +399,11 @@ export async function updateContactMessageStatus(
 
 export async function updateReferralStatus(
   id: string,
-  status: string
+  status: string,
+  notes?: string
 ): Promise<ActionResult> {
-  const statusParsed = referralStatusSchema.safeParse(status);
-  if (!statusParsed.success) {
-    return { success: false, error: "Status inválido." };
-  }
-
-  try {
-    const session = await requirePermission("referrals.manage");
-    if (session.user.role === "EMPRESA") {
-      throw new Error("FORBIDDEN");
-    }
-    await assertReferralAccess(session, id);
-
-    await prisma.referral.update({
-      where: { id },
-      data: { status: statusParsed.data },
-    });
-
-    await createAuditLog({
-      userId: session.user.id,
-      action: "UPDATE",
-      entity: "Referral",
-      entityId: id,
-      details: `Status alterado para ${statusParsed.data}`,
-    });
-
-    revalidatePath("/dashboard/encaminhamentos");
-    revalidatePath(`/dashboard/encaminhamentos/${id}`);
-    revalidatePath("/dashboard");
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: actionError(error, "Erro ao atualizar status.") };
-  }
+  const { updateReferralStatusWithNotes } = await import("@/actions/referrals");
+  return updateReferralStatusWithNotes(id, status, notes);
 }
 
 export async function updateLeadStatus(id: string, status: string): Promise<ActionResult> {

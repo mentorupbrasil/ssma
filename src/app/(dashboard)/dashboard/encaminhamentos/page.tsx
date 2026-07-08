@@ -1,72 +1,122 @@
-import Link from "next/link";
-import { format } from "date-fns";
-import { Plus } from "lucide-react";
+import { Suspense } from "react";
+import type { ReferralStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAuthSession } from "@/lib/page-auth";
 import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
-import { PageHeader } from "@/components/dashboard/PageHeader";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { DataTable } from "@/components/dashboard/DataTable";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CLINICAL_EXAM_LABELS } from "@/types";
+import { buildReferralWhere, REFERRAL_STAT_CARDS, type ReferralListItem } from "@/lib/referrals";
+import { EncaminhamentosClient } from "@/components/dashboard/referrals/EncaminhamentosClient";
+import { Loader2 } from "lucide-react";
 
-export default async function EncaminhamentosPage() {
+const PAGE_SIZE = 20;
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function getParam(params: Record<string, string | string[] | undefined>, key: string): string {
+  const value = params[key];
+  if (Array.isArray(value)) return value[0] ?? "";
+  return value ?? "";
+}
+
+async function EncaminhamentosData({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
   const session = await requireAuthSession();
   const isEmpresa = isEmpresaUser(session);
-  const where = getCompanyFilter(session);
+  const companyScope = getCompanyFilter(session).companyId;
 
-  const referrals = await prisma.referral.findMany({
-    where,
-    include: { company: true, patient: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const filters = {
+    q: getParam(params, "q") || undefined,
+    status: getParam(params, "status") || undefined,
+    companyId: getParam(params, "companyId") || undefined,
+    clinicalExamType: getParam(params, "clinicalExamType") || undefined,
+    dateFrom: getParam(params, "dateFrom") || undefined,
+    dateTo: getParam(params, "dateTo") || undefined,
+  };
+
+  const page = Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1);
+  const where = buildReferralWhere(filters, companyScope);
+  const skip = (page - 1) * PAGE_SIZE;
+
+  const statStatuses = REFERRAL_STAT_CARDS.map((c) => c.status);
+  const baseWhere = companyScope ? { companyId: companyScope } : {};
+
+  const [total, referrals, countResults, companies] = await Promise.all([
+    prisma.referral.count({ where }),
+    prisma.referral.findMany({
+      where,
+      include: { company: true, patient: true, assignedTo: true },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: PAGE_SIZE,
+    }),
+    Promise.all(
+      statStatuses.map(async (status) => ({
+        status,
+        count: await prisma.referral.count({ where: { ...baseWhere, status } }),
+      }))
+    ),
+    isEmpresa
+      ? Promise.resolve([])
+      : prisma.company.findMany({
+          select: { id: true, legalName: true, tradeName: true },
+          orderBy: { legalName: "asc" },
+          take: 200,
+        }),
+  ]);
+
+  const statusCounts = Object.fromEntries(
+    countResults.map((c) => [c.status, c.count])
+  ) as Partial<Record<ReferralStatus, number>>;
+
+  const items: ReferralListItem[] = referrals.map((r) => ({
+    id: r.id,
+    protocol: r.protocol,
+    companyName: r.company.tradeName ?? r.company.legalName,
+    employeeName: r.patient.fullName,
+    jobTitle: r.patient.jobTitle,
+    clinicalExamType: r.clinicalExamType,
+    requestedDate: r.requestedDate.toISOString(),
+    scheduledAt: r.scheduledAt?.toISOString() ?? null,
+    status: r.status,
+    responsibleName: r.assignedTo?.name ?? null,
+    companyPhone: r.companyPhone ?? r.company.phone,
+    companyWhatsapp: r.company.whatsapp ?? r.company.phone,
+  }));
+
+  const canManage =
+    session.user.role !== "EMPRESA" && session.user.role !== "VISUALIZADOR";
 
   return (
-    <div>
-      <PageHeader title="Encaminhamentos" description="Gestão de encaminhamentos do portal e solicitações internas">
-        <div className="flex flex-wrap gap-2">
-          {!isEmpresa && (
-            <Link href="/dashboard/pre-encaminhamentos">
-              <Button variant="outline">Pré-encaminhamentos</Button>
-            </Link>
-          )}
-          <Link href="/dashboard/encaminhamentos/novo">
-            <Button variant="brand"><Plus className="mr-2 h-4 w-4" /> Novo</Button>
-          </Link>
-        </div>
-      </PageHeader>
+    <EncaminhamentosClient
+      initialItems={items}
+      initialTotal={total}
+      initialPage={page}
+      pageSize={PAGE_SIZE}
+      statusCounts={statusCounts}
+      companies={companies.map((c) => ({
+        id: c.id,
+        name: c.tradeName ?? c.legalName,
+      }))}
+      isEmpresa={isEmpresa}
+      canManage={canManage}
+      filters={filters}
+    />
+  );
+}
 
-      <DataTable>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Protocolo</TableHead>
-              <TableHead>Empresa</TableHead>
-              <TableHead>Paciente</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {referrals.map((r) => (
-              <TableRow key={r.id}>
-                <TableCell>
-                  <Link href={`/dashboard/encaminhamentos/${r.id}`} className="font-semibold text-[var(--brand-green)] hover:underline">
-                    {r.protocol}
-                  </Link>
-                </TableCell>
-                <TableCell>{r.company.tradeName ?? r.company.legalName}</TableCell>
-                <TableCell>{r.patient.fullName}</TableCell>
-                <TableCell>{CLINICAL_EXAM_LABELS[r.clinicalExamType]}</TableCell>
-                <TableCell>{format(r.createdAt, "dd/MM/yyyy")}</TableCell>
-                <TableCell><StatusBadge status={r.status} /></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </DataTable>
-    </div>
+export default function EncaminhamentosPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
+        </div>
+      }
+    >
+      <EncaminhamentosData searchParams={searchParams} />
+    </Suspense>
   );
 }

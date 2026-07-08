@@ -233,6 +233,9 @@ export const referralStatusSchema = z.enum([
   "AGUARDANDO_AGENDAMENTO",
   "AGENDADO",
   "EM_ATENDIMENTO",
+  "AGUARDANDO_RESULTADO",
+  "AGUARDANDO_DOCUMENTO",
+  "ASO_DISPONIVEL",
   "CONCLUIDO",
   "CANCELADO",
 ]);
