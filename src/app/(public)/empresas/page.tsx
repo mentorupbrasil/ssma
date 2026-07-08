@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Building2,
+  CheckCircle2,
   Clock,
   FileText,
   MessageSquare,
