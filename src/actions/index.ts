@@ -315,14 +315,30 @@ export async function submitContactMessage(data: unknown): Promise<ActionResult>
       entity: "ContactMessage",
       details: `Contato: ${d.name} — ${d.subject}`,
     });
-
-    revalidatePath("/dashboard/contatos");
-    revalidatePath("/dashboard/orcamentos");
-    return { success: true };
   } catch (error) {
-    console.error("submitContactMessage error:", error);
-    return { success: false, error: "Erro ao enviar mensagem." };
+    console.error("contactMessage create failed, falling back to lead:", error);
+
+    await prisma.lead.create({
+      data: {
+        type: "CONTATO",
+        status: "NOVO",
+        name: d.name,
+        email: email ?? undefined,
+        phone: d.phone,
+        companyName: company ?? undefined,
+        message: `Assunto: ${d.subject}\n\n${d.message}`,
+      },
+    });
+
+    await createAuditLog({
+      action: "CREATE",
+      entity: "Lead",
+      details: `Contato (fallback): ${d.name} — ${d.subject}`,
+    });
   }
+
+  revalidatePath("/dashboard/orcamentos");
+  return { success: true };
 }
 
 /** @deprecated Use submitContactMessage */
@@ -355,8 +371,8 @@ export async function updateContactMessageStatus(
       details: `Status alterado para ${parsedStatus.data}`,
     });
 
-    revalidatePath("/dashboard/contatos");
-    revalidatePath(`/dashboard/contatos/${id}`);
+    revalidatePath("/dashboard/orcamentos");
+    revalidatePath(`/dashboard/orcamentos/mensagens/${id}`);
 
     return { success: true };
   } catch (e) {

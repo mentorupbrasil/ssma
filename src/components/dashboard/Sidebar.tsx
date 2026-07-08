@@ -14,8 +14,6 @@ import {
   UserCog,
   Settings,
   Shield,
-  Inbox,
-  Mail,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -39,8 +37,6 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   UserCog,
   Settings,
   Shield,
-  Inbox,
-  Mail,
 };
 
 type SidebarProps = {
@@ -49,11 +45,7 @@ type SidebarProps = {
 
 function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNavigate?: () => void }) {
   const pathname = usePathname();
-  const items = DASHBOARD_NAV.filter(
-    (item) =>
-      hasPermission(user.role, item.permission) &&
-      !(user.role === "EMPRESA" && item.href === "/dashboard/pre-encaminhamentos")
-  );
+  const items = DASHBOARD_NAV.filter((item) => hasPermission(user.role, item.permission));
 
   return (
     <div className="flex h-full flex-col bg-white">

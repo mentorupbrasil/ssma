@@ -11,7 +11,6 @@ import {
   FolderOpen,
   CheckCircle2,
   Plus,
-  Inbox,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -19,7 +18,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CLINICAL_EXAM_LABELS, PRE_REFERRAL_CLINICAL_EXAM_LABELS } from "@/types";
+import { CLINICAL_EXAM_LABELS } from "@/types";
 import { requireAuthSession } from "@/lib/page-auth";
 import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
 import { hasPermission } from "@/lib/permissions";
@@ -53,8 +52,6 @@ export default async function DashboardPage() {
     completedReferrals,
     recentReferrals,
     upcomingAppointments,
-    newPreReferrals,
-    recentPreReferrals,
   ] = await Promise.all([
     prisma.referral.count({ where: { ...companyFilter, status: "NOVO" } }),
     prisma.referral.count({
@@ -109,26 +106,10 @@ export default async function DashboardPage() {
       orderBy: { scheduledAt: "asc" },
       take: 5,
     }),
-    canManageReferrals && !isEmpresa
-      ? prisma.publicReferralRequest
-          .count({ where: { status: { in: ["NOVO", "EM_ANALISE"] } } })
-          .catch(() => 0)
-      : Promise.resolve(0),
-    canManageReferrals && !isEmpresa
-      ? prisma.publicReferralRequest
-          .findMany({ orderBy: { createdAt: "desc" }, take: 5 })
-          .catch(() => [])
-      : Promise.resolve([]),
   ]);
 
   const stats = [
     { title: "Encaminhamentos novos", value: newReferrals, icon: FileText, show: true },
-    {
-      title: "Pré-encaminhamentos",
-      value: newPreReferrals,
-      icon: Inbox,
-      show: canManageReferrals && !isEmpresa,
-    },
     { title: "Em andamento", value: inProgressReferrals, icon: Clock, show: true },
     { title: "Agendados hoje", value: todayAppointments, icon: Calendar, show: canManageAppointments },
     {
@@ -224,43 +205,6 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      {canManageReferrals && !isEmpresa && (
-        <Card className="mt-8">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-[#0F3D4A]">Pré-encaminhamentos recentes</CardTitle>
-            <Link href="/dashboard/pre-encaminhamentos" className="text-sm font-medium text-[var(--brand-green)] hover:underline">
-              Ver todos
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {recentPreReferrals.length === 0 ? (
-              <p className="text-sm text-slate-500">Nenhum pré-encaminhamento recebido pelo site.</p>
-            ) : (
-              <div className="space-y-3">
-                {recentPreReferrals.map((r) => (
-                  <Link
-                    key={r.id}
-                    href={`/dashboard/pre-encaminhamentos/${r.id}`}
-                    className="flex items-center justify-between rounded-lg border border-slate-100 p-3 transition hover:bg-slate-50"
-                  >
-                    <div>
-                      <p className="font-medium text-sm">{r.protocol}</p>
-                      <p className="text-xs text-slate-500">
-                        {r.employeeName} — {r.companyName}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {PRE_REFERRAL_CLINICAL_EXAM_LABELS[r.clinicalExamType]}
-                      </p>
-                    </div>
-                    <StatusBadge status={r.status} type="preReferral" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       <div className="mt-8 flex flex-wrap gap-3">
         {canManageCompanies && (
