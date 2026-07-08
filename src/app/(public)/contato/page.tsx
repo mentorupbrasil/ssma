@@ -5,10 +5,7 @@ import { ContactInfoPanel } from "@/components/public/ContactInfoPanel";
 import { LocationMap } from "@/components/public/LocationMap";
 import { PageHero } from "@/components/public/PageHero";
 import { PageSection } from "@/components/public/PageSection";
-import {
-  formatClinicCoordinates,
-  getClinicSiteConfig,
-} from "@/config/clinic";
+import { getClinicSiteConfig } from "@/config/clinic";
 import { resolveContactPrefill, CONTACT_WHATSAPP_MESSAGES } from "@/data/contact";
 import { whatsappLink } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
@@ -24,7 +21,6 @@ export default async function ContatoPage({
   const clinic = getClinicSiteConfig();
   const prefill = resolveContactPrefill(params);
   const locationLabel = [clinic.city, clinic.state].filter(Boolean).join(", ");
-  const coordinates = formatClinicCoordinates(clinic.mapsLat, clinic.mapsLng);
 
   return (
     <>
@@ -67,16 +63,16 @@ export default async function ContatoPage({
 
           <div className="space-y-5">
             <ContactInfoPanel />
-            {(clinic.hasMapLink || coordinates) && (
+            {clinic.hasMapEmbed && (
               <div
                 id="contato-mapa"
-                className="contact-map-wrap contact-map-wrap--interactive scroll-mt-[calc(var(--header-height)+1rem)]"
+                className="contact-map-wrap scroll-mt-[calc(var(--header-height)+1rem)]"
               >
                 <LocationMap
-                  className="contact-map-interactive"
-                  fillOnExpand
+                  className="contact-map-embed"
+                  embedUrl={clinic.mapEmbedUrl}
                   location={locationLabel || clinic.clinicName}
-                  coordinates={coordinates}
+                  addressLine={clinic.address}
                   mapsUrl={clinic.hasMapLink ? clinic.googleMapsExternalUrl : undefined}
                 />
               </div>

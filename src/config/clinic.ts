@@ -11,6 +11,9 @@ export type ClinicSiteConfig = {
   instagram: string;
   openingHours: string;
   googleMapsEmbedUrl: string;
+  openStreetMapEmbedUrl: string;
+  /** Mapa embutido preferido (OSM com ruas reais; fallback Google). */
+  mapEmbedUrl: string;
   googleMapsExternalUrl: string;
   hasAddress: boolean;
   hasWhatsApp: boolean;
@@ -122,6 +125,22 @@ function isEmbeddableMapsUrl(url: string): boolean {
   return url.includes("output=embed") || url.includes("/maps/embed");
 }
 
+function buildOpenStreetMapEmbedUrl(lat: string, lng: string): string {
+  const latNum = parseFloat(lat);
+  const lngNum = parseFloat(lng);
+  if (Number.isNaN(latNum) || Number.isNaN(lngNum)) return "";
+
+  const pad = 0.014;
+  const bbox = [
+    (lngNum - pad).toFixed(6),
+    (latNum - pad).toFixed(6),
+    (lngNum + pad).toFixed(6),
+    (latNum + pad).toFixed(6),
+  ].join(",");
+
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latNum}%2C${lngNum}`;
+}
+
 function buildMapsEmbedUrl(options: {
   embed: string;
   lat: string;
@@ -176,6 +195,9 @@ export function getClinicSiteConfig(): ClinicSiteConfig {
     state,
   });
 
+  const openStreetMapEmbedUrl = buildOpenStreetMapEmbedUrl(mapsLat, mapsLng);
+  const mapEmbedUrl = openStreetMapEmbedUrl || googleMapsEmbedUrl;
+
   return {
     clinicName,
     address,
@@ -189,10 +211,12 @@ export function getClinicSiteConfig(): ClinicSiteConfig {
     instagram,
     openingHours,
     googleMapsEmbedUrl,
+    openStreetMapEmbedUrl,
+    mapEmbedUrl,
     googleMapsExternalUrl,
     hasAddress: Boolean(address),
     hasWhatsApp: Boolean(whatsapp),
-    hasMapEmbed: Boolean(googleMapsEmbedUrl),
+    hasMapEmbed: Boolean(mapEmbedUrl),
     hasMapLink: Boolean(googleMapsExternalUrl),
     mapsLat,
     mapsLng,

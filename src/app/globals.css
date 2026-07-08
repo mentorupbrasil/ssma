@@ -2853,6 +2853,123 @@
       0 8px 24px rgb(15 23 42 / 0.06);
   }
 
+  .location-map-embed,
+  .contact-map-embed {
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+  }
+
+  .clinic-map {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 16rem;
+    overflow: hidden;
+    border-radius: inherit;
+    background: rgb(248 250 252);
+  }
+
+  .clinic-map--expanded {
+    position: fixed;
+    inset: var(--header-height) 0 0 0;
+    z-index: 60;
+    min-height: unset;
+    border-radius: 0;
+  }
+
+  .clinic-map-frame {
+    display: block;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 14rem;
+    border: 0;
+    background: rgb(241 245 249);
+  }
+
+  .clinic-map--expanded .clinic-map-frame {
+    min-height: calc(100vh - var(--header-height) - 4.5rem);
+  }
+
+  .clinic-map-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    border-top: 1px solid rgb(226 232 240 / 0.95);
+    background: rgb(255 255 255 / 0.96);
+    backdrop-filter: blur(8px);
+  }
+
+  .clinic-map-toolbar-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .clinic-map-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .clinic-map-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    height: 2rem;
+    padding: 0 0.65rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(226 232 240);
+    background: rgb(255 255 255);
+    color: rgb(51 65 85);
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .clinic-map-btn:hover {
+    background: rgb(248 250 252);
+    border-color: rgb(203 213 225);
+  }
+
+  .clinic-map-btn--primary {
+    border-color: rgb(22 160 133 / 0.35);
+    background: rgb(22 160 133 / 0.08);
+    color: rgb(15 118 110);
+  }
+
+  .clinic-map-btn--primary:hover {
+    background: rgb(22 160 133 / 0.14);
+    border-color: rgb(22 160 133 / 0.5);
+  }
+
+  @media (min-width: 768px) {
+    .location-map-wrap {
+      min-height: 18rem;
+    }
+
+    .clinic-map {
+      min-height: 18rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .location-map-wrap {
+      min-height: 20rem;
+    }
+
+    .clinic-map {
+      min-height: 20rem;
+    }
+  }
+
   .location-map-wrap--interactive {
     display: flex;
     align-items: center;
@@ -5313,28 +5430,10 @@
     0 8px 28px rgb(15 61 74 / 0.07);
 }
 
-.contact-map-wrap--interactive {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  padding-bottom: 1.75rem;
-  background: linear-gradient(180deg, rgb(255 255 255) 0%, rgb(248 250 252) 100%);
-}
-
-.contact-map-interactive {
-  width: 100%;
-  height: 100%;
-  min-height: 12rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 @media (min-width: 1024px) {
   .contact-map-wrap {
     min-height: 16rem;
-    max-height: 18rem;
+    max-height: none;
   }
 }
 

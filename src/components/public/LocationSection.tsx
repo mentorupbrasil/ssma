@@ -5,7 +5,6 @@ import { LocationMap } from "@/components/public/LocationMap";
 import { Button } from "@/components/ui/button";
 import {
   formatClinicAddressLines,
-  formatClinicCoordinates,
   formatOpeningHoursLines,
   getClinicSiteConfig,
 } from "@/config/clinic";
@@ -18,7 +17,6 @@ export function LocationSection() {
     : ["Endereço em atualização"];
   const hoursLines = formatOpeningHoursLines(clinic.openingHours);
   const locationLabel = [clinic.city, clinic.state].filter(Boolean).join(", ");
-  const coordinates = formatClinicCoordinates(clinic.mapsLat, clinic.mapsLng);
 
   return (
     <section className="location-section scroll-mt-[var(--header-height)]">
@@ -31,15 +29,17 @@ export function LocationSection() {
         />
 
         <div className="location-grid">
-          <div className="location-map-wrap location-map-wrap--interactive">
+          <div className="location-map-wrap">
+          {clinic.hasMapEmbed ? (
             <LocationMap
-              className="location-map-interactive"
-              fillOnExpand
+              className="location-map-embed"
+              embedUrl={clinic.mapEmbedUrl}
               location={locationLabel || clinic.clinicName}
-              coordinates={coordinates}
+              addressLine={clinic.address}
               mapsUrl={clinic.hasMapLink ? clinic.googleMapsExternalUrl : undefined}
             />
-          </div>
+          ) : null}
+        </div>
 
           <div className="location-info-card">
             <div className="location-info-card-header">
