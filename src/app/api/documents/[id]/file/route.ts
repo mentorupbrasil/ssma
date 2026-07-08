@@ -71,5 +71,5 @@ export async function GET(
       : `inline; filename="${doc.fileName ?? "documento"}"`
   );
 
-  return new NextResponse(buffer, { headers });
+  return new NextResponse(new Uint8Array(buffer), { headers });
 }
