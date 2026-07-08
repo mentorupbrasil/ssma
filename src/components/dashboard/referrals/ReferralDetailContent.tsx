@@ -25,9 +25,10 @@ import {
 } from "@/lib/referrals";
 import { CLINICAL_EXAM_LABELS, EXAM_CATEGORY_LABELS, REFERRAL_STATUS_LABELS } from "@/types";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatCNPJ, formatCPF, formatPhone } from "@/lib/helpers";
+import { cn } from "@/lib/utils";
 import { cancelReferralAppointment, deleteReferralDocument, updateReferralStatusWithNotes } from "@/actions/referrals";
 import { toast } from "sonner";
 
@@ -157,12 +158,15 @@ export function ReferralDetailContent({
           </>
         )}
         {whatsappUrl && (
-          <Button variant="outline" size="sm" asChild>
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="mr-1.5 h-4 w-4" />
-              WhatsApp
-            </a>
-          </Button>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            <MessageCircle className="mr-1.5 h-4 w-4" />
+            WhatsApp
+          </a>
         )}
         {canManage && referral.status !== "CONCLUIDO" && referral.status !== "CANCELADO" && (
           <>
@@ -315,16 +319,21 @@ export function ReferralDetailContent({
                   )}
                 </div>
                 <div className="flex shrink-0 gap-1">
-                  <Button variant="ghost" size="sm" asChild>
-                    <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                      Ver
-                    </a>
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <a href={doc.fileUrl} download>
-                      Baixar
-                    </a>
-                  </Button>
+                  <a
+                    href={doc.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                  >
+                    Ver
+                  </a>
+                  <a
+                    href={doc.fileUrl}
+                    download
+                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                  >
+                    Baixar
+                  </a>
                   {canManage && (
                     <Button
                       variant="ghost"
@@ -345,11 +354,14 @@ export function ReferralDetailContent({
                   <p className="text-sm font-medium">{doc.title}</p>
                 </div>
                 {doc.fileUrl && (
-                  <Button variant="ghost" size="sm" asChild>
-                    <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                      Ver
-                    </a>
-                  </Button>
+                  <a
+                    href={doc.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                  >
+                    Ver
+                  </a>
                 )}
               </li>
             ))}
