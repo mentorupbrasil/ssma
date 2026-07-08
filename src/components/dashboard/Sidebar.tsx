@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
-  Calendar,
   Building2,
   Users,
   Stethoscope,
@@ -17,10 +16,15 @@ import {
   LogOut,
   Menu,
   Inbox,
+  Calculator,
+  Wallet,
+  CheckSquare,
+  LifeBuoy,
+  Sparkles,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/types/roles";
-import { DASHBOARD_NAV, hasPermission, ROLE_LABELS } from "@/lib/permissions";
+import { DASHBOARD_NAV, hasPermission, getRoleLabel } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -29,7 +33,6 @@ import { useState } from "react";
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
   FileText,
-  Calendar,
   Building2,
   Users,
   Stethoscope,
@@ -39,6 +42,11 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Settings,
   Shield,
   Inbox,
+  Calculator,
+  Wallet,
+  CheckSquare,
+  LifeBuoy,
+  Sparkles,
 };
 
 type SidebarProps = {
@@ -58,7 +66,7 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
           </div>
           <div>
             <p className="text-sm font-bold text-[var(--brand-navy)]">Painel</p>
-            <p className="text-xs font-medium text-slate-500">{ROLE_LABELS[user.role]}</p>
+            <p className="text-xs font-medium text-slate-500">{getRoleLabel(user.role)}</p>
           </div>
         </Link>
       </div>

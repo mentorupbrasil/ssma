@@ -403,7 +403,7 @@ export function formatAppointmentDateTime(iso: string): { date: string; time: st
 }
 
 export function canManageAppointments(role: string): boolean {
-  return ["ADMIN", "RECEPCAO", "MEDICO", "TECNICO", "EMPRESA"].includes(role);
+  return ["ADMIN", "CLINIC_ADMIN", "RECEPCAO", "RECEPTION", "MEDICO", "HEALTH_PROFESSIONAL", "TECNICO", "SST_TECHNICIAN", "EMPRESA", "COMPANY_HR"].includes(role);
 }
 
 export function canClinicalAppointmentActions(role: string): boolean {

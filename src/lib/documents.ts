@@ -298,7 +298,7 @@ export function serializeDocumentListItem(doc: DocWithRelations): DocumentListIt
 }
 
 export function canManageDocuments(role: UserRole): boolean {
-  return ["ADMIN", "RECEPCAO", "MEDICO", "TECNICO"].includes(role);
+  return ["ADMIN", "CLINIC_ADMIN", "RECEPCAO", "RECEPTION", "MEDICO", "HEALTH_PROFESSIONAL", "TECNICO", "SST_TECHNICIAN"].includes(role);
 }
 
 export function canViewDocument(
@@ -306,8 +306,8 @@ export function canViewDocument(
   doc: { sensitive: boolean; type: DocumentType; companyId: string | null; availableOnPortal: boolean },
   userCompanyId?: string | null
 ): boolean {
-  if (role === "ADMIN") return true;
-  if (role === "EMPRESA") {
+  if (role === "ADMIN" || role === "CLINIC_ADMIN") return true;
+  if (role === "EMPRESA" || role === "COMPANY_HR") {
     return (
       !!userCompanyId &&
       doc.companyId === userCompanyId &&
@@ -315,11 +315,11 @@ export function canViewDocument(
       !doc.sensitive
     );
   }
-  if (role === "FINANCEIRO") {
+  if (role === "FINANCEIRO" || role === "FINANCIAL") {
     return COMMERCIAL_DOCUMENT_TYPES.includes(doc.type) && !doc.sensitive;
   }
-  if (role === "MEDICO" || role === "TECNICO") return true;
-  if (role === "RECEPCAO") {
+  if (role === "MEDICO" || role === "HEALTH_PROFESSIONAL" || role === "TECNICO" || role === "SST_TECHNICIAN") return true;
+  if (role === "RECEPCAO" || role === "RECEPTION") {
     if (doc.sensitive && CLINICAL_DOCUMENT_TYPES.includes(doc.type)) return false;
     return true;
   }

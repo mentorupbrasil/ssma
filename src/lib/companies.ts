@@ -357,15 +357,15 @@ export function buildCompanyWhatsAppMessage(
 }
 
 export function canManageCompanies(role: string): boolean {
-  return ["ADMIN", "RECEPCAO", "FINANCEIRO"].includes(role);
+  return ["ADMIN", "CLINIC_ADMIN", "RECEPCAO", "RECEPTION", "FINANCEIRO", "FINANCIAL"].includes(role);
 }
 
 export function canEditCompanyCommercial(role: string): boolean {
-  return ["ADMIN", "FINANCEIRO"].includes(role);
+  return ["ADMIN", "CLINIC_ADMIN", "FINANCEIRO", "FINANCIAL"].includes(role);
 }
 
 export function canEditCompanyBasic(role: string): boolean {
-  return ["ADMIN", "RECEPCAO", "FINANCEIRO"].includes(role);
+  return ["ADMIN", "CLINIC_ADMIN", "RECEPCAO", "RECEPTION", "FINANCEIRO", "FINANCIAL"].includes(role);
 }
 
 export { maskCpf };

@@ -271,11 +271,11 @@ export type CollaboratorDetailSerialized = {
 };
 
 export function canManageCollaborators(role: string): boolean {
-  return ["ADMIN", "RECEPCAO", "EMPRESA"].includes(role);
+  return ["ADMIN", "CLINIC_ADMIN", "RECEPCAO", "RECEPTION", "EMPRESA", "COMPANY_HR"].includes(role);
 }
 
 export function canClinicalCollaboratorAccess(role: string): boolean {
-  return ["ADMIN", "RECEPCAO", "MEDICO", "TECNICO"].includes(role);
+  return ["ADMIN", "CLINIC_ADMIN", "RECEPCAO", "RECEPTION", "MEDICO", "HEALTH_PROFESSIONAL", "TECNICO", "SST_TECHNICIAN"].includes(role);
 }
 
 export { maskCpf };

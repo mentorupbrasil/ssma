@@ -12,12 +12,12 @@ import {
 export const REFERRAL_STATUS_LABELS: Record<ReferralStatus, string> = {
   NOVO: "Novo",
   EM_ANALISE: "Em análise",
-  AGUARDANDO_AGENDAMENTO: "Aguardando agendamento",
-  AGENDADO: "Agendado",
-  EM_ATENDIMENTO: "Em atendimento",
-  AGUARDANDO_RESULTADO: "Aguardando resultado",
+  AGUARDANDO_AGENDAMENTO: "Encaminhado para sistema clínico",
+  AGENDADO: "Aguardando atendimento",
+  EM_ATENDIMENTO: "Aguardando atendimento",
+  AGUARDANDO_RESULTADO: "Aguardando documento",
   AGUARDANDO_DOCUMENTO: "Aguardando documento",
-  ASO_DISPONIVEL: "ASO disponível",
+  ASO_DISPONIVEL: "Documento disponível",
   CONCLUIDO: "Concluído",
   CANCELADO: "Cancelado",
 };

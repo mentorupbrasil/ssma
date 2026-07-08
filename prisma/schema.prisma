@@ -8,6 +8,15 @@ datasource db {
 }
 
 enum UserRole {
+  SUPER_ADMIN
+  CLINIC_ADMIN
+  RECEPTION
+  COMMERCIAL
+  FINANCIAL
+  SST_TECHNICIAN
+  HEALTH_PROFESSIONAL
+  COMPANY_HR
+  READ_ONLY
   ADMIN
   RECEPCAO
   MEDICO
@@ -20,6 +29,46 @@ enum UserRole {
 enum UserStatus {
   ACTIVE
   INACTIVE
+}
+
+enum ClinicStatus {
+  ATIVA
+  TRIAL
+  SUSPENSA
+  CANCELADA
+  BLOQUEADA
+}
+
+enum ClinicPlan {
+  TRIAL
+  BASICO
+  PROFISSIONAL
+  ENTERPRISE
+}
+
+model Clinic {
+  id              String       @id @default(cuid())
+  name            String
+  slug            String       @unique
+  status          ClinicStatus @default(ATIVA)
+  plan            ClinicPlan   @default(TRIAL)
+  responsibleName String?
+  email           String?
+  whatsapp        String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  users           User[]
+  companies       Company[]
+  patients        Patient[]
+  referrals       Referral[]
+  preReferrals    PublicReferralRequest[]
+  documents       Document[]
+  leads           Lead[]
+  quotes          Quote[]
+  appointments    Appointment[]
+  exams           Exam[]
+  auditLogs       AuditLog[]
+  contactMessages ContactMessage[]
 }
 
 enum CompanyStatus {
@@ -345,8 +394,10 @@ model User {
   name           String
   email          String     @unique
   passwordHash   String
-  role           UserRole   @default(VISUALIZADOR)
+  role           UserRole   @default(READ_ONLY)
   status         UserStatus @default(ACTIVE)
+  clinicId       String?
+  clinic         Clinic?    @relation(fields: [clinicId], references: [id])
   companyId      String?
   company        Company?   @relation(fields: [companyId], references: [id])
   createdAt      DateTime   @default(now())
@@ -376,6 +427,8 @@ model User {
 
 model Company {
   id                String               @id @default(cuid())
+  clinicId          String?
+  clinic            Clinic?              @relation(fields: [clinicId], references: [id])
   legalName         String
   tradeName         String?
   cnpj              String               @unique
@@ -433,6 +486,8 @@ model CompanyHistory {
 
 model Patient {
   id               String        @id @default(cuid())
+  clinicId         String?
+  clinic           Clinic?       @relation(fields: [clinicId], references: [id])
   fullName         String
   cpf              String        @unique
   rg               String?
@@ -469,6 +524,8 @@ model PatientHistory {
 
 model Exam {
   id                         String              @id @default(cuid())
+  clinicId                   String?
+  clinic                     Clinic?             @relation(fields: [clinicId], references: [id])
   name                       String
   slug                       String              @unique
   category                   ExamCategory
@@ -509,15 +566,18 @@ model ExamHistory {
 }
 
 model Referral {
-  id                String           @id @default(cuid())
-  protocol          String           @unique
-  companyId         String
-  company           Company          @relation(fields: [companyId], references: [id])
-  patientId         String
-  patient           Patient          @relation(fields: [patientId], references: [id])
-  clinicalExamType  ClinicalExamType
-  status            ReferralStatus   @default(NOVO)
-  requestedDate     DateTime         @default(now())
+  id                       String           @id @default(cuid())
+  clinicId                 String?
+  clinic                   Clinic?          @relation(fields: [clinicId], references: [id])
+  protocol                 String           @unique
+  companyId                String
+  company                  Company          @relation(fields: [companyId], references: [id])
+  patientId                String
+  patient                  Patient          @relation(fields: [patientId], references: [id])
+  clinicalExamType         ClinicalExamType
+  status                   ReferralStatus   @default(NOVO)
+  externalSystemReference  String?
+  requestedDate            DateTime         @default(now())
   scheduledAt       DateTime?
   authorizerName    String?
   companyPhone      String?
@@ -578,6 +638,8 @@ model ReferralExam {
 
 model Appointment {
   id               String            @id @default(cuid())
+  clinicId         String?
+  clinic           Clinic?           @relation(fields: [clinicId], references: [id])
   title            String
   protocol         String?
   scheduledAt      DateTime
@@ -634,6 +696,8 @@ model AppointmentHistory {
 
 model Lead {
   id                String     @id @default(cuid())
+  clinicId          String?
+  clinic            Clinic?    @relation(fields: [clinicId], references: [id])
   type              LeadType   @default(ORCAMENTO)
   status            LeadStatus @default(NOVO)
   quoteNumber       String?
@@ -664,6 +728,8 @@ model Lead {
 
 model Quote {
   id                String      @id @default(cuid())
+  clinicId          String?
+  clinic            Clinic?     @relation(fields: [clinicId], references: [id])
   quoteNumber       String      @unique
   companyId         String?
   company           Company?    @relation(fields: [companyId], references: [id])
@@ -733,6 +799,8 @@ model CommercialNote {
 
 model Document {
   id                  String         @id @default(cuid())
+  clinicId            String?
+  clinic              Clinic?        @relation(fields: [clinicId], references: [id])
   title               String
   type                DocumentType
   status              DocumentStatus @default(PENDENTE)
@@ -802,6 +870,8 @@ model Notification {
 
 model AuditLog {
   id        String   @id @default(cuid())
+  clinicId  String?
+  clinic    Clinic?  @relation(fields: [clinicId], references: [id])
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
   action    String
@@ -834,6 +904,8 @@ model Setting {
 
 model PublicReferralRequest {
   id                  String                      @id @default(cuid())
+  clinicId            String?
+  clinic              Clinic?                     @relation(fields: [clinicId], references: [id])
   protocol            String                      @unique
   companyName         String
   companyDocument     String?
@@ -874,6 +946,8 @@ model PreReferralHistory {
 
 model ContactMessage {
   id              String                @id @default(cuid())
+  clinicId        String?
+  clinic          Clinic?               @relation(fields: [clinicId], references: [id])
   name            String
   email           String?
   phone           String

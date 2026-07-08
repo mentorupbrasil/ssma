@@ -57,8 +57,8 @@ export function HomeHero() {
             </h1>
 
             <p className="mt-4 max-w-lg text-[0.95rem] leading-relaxed text-slate-300/95 sm:text-base lg:text-[1rem] lg:leading-relaxed">
-              PCMSO, ASO, exames ocupacionais e portal digital para o RH — com conformidade
-              legal, laudos em dia e suporte ao eSocial SST.
+              Portal empresarial, entrega digital de documentos, pré-encaminhamentos e gestão
+              operacional para empresas — com PCMSO, ASO e conformidade legal em dia.
             </p>
 
             <div className="mt-3.5 flex flex-wrap gap-2">

@@ -190,6 +190,7 @@ export type ReferralDetailSerialized = {
   companyPhone: string | null;
   companyEmail: string | null;
   internalNotes: string | null;
+  externalSystemReference: string | null;
   createdAt: string;
   updatedAt: string;
   company: {
@@ -339,6 +340,7 @@ export function serializeReferralDetail(
     companyPhone: referral.companyPhone,
     companyEmail: referral.companyEmail,
     internalNotes: referral.internalNotes,
+    externalSystemReference: referral.externalSystemReference ?? null,
     createdAt: referral.createdAt.toISOString(),
     updatedAt: referral.updatedAt.toISOString(),
     company: referral.company,

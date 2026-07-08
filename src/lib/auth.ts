@@ -13,12 +13,14 @@ declare module "next-auth" {
       name: string;
       role: UserRole;
       companyId?: string | null;
+      clinicId?: string | null;
     };
   }
 
   interface User {
     role: UserRole;
     companyId?: string | null;
+    clinicId?: string | null;
   }
 }
 
@@ -27,6 +29,7 @@ declare module "@auth/core/jwt" {
     id: string;
     role: UserRole;
     companyId?: string | null;
+    clinicId?: string | null;
   }
 }
 
@@ -58,6 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: user.name,
             role: user.role as UserRole,
             companyId: user.companyId,
+            clinicId: user.clinicId,
           };
         } catch (error) {
           console.error("authorize error:", error);

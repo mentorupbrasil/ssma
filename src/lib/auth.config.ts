@@ -13,11 +13,17 @@ export const authConfig = {
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        const u = user as { id: string; role: UserRole; companyId?: string | null };
+        const u = user as {
+          id: string;
+          role: UserRole;
+          companyId?: string | null;
+          clinicId?: string | null;
+        };
         token.sub = u.id;
         token.id = u.id;
         token.role = u.role;
         token.companyId = u.companyId;
+        token.clinicId = u.clinicId;
       }
       return token;
     },
@@ -26,6 +32,7 @@ export const authConfig = {
         session.user.id = token.id as string;
         session.user.role = token.role as UserRole;
         session.user.companyId = token.companyId as string | null | undefined;
+        session.user.clinicId = token.clinicId as string | null | undefined;
       }
       return session;
     },

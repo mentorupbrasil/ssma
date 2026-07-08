@@ -143,6 +143,15 @@ export function ReferralDetailContent({
 
   return (
     <div className="referral-detail-content">
+      <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50/80 px-4 py-3 text-sm text-slate-700">
+        <strong>Acompanhamento operacional:</strong> este encaminhamento organiza solicitação,
+        documentos e comunicação com a empresa. O atendimento clínico ocorre no sistema da clínica.
+        {referral.externalSystemReference && (
+          <p className="mt-1 text-xs text-slate-500">
+            Ref. sistema clínico: <span className="font-mono">{referral.externalSystemReference}</span>
+          </p>
+        )}
+      </div>
       <div className="referral-detail-actions">
         {canManage && (
           <>

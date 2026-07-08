@@ -12,29 +12,58 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Iniciando seed...");
 
+  const clinic = await prisma.clinic.upsert({
+    where: { slug: "unimetra" },
+    update: {},
+    create: {
+      id: "clinic_default_unimetra",
+      name: "Unimetra",
+      slug: "unimetra",
+      status: "ATIVA",
+      plan: "PROFISSIONAL",
+      responsibleName: "Administrador",
+      email: "contato@unimetra.com.br",
+      whatsapp: "5599992033813",
+    },
+  });
+
   const passwordHash = await bcrypt.hash("Admin@123", 12);
+
+  await prisma.user.upsert({
+    where: { email: "super@demo.com" },
+    update: { role: "SUPER_ADMIN" },
+    create: {
+      name: "Super Admin Demo",
+      email: "super@demo.com",
+      passwordHash: await bcrypt.hash("Super@123", 12),
+      role: "SUPER_ADMIN",
+      status: "ACTIVE",
+    },
+  });
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@demo.com" },
-    update: {},
+    update: { role: "CLINIC_ADMIN", clinicId: clinic.id },
     create: {
       name: "Administrador Demo",
       email: "admin@demo.com",
       passwordHash,
-      role: "ADMIN",
+      role: "CLINIC_ADMIN",
       status: "ACTIVE",
+      clinicId: clinic.id,
     },
   });
 
   const recepcao = await prisma.user.upsert({
     where: { email: "recepcao@demo.com" },
-    update: {},
+    update: { role: "RECEPTION", clinicId: clinic.id },
     create: {
       name: "Maria Recepção",
       email: "recepcao@demo.com",
       passwordHash: await bcrypt.hash("Recepcao@123", 12),
-      role: "RECEPCAO",
+      role: "RECEPTION",
       status: "ACTIVE",
+      clinicId: clinic.id,
     },
   });
 
@@ -83,11 +112,12 @@ async function main() {
 
   const company1 = await prisma.company.upsert({
     where: { cnpj: "12345678000190" },
-    update: {},
+    update: { clinicId: clinic.id },
     create: {
       legalName: "Indústria Alfa Ltda",
       tradeName: "Alfa Indústria",
       cnpj: "12345678000190",
+      clinicId: clinic.id,
       email: "rh@alfa-demo.com.br",
       phone: "(11) 3000-1000",
       whatsapp: "551130001000",
@@ -101,11 +131,12 @@ async function main() {
 
   const company2 = await prisma.company.upsert({
     where: { cnpj: "98765432000110" },
-    update: {},
+    update: { clinicId: clinic.id },
     create: {
       legalName: "Comércio Beta S.A.",
       tradeName: "Beta Comércio",
       cnpj: "98765432000110",
+      clinicId: clinic.id,
       email: "rh@beta-demo.com.br",
       phone: "(11) 3000-2000",
       city: "Guarulhos",
@@ -117,14 +148,15 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "empresa@demo.com" },
-    update: {},
+    update: { role: "COMPANY_HR", clinicId: clinic.id },
     create: {
       name: "Portal Empresa Alfa",
       email: "empresa@demo.com",
       passwordHash: await bcrypt.hash("Empresa@123", 12),
-      role: "EMPRESA",
+      role: "COMPANY_HR",
       status: "ACTIVE",
       companyId: company1.id,
+      clinicId: clinic.id,
     },
   });
 
@@ -383,9 +415,10 @@ async function main() {
   });
 
   console.log("✅ Seed concluído!");
-  console.log("   Admin: admin@demo.com / Admin@123");
+  console.log("   Super Admin: super@demo.com / Super@123");
+  console.log("   Admin clínica: admin@demo.com / Admin@123");
   console.log("   Recepção: recepcao@demo.com / Recepcao@123");
-  console.log("   Empresa: empresa@demo.com / Empresa@123");
+  console.log("   Empresa/RH: empresa@demo.com / Empresa@123");
 }
 
 main()
