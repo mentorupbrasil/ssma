@@ -65,6 +65,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { PreReferralDetailContent } from "./PreReferralDetailContent";
 import {
   PreReferralStatusDialog,
@@ -104,6 +105,7 @@ export function PreEncaminhamentosClient(props: Props) {
   } = props;
 
   const router = useRouter();
+  const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
@@ -445,7 +447,13 @@ export function PreEncaminhamentosClient(props: Props) {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={async () => {
-                                    if (!confirm("Cancelar esta solicitação?")) return;
+                                    const ok = await confirm({
+                                      title: "Cancelar solicitação",
+                                      description: "Deseja cancelar esta solicitação?",
+                                      confirmLabel: "Cancelar solicitação",
+                                      variant: "destructive",
+                                    });
+                                    if (!ok) return;
                                     await updatePreReferralStatusWithNotes(item.id, "CANCELADO", "Cancelado pela equipe");
                                     router.refresh();
                                   }}
@@ -539,6 +547,7 @@ export function PreEncaminhamentosClient(props: Props) {
           />
         </>
       )}
+      <ConfirmDialogHost />
     </div>
   );
 }

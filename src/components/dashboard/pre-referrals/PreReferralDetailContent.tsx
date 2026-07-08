@@ -28,6 +28,7 @@ import {
   EXAM_SELECTION_MODE_LABELS,
 } from "@/types";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,7 @@ export function PreReferralDetailContent({
   onOpenNote: () => void;
   onOpenConvert: () => void;
 }) {
+  const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const missing = getMissingPreReferralFields(item);
   const whatsappMessage = buildPreReferralWhatsAppMessage({
     protocol: item.protocol,
@@ -106,7 +108,13 @@ export function PreReferralDetailContent({
   };
 
   const handleCancel = async () => {
-    if (!confirm("Cancelar esta solicitação?")) return;
+    const ok = await confirm({
+      title: "Cancelar solicitação",
+      description: "Deseja cancelar esta solicitação?",
+      confirmLabel: "Cancelar solicitação",
+      variant: "destructive",
+    });
+    if (!ok) return;
     const result = await updatePreReferralStatusWithNotes(
       item.id,
       "CANCELADO",
@@ -241,6 +249,7 @@ export function PreReferralDetailContent({
           </ol>
         )}
       </Section>
+      <ConfirmDialogHost />
     </div>
   );
 }

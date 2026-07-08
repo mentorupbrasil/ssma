@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import type { ExamGuide } from "@/data/exams";
 import { ExamCard } from "@/components/public/ExamCard";
 import { ExamPreparationModal } from "@/components/public/ExamPreparationModal";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import {
   EXAM_FILTER_OPTIONS,
@@ -87,12 +88,21 @@ export function ExamSearch({ exams }: ExamSearchProps) {
         </p>
 
         {filtered.length === 0 ? (
-          <div className="exam-catalog-empty">
-            <p className="exam-catalog-empty-title">Nenhum exame encontrado</p>
-            <p className="exam-catalog-empty-text">
-              Tente buscar por outro nome ou selecione outra categoria.
-            </p>
-          </div>
+          <EmptyState
+            icon={Search}
+            compact
+            className="border-0 bg-transparent"
+            title="Nenhum exame encontrado"
+            description="Tente buscar por outro nome ou selecione outra categoria."
+            action={{
+              label: "Limpar filtros",
+              onClick: () => {
+                setSearch("");
+                setFilter("all");
+              },
+              variant: "outline",
+            }}
+          />
         ) : (
           <div className="exam-catalog-grid">
             {filtered.map((exam) => (

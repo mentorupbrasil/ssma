@@ -22,6 +22,9 @@ import {
 import { getAppointmentDetail, cancelAppointment, markAppointmentNoShow } from "@/actions/appointments";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { FilterBar } from "@/components/dashboard/FilterBar";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -434,26 +437,19 @@ export function AgendaClient({
       )}
 
       <div className="relative mt-4">
-        {isPending && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60">
-            <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
-          </div>
-        )}
+        {isPending && <LoadingState overlay label="Atualizando agenda..." />}
 
         {initialItems.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white py-16 text-center">
-            <p className="font-medium text-slate-600">
-              Nenhum agendamento para o período selecionado
-            </p>
-            <p className="mt-1 text-sm text-slate-500">
-              Crie um novo agendamento ou ajuste os filtros.
-            </p>
-            {canManage && (
-              <Button variant="brand" className="mt-4" onClick={() => setNewDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Novo agendamento
-              </Button>
-            )}
-          </div>
+          <EmptyState
+            icon={CalendarDays}
+            title="Nenhum agendamento para o período selecionado"
+            description="Crie um novo agendamento ou ajuste os filtros."
+            action={
+              canManage
+                ? { label: "Novo agendamento", onClick: () => setNewDialogOpen(true) }
+                : undefined
+            }
+          />
         ) : showDateGroups ? (
           <div className="space-y-6">
             {Object.entries(groupedByDate)

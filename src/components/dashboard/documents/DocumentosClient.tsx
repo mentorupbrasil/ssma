@@ -39,6 +39,7 @@ import {
 import type { DocumentFormOptions } from "@/lib/documents";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import { FilterBar } from "@/components/dashboard/FilterBar";
 import { LoadingState } from "@/components/ui/loading-state";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DocumentDetailContent } from "./DocumentDetailContent";
@@ -80,6 +81,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import type { DocumentStatus } from "@prisma/client";
 
 type FormOptions = DocumentFormOptions;
@@ -127,6 +129,7 @@ export function DocumentosClient({
   filters,
 }: DocumentosClientProps) {
   const router = useRouter();
+  const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
@@ -239,7 +242,13 @@ export function DocumentosClient({
   };
 
   const handleRemoveFile = async (item: DocumentListItem) => {
-    if (!confirm("Remover o arquivo deste documento? O registro será mantido como pendente.")) return;
+    const ok = await confirm({
+      title: "Remover arquivo",
+      description: "Remover o arquivo deste documento? O registro será mantido como pendente.",
+      confirmLabel: "Remover arquivo",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setActionLoading(item.id);
     const result = await removeDocumentFile(item.id);
     setActionLoading(null);
@@ -344,9 +353,8 @@ export function DocumentosClient({
         })}
       </div>
 
-      <div className="referral-filters mt-6">
-        <div className="referral-filters-grid">
-          <div className="referral-filter-search sm:col-span-2">
+      <FilterBar className="mt-6" onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
+        <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
               placeholder="Buscar por título, empresa, colaborador, protocolo ou tipo de documento"
@@ -465,17 +473,7 @@ export function DocumentosClient({
             <option value="status">Ordenar: Status</option>
             <option value="company">Ordenar: Empresa</option>
           </select>
-        </div>
-        <div className="referral-filters-actions">
-          <Button variant="brand" onClick={handleSearch} disabled={isPending}>
-            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Filtrar
-          </Button>
-          <Button variant="outline" onClick={clearFilters}>
-            Limpar filtros
-          </Button>
-        </div>
-      </div>
+      </FilterBar>
 
       {empty ? (
         <EmptyState
@@ -815,6 +813,7 @@ export function DocumentosClient({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialogHost />
     </div>
   );
 }

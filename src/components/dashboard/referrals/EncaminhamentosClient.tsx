@@ -31,6 +31,7 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -245,9 +246,8 @@ export function EncaminhamentosClient({
         ))}
       </div>
 
-      <div className="referral-filters dashboard-surface">
-        <div className="referral-filters-grid">
-          <div className="relative col-span-full sm:col-span-2">
+      <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
+        <div className="relative col-span-full sm:col-span-2">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               className="pl-9"
@@ -300,16 +300,7 @@ export function EncaminhamentosClient({
             className="referral-date-input"
             aria-label="Data final"
           />
-        </div>
-        <div className="referral-filters-actions">
-          <Button variant="brand" size="sm" onClick={handleSearch} disabled={isPending}>
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Filtrar"}
-          </Button>
-          <Button variant="outline" size="sm" onClick={clearFilters}>
-            Limpar filtros
-          </Button>
-        </div>
-      </div>
+      </FilterBar>
 
       <DataTable className={cn(isPending && "opacity-60")}>
         {initialItems.length === 0 ? (

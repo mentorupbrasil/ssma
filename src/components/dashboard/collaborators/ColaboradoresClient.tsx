@@ -17,12 +17,16 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import type { CollaboratorListItem } from "@/lib/collaborators";
 import { COLLABORATOR_STAT_CARDS } from "@/lib/collaborators";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { FilterBar } from "@/components/dashboard/FilterBar";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -156,9 +160,13 @@ export function ColaboradoresClient({
         })}
       </div>
 
-      <div className="referral-filters mt-6">
-        <div className="referral-filters-grid">
-          <div className="referral-filter-search sm:col-span-2">
+      <FilterBar
+        className="mt-6"
+        onSearch={handleSearch}
+        onClear={clearFilters}
+        isPending={isPending}
+      >
+        <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
               placeholder="Buscar por nome, CPF, empresa, função ou protocolo"
@@ -234,41 +242,27 @@ export function ColaboradoresClient({
             <option value="">Documento pendente</option>
             <option value="true">Sim</option>
           </select>
-        </div>
-        <div className="referral-filters-actions mt-3 flex gap-2">
-          <Button variant="brand" size="sm" onClick={handleSearch} disabled={isPending}>
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Filtrar"}
-          </Button>
-          <Button variant="outline" size="sm" onClick={clearFilters}>
-            Limpar filtros
-          </Button>
-        </div>
-      </div>
+      </FilterBar>
 
       <div className="relative mt-6">
-        {isPending && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60">
-            <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
-          </div>
-        )}
+        {isPending && <LoadingState overlay label="Atualizando colaboradores..." />}
 
         {initialItems.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white py-16 text-center">
-            <p className="font-medium text-slate-600">Nenhum colaborador cadastrado</p>
-            <p className="mt-1 text-sm text-slate-500">
-              Cadastre colaboradores para criar encaminhamentos, agendamentos e documentos ocupacionais.
-            </p>
-            <div className="mt-4 flex justify-center gap-2">
-              {canManage && (
-                <Button variant="brand" onClick={() => setNewDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" /> Novo colaborador
-                </Button>
-              )}
-              <Link href="/dashboard/empresas?new=1">
-                <Button variant="outline">Nova empresa</Button>
-              </Link>
-            </div>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="Nenhum colaborador cadastrado"
+            description="Cadastre colaboradores para criar encaminhamentos, agendamentos e documentos ocupacionais."
+            action={
+              canManage
+                ? { label: "Novo colaborador", onClick: () => setNewDialogOpen(true) }
+                : undefined
+            }
+            secondaryAction={{
+              label: "Nova empresa",
+              href: "/dashboard/empresas?new=1",
+              variant: "outline",
+            }}
+          />
         ) : (
           <DataTable>
             <Table>

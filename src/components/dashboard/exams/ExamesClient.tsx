@@ -29,6 +29,9 @@ import {
 import { getExamDetail, toggleExamStatus, duplicateExam } from "@/actions/exams";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { FilterBar } from "@/components/dashboard/FilterBar";
+import { LoadingState } from "@/components/ui/loading-state";
 import { ExamDetailContent } from "./ExamDetailContent";
 import { ExamFormDialog } from "./ExamDialogs";
 import { Button } from "@/components/ui/button";
@@ -268,9 +271,8 @@ export function ExamesClient({
         })}
       </div>
 
-      <div className="referral-filters mt-6">
-        <div className="referral-filters-grid">
-          <div className="referral-filter-search sm:col-span-2">
+      <FilterBar className="mt-6" onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
+        <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
               placeholder="Buscar por nome do exame, categoria ou preparo"
@@ -362,45 +364,29 @@ export function ExamesClient({
             <option value="status">Ordenar: Status</option>
             <option value="displayOrder">Ordenar: Ordem de exibição</option>
           </select>
-        </div>
-        <div className="referral-filters-actions">
-          <Button variant="brand" onClick={handleSearch} disabled={isPending}>
-            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Filtrar
-          </Button>
-          <Button variant="outline" onClick={clearFilters}>
-            Limpar filtros
-          </Button>
-        </div>
-      </div>
+      </FilterBar>
 
       {empty ? (
-        <div className="mt-8 rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center">
-          <Stethoscope className="mx-auto h-10 w-10 text-slate-300" />
-          <h3 className="mt-4 text-lg font-semibold text-slate-800">Nenhum exame cadastrado</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            Cadastre exames para alimentar encaminhamentos, agenda e página pública de preparos.
-          </p>
-          {canManage && (
-            <Button
-              variant="brand"
-              className="mt-6"
-              onClick={() => {
-                setEditExam(null);
-                setFormOpen(true);
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" /> Novo exame
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Stethoscope}
+          className="mt-8 bg-white"
+          title="Nenhum exame cadastrado"
+          description="Cadastre exames para alimentar encaminhamentos, agenda e página pública de preparos."
+          action={
+            canManage
+              ? {
+                  label: "Novo exame",
+                  onClick: () => {
+                    setEditExam(null);
+                    setFormOpen(true);
+                  },
+                }
+              : undefined
+          }
+        />
       ) : (
         <div className="relative mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-          {isPending && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60">
-              <Loader2 className="h-6 w-6 animate-spin text-[#16A085]" />
-            </div>
-          )}
+          {isPending && <LoadingState overlay label="Atualizando exames..." />}
           <Table>
             <TableHeader>
               <TableRow>

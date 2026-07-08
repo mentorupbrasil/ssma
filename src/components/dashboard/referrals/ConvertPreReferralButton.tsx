@@ -6,6 +6,7 @@ import { ArrowRightCircle } from "lucide-react";
 import { convertPreReferralToReferral } from "@/actions/referrals";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 
 export function ConvertPreReferralButton({
   preReferralId,
@@ -16,9 +17,15 @@ export function ConvertPreReferralButton({
 }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { confirm, ConfirmDialogHost } = useConfirmDialog();
 
   const handleConvert = async () => {
-    if (!confirm("Converter este pré-encaminhamento em encaminhamento oficial?")) return;
+    const ok = await confirm({
+      title: "Converter pré-encaminhamento",
+      description: "Converter este pré-encaminhamento em encaminhamento oficial?",
+      confirmLabel: "Converter",
+    });
+    if (!ok) return;
     setLoading(true);
     const result = await convertPreReferralToReferral(preReferralId);
     setLoading(false);
@@ -32,14 +39,17 @@ export function ConvertPreReferralButton({
   };
 
   return (
-    <Button
-      variant="brand"
-      size="sm"
-      onClick={handleConvert}
-      disabled={disabled || loading}
-    >
-      <ArrowRightCircle className="mr-2 h-4 w-4" />
-      {loading ? "Convertendo..." : "Converter em encaminhamento"}
-    </Button>
+    <>
+      <Button
+        variant="brand"
+        size="sm"
+        onClick={handleConvert}
+        disabled={disabled || loading}
+      >
+        <ArrowRightCircle className="mr-2 h-4 w-4" />
+        {loading ? "Convertendo..." : "Converter em encaminhamento"}
+      </Button>
+      <ConfirmDialogHost />
+    </>
   );
 }

@@ -21,6 +21,7 @@ import {
   CheckSquare,
   LifeBuoy,
   Sparkles,
+  CalendarDays,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/types/roles";
@@ -47,6 +48,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CheckSquare,
   LifeBuoy,
   Sparkles,
+  CalendarDays,
 };
 
 type SidebarProps = {

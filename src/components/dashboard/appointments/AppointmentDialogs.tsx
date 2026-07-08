@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 
 type FormOptions = Awaited<ReturnType<typeof getAppointmentFormOptions>>;
 
@@ -47,6 +48,7 @@ export function NewAppointmentDialog({
   onSuccess,
   prefill,
 }: NewAppointmentDialogProps) {
+  const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const [options, setOptions] = useState<FormOptions | null>(null);
   const [loading, setLoading] = useState(false);
   const [patientId, setPatientId] = useState("");
@@ -117,7 +119,12 @@ export function NewAppointmentDialog({
       onOpenChange(false);
       onSuccess(result.id);
     } else if (result.error?.startsWith("CONFLICT:")) {
-      if (confirm(result.error.replace("CONFLICT:", ""))) {
+      const ok = await confirm({
+        title: "Conflito de horário",
+        description: result.error.replace("CONFLICT:", ""),
+        confirmLabel: "Agendar mesmo assim",
+      });
+      if (ok) {
         setForceConflict(true);
         setLoading(true);
         const retry = await createAppointmentFull(
@@ -166,6 +173,7 @@ export function NewAppointmentDialog({
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
         <DialogHeader>
@@ -322,6 +330,8 @@ export function NewAppointmentDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <ConfirmDialogHost />
+  </>
   );
 }
 
@@ -338,6 +348,7 @@ export function RescheduleAppointmentDialog({
   appointmentId,
   onSuccess,
 }: RescheduleDialogProps) {
+  const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const [scheduledAt, setScheduledAt] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -366,7 +377,12 @@ export function RescheduleAppointmentDialog({
       onOpenChange(false);
       onSuccess();
     } else if (result.error?.startsWith("CONFLICT:")) {
-      if (confirm(result.error.replace("CONFLICT:", ""))) {
+      const ok = await confirm({
+        title: "Conflito de horário",
+        description: result.error.replace("CONFLICT:", ""),
+        confirmLabel: "Reagendar mesmo assim",
+      });
+      if (ok) {
         handleSave(true);
       }
     } else {
@@ -375,6 +391,7 @@ export function RescheduleAppointmentDialog({
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
@@ -412,6 +429,8 @@ export function RescheduleAppointmentDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <ConfirmDialogHost />
+  </>
   );
 }
 

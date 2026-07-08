@@ -58,6 +58,7 @@ import {
 } from "@/actions/commercial";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import { FilterBar } from "@/components/dashboard/FilterBar";
 import { LoadingState } from "@/components/ui/loading-state";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import {
@@ -318,9 +319,8 @@ export function OrcamentosClient({
         </TabsList>
       </Tabs>
 
-      <div className="referral-filters">
-        <div className="referral-filters-grid">
-          <div className="referral-filter-search sm:col-span-2">
+      <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
+        <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
               placeholder="Buscar por nome, empresa, telefone, serviço ou número do orçamento"
@@ -340,12 +340,7 @@ export function OrcamentosClient({
           </select>
           <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="referral-filter-select" />
           <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="referral-filter-select" />
-        </div>
-        <div className="referral-filters-actions">
-          <Button variant="brand" onClick={handleSearch} disabled={isPending}>Filtrar</Button>
-          <Button variant="outline" onClick={clearFilters}>Limpar filtros</Button>
-        </div>
-      </div>
+      </FilterBar>
 
       {isEmpty ? (
         <EmptyState

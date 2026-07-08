@@ -177,6 +177,7 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard/colaboradores", label: "Colaboradores", icon: "Users", permission: "patients.manage" as Permission },
   { href: "/dashboard/pre-encaminhamentos", label: "Pré-encaminhamentos", icon: "Inbox", permission: "referrals.manage" as Permission },
   { href: "/dashboard/encaminhamentos", label: "Encaminhamentos", icon: "FileText", permission: "referrals.manage" as Permission },
+  { href: "/dashboard/agenda", label: "Agenda", icon: "CalendarDays", permission: "appointments.manage" as Permission },
   { href: "/dashboard/documentos", label: "Documentos", icon: "FolderOpen", permission: "documents.manage" as Permission },
   { href: "/dashboard/fechamento-mensal", label: "Fechamento mensal", icon: "Calculator", permission: "closings.manage" as Permission },
   { href: "/dashboard/financeiro", label: "Financeiro", icon: "Wallet", permission: "financial.manage" as Permission },

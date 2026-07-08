@@ -27,6 +27,7 @@ import {
 import { CLINICAL_EXAM_LABELS, EXAM_CATEGORY_LABELS, REFERRAL_STATUS_LABELS } from "@/types";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { Separator } from "@/components/ui/separator";
 import { formatCNPJ, formatCPF, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,7 @@ export function ReferralDetailContent({
   onOpenSchedule,
   onOpenDocument,
 }: ReferralDetailContentProps) {
+  const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const phone =
     referral.company.whatsapp ??
     referral.company.phone ??
@@ -109,7 +111,13 @@ export function ReferralDetailContent({
 
   const handleCancelAppointment = async () => {
     if (!activeAppointment) return;
-    if (!confirm("Cancelar este agendamento?")) return;
+    const ok = await confirm({
+      title: "Cancelar agendamento",
+      description: "Deseja cancelar este agendamento?",
+      confirmLabel: "Cancelar agendamento",
+      variant: "destructive",
+    });
+    if (!ok) return;
     const result = await cancelReferralAppointment(referral.id, activeAppointment.id);
     if (result.success) {
       toast.success("Agendamento cancelado.");
@@ -120,7 +128,13 @@ export function ReferralDetailContent({
   };
 
   const handleDeleteDocument = async (docId: string, fileName: string) => {
-    if (!confirm(`Remover o documento "${fileName}"?`)) return;
+    const ok = await confirm({
+      title: "Remover documento",
+      description: `Remover o documento "${fileName}"?`,
+      confirmLabel: "Remover",
+      variant: "destructive",
+    });
+    if (!ok) return;
     const result = await deleteReferralDocument(referral.id, docId);
     if (result.success) {
       toast.success("Documento removido.");
@@ -131,7 +145,12 @@ export function ReferralDetailContent({
   };
 
   const handleMarkComplete = async () => {
-    if (!confirm("Marcar este encaminhamento como concluído?")) return;
+    const ok = await confirm({
+      title: "Concluir encaminhamento",
+      description: "Marcar este encaminhamento como concluído?",
+      confirmLabel: "Concluir",
+    });
+    if (!ok) return;
     const result = await updateReferralStatusWithNotes(referral.id, "CONCLUIDO", "Encaminhamento concluído");
     if (result.success) {
       toast.success("Encaminhamento concluído!");
@@ -191,7 +210,13 @@ export function ReferralDetailContent({
               size="sm"
               className="text-red-600"
               onClick={async () => {
-                if (!confirm("Cancelar este encaminhamento?")) return;
+                const ok = await confirm({
+                  title: "Cancelar encaminhamento",
+                  description: "Deseja cancelar este encaminhamento?",
+                  confirmLabel: "Cancelar encaminhamento",
+                  variant: "destructive",
+                });
+                if (!ok) return;
                 const result = await updateReferralStatusWithNotes(
                   referral.id,
                   "CANCELADO",
@@ -451,6 +476,7 @@ export function ReferralDetailContent({
         Origem: {REFERRAL_SOURCE_LABELS[referral.source]} · Atualizado em{" "}
         {format(new Date(referral.updatedAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
       </p>
+      <ConfirmDialogHost />
     </div>
   );
 }

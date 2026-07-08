@@ -3,6 +3,7 @@ export { Sidebar } from "@/components/dashboard/Sidebar";
 export { Topbar } from "@/components/dashboard/Topbar";
 export { PageHeader as ModuleHeader } from "@/components/dashboard/PageHeader";
 export { FilterBar } from "@/components/dashboard/FilterBar";
+export { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
 export { DataTable as AdminTable } from "@/components/dashboard/DataTable";
 export { StatCard } from "@/components/dashboard/StatCard";
 export { EmptyState } from "@/components/dashboard/EmptyState";

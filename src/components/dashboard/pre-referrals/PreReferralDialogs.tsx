@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import type { ClinicalExamType } from "@prisma/client";
 
 export function PreReferralStatusDialog({
@@ -161,6 +162,7 @@ export function PreReferralConvertDialog({
   preReferralId: string;
   onSuccess: (referralId: string) => void;
 }) {
+  const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const [loading, setLoading] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [companyId, setCompanyId] = useState("");
@@ -211,7 +213,12 @@ export function PreReferralConvertDialog({
   }, [open, preReferralId]);
 
   const handleConvert = async () => {
-    if (!confirm("Confirmar conversão em encaminhamento oficial?")) return;
+    const ok = await confirm({
+      title: "Confirmar conversão",
+      description: "Confirmar conversão em encaminhamento oficial?",
+      confirmLabel: "Converter",
+    });
+    if (!ok) return;
     setLoading(true);
     const result = await convertPreReferralWithOptions(preReferralId, {
       companyId: companyId || undefined,
@@ -233,6 +240,7 @@ export function PreReferralConvertDialog({
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
@@ -333,5 +341,7 @@ export function PreReferralConvertDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <ConfirmDialogHost />
+  </>
   );
 }

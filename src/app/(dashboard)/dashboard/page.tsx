@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAuthSession } from "@/lib/page-auth";
@@ -56,7 +57,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             {overview.pendingActions.length === 0 ? (
-              <p className="text-sm text-slate-500">Nenhuma pendência urgente no momento.</p>
+              <InlineEmptyNote>Nenhuma pendência urgente no momento.</InlineEmptyNote>
             ) : (
               <div className="space-y-3">
                 {overview.pendingActions.map((item) => (
@@ -84,7 +85,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               {overview.recentPreReferrals.length === 0 ? (
-                <p className="text-sm text-slate-500">Nenhum pré-encaminhamento recente.</p>
+                <InlineEmptyNote>Nenhum pré-encaminhamento recente.</InlineEmptyNote>
               ) : (
                 <div className="space-y-3">
                   {overview.recentPreReferrals.map((p) => (
@@ -117,7 +118,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             {overview.pendingDocuments.length === 0 ? (
-              <p className="text-sm text-slate-500">Nenhum documento pendente.</p>
+              <InlineEmptyNote>Nenhum documento pendente.</InlineEmptyNote>
             ) : (
               <div className="space-y-3">
                 {overview.pendingDocuments.map((d) => (
@@ -148,7 +149,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               {overview.negotiatingQuotes.length === 0 ? (
-                <p className="text-sm text-slate-500">Nenhum orçamento em negociação.</p>
+                <InlineEmptyNote>Nenhum orçamento em negociação.</InlineEmptyNote>
               ) : (
                 <div className="space-y-3">
                   {overview.negotiatingQuotes.map((q) => (

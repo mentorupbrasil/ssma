@@ -5,6 +5,7 @@ import { ContactInfoPanel } from "@/components/public/ContactInfoPanel";
 import { LocationMap } from "@/components/public/LocationMap";
 import { PageHero } from "@/components/public/PageHero";
 import { PageSection } from "@/components/public/PageSection";
+import { CTASection } from "@/components/public/CTASection";
 import { getClinicSiteConfig } from "@/config/clinic";
 import { resolveContactPrefill, CONTACT_WHATSAPP_MESSAGES } from "@/data/contact";
 import { whatsappLink } from "@/lib/helpers";
@@ -80,6 +81,26 @@ export default async function ContatoPage({
           </div>
         </div>
       </PageSection>
+
+      {clinic.hasWhatsApp ? (
+        <CTASection
+          title="Precisa encaminhar colaboradores para exame?"
+          description="Use o encaminhamento online ou fale com nossa equipe para organizar o atendimento da sua empresa."
+          primaryHref="/encaminhamento-online"
+          primaryLabel="Fazer encaminhamento online"
+          secondaryHref={whatsappLink(CONTACT_WHATSAPP_MESSAGES.direct)}
+          secondaryLabel="Falar no WhatsApp"
+        />
+      ) : (
+        <CTASection
+          title="Precisa encaminhar colaboradores para exame?"
+          description="Use o encaminhamento online ou fale com nossa equipe para organizar o atendimento da sua empresa."
+          primaryHref="/encaminhamento-online"
+          primaryLabel="Fazer encaminhamento online"
+          secondaryHref="/contato?tipo=orcamento"
+          secondaryLabel="Solicitar orçamento"
+        />
+      )}
     </>
   );
 }

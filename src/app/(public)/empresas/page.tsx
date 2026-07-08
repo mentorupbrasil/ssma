@@ -17,6 +17,7 @@ import { EmpresasComplianceSection } from "@/components/public/EmpresasComplianc
 import { EmpresasPorteSection } from "@/components/public/EmpresasPorteSection";
 import { PageSection } from "@/components/public/PageSection";
 import { FeatureCard } from "@/components/public/FeatureCard";
+import { CTASection } from "@/components/public/CTASection";
 
 export const metadata = { title: "Empresas" };
 
@@ -109,6 +110,15 @@ export default function EmpresasPage() {
       <EmpresasComplianceSection />
 
       <EmpresasStartSection />
+
+      <CTASection
+        title="Pronto para organizar a SST da sua empresa?"
+        description="Solicite um orçamento personalizado ou comece pelo encaminhamento online com protocolo automático."
+        primaryHref="/contato?tipo=orcamento"
+        primaryLabel="Solicitar orçamento"
+        secondaryHref="/encaminhamento-online"
+        secondaryLabel="Encaminhamento online"
+      />
     </>
   );
 }
