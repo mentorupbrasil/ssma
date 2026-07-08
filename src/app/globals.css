@@ -2790,6 +2790,47 @@
     max-width: 42rem;
   }
 
+  .services-section-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 1.75rem;
+    padding-top: 1.35rem;
+    border-top: 1px solid rgb(226 232 240 / 0.85);
+  }
+
+  @media (min-width: 768px) {
+    .services-section-footer {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+  }
+
+  .services-section-footer-text {
+    max-width: 36rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: rgb(71 85 105);
+  }
+
+  .services-section-footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--brand-green);
+    transition: color 0.2s ease, gap 0.2s ease;
+  }
+
+  .services-section-footer-link:hover {
+    color: rgb(4 100 70);
+    gap: 0.55rem;
+  }
+
   .service-card--exam {
     padding: 1.4rem 1.3rem 1.35rem;
   }
@@ -2831,39 +2872,18 @@
     padding-top: 0.9rem;
   }
 
-  .service-card--training {
-    padding: 1.4rem 1.3rem 1.35rem;
-  }
-
-  .service-card--training .service-card-badge {
-    border-color: rgb(15 61 74 / 0.14);
-    background: rgb(241 245 249 / 0.9);
-    color: var(--brand-navy);
-  }
-
-  .service-card--training .service-card-title {
-    font-size: 1.03125rem;
-    line-height: 1.32;
-  }
-
   .services-section--docs {
     padding: 2.3rem 0 2.6rem;
   }
 
-  .services-section--training {
-    padding: 2.3rem 0 2.6rem;
-  }
-
   @media (min-width: 768px) {
-    .services-section--docs,
-    .services-section--training {
+    .services-section--docs {
       padding: 2.45rem 0 2.8rem;
     }
   }
 
   @media (min-width: 1024px) {
-    .services-section--docs,
-    .services-section--training {
+    .services-section--docs {
       padding: 2.65rem 0 2.95rem;
     }
   }
@@ -2894,34 +2914,6 @@
     color: rgb(71 85 105);
   }
 
-  .service-card-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    margin-top: 0.85rem;
-    padding-top: 0.85rem;
-    border-top: 1px solid rgb(241 245 249);
-  }
-
-  .service-card-meta-row {
-    display: grid;
-    gap: 0.15rem;
-  }
-
-  .service-card-meta-row dt {
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: rgb(100 116 139);
-  }
-
-  .service-card-meta-row dd {
-    font-size: 0.78125rem;
-    line-height: 1.5;
-    color: rgb(51 65 85);
-  }
-
   .service-card-actions {
     display: grid;
     gap: 0.5rem;
@@ -2932,7 +2924,6 @@
   }
 
   .service-card--technical .service-card-actions,
-  .service-card--training .service-card-actions,
   .service-card--exam .service-card-actions {
     margin-top: auto;
   }

@@ -82,4 +82,13 @@ export const INITIAL_EXAMS: ExamData[] = [
     preparation: "Jejum de 6 horas. Medicamentos conforme orientação da clínica.",
     deliveryTime: "2 a 5 dias úteis",
   },
+  {
+    name: "Toxicológico",
+    slug: "toxicologico",
+    category: "COMPLEMENTAR",
+    preparation:
+      "Documento com foto. Informar medicamentos em uso. Evitar álcool conforme orientação da clínica.",
+    deliveryTime: "3 a 7 dias úteis",
+    notes: "Exigido para motoristas profissionais e funções regulamentadas.",
+  },
 ];

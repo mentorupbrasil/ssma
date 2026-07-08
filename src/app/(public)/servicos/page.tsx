@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  ArrowRight,
   BookOpen,
   ClipboardList,
   FlaskConical,
@@ -101,6 +102,17 @@ export default function ServicosPage() {
                 />
               ))}
             </div>
+            {category.id === "exames-complementares" && (
+              <div className="services-section-footer">
+                <p className="services-section-footer-text">
+                  Preparo detalhado, prazos e orientações por exame estão no catálogo completo.
+                </p>
+                <Link href="/exames" className="services-section-footer-link">
+                  Ver catálogo de exames e preparos
+                  <ArrowRight className="h-4 w-4" strokeWidth={2} />
+                </Link>
+              </div>
+            )}
           </PageSection>
         );
       })}

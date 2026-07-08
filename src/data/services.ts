@@ -1,8 +1,6 @@
 export type ServiceItem = {
   name: string;
   description: string;
-  audience: string;
-  deliveryTime: string;
   badge?: string;
   preparoSlug?: string;
 };
@@ -11,7 +9,7 @@ export type ServiceCategory = {
   id: string;
   title: string;
   description?: string;
-  cardVariant?: "clinical" | "technical" | "exam" | "training";
+  cardVariant?: "clinical" | "technical" | "exam";
   services: ServiceItem[];
 };
 
@@ -20,67 +18,62 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     id: "medicina-ocupacional",
     title: "Medicina Ocupacional",
     description:
-      "Serviços clínicos e programas médicos para admissão, acompanhamento e regularização da saúde ocupacional dos colaboradores.",
+      "Atendimento clínico, exames ocupacionais e programas médicos para admissão, acompanhamento periódico e regularização da saúde dos colaboradores.",
     cardVariant: "clinical",
     services: [
       {
         name: "ASO Admissional",
-        description: "Avaliação clínica para admissão de colaboradores conforme a NR-7.",
-        audience: "Empresas que estão contratando novos colaboradores.",
-        deliveryTime: "No dia do atendimento.",
+        badge: "ASO",
+        description:
+          "Avaliação clínica antes do início das atividades, conforme a NR-7 e o PCMSO da empresa.",
       },
       {
         name: "ASO Demissional",
-        description: "Exame clínico para encerramento do vínculo empregatício.",
-        audience: "Empresas em processo de desligamento.",
-        deliveryTime: "No dia do atendimento.",
+        badge: "ASO",
+        description:
+          "Exame clínico no encerramento do vínculo empregatício, com emissão do ASO correspondente.",
       },
       {
         name: "ASO Periódico",
+        badge: "ASO",
         description:
-          "Acompanhamento periódico da saúde dos colaboradores expostos a riscos ocupacionais.",
-        audience: "Empresas com PCMSO ativo.",
-        deliveryTime: "No dia do atendimento.",
+          "Acompanhamento periódico da saúde dos colaboradores conforme riscos, função e periodicidade definida no PCMSO.",
       },
       {
         name: "Mudança de Função",
+        badge: "ASO",
         description:
-          "Avaliação clínica quando há alteração de função, setor, riscos ou atividades.",
-        audience: "Empresas com movimentação interna de colaboradores.",
-        deliveryTime: "No dia do atendimento.",
+          "Avaliação clínica quando há alteração de função, setor, riscos ou atividades do colaborador.",
       },
       {
         name: "Retorno ao Trabalho",
-        description: "Avaliação após afastamento por doença, acidente ou licença prolongada.",
-        audience: "Colaboradores retornando às atividades.",
-        deliveryTime: "No dia do atendimento.",
+        badge: "ASO",
+        description:
+          "Avaliação após afastamento por doença, acidente ou licença prolongada, com emissão do ASO de retorno.",
       },
       {
         name: "PCMSO",
-        description: "Programa de Controle Médico de Saúde Ocupacional conforme a NR-7.",
-        audience: "Empresas de todos os portes.",
-        deliveryTime: "Conforme escopo contratado.",
+        badge: "Programa",
+        description:
+          "Elaboração e acompanhamento do Programa de Controle Médico de Saúde Ocupacional conforme a NR-7.",
       },
       {
         name: "Gestão de Absenteísmo",
+        badge: "Gestão",
         description:
-          "Monitoramento e análise de faltas, afastamentos e impactos na rotina ocupacional.",
-        audience: "Empresas que desejam mais controle sobre afastamentos.",
-        deliveryTime: "Relatórios mensais.",
+          "Monitoramento de faltas e afastamentos para apoiar o RH na leitura de impactos na rotina ocupacional.",
       },
       {
         name: "PPP",
+        badge: "Documento",
         description:
-          "Perfil Profissiográfico Previdenciário para fins previdenciários e histórico ocupacional.",
-        audience: "Empresas e colaboradores.",
-        deliveryTime: "5 a 10 dias úteis.",
+          "Emissão do Perfil Profissiográfico Previdenciário com base no histórico ocupacional do colaborador.",
       },
       {
         name: "Perícias Médicas",
+        badge: "Perícia",
         description:
-          "Avaliações médicas especializadas para processos administrativos, ocupacionais ou judiciais.",
-        audience: "Empresas, seguradoras e demandas específicas.",
-        deliveryTime: "Conforme agendamento.",
+          "Avaliações médicas especializadas para demandas administrativas, ocupacionais ou judiciais específicas.",
       },
     ],
   },
@@ -88,7 +81,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     id: "seguranca-trabalho",
     title: "Segurança do Trabalho",
     description:
-      "Laudos, programas e análises para manter sua empresa regularizada e com os riscos ocupacionais sob controle.",
+      "Laudos técnicos, programas e análises de risco para apoiar a conformidade legal e a gestão de SST da empresa.",
     cardVariant: "technical",
     services: [
       {
@@ -96,64 +89,48 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
         badge: "Laudo",
         description:
           "Laudo Técnico das Condições Ambientais do Trabalho para fins previdenciários e enquadramento ocupacional.",
-        audience: "Empresas com exposição a agentes nocivos.",
-        deliveryTime: "15 a 30 dias úteis.",
       },
       {
         name: "PGR — Programa de Gerenciamento de Riscos",
         badge: "Programa",
         description:
-          "Programa para identificação, avaliação e controle dos riscos ocupacionais, com documentação técnica adequada à realidade da empresa.",
-        audience: "Empresas de todos os portes.",
-        deliveryTime: "20 a 45 dias úteis.",
+          "Programa para identificação, avaliação e controle dos riscos ocupacionais, com documentação técnica adequada à empresa.",
       },
       {
         name: "Laudo de Insalubridade",
         badge: "Laudo",
         description:
-          "Avaliação técnica para caracterização de atividades insalubres conforme critérios aplicáveis.",
-        audience: "Empresas com atividades em ambientes insalubres.",
-        deliveryTime: "10 a 20 dias úteis.",
+          "Caracterização técnica de atividades insalubres conforme critérios legais aplicáveis.",
       },
       {
         name: "Laudo de Periculosidade",
         badge: "Laudo",
-        description: "Avaliação técnica de atividades com exposição a condições perigosas.",
-        audience:
-          "Empresas com exposição a inflamáveis, energia elétrica ou outras condições de risco.",
-        deliveryTime: "10 a 20 dias úteis.",
+        description:
+          "Avaliação técnica de atividades com exposição a condições perigosas, como inflamáveis e energia elétrica.",
       },
       {
         name: "Análise Ergonômica",
         badge: "Análise",
         description:
-          "Avaliação ergonômica do trabalho para identificar riscos e propor melhorias no ambiente laboral.",
-        audience: "Empresas com postos de trabalho diversos.",
-        deliveryTime: "15 a 30 dias úteis.",
+          "Avaliação ergonômica do trabalho para identificar riscos e orientar melhorias no ambiente laboral.",
       },
       {
         name: "APR",
         badge: "Análise",
         description:
           "Análise Preliminar de Risco para atividades específicas, rotinas operacionais ou serviços pontuais.",
-        audience: "Empresas com atividades de risco pontual.",
-        deliveryTime: "5 a 10 dias úteis.",
       },
       {
         name: "CIPA",
         badge: "Gestão",
         description:
           "Apoio à constituição, organização e funcionamento da Comissão Interna de Prevenção de Acidentes.",
-        audience: "Empresas obrigadas a constituir CIPA.",
-        deliveryTime: "Conforme calendário.",
       },
       {
         name: "Mapa de Risco",
         badge: "Gestão",
         description:
-          "Representação gráfica dos riscos ambientais por setor, facilitando a comunicação preventiva.",
-        audience: "Empresas com gestão de SST estruturada.",
-        deliveryTime: "10 a 15 dias úteis.",
+          "Representação gráfica dos riscos por setor para facilitar a comunicação preventiva na empresa.",
       },
     ],
   },
@@ -161,99 +138,85 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     id: "exames-complementares",
     title: "Exames Complementares",
     description:
-      "Exames ocupacionais complementares para apoiar admissões, periódicos, demissionais e demais exigências do PCMSO.",
+      "Exames de apoio diagnóstico vinculados ao PCMSO, ASO e exigências ocupacionais da empresa.",
     cardVariant: "exam",
     services: [
       {
         name: "Audiometria",
         badge: "Audição",
         preparoSlug: "audiometria",
-        description: "Avaliação da audição ocupacional para colaboradores expostos a ruído.",
-        audience: "Funções com exposição a ruído ocupacional.",
-        deliveryTime: "No dia.",
+        description:
+          "Avaliação da audição para colaboradores expostos a ruído ocupacional.",
       },
       {
         name: "Acuidade Visual",
         badge: "Visão",
         preparoSlug: "acuidade-visual",
-        description: "Teste de visão para avaliação da capacidade visual relacionada à função.",
-        audience: "Diversos setores e funções operacionais.",
-        deliveryTime: "No dia.",
+        description:
+          "Teste de visão para avaliar a capacidade visual relacionada à função exercida.",
       },
       {
         name: "Avaliação Oftalmológica",
         badge: "Visão",
         preparoSlug: "avaliacao-oftalmologica",
-        description: "Exame oftalmológico completo conforme necessidade ocupacional.",
-        audience: "Funções com exigência visual.",
-        deliveryTime: "No dia.",
+        description:
+          "Exame oftalmológico completo conforme necessidade ocupacional e indicação clínica.",
       },
       {
         name: "Avaliação Psicológica",
         badge: "Neuro",
         preparoSlug: "avaliacao-psicologica",
         description:
-          "Avaliação psicológica ocupacional conforme função, risco ou exigência legal.",
-        audience: "Motoristas, vigilantes e funções específicas.",
-        deliveryTime: "1 a 3 dias úteis.",
+          "Avaliação psicológica ocupacional para funções com exigência legal ou de risco específico.",
       },
       {
         name: "Eletrocardiograma",
         badge: "Cardio",
         preparoSlug: "eletrocardiograma",
-        description: "Avaliação da atividade elétrica do coração para fins ocupacionais.",
-        audience: "Funções com esforço físico, riscos cardíacos ou conforme PCMSO.",
-        deliveryTime: "No dia.",
+        description:
+          "Avaliação cardíaca para funções com esforço físico, riscos cardíacos ou conforme PCMSO.",
       },
       {
         name: "Eletroencefalograma",
         badge: "Neuro",
         preparoSlug: "eletroencefalograma",
-        description: "Avaliação da atividade elétrica cerebral conforme indicação ocupacional.",
-        audience: "Funções específicas ou conforme PCMSO.",
-        deliveryTime: "1 a 3 dias úteis.",
+        description:
+          "Avaliação neurológica conforme indicação ocupacional e necessidade clínica.",
       },
       {
         name: "Espirometria",
         badge: "Pulmonar",
         preparoSlug: "espirometria",
         description:
-          "Avaliação da função pulmonar para colaboradores expostos a poeiras, vapores ou agentes respiratórios.",
-        audience: "Funções com exposição respiratória ocupacional.",
-        deliveryTime: "No dia.",
+          "Avaliação da função pulmonar para exposição a poeiras, vapores ou agentes respiratórios.",
       },
       {
         name: "Raio-X",
         badge: "Imagem",
         preparoSlug: "radiografias",
-        description: "Radiografias ocupacionais conforme indicação do PCMSO ou avaliação médica.",
-        audience: "Colaboradores com exposição ou necessidade específica.",
-        deliveryTime: "2 dias úteis.",
+        description:
+          "Radiografias ocupacionais conforme indicação do PCMSO ou avaliação médica.",
       },
       {
         name: "Tomografia",
         badge: "Imagem",
         preparoSlug: "tomografia",
-        description: "Exame de imagem complementar realizado conforme solicitação médica.",
-        audience: "Casos específicos com indicação clínica.",
-        deliveryTime: "2 a 5 dias úteis.",
+        description:
+          "Exame de imagem complementar realizado conforme solicitação e indicação clínica.",
       },
       {
         name: "Exames Laboratoriais",
         badge: "Laboratorial",
         preparoSlug: "exames-laboratoriais",
-        description: "Painel laboratorial ocupacional conforme riscos, função e PCMSO.",
-        audience:
-          "Funções com exposição a agentes químicos, biológicos ou conforme exigência.",
-        deliveryTime: "1 a 3 dias úteis.",
+        description:
+          "Painel laboratorial ocupacional conforme riscos, função e exigências do PCMSO.",
       },
       {
         name: "Toxicológico",
         badge: "Toxicológico",
         preparoSlug: "toxicologico",
-        description: "Exame toxicológico para funções regulamentadas ou de risco.",
-        audience: "Motoristas profissionais e funções críticas.",
-        deliveryTime: "3 a 7 dias úteis.",
+        description:
+          "Exame toxicológico para funções regulamentadas, motoristas profissionais e demais exigências legais.",
       },
     ],
   },
@@ -261,7 +224,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     id: "documentacao",
     title: "Documentação",
     description:
-      "Emissão, organização e controle dos documentos ocupacionais exigidos para conformidade legal e rotina do RH.",
+      "Apoio ao RH na organização, controle e conformidade dos documentos ocupacionais — sem substituir laudos e programas técnicos de SST.",
     cardVariant: "technical",
     services: [
       {
@@ -269,32 +232,24 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
         badge: "Digital",
         description:
           "Apoio ao envio e organização dos eventos de SST exigidos pelo eSocial.",
-        audience: "Empresas que precisam manter conformidade digital.",
-        deliveryTime: "Conforme calendário e escopo.",
       },
       {
         name: "Organização documental ocupacional",
         badge: "Gestão",
         description:
-          "Estruturação de ASO, laudos, programas e documentos para facilitar a rotina do RH.",
-        audience: "Empresas que buscam mais clareza na gestão documental.",
-        deliveryTime: "Conforme diagnóstico inicial.",
+          "Estruturação de ASOs, laudos, programas e documentos para facilitar a rotina do RH.",
       },
       {
         name: "Controle de ASO e laudos",
         badge: "Controle",
         description:
-          "Acompanhamento de validade, emissão e arquivo de documentos técnicos.",
-        audience: "Empresas com volume recorrente de colaboradores.",
-        deliveryTime: "Contínuo.",
+          "Acompanhamento de validade, emissão e arquivo de documentos técnicos da empresa.",
       },
       {
         name: "Arquivo técnico ocupacional",
         badge: "Arquivo",
         description:
-          "Guarda organizada de prontuários, laudos e registros exigidos pela legislação.",
-        audience: "Empresas que precisam de rastreabilidade documental.",
-        deliveryTime: "Conforme contrato.",
+          "Guarda organizada de prontuários, laudos e registros exigidos pela legislação trabalhista.",
       },
     ],
   },
@@ -381,27 +336,31 @@ export const BLOG_POSTS = [
     slug: "pcmso-obrigacoes-prazos",
     excerpt: "Entenda quando sua empresa precisa de PCMSO e quais são os prazos legais.",
     category: "Medicina do trabalho",
-    content: "O Programa de Controle Médico de Saúde Ocupacional (PCMSO) é obrigatório para empresas que admitam trabalhadores como empregados, conforme NR-7...",
+    content:
+      "O Programa de Controle Médico de Saúde Ocupacional (PCMSO) é obrigatório para empresas que admitam trabalhadores como empregados, conforme NR-7...",
   },
   {
     title: "NR-1 e o novo PGR: o que muda na segurança do trabalho",
     slug: "nr1-novo-pgr",
     excerpt: "A atualização da NR-1 trouxe mudanças importantes no gerenciamento de riscos.",
     category: "Segurança do trabalho",
-    content: "Com a revisão da NR-1, o PGR substitui gradualmente o PPRA como documento central de gestão de riscos...",
+    content:
+      "Com a revisão da NR-1, o PGR substitui gradualmente o PPRA como documento central de gestão de riscos...",
   },
   {
     title: "Exames admissionais: guia rápido para RH",
     slug: "exames-admissionais-guia-rh",
     excerpt: "Saiba quais exames solicitar no processo admissional e como organizar encaminhamentos.",
     category: "Exames ocupacionais",
-    content: "O exame admissional é o primeiro passo para garantir que o colaborador está apto para a função...",
+    content:
+      "O exame admissional é o primeiro passo para garantir que o colaborador está apto para a função...",
   },
   {
     title: "5 erros comuns na gestão de ASO",
     slug: "erros-gestao-aso",
     excerpt: "Evite multas e retrabalho com uma gestão organizada de ASOs.",
     category: "Saúde ocupacional",
-    content: "Muitas empresas ainda armazenam ASOs em pastas físicas sem controle de validade...",
+    content:
+      "Muitas empresas ainda armazenam ASOs em pastas físicas sem controle de validade...",
   },
 ];
