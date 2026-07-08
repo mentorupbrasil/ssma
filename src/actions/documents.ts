@@ -21,24 +21,13 @@ import {
   type DocumentListFilters,
   type DocumentDetailSerialized,
   type DocumentHistoryItem,
+  type DocumentFormOptions,
 } from "@/lib/documents";
 import { deleteDocumentFile } from "@/lib/document-storage";
 
 type ActionResult<T extends Record<string, unknown> = Record<string, unknown>> =
   | ({ success: true } & T)
   | { success: false; error: string };
-
-export type DocumentFormOptions = {
-  companies: Array<{ id: string; legalName: string; tradeName: string | null }>;
-  patients: Array<{ id: string; fullName: string; companyId: string | null }>;
-  referrals: Array<{
-    id: string;
-    protocol: string;
-    patient: { fullName: string } | null;
-  }>;
-  exams: Array<{ id: string; name: string }>;
-  quotes: Array<{ id: string; quoteNumber: string | null; companyName: string }>;
-};
 
 async function recordDocHistory(
   documentId: string,

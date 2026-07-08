@@ -35,8 +35,8 @@ import {
   updateDocumentStatus,
   removeDocumentFile,
   deleteDocument,
-  type DocumentFormOptions,
 } from "@/actions/documents";
+import type { DocumentFormOptions } from "@/lib/documents";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DocumentDetailContent } from "./DocumentDetailContent";

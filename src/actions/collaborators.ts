@@ -13,7 +13,7 @@ import {
 } from "@/lib/authz";
 import { createAuditLog } from "@/lib/server";
 import type { CollaboratorDetailSerialized } from "@/lib/collaborators";
-import { maskCpf, PATIENT_HISTORY_ACTION_LABELS } from "@/lib/collaborators";
+import { maskCpf } from "@/lib/collaborators";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { createCollaboratorSchema, updateCollaboratorSchema } from "@/schemas";
 
@@ -382,5 +382,3 @@ export async function getCollaboratorFormCompanies() {
     return { success: false as const, error: "Erro ao carregar empresas." };
   }
 }
-
-export { PATIENT_HISTORY_ACTION_LABELS };

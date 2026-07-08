@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createDocument, updateDocument, type DocumentFormOptions } from "@/actions/documents";
+import { createDocument, updateDocument } from "@/actions/documents";
+import type { DocumentFormOptions } from "@/lib/documents";
 import type { DocumentDetailSerialized } from "@/lib/documents";
 import {
   DOCUMENT_TYPE_LABELS,

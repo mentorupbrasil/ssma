@@ -9,6 +9,18 @@ import type {
 import { startOfDay, endOfDay, parseISO, isValid, startOfMonth, endOfMonth } from "date-fns";
 import type { UserRole } from "@/types/roles";
 
+export type DocumentFormOptions = {
+  companies: Array<{ id: string; legalName: string; tradeName: string | null }>;
+  patients: Array<{ id: string; fullName: string; companyId: string | null }>;
+  referrals: Array<{
+    id: string;
+    protocol: string;
+    patient: { fullName: string } | null;
+  }>;
+  exams: Array<{ id: string; name: string }>;
+  quotes: Array<{ id: string; quoteNumber: string | null; companyName: string }>;
+};
+
 export const DOCUMENT_STAT_CARDS: { key: string; filter: string; label: string }[] = [
   { key: "pendentes", filter: "PENDENTE", label: "Documentos pendentes" },
   { key: "em_emissao", filter: "EM_EMISSAO", label: "Em emissão" },
