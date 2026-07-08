@@ -364,3 +364,61 @@ export const contactMessageStatusSchema = z.enum([
   "RESPONDIDO",
   "ARQUIVADO",
 ]);
+
+const examCategoryEnum = z.enum([
+  "CLINICO_OCUPACIONAL",
+  "COMPLEMENTAR",
+  "LABORATORIAL",
+  "IMAGEM",
+  "TOXICOLOGICO",
+  "AVALIACAO_ESPECIALIZADA",
+  "OUTRO",
+]);
+
+const examStatusEnum = z.enum(["ATIVO", "INATIVO", "EM_REVISAO"]);
+
+const examPreparationTypeEnum = z.enum([
+  "SEM_PREPARO",
+  "PREPARO_NECESSARIO",
+  "JEJUM_NECESSARIO",
+  "ATENCAO_ESPECIAL",
+  "VERIFICAR_EXAME",
+  "ORIENTACAO_ESPECIFICA",
+]);
+
+const examDeadlineTypeEnum = z.enum([
+  "NO_DIA",
+  "DIAS_UTEIS",
+  "CONFORME_AGENDAMENTO",
+  "CONFORME_LABORATORIO",
+]);
+
+export const examFormSchema = z.object({
+  name: z.string().min(2, "Nome do exame obrigatório"),
+  category: examCategoryEnum,
+  shortDescription: z.string().optional(),
+  status: examStatusEnum.default("ATIVO"),
+  showOnWebsite: z.boolean().default(false),
+  availableOnPublicForm: z.boolean().default(true),
+  availableOnCompanyPortal: z.boolean().default(true),
+  preparationType: examPreparationTypeEnum.default("SEM_PREPARO"),
+  preparationBefore: z.string().optional(),
+  instructionsOnDay: z.string().optional(),
+  averageDeadline: z.string().optional(),
+  deadlineType: examDeadlineTypeEnum.optional().nullable(),
+  observations: z.string().optional(),
+  whenToNotifyClinic: z.string().optional(),
+  requiresAppointment: z.boolean().default(false),
+  requiresProfessional: z.boolean().default(false),
+  requiresAttachment: z.boolean().default(false),
+  displayOrder: z.coerce.number().int().optional().nullable(),
+  internalTags: z.string().optional(),
+  publishOnSave: z.boolean().optional(),
+});
+
+export type ExamFormData = z.infer<typeof examFormSchema>;
+
+export const examStatusToggleSchema = z.object({
+  examId: z.string().min(1),
+  status: examStatusEnum,
+});

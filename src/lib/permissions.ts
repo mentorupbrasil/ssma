@@ -17,6 +17,7 @@ export type Permission =
   | "referrals.manage"
   | "appointments.manage"
   | "exams.manage"
+  | "exams.view"
   | "leads.manage"
   | "documents.manage"
   | "users.manage"
@@ -31,6 +32,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "referrals.manage",
     "appointments.manage",
     "exams.manage",
+    "exams.view",
     "leads.manage",
     "documents.manage",
     "users.manage",
@@ -43,6 +45,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "patients.manage",
     "referrals.manage",
     "appointments.manage",
+    "exams.view",
     "documents.manage",
     "leads.manage",
   ],
@@ -51,6 +54,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "patients.manage",
     "referrals.manage",
     "appointments.manage",
+    "exams.view",
     "documents.manage",
   ],
   TECNICO: [
@@ -58,12 +62,14 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "referrals.manage",
     "appointments.manage",
     "exams.manage",
+    "exams.view",
     "documents.manage",
   ],
   FINANCEIRO: [
     "dashboard.view",
     "companies.manage",
     "leads.manage",
+    "exams.view",
     "documents.manage",
   ],
   EMPRESA: [
@@ -71,6 +77,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     "patients.manage",
     "referrals.manage",
     "appointments.manage",
+    "exams.view",
     "documents.manage",
   ],
   VISUALIZADOR: ["dashboard.view"],
@@ -90,7 +97,7 @@ export function canAccessRoute(role: UserRole, pathname: string): boolean {
     { prefix: "/dashboard/encaminhamentos", permission: "referrals.manage" },
     { prefix: "/dashboard/pre-encaminhamentos", permission: "referrals.manage" },
     { prefix: "/dashboard/agenda", permission: "appointments.manage" },
-    { prefix: "/dashboard/exames", permission: "exams.manage" },
+    { prefix: "/dashboard/exames", permission: "exams.view" },
     { prefix: "/dashboard/orcamentos", permission: "leads.manage" },
     { prefix: "/dashboard/documentos", permission: "documents.manage" },
     { prefix: "/dashboard/usuarios", permission: "users.manage" },
@@ -110,7 +117,7 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard/agenda", label: "Agenda", icon: "Calendar", permission: "appointments.manage" as Permission },
   { href: "/dashboard/empresas", label: "Empresas", icon: "Building2", permission: "companies.manage" as Permission },
   { href: "/dashboard/colaboradores", label: "Colaboradores", icon: "Users", permission: "patients.manage" as Permission },
-  { href: "/dashboard/exames", label: "Exames", icon: "Stethoscope", permission: "exams.manage" as Permission },
+  { href: "/dashboard/exames", label: "Exames", icon: "Stethoscope", permission: "exams.view" as Permission },
   { href: "/dashboard/orcamentos", label: "Orçamentos", icon: "DollarSign", permission: "leads.manage" as Permission },
   { href: "/dashboard/documentos", label: "Documentos", icon: "FolderOpen", permission: "documents.manage" as Permission },
   { href: "/dashboard/usuarios", label: "Usuários", icon: "UserCog", permission: "users.manage" as Permission },

@@ -11,7 +11,11 @@ import { CTASection } from "@/components/public/CTASection";
 import { PageSection } from "@/components/public/PageSection";
 import { whatsappLink } from "@/lib/helpers";
 
-export function EncaminhamentoOnlinePageClient() {
+export function EncaminhamentoOnlinePageClient({
+  examOptions = [],
+}: {
+  examOptions?: string[];
+}) {
   const formRef = useRef<HTMLDivElement>(null);
 
   const scrollToForm = () => {
@@ -30,7 +34,7 @@ export function EncaminhamentoOnlinePageClient() {
         <div ref={formRef} id="pre-encaminhamento" className="mx-auto max-w-2xl">
           <EncaminhamentoInfoBox />
           <div className="page-content-card mt-6">
-            <PreReferralWizard />
+            <PreReferralWizard examOptions={examOptions} />
           </div>
         </div>
       </PageSection>

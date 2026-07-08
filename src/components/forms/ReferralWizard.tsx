@@ -40,13 +40,20 @@ type ReferralWizardProps = {
   mode?: "public" | "dashboard";
   prefill?: Partial<ReferralFormData>;
   lockCompany?: boolean;
+  complementaryExams?: string[];
+  labExams?: string[];
 };
 
 export function ReferralWizard({
   mode = "public",
   prefill,
   lockCompany = false,
+  complementaryExams,
+  labExams,
 }: ReferralWizardProps) {
+  const compOptions =
+    complementaryExams?.length ? complementaryExams : [...COMPLEMENTARY_EXAM_OPTIONS];
+  const labOptions = labExams?.length ? labExams : [...LAB_EXAM_OPTIONS];
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -257,7 +264,7 @@ export function ReferralWizard({
 
           {step === 3 && (
             <div className="grid gap-2 sm:grid-cols-2">
-              {COMPLEMENTARY_EXAM_OPTIONS.map((exam) => (
+              {compOptions.map((exam) => (
                 <label
                   key={exam}
                   className={cn(
@@ -279,7 +286,7 @@ export function ReferralWizard({
 
           {step === 4 && (
             <div className="grid gap-2 sm:grid-cols-2">
-              {LAB_EXAM_OPTIONS.map((exam) => (
+              {labOptions.map((exam) => (
                 <label
                   key={exam}
                   className={cn(

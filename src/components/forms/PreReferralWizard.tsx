@@ -55,7 +55,11 @@ type SuccessData = {
   clinicalExamType: string;
 };
 
-export function PreReferralWizard() {
+type PreReferralWizardProps = {
+  examOptions?: string[];
+};
+
+export function PreReferralWizard({ examOptions }: PreReferralWizardProps = {}) {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [attemptedSteps, setAttemptedSteps] = useState<Set<number>>(new Set());
@@ -297,7 +301,7 @@ export function PreReferralWizard() {
                 <div>
                   <p className="form-label mb-3">Selecione os exames</p>
                   <div className="grid gap-2 sm:grid-cols-2">
-                    {PRE_REFERRAL_EXAM_OPTIONS.map((exam) => (
+                    {availableExams.map((exam) => (
                       <label
                         key={exam}
                         className={cn(

@@ -4,7 +4,7 @@ dotenv.config({ override: true });
 
 import { PrismaClient, ExamCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { INITIAL_EXAMS } from "../src/data/exams";
+import { CATALOG_SEED_EXAMS } from "../src/lib/exams";
 import { BLOG_POSTS } from "../src/data/services";
 
 const prisma = new PrismaClient();
@@ -38,18 +38,46 @@ async function main() {
     },
   });
 
-  for (const exam of INITIAL_EXAMS) {
+  for (const exam of CATALOG_SEED_EXAMS) {
     await prisma.exam.upsert({
       where: { slug: exam.slug },
       update: {
         name: exam.name,
         category: exam.category,
-        preparation: exam.preparation,
-        deliveryTime: exam.deliveryTime,
-        notes: exam.notes,
-        active: true,
+        shortDescription: exam.shortDescription,
+        preparationType: exam.preparationType,
+        preparationBefore: exam.preparationBefore,
+        instructionsOnDay: exam.instructionsOnDay,
+        averageDeadline: exam.averageDeadline,
+        deadlineType: exam.deadlineType,
+        observations: exam.observations,
+        whenToNotifyClinic: exam.whenToNotifyClinic,
+        requiresAppointment: exam.requiresAppointment ?? false,
+        displayOrder: exam.displayOrder ?? null,
+        status: "ATIVO",
+        showOnWebsite: true,
+        availableOnPublicForm: true,
+        availableOnCompanyPortal: true,
       },
-      create: exam,
+      create: {
+        name: exam.name,
+        slug: exam.slug,
+        category: exam.category,
+        shortDescription: exam.shortDescription,
+        preparationType: exam.preparationType,
+        preparationBefore: exam.preparationBefore,
+        instructionsOnDay: exam.instructionsOnDay,
+        averageDeadline: exam.averageDeadline,
+        deadlineType: exam.deadlineType,
+        observations: exam.observations,
+        whenToNotifyClinic: exam.whenToNotifyClinic,
+        requiresAppointment: exam.requiresAppointment ?? false,
+        displayOrder: exam.displayOrder ?? null,
+        status: "ATIVO",
+        showOnWebsite: true,
+        availableOnPublicForm: true,
+        availableOnCompanyPortal: true,
+      },
     });
   }
 

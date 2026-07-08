@@ -136,8 +136,18 @@ export const CONTACT_MESSAGE_STATUS_LABELS: Record<ContactMessageStatus, string>
 };
 
 export const EXAM_CATEGORY_LABELS: Record<string, string> = {
-  CLINICO: "Clínico",
+  CLINICO_OCUPACIONAL: "Clínico ocupacional",
+  CLINICO: "Clínico ocupacional",
   COMPLEMENTAR: "Complementar",
   LABORATORIAL: "Laboratorial",
+  IMAGEM: "Imagem",
+  TOXICOLOGICO: "Toxicológico",
+  AVALIACAO_ESPECIALIZADA: "Avaliação especializada",
   OUTRO: "Outro",
+};
+
+export const EXAM_STATUS_LABELS: Record<string, string> = {
+  ATIVO: "Ativo",
+  INATIVO: "Inativo",
+  EM_REVISAO: "Em revisão",
 };

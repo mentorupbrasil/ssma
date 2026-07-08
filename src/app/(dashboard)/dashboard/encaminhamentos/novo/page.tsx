@@ -2,9 +2,20 @@ import Link from "next/link";
 import { ReferralWizard } from "@/components/forms/ReferralWizard";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { getEmpresaPrefill } from "@/actions";
+import { getReferralCatalogExams } from "@/actions/exams";
 
 export default async function NovoEncaminhamentoPage() {
-  const prefill = await getEmpresaPrefill();
+  const [prefill, catalogExams] = await Promise.all([
+    getEmpresaPrefill(),
+    getReferralCatalogExams(),
+  ]);
+
+  const complementaryExams = catalogExams
+    .filter((e) => e.category !== "LABORATORIAL")
+    .map((e) => e.name);
+  const labExams = catalogExams
+    .filter((e) => e.category === "LABORATORIAL")
+    .map((e) => e.name);
 
   return (
     <div>
@@ -14,6 +25,8 @@ export default async function NovoEncaminhamentoPage() {
           mode="dashboard"
           prefill={prefill ?? undefined}
           lockCompany={!!prefill}
+          complementaryExams={complementaryExams}
+          labExams={labExams}
         />
       </div>
       {!prefill && (

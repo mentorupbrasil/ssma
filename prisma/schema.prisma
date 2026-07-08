@@ -88,10 +88,46 @@ enum PatientHistoryAction {
 }
 
 enum ExamCategory {
-  CLINICO
+  CLINICO_OCUPACIONAL
   COMPLEMENTAR
   LABORATORIAL
+  IMAGEM
+  TOXICOLOGICO
+  AVALIACAO_ESPECIALIZADA
   OUTRO
+}
+
+enum ExamStatus {
+  ATIVO
+  INATIVO
+  EM_REVISAO
+}
+
+enum ExamPreparationType {
+  SEM_PREPARO
+  PREPARO_NECESSARIO
+  JEJUM_NECESSARIO
+  ATENCAO_ESPECIAL
+  VERIFICAR_EXAME
+  ORIENTACAO_ESPECIFICA
+}
+
+enum ExamDeadlineType {
+  NO_DIA
+  DIAS_UTEIS
+  CONFORME_AGENDAMENTO
+  CONFORME_LABORATORIO
+}
+
+enum ExamHistoryAction {
+  CREATED
+  UPDATED
+  PREPARATION_CHANGED
+  DEADLINE_CHANGED
+  STATUS_CHANGED
+  PUBLISHED
+  UNPUBLISHED
+  DUPLICATED
 }
 
 enum ClinicalExamType {
@@ -252,6 +288,7 @@ model User {
   companyContacts CompanyContact[]
   companyHistory CompanyHistory[]
   patientHistory PatientHistory[]
+  examHistory    ExamHistory[]
   auditLogs      AuditLog[]
   notifications  Notification[]
 }
@@ -349,18 +386,43 @@ model PatientHistory {
 }
 
 model Exam {
-  id           String       @id @default(cuid())
-  name         String
-  slug         String       @unique
-  category     ExamCategory
-  preparation  String?
-  deliveryTime String?
-  notes        String?
-  active       Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  referralExams ReferralExam[]
-  appointmentExams AppointmentExam[]
+  id                         String              @id @default(cuid())
+  name                       String
+  slug                       String              @unique
+  category                   ExamCategory
+  shortDescription           String?
+  preparationType            ExamPreparationType @default(SEM_PREPARO)
+  preparationBefore          String?
+  instructionsOnDay          String?
+  averageDeadline            String?
+  deadlineType               ExamDeadlineType?
+  observations               String?
+  whenToNotifyClinic         String?
+  requiresAppointment        Boolean             @default(false)
+  requiresProfessional       Boolean             @default(false)
+  requiresAttachment         Boolean             @default(false)
+  showOnWebsite              Boolean             @default(true)
+  availableOnPublicForm      Boolean             @default(true)
+  availableOnCompanyPortal   Boolean             @default(true)
+  displayOrder               Int?
+  internalTags               String?
+  status                     ExamStatus          @default(ATIVO)
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+  referralExams              ReferralExam[]
+  appointmentExams           AppointmentExam[]
+  history                    ExamHistory[]
+}
+
+model ExamHistory {
+  id                String            @id @default(cuid())
+  examId            String
+  exam              Exam              @relation(fields: [examId], references: [id], onDelete: Cascade)
+  action            ExamHistoryAction
+  notes             String?
+  performedByUserId String?
+  performedBy       User?             @relation(fields: [performedByUserId], references: [id])
+  createdAt         DateTime          @default(now())
 }
 
 model Referral {

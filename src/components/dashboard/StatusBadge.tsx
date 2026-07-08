@@ -1,9 +1,9 @@
-import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS, CONTACT_MESSAGE_STATUS_LABELS, COMPANY_STATUS_LABELS, PATIENT_STATUS_LABELS } from "@/types";
+import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS, CONTACT_MESSAGE_STATUS_LABELS, COMPANY_STATUS_LABELS, PATIENT_STATUS_LABELS, EXAM_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 
 type StatusBadgeProps = {
   status: string;
-  type?: "referral" | "lead" | "appointment" | "document" | "preReferral" | "contact" | "company" | "collaborator";
+  type?: "referral" | "lead" | "appointment" | "document" | "preReferral" | "contact" | "company" | "collaborator" | "exam";
 };
 
 const LABEL_MAPS = {
@@ -15,6 +15,7 @@ const LABEL_MAPS = {
   contact: CONTACT_MESSAGE_STATUS_LABELS,
   company: COMPANY_STATUS_LABELS,
   collaborator: PATIENT_STATUS_LABELS,
+  exam: EXAM_STATUS_LABELS,
 };
 
 const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
@@ -54,6 +55,7 @@ const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   INATIVO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
   AFASTADO: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
   DESLIGADO: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
+  EM_REVISAO: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
 };
 
 export function StatusBadge({ status, type = "referral" }: StatusBadgeProps) {

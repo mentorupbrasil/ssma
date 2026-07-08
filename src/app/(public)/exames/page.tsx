@@ -7,12 +7,17 @@ import { CTASection } from "@/components/public/CTASection";
 import { PageSection } from "@/components/public/PageSection";
 import { SectionTitle } from "@/components/public/SectionTitle";
 import { Button } from "@/components/ui/button";
-import { EXAM_GUIDES } from "@/data/exams";
+import { getPublicWebsiteExams } from "@/actions/exams";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 export const metadata = { title: "Exames e Preparos" };
 
-export default function ExamesPage() {
+async function ExamCatalogSection() {
+  const exams = await getPublicWebsiteExams();
+  return <ExamSearch exams={exams} />;
+}
+
+export default async function ExamesPage() {
   const clinic = getClinicInfo();
 
   return (
@@ -60,7 +65,7 @@ export default function ExamesPage() {
             <p className="py-10 text-center text-sm text-slate-500">Carregando catálogo de exames...</p>
           }
         >
-          <ExamSearch exams={EXAM_GUIDES} />
+          <ExamCatalogSection />
         </Suspense>
       </PageSection>
 

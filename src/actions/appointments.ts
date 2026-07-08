@@ -646,7 +646,7 @@ export async function getAppointmentFormOptions() {
         take: 200,
       }),
       prisma.exam.findMany({
-        where: { active: true },
+        where: { status: "ATIVO" },
         select: { id: true, name: true, category: true },
         orderBy: { name: "asc" },
       }),
