@@ -184,7 +184,12 @@ export function QuoteFormDialog({
     }
     toast.success(isEdit ? "Orçamento atualizado." : "Orçamento criado.");
     onOpenChange(false);
-    onSuccess(!isEdit && "quoteId" in result ? result.quoteId : quote?.id);
+    const savedQuoteId = isEdit
+      ? quote?.id
+      : "quoteId" in result && typeof result.quoteId === "string"
+        ? result.quoteId
+        : undefined;
+    onSuccess(savedQuoteId);
   };
 
   return (
