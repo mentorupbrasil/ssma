@@ -266,6 +266,7 @@ export function serializeReferralDetail(
     companyPhone: string | null;
     companyEmail: string | null;
     internalNotes: string | null;
+    externalSystemReference: string | null;
     createdAt: Date;
     updatedAt: Date;
     company: {
