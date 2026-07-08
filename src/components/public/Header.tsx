@@ -28,13 +28,8 @@ export function Header() {
   return (
     <header className="glass-header">
       <div className="container-page flex h-full items-center justify-between">
-        <Link href="/" className="group flex items-center gap-3">
+        <Link href="/" className="group flex items-center">
           <BrandLogo height={34} priority showLink={false} />
-          <div className="hidden leading-tight sm:block">
-            <p className="text-[0.7rem] font-medium uppercase tracking-wider text-slate-500">
-              Medicina do Trabalho
-            </p>
-          </div>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
