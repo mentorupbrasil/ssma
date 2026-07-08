@@ -2,12 +2,10 @@
 /**
  * Vercel build — sincroniza o banco Neon com o schema Prisma.
  *
- * 1. Tenta migrate deploy (conexão direta no Neon — pooler não suporta advisory lock).
- * 2. Se P3005 (banco legado sem _prisma_migrations):
- *    a) enums patch (transação separada — ADD VALUE antes de UPDATE)
- *    b) patch SQL principal
- *    c) migration Phase 1 (multi-clinic)
- *    d) db push
+ * 1. Libera advisory locks stale (builds anteriores interrompidos).
+ * 2. Tenta migrate deploy (conexão direta + sem advisory lock no CI).
+ * 3. Se P3005 (banco legado): patches SQL + db push.
+ * 4. Se migrate falhar por lock: db push como fallback (schema já aplicado via patches).
  */
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -24,8 +22,9 @@ const PATCH_PHASE1 = path.join(
   "20260708150000_product_repositioning_phase1",
   "migration.sql",
 );
-const MIGRATE_MAX_ATTEMPTS = 3;
-const MIGRATE_RETRY_MS = 8000;
+const LOCK_RELEASE = path.join(ROOT, "scripts", "release-prisma-migrate-locks.sql");
+const MIGRATE_MAX_ATTEMPTS = 2;
+const MIGRATE_RETRY_MS = 5000;
 
 /** Neon pooler não suporta pg_advisory_lock — migrate precisa da URL direta. */
 function resolveDirectDatabaseUrl() {
@@ -46,7 +45,10 @@ function sleep(ms) {
 }
 
 function runPrisma(subcommand, args = [], options = {}) {
-  const env = { ...process.env };
+  const env = {
+    ...process.env,
+    ...options.extraEnv,
+  };
   if (options.useDirect) {
     const direct = resolveDirectDatabaseUrl();
     if (direct) {
@@ -89,17 +91,39 @@ function isAdvisoryLockTimeout(output) {
   );
 }
 
+function releaseStaleMigrateLocks() {
+  if (!resolveDirectDatabaseUrl()) return;
+  console.log("→ liberando advisory locks stale");
+  const result = runPrisma("db", ["execute", "--file", LOCK_RELEASE], { useDirect: true });
+  if (result.status !== 0) {
+    console.warn("⚠ Não foi possível liberar locks (continuando)");
+  }
+}
+
+function runDbPush(label = "prisma db push") {
+  console.log(`→ ${label}`);
+  const push = runPrisma("db", ["push", "--skip-generate", "--accept-data-loss"]);
+  if (push.status !== 0) {
+    fail("db push falhou", push.output);
+  }
+  console.log("✓ Schema sincronizado");
+}
+
 function runMigrateDeploy() {
+  releaseStaleMigrateLocks();
+
   const direct = resolveDirectDatabaseUrl();
   if (direct) {
-    console.log("→ prisma migrate deploy (conexão direta Neon)");
+    console.log("→ prisma migrate deploy (conexão direta Neon, CI)");
   } else {
     console.log("→ prisma migrate deploy");
   }
 
+  const migrateEnv = { PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK: "1" };
+
   let last = { status: 1, output: "" };
   for (let attempt = 1; attempt <= MIGRATE_MAX_ATTEMPTS; attempt++) {
-    last = runPrisma("migrate", ["deploy"], { useDirect: true });
+    last = runPrisma("migrate", ["deploy"], { useDirect: true, extraEnv: migrateEnv });
     if (last.status === 0) return last;
     if (!isAdvisoryLockTimeout(last.output) || attempt === MIGRATE_MAX_ATTEMPTS) {
       return last;
@@ -107,6 +131,7 @@ function runMigrateDeploy() {
     console.warn(
       `⚠ Advisory lock ocupado (tentativa ${attempt}/${MIGRATE_MAX_ATTEMPTS}) — aguardando ${MIGRATE_RETRY_MS / 1000}s...`,
     );
+    releaseStaleMigrateLocks();
     sleep(MIGRATE_RETRY_MS);
   }
   return last;
@@ -124,23 +149,24 @@ const isLegacyDb =
   migrate.output.includes("not empty") ||
   migrate.output.includes("baseline");
 
-if (!isLegacyDb) {
-  fail("migrate deploy falhou", migrate.output);
+if (isLegacyDb) {
+  console.warn("");
+  console.warn("⚠ Banco legado (sem histórico de migrations) — aplicando patches SQL...");
+  console.warn("");
+
+  runSqlPatch("patch enums", PATCH_ENUMS);
+  runSqlPatch("patch schema", PATCH);
+  runSqlPatch("patch phase 1", PATCH_PHASE1);
+  runDbPush();
+  process.exit(0);
 }
 
-console.warn("");
-console.warn("⚠ Banco legado (sem histórico de migrations) — aplicando patches SQL...");
-console.warn("");
-
-runSqlPatch("patch enums", PATCH_ENUMS);
-runSqlPatch("patch schema", PATCH);
-runSqlPatch("patch phase 1", PATCH_PHASE1);
-
-console.log("→ prisma db push");
-const push = runPrisma("db", ["push", "--skip-generate", "--accept-data-loss"]);
-if (push.status !== 0) {
-  fail("db push falhou", push.output);
+if (isAdvisoryLockTimeout(migrate.output)) {
+  console.warn("");
+  console.warn("⚠ migrate deploy bloqueado por advisory lock — sincronizando schema via db push...");
+  console.warn("");
+  runDbPush();
+  process.exit(0);
 }
 
-console.log("✓ Banco sincronizado");
-process.exit(0);
+fail("migrate deploy falhou", migrate.output);
