@@ -92,9 +92,6 @@ export function ExamPreparationModal({ exam, open, onOpenChange }: ExamPreparati
           <ModalSection title="No dia do exame">
             <p>{exam.preparationOnDay}</p>
           </ModalSection>
-          <ModalSection title="Prazo médio de entrega">
-            <p>{exam.deliveryTime}</p>
-          </ModalSection>
           {exam.notes && (
             <ModalSection title="Observações importantes">
               <p>{exam.notes}</p>

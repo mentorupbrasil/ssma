@@ -9,21 +9,11 @@ import { SectionTitle } from "@/components/public/SectionTitle";
 import { Button } from "@/components/ui/button";
 import { EXAM_GUIDES } from "@/data/exams";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
-import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Exames e Preparos" };
 
-export default async function ExamesPage() {
+export default function ExamesPage() {
   const clinic = getClinicInfo();
-  const dbExams = await prisma.exam.findMany({
-    where: { active: true },
-    select: { slug: true },
-  });
-  const activeSlugs = new Set(dbExams.map((exam) => exam.slug));
-  const exams =
-    activeSlugs.size > 0
-      ? EXAM_GUIDES.filter((guide) => activeSlugs.has(guide.slug))
-      : EXAM_GUIDES;
 
   return (
     <>
@@ -70,7 +60,7 @@ export default async function ExamesPage() {
             <p className="py-10 text-center text-sm text-slate-500">Carregando catálogo de exames...</p>
           }
         >
-          <ExamSearch exams={exams} />
+          <ExamSearch exams={EXAM_GUIDES} />
         </Suspense>
       </PageSection>
 
