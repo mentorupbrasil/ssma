@@ -19,8 +19,8 @@ export async function GET() {
 
   const where =
     session.user.role === "EMPRESA" && session.user.companyId
-      ? { id: session.user.companyId, status: "ACTIVE" as const }
-      : { status: "ACTIVE" as const };
+      ? { id: session.user.companyId, status: "ATIVA" as const }
+      : { status: "ATIVA" as const };
 
   const companies = await prisma.company.findMany({
     where,

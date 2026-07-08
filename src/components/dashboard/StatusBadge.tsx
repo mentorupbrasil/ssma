@@ -1,9 +1,9 @@
-import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS, CONTACT_MESSAGE_STATUS_LABELS } from "@/types";
+import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS, CONTACT_MESSAGE_STATUS_LABELS, COMPANY_STATUS_LABELS, PATIENT_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 
 type StatusBadgeProps = {
   status: string;
-  type?: "referral" | "lead" | "appointment" | "document" | "preReferral" | "contact";
+  type?: "referral" | "lead" | "appointment" | "document" | "preReferral" | "contact" | "company" | "collaborator";
 };
 
 const LABEL_MAPS = {
@@ -13,6 +13,8 @@ const LABEL_MAPS = {
   document: DOCUMENT_STATUS_LABELS,
   preReferral: PRE_REFERRAL_STATUS_LABELS,
   contact: CONTACT_MESSAGE_STATUS_LABELS,
+  company: COMPANY_STATUS_LABELS,
+  collaborator: PATIENT_STATUS_LABELS,
 };
 
 const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
@@ -42,6 +44,16 @@ const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   ENTREGUE: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   RESPONDIDO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   ARQUIVADO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
+  ATIVA: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  INATIVA: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
+  BLOQUEADA: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
+  VENCIDO: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
+  EM_DIA: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  EXPIRADO: { bg: "bg-orange-50", text: "text-orange-800", dot: "bg-orange-500" },
+  ATIVO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  INATIVO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
+  AFASTADO: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
+  DESLIGADO: { bg: "bg-red-50", text: "text-red-800", dot: "bg-red-500" },
 };
 
 export function StatusBadge({ status, type = "referral" }: StatusBadgeProps) {

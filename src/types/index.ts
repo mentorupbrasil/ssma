@@ -41,6 +41,22 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
   PROPOSTA_ENVIADA: "Proposta enviada",
   FECHADO: "Fechado",
   PERDIDO: "Perdido",
+  EXPIRADO: "Expirado",
+};
+
+export const COMPANY_STATUS_LABELS: Record<string, string> = {
+  ATIVA: "Ativa",
+  INATIVA: "Inativa",
+  PENDENTE: "Pendente",
+  BLOQUEADA: "Bloqueada",
+};
+
+export const PATIENT_STATUS_LABELS: Record<string, string> = {
+  ATIVO: "Ativo",
+  INATIVO: "Inativo",
+  AFASTADO: "Afastado",
+  DESLIGADO: "Desligado",
+  PENDENTE: "Pendente",
 };
 
 export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {

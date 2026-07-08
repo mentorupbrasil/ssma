@@ -23,13 +23,68 @@ enum UserStatus {
 }
 
 enum CompanyStatus {
-  ACTIVE
-  INACTIVE
+  ATIVA
+  INATIVA
+  PENDENTE
+  BLOQUEADA
+}
+
+enum CompanySize {
+  PEQUENA
+  MEDIA
+  GRANDE
+}
+
+enum CompanyContractType {
+  AVULSO
+  MENSAL
+  ANUAL
+  EM_NEGOCIACAO
+}
+
+enum CompanyContactType {
+  SITE
+  WHATSAPP
+  TELEFONE
+  EMAIL
+  VISITA
+  COMERCIAL
+  OUTRO
+}
+
+enum CompanyHistoryAction {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  EMPLOYEE_ADDED
+  REFERRAL_CREATED
+  QUOTE_SENT
+  DOCUMENT_ATTACHED
+  PORTAL_ENABLED
+  PORTAL_DISABLED
+  USER_CREATED
+  CONTACT_ADDED
 }
 
 enum PatientStatus {
-  ACTIVE
-  INACTIVE
+  ATIVO
+  INATIVO
+  AFASTADO
+  DESLIGADO
+  PENDENTE
+}
+
+enum PatientHistoryAction {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  REFERRAL_CREATED
+  APPOINTMENT_SCHEDULED
+  ATTENDANCE_STARTED
+  ATTENDANCE_COMPLETED
+  DOCUMENT_ATTACHED
+  ASO_AVAILABLE
+  COMPANY_LINKED
 }
 
 enum ExamCategory {
@@ -111,6 +166,7 @@ enum LeadStatus {
   PROPOSTA_ENVIADA
   FECHADO
   PERDIDO
+  EXPIRADO
 }
 
 enum LeadType {
@@ -153,9 +209,12 @@ enum ContactMessageStatus {
 enum DocumentType {
   ASO
   PCMSO
+  PGR
   LTCAT
   PPP
   LAUDO
+  CONTRATO
+  PROPOSTA
   ENCAMINHAMENTO
   OUTRO
 }
@@ -163,8 +222,11 @@ enum DocumentType {
 enum DocumentStatus {
   PENDENTE
   EM_ELABORACAO
+  EM_DIA
   CONCLUIDO
   ENTREGUE
+  VENCIDO
+  ARQUIVADO
   CANCELADO
 }
 
@@ -187,54 +249,103 @@ model User {
   professionalAppointments Appointment[] @relation("AppointmentProfessional")
   createdAppointments Appointment[] @relation("AppointmentCreatedBy")
   appointmentHistory AppointmentHistory[]
+  companyContacts CompanyContact[]
+  companyHistory CompanyHistory[]
+  patientHistory PatientHistory[]
   auditLogs      AuditLog[]
   notifications  Notification[]
 }
 
 model Company {
-  id              String        @id @default(cuid())
-  legalName       String
-  tradeName       String?
-  cnpj            String        @unique
-  email           String?
-  phone           String?
-  whatsapp        String?
-  address         String?
-  city            String?
-  state           String?
-  responsibleName String?
-  status          CompanyStatus @default(ACTIVE)
-  notes           String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  patients        Patient[]
-  referrals       Referral[]
-  documents       Document[]
-  users           User[]
-  appointments    Appointment[]
-  leads           Lead[]
+  id                String               @id @default(cuid())
+  legalName         String
+  tradeName         String?
+  cnpj              String               @unique
+  stateRegistration String?
+  size              CompanySize?
+  segment           String?
+  email             String?
+  phone             String?
+  whatsapp          String?
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+  responsibleName   String?
+  responsibleRole   String?
+  contractType      CompanyContractType?
+  portalEnabled     Boolean              @default(false)
+  status            CompanyStatus        @default(ATIVA)
+  notes             String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  patients          Patient[]
+  referrals         Referral[]
+  documents         Document[]
+  users             User[]
+  appointments      Appointment[]
+  leads             Lead[]
+  contacts          CompanyContact[]
+  history           CompanyHistory[]
+}
+
+model CompanyContact {
+  id                String             @id @default(cuid())
+  companyId         String
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type              CompanyContactType
+  title             String?
+  notes             String
+  performedByUserId String?
+  performedBy       User?              @relation(fields: [performedByUserId], references: [id])
+  createdAt         DateTime           @default(now())
+}
+
+model CompanyHistory {
+  id                String               @id @default(cuid())
+  companyId         String
+  company           Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  action            CompanyHistoryAction
+  notes             String?
+  performedByUserId String?
+  performedBy       User?                @relation(fields: [performedByUserId], references: [id])
+  createdAt         DateTime             @default(now())
 }
 
 model Patient {
-  id          String        @id @default(cuid())
-  fullName    String
-  cpf         String        @unique
-  rg          String?
-  birthDate   DateTime?
-  gender      String?
-  phone       String?
-  email       String?
-  jobTitle    String?
-  department  String?
-  status      PatientStatus @default(ACTIVE)
-  notes       String?
-  companyId   String?
-  company     Company?      @relation(fields: [companyId], references: [id])
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  referrals   Referral[]
-  documents   Document[]
-  appointments Appointment[]
+  id               String        @id @default(cuid())
+  fullName         String
+  cpf              String        @unique
+  rg               String?
+  birthDate        DateTime?
+  gender           String?
+  phone            String?
+  email            String?
+  jobTitle         String?
+  department       String?
+  admissionDate    DateTime?
+  nextPeriodicDate DateTime?
+  status           PatientStatus @default(ATIVO)
+  notes            String?
+  companyId        String?
+  company          Company?      @relation(fields: [companyId], references: [id])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  referrals        Referral[]
+  documents        Document[]
+  appointments     Appointment[]
+  history          PatientHistory[]
+}
+
+model PatientHistory {
+  id                String               @id @default(cuid())
+  patientId         String
+  patient           Patient              @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  action            PatientHistoryAction
+  notes             String?
+  performedByUserId String?
+  performedBy       User?                @relation(fields: [performedByUserId], references: [id])
+  createdAt         DateTime             @default(now())
 }
 
 model Exam {
@@ -377,20 +488,23 @@ model AppointmentHistory {
 }
 
 model Lead {
-  id            String     @id @default(cuid())
-  type          LeadType   @default(ORCAMENTO)
-  status        LeadStatus @default(NOVO)
-  name          String
-  email         String?
-  phone         String?
-  companyName   String?
-  message       String?
+  id             String     @id @default(cuid())
+  type           LeadType   @default(ORCAMENTO)
+  status         LeadStatus @default(NOVO)
+  quoteNumber    String?
+  name           String
+  email          String?
+  phone          String?
+  companyName    String?
+  serviceTitle   String?
+  message        String?
   estimatedValue Float?
-  notes         String?
-  companyId     String?
-  company       Company?   @relation(fields: [companyId], references: [id])
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  validUntil     DateTime?
+  notes          String?
+  companyId      String?
+  company        Company?   @relation(fields: [companyId], references: [id])
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 }
 
 model Document {
@@ -399,6 +513,7 @@ model Document {
   type       DocumentType
   status     DocumentStatus @default(PENDENTE)
   fileUrl    String?
+  validUntil DateTime?
   notes      String?
   companyId  String?
   company    Company?       @relation(fields: [companyId], references: [id])

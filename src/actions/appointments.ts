@@ -615,15 +615,15 @@ export async function getAppointmentFormOptions() {
 
     const [patients, companies, referrals, exams, professionals] = await Promise.all([
       prisma.patient.findMany({
-        where: { ...companyFilter, status: "ACTIVE" },
+        where: { ...companyFilter, status: "ATIVO" },
         select: { id: true, fullName: true, companyId: true },
         orderBy: { fullName: "asc" },
         take: 500,
       }),
       prisma.company.findMany({
         where: companyFilter.companyId
-          ? { id: companyFilter.companyId, status: "ACTIVE" }
-          : { status: "ACTIVE" },
+          ? { id: companyFilter.companyId, status: "ATIVA" }
+          : { status: "ATIVA" },
         select: { id: true, legalName: true, tradeName: true },
         orderBy: { legalName: "asc" },
         take: 200,

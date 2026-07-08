@@ -85,6 +85,7 @@ export function canAccessRoute(role: UserRole, pathname: string): boolean {
 
   const routePermissions: { prefix: string; permission: Permission }[] = [
     { prefix: "/dashboard/empresas", permission: "companies.manage" },
+    { prefix: "/dashboard/colaboradores", permission: "patients.manage" },
     { prefix: "/dashboard/pacientes", permission: "patients.manage" },
     { prefix: "/dashboard/encaminhamentos", permission: "referrals.manage" },
     { prefix: "/dashboard/pre-encaminhamentos", permission: "referrals.manage" },
@@ -108,7 +109,7 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard/pre-encaminhamentos", label: "Pré-encaminhamentos", icon: "Inbox", permission: "referrals.manage" as Permission },
   { href: "/dashboard/agenda", label: "Agenda", icon: "Calendar", permission: "appointments.manage" as Permission },
   { href: "/dashboard/empresas", label: "Empresas", icon: "Building2", permission: "companies.manage" as Permission },
-  { href: "/dashboard/pacientes", label: "Pacientes", icon: "Users", permission: "patients.manage" as Permission },
+  { href: "/dashboard/colaboradores", label: "Colaboradores", icon: "Users", permission: "patients.manage" as Permission },
   { href: "/dashboard/exames", label: "Exames", icon: "Stethoscope", permission: "exams.manage" as Permission },
   { href: "/dashboard/orcamentos", label: "Orçamentos", icon: "DollarSign", permission: "leads.manage" as Permission },
   { href: "/dashboard/documentos", label: "Documentos", icon: "FolderOpen", permission: "documents.manage" as Permission },

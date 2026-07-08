@@ -1,0 +1,46 @@
+-- PatientStatus migration
+ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'ATIVO';
+ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'INATIVO';
+ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'AFASTADO';
+ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'DESLIGADO';
+ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'PENDENTE';
+
+UPDATE "Patient" SET status = 'ATIVO' WHERE status = 'ACTIVE';
+UPDATE "Patient" SET status = 'INATIVO' WHERE status = 'INACTIVE';
+
+DO $$ BEGIN
+  CREATE TYPE "PatientHistoryAction" AS ENUM (
+    'CREATED', 'UPDATED', 'STATUS_CHANGED', 'REFERRAL_CREATED', 'APPOINTMENT_SCHEDULED',
+    'ATTENDANCE_STARTED', 'ATTENDANCE_COMPLETED', 'DOCUMENT_ATTACHED', 'ASO_AVAILABLE', 'COMPANY_LINKED'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+ALTER TABLE "Patient" ADD COLUMN IF NOT EXISTS "admissionDate" TIMESTAMP(3);
+ALTER TABLE "Patient" ADD COLUMN IF NOT EXISTS "nextPeriodicDate" TIMESTAMP(3);
+
+ALTER TABLE "Patient" ALTER COLUMN "status" SET DEFAULT 'ATIVO';
+
+CREATE TABLE IF NOT EXISTS "PatientHistory" (
+    "id" TEXT NOT NULL,
+    "patientId" TEXT NOT NULL,
+    "action" "PatientHistoryAction" NOT NULL,
+    "notes" TEXT,
+    "performedByUserId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "PatientHistory_pkey" PRIMARY KEY ("id")
+);
+
+DO $$ BEGIN
+  ALTER TABLE "PatientHistory"
+    ADD CONSTRAINT "PatientHistory_patientId_fkey"
+    FOREIGN KEY ("patientId") REFERENCES "Patient"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "PatientHistory"
+    ADD CONSTRAINT "PatientHistory_performedByUserId_fkey"
+    FOREIGN KEY ("performedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

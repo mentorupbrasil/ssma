@@ -407,7 +407,7 @@ export async function convertPreReferralWithOptions(
           phone: pre.whatsapp,
           whatsapp: pre.whatsapp,
           responsibleName: pre.responsibleName,
-          status: "ACTIVE",
+          status: "ATIVA",
         },
       });
     }
@@ -436,7 +436,7 @@ export async function convertPreReferralWithOptions(
           cpf,
           jobTitle: pre.employeeRole,
           companyId: company.id,
-          status: "ACTIVE",
+          status: "ATIVA",
         },
       });
     }

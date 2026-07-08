@@ -67,7 +67,7 @@ async function main() {
       city: "São Paulo",
       state: "SP",
       responsibleName: "João Silva",
-      status: "ACTIVE",
+      status: "ATIVA",
     },
   });
 
@@ -83,7 +83,7 @@ async function main() {
       city: "Guarulhos",
       state: "SP",
       responsibleName: "Ana Costa",
-      status: "ACTIVE",
+      status: "ATIVA",
     },
   });
 
@@ -113,7 +113,7 @@ async function main() {
       jobTitle: "Operador de máquinas",
       department: "Produção",
       companyId: company1.id,
-      status: "ACTIVE",
+      status: "ATIVO",
     },
   });
 
@@ -129,7 +129,7 @@ async function main() {
       jobTitle: "Auxiliar administrativo",
       department: "Administrativo",
       companyId: company2.id,
-      status: "ACTIVE",
+      status: "ATIVO",
     },
   });
 

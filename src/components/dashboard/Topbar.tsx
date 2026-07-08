@@ -14,7 +14,7 @@ export function Topbar({ userName }: TopbarProps) {
         <div className="relative hidden max-w-md flex-1 md:block">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
-            placeholder="Buscar encaminhamentos, empresas, pacientes..."
+            placeholder="Buscar encaminhamentos, empresas, colaboradores..."
             className="h-10 rounded-xl border-slate-200 bg-slate-50 pl-10 shadow-none focus:bg-white"
           />
         </div>

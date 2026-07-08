@@ -185,31 +185,67 @@ export const preReferralStatusSchema = z.enum([
 ]);
 
 export const companySchema = z.object({
-  legalName: z.string().min(2),
+  legalName: z.string().min(2, "Razão social obrigatória"),
   tradeName: z.string().optional(),
   cnpj: cnpjSchema,
-  email: z.string().email().optional().or(z.literal("")),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   phone: z.string().optional(),
-  whatsapp: z.string().optional(),
+  whatsapp: z.string().min(10, "WhatsApp obrigatório"),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
+  zipCode: z.string().optional(),
   responsibleName: z.string().optional(),
+  responsibleRole: z.string().optional(),
+  stateRegistration: z.string().optional(),
+  size: z.enum(["PEQUENA", "MEDIA", "GRANDE"]).optional(),
+  segment: z.string().optional(),
+  contractType: z.enum(["AVULSO", "MENSAL", "ANUAL", "EM_NEGOCIACAO"]).optional(),
+  portalEnabled: z.boolean().optional(),
+  status: z.enum(["ATIVA", "INATIVA", "PENDENTE", "BLOQUEADA"]).optional(),
   notes: z.string().optional(),
 });
 
+export const createCompanySchema = companySchema;
+
+export const updateCompanySchema = companySchema.partial().extend({
+  legalName: z.string().min(2).optional(),
+  cnpj: cnpjSchema.optional(),
+  whatsapp: z.string().min(10).optional(),
+});
+
+export const companyStatusSchema = z.enum(["ATIVA", "INATIVA", "PENDENTE", "BLOQUEADA"]);
+
+export const companyContactSchema = z.object({
+  type: z.enum(["SITE", "WHATSAPP", "TELEFONE", "EMAIL", "VISITA", "COMERCIAL", "OUTRO"]),
+  title: z.string().optional(),
+  notes: z.string().min(3, "Observação obrigatória"),
+});
+
 export const patientSchema = z.object({
-  fullName: z.string().min(2),
+  fullName: z.string().min(2, "Nome obrigatório"),
   cpf: cpfSchema,
   rg: z.string().optional(),
   birthDate: z.string().optional(),
   gender: z.string().optional(),
   phone: z.string().optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  companyId: z.string().optional(),
-  jobTitle: z.string().optional(),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
+  companyId: z.string().min(1, "Empresa obrigatória"),
+  jobTitle: z.string().min(1, "Função obrigatória"),
   department: z.string().optional(),
+  admissionDate: z.string().optional(),
+  nextPeriodicDate: z.string().optional(),
+  status: z.enum(["ATIVO", "INATIVO", "AFASTADO", "DESLIGADO", "PENDENTE"]).optional(),
   notes: z.string().optional(),
+});
+
+export const createCollaboratorSchema = patientSchema;
+
+export const updateCollaboratorSchema = patientSchema.partial().extend({
+  fullName: z.string().min(2).optional(),
+  cpf: cpfSchema.optional(),
+  jobTitle: z.string().min(1).optional(),
+  companyId: z.string().optional(),
 });
 
 export const userSchema = z.object({
@@ -248,6 +284,7 @@ export const leadStatusSchema = z.enum([
   "PROPOSTA_ENVIADA",
   "FECHADO",
   "PERDIDO",
+  "EXPIRADO",
 ]);
 
 export const appointmentStatusSchema = z.enum([

@@ -1,59 +1,134 @@
-import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Suspense } from "react";
+import type { CompanyStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { PageHeader } from "@/components/dashboard/PageHeader";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { DataTable } from "@/components/dashboard/DataTable";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCNPJ } from "@/lib/helpers";
+import { requireAuthSession } from "@/lib/page-auth";
+import {
+  buildCompanyWhere,
+  COMPANY_STAT_CARDS,
+  OPEN_REFERRAL_STATUSES,
+  PENDING_LEAD_STATUSES,
+  serializeCompanyListItem,
+} from "@/lib/companies";
+import { EmpresasClient } from "@/components/dashboard/companies/EmpresasClient";
+import { getCompanyCities } from "@/actions/companies";
+import { canEditCompanyCommercial } from "@/lib/companies";
+import { Loader2 } from "lucide-react";
 
-export default async function EmpresasPage() {
-  const companies = await prisma.company.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { patients: true, referrals: true } } },
-  });
+const PAGE_SIZE = 20;
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function getParam(params: Record<string, string | string[] | undefined>, key: string): string {
+  const value = params[key];
+  if (Array.isArray(value)) return value[0] ?? "";
+  return value ?? "";
+}
+
+async function EmpresasData({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const session = await requireAuthSession();
+
+  const filters = {
+    q: getParam(params, "q") || undefined,
+    status: getParam(params, "status") || undefined,
+    city: getParam(params, "city") || undefined,
+    size: getParam(params, "size") || undefined,
+    contractType: getParam(params, "contractType") || undefined,
+    pending: getParam(params, "pending") || undefined,
+    dateFrom: getParam(params, "dateFrom") || undefined,
+    dateTo: getParam(params, "dateTo") || undefined,
+  };
+
+  const page = Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1);
+  const where = buildCompanyWhere(filters);
+  const skip = (page - 1) * PAGE_SIZE;
+
+  const [total, companies, countResults, cities] = await Promise.all([
+    prisma.company.count({ where }),
+    prisma.company.findMany({
+      where,
+      include: {
+        _count: { select: { patients: true, referrals: true, documents: true } },
+        documents: { select: { status: true, validUntil: true }, take: 20 },
+        referrals: {
+          where: { status: { in: OPEN_REFERRAL_STATUSES } },
+          select: { id: true },
+        },
+      },
+      orderBy: { legalName: "asc" },
+      skip,
+      take: PAGE_SIZE,
+    }),
+    Promise.all(
+      COMPANY_STAT_CARDS.map(async (card) => {
+        if (card.filter === "ATIVA" || card.filter === "INATIVA") {
+          return {
+            key: card.key,
+            count: await prisma.company.count({
+              where: { status: card.filter as CompanyStatus },
+            }),
+          };
+        }
+        if (card.filter === "DOCS_PENDING") {
+          return {
+            key: card.key,
+            count: await prisma.company.count({
+              where: {
+                documents: { some: { status: { in: ["PENDENTE", "EM_ELABORACAO", "VENCIDO"] } } },
+              },
+            }),
+          };
+        }
+        if (card.filter === "REFERRALS_OPEN") {
+          return {
+            key: card.key,
+            count: await prisma.company.count({
+              where: { referrals: { some: { status: { in: OPEN_REFERRAL_STATUSES } } } },
+            }),
+          };
+        }
+        return {
+          key: card.key,
+          count: await prisma.company.count({
+            where: { leads: { some: { status: { in: PENDING_LEAD_STATUSES } } } },
+          }),
+        };
+      })
+    ),
+    getCompanyCities(),
+  ]);
+
+  const statCounts = Object.fromEntries(countResults.map((c) => [c.key, c.count]));
+  const items = companies.map(serializeCompanyListItem);
+
+  const canManage = session.user.role !== "VISUALIZADOR" && session.user.role !== "MEDICO";
+  const canCommercial = canEditCompanyCommercial(session.user.role);
 
   return (
-    <div>
-      <PageHeader title="Empresas" description="Gestão de empresas clientes">
-        <Link href="/dashboard/empresas/novo">
-          <Button variant="brand"><Plus className="mr-2 h-4 w-4" /> Nova empresa</Button>
-        </Link>
-      </PageHeader>
+    <EmpresasClient
+      initialItems={items}
+      initialTotal={total}
+      initialPage={page}
+      pageSize={PAGE_SIZE}
+      statCounts={statCounts}
+      cities={cities}
+      canManage={canManage}
+      canCommercial={canCommercial}
+      filters={filters}
+    />
+  );
+}
 
-      <DataTable>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Razão social</TableHead>
-              <TableHead>CNPJ</TableHead>
-              <TableHead>Responsável</TableHead>
-              <TableHead>Pacientes</TableHead>
-              <TableHead>Encaminhamentos</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {companies.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell>
-                  <Link href={`/dashboard/empresas/${c.id}`} className="font-medium text-[#0F3D4A] hover:underline">
-                    {c.tradeName ?? c.legalName}
-                  </Link>
-                </TableCell>
-                <TableCell>{formatCNPJ(c.cnpj)}</TableCell>
-                <TableCell>{c.responsibleName ?? "—"}</TableCell>
-                <TableCell>{c._count.patients}</TableCell>
-                <TableCell>{c._count.referrals}</TableCell>
-                <TableCell>
-                  <StatusBadge status={c.status === "ACTIVE" ? "CONCLUIDO" : "CANCELADO"} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </DataTable>
-    </div>
+export default function EmpresasPage({ searchParams }: { searchParams: SearchParams }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
+        </div>
+      }
+    >
+      <EmpresasData searchParams={searchParams} />
+    </Suspense>
   );
 }

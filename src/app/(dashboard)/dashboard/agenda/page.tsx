@@ -98,7 +98,7 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
             take: 200,
           }),
       prisma.patient.findMany({
-        where: companyScope ? { companyId: companyScope, status: "ACTIVE" } : { status: "ACTIVE" },
+        where: companyScope ? { companyId: companyScope, status: "ATIVO" } : { status: "ATIVO" },
         select: { id: true, fullName: true },
         orderBy: { fullName: "asc" },
         take: 300,

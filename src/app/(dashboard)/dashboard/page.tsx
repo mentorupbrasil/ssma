@@ -77,11 +77,11 @@ export default async function DashboardPage() {
       },
     }),
     canManageCompanies
-      ? prisma.company.count({ where: { status: "ACTIVE" } })
+      ? prisma.company.count({ where: { status: "ATIVA" } })
       : isEmpresa
         ? Promise.resolve(1)
         : Promise.resolve(0),
-    prisma.patient.count({ where: { ...companyFilter, status: "ACTIVE" } }),
+    prisma.patient.count({ where: { ...companyFilter, status: "ATIVO" } }),
     canViewLeads
       ? prisma.lead.count({ where: { status: { in: ["NOVO", "EM_CONTATO"] } } })
       : Promise.resolve(0),
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
       show: canManageCompanies || isEmpresa,
       href: isEmpresa ? undefined : "/dashboard/empresas",
     },
-    { title: "Pacientes", value: totalPatients, icon: Users, show: canManagePatients, href: "/dashboard/pacientes" },
+    { title: "Colaboradores", value: totalPatients, icon: Users, show: canManagePatients, href: "/dashboard/colaboradores" },
     { title: "Orçamentos pendentes", value: pendingLeads, icon: DollarSign, show: canViewLeads, href: "/dashboard/orcamentos" },
     { title: "Documentos pendentes", value: pendingDocs, icon: FolderOpen, show: canViewDocs, href: "/dashboard/documentos" },
     { title: "Concluídos no mês", value: completedReferrals, icon: CheckCircle2, show: true, href: "/dashboard/encaminhamentos?status=CONCLUIDO" },
@@ -243,9 +243,9 @@ export default async function DashboardPage() {
           </Link>
         )}
         {canManagePatients && (
-          <Link href="/dashboard/pacientes/novo">
+          <Link href="/dashboard/colaboradores?new=1">
             <Button variant="outline" size="sm">
-              Novo paciente
+              Novo colaborador
             </Button>
           </Link>
         )}

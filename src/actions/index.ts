@@ -87,7 +87,7 @@ export async function submitReferral(
           email: d.companyEmail,
           phone: d.companyPhone,
           responsibleName: d.authorizerName,
-          status: "ACTIVE",
+          status: "ATIVA",
         },
       });
     }
@@ -108,7 +108,7 @@ export async function submitReferral(
           jobTitle: d.jobTitle,
           department: d.department,
           companyId: company.id,
-          status: "ACTIVE",
+          status: "ATIVA",
         },
       });
     } else {
@@ -424,89 +424,13 @@ export async function updateLeadStatus(id: string, status: string): Promise<Acti
 }
 
 export async function createCompany(data: unknown): Promise<ActionResult<{ id: string }>> {
-  const parsed = companySchema.safeParse(data);
-  if (!parsed.success) {
-    return { success: false, error: "Dados inválidos. Verifique o formulário." };
-  }
-
-  try {
-    const session = await requirePermission("companies.manage");
-
-    const company = await prisma.company.create({
-      data: {
-        ...parsed.data,
-        cnpj: parsed.data.cnpj,
-        status: "ACTIVE",
-      },
-    });
-
-    await createAuditLog({
-      userId: session.user.id,
-      action: "CREATE",
-      entity: "Company",
-      entityId: company.id,
-    });
-
-    revalidatePath("/dashboard/empresas");
-    return { success: true, id: company.id };
-  } catch (error) {
-    if (isPrismaUniqueError(error)) {
-      return { success: false, error: "CNPJ já cadastrado." };
-    }
-    return { success: false, error: actionError(error, "Erro ao cadastrar empresa.") };
-  }
+  const { createCompanyFull } = await import("@/actions/companies");
+  return createCompanyFull(data);
 }
 
 export async function createPatient(data: unknown): Promise<ActionResult<{ id: string }>> {
-  const parsed = patientSchema.safeParse(data);
-  if (!parsed.success) {
-    return { success: false, error: "Dados inválidos. Verifique o formulário." };
-  }
-
-  try {
-    const session = await requirePermission("patients.manage");
-    const d = parsed.data;
-
-    let companyId = d.companyId || undefined;
-    if (isEmpresaUser(session)) {
-      if (!session.user.companyId) {
-        return { success: false, error: "Usuário empresa sem vínculo. Contate o suporte." };
-      }
-      companyId = session.user.companyId;
-    }
-
-    const patient = await prisma.patient.create({
-      data: {
-        fullName: d.fullName,
-        cpf: d.cpf,
-        rg: d.rg,
-        birthDate: d.birthDate ? new Date(d.birthDate) : undefined,
-        gender: d.gender,
-        phone: d.phone,
-        email: d.email || undefined,
-        companyId,
-        jobTitle: d.jobTitle,
-        department: d.department,
-        notes: d.notes,
-        status: "ACTIVE",
-      },
-    });
-
-    await createAuditLog({
-      userId: session.user.id,
-      action: "CREATE",
-      entity: "Patient",
-      entityId: patient.id,
-    });
-
-    revalidatePath("/dashboard/pacientes");
-    return { success: true, id: patient.id };
-  } catch (error) {
-    if (isPrismaUniqueError(error)) {
-      return { success: false, error: "CPF já cadastrado." };
-    }
-    return { success: false, error: actionError(error, "Erro ao cadastrar paciente.") };
-  }
+  const { createCollaboratorFull } = await import("@/actions/collaborators");
+  return createCollaboratorFull(data);
 }
 
 export async function createAppointment(data: unknown): Promise<ActionResult<{ id: string }>> {
@@ -556,15 +480,15 @@ export async function getAppointmentFormData() {
 
     const [patients, companies, referrals] = await Promise.all([
       prisma.patient.findMany({
-        where: { ...companyFilter, status: "ACTIVE" },
+        where: { ...companyFilter, status: "ATIVO" },
         select: { id: true, fullName: true, companyId: true },
         orderBy: { fullName: "asc" },
         take: 200,
       }),
       prisma.company.findMany({
         where: companyFilter.companyId
-          ? { id: companyFilter.companyId, status: "ACTIVE" }
-          : { status: "ACTIVE" },
+          ? { id: companyFilter.companyId, status: "ATIVA" }
+          : { status: "ATIVA" },
         select: { id: true, legalName: true, tradeName: true },
         orderBy: { legalName: "asc" },
         take: 200,
