@@ -17,7 +17,7 @@ export default async function SuperAdminPage() {
     redirect("/login");
   }
 
-  const [clinics, clinicCount, userCount, activeClinics] = await Promise.all([
+  const [clinics, clinicCount, userCount, activeClinics, openTickets] = await Promise.all([
     prisma.clinic.findMany({
       orderBy: { createdAt: "desc" },
       take: 10,
@@ -28,6 +28,9 @@ export default async function SuperAdminPage() {
     prisma.clinic.count(),
     prisma.user.count({ where: { role: { not: "SUPER_ADMIN" } } }),
     prisma.clinic.count({ where: { status: "ATIVA" } }),
+    prisma.ticket.count({
+      where: { scope: "SAAS", status: { in: ["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_CLIENTE"] } },
+    }),
   ]);
 
   return (
@@ -41,7 +44,7 @@ export default async function SuperAdminPage() {
         <StatCard title="Clínicas" value={clinicCount} icon={Building2} />
         <StatCard title="Clínicas ativas" value={activeClinics} icon={Building2} />
         <StatCard title="Usuários" value={userCount} icon={Users} />
-        <StatCard title="Chamados abertos" value={0} icon={LifeBuoy} />
+        <StatCard title="Chamados abertos" value={openTickets} icon={LifeBuoy} />
       </div>
 
       <Card className="mt-8">

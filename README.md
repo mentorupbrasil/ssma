@@ -22,10 +22,11 @@ Plataforma completa com **site institucional premium** + **painel interno** para
 - Política de privacidade e termos (LGPD)
 
 ### Painel `/dashboard`
-- Login com perfis: ADMIN, RECEPCAO, MEDICO, TECNICO, FINANCEIRO, EMPRESA, VISUALIZADOR
-- Dashboard com indicadores reais
-- CRUD: empresas, pacientes, encaminhamentos
-- Agenda, exames, orçamentos/leads, documentos, usuários, configurações, auditoria
+- Login com perfis (clínica, comercial, financeiro, empresa/RH, etc.)
+- Módulos operacionais: empresas, colaboradores, pré-encaminhamentos, encaminhamentos, agenda, documentos, exames
+- Gestão: fechamento mensal, financeiro, orçamentos, tarefas, chamados, assistente SST
+- Sistema: usuários (CRUD), configurações, conteúdo/blog, auditoria
+- Super Admin: clínicas, chamados SaaS, configurações globais
 
 ## Instalação
 
@@ -67,7 +68,11 @@ No painel Vercel → **Settings → Environment Variables**, adicione:
 |----------|--------|
 | `DATABASE_URL` | Connection string do Neon PostgreSQL |
 | `AUTH_SECRET` | String aleatória segura (`openssl rand -base64 32`) |
-| `NEXTAUTH_URL` | URL do site (ex: `https://ssma.vercel.app`) |
+| `AUTH_TRUST_HOST` | `true` |
+| `AUTH_URL` / `NEXTAUTH_URL` | URL do site (ex: `https://ssma.vercel.app`) |
+| `DIRECT_URL` | (Neon) URL direta para migrations |
+| `RESEND_API_KEY` | (Opcional) Envio de e-mails |
+| `BLOB_READ_WRITE_TOKEN` | (Opcional) Storage de documentos na Vercel |
 
 Marque todas para **Production**, **Preview** e **Development**.
 

@@ -1,19 +1,17 @@
-import { ModulePlaceholder } from "@/components/dashboard/ModulePlaceholder";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { scopedWhere } from "@/lib/scoped-db";
+import { FechamentoClient } from "@/components/dashboard/closings/FechamentoClient";
 
 export const metadata = { title: "Fechamento mensal" };
 
-export default function FechamentoMensalPage() {
-  return (
-    <ModulePlaceholder
-      title="Fechamento mensal"
-      description="Feche atendimentos por empresa, importe planilhas do sistema clínico atual, aplique tabela de preços e controle notas e pagamentos."
-      phase={3}
-      features={[
-        "Importação de CSV/XLSX do sistema clínico",
-        "Cálculo automático com tabela de preços",
-        "Relatório/PDF de fechamento",
-        "Controle de nota fiscal e pagamento",
-      ]}
-    />
-  );
+export default async function FechamentoMensalPage() {
+  const session = await auth();
+  const where = session?.user ? scopedWhere({ user: session.user as never }) : {};
+  const items = await prisma.monthlyClosing.findMany({
+    where,
+    orderBy: { referenceMonth: "desc" },
+    include: { company: { select: { tradeName: true, legalName: true } } },
+  });
+  return <FechamentoClient items={items} />;
 }

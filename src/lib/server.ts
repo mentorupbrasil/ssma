@@ -23,14 +23,17 @@ export async function createAuditLog(params: {
   }
 
   let userId = params.userId;
+  let clinicId: string | undefined;
   if (!userId) {
     const session = await auth();
     userId = session?.user?.id;
+    clinicId = session?.user?.clinicId ?? undefined;
   }
 
   await prisma.auditLog.create({
     data: {
       userId,
+      clinicId,
       action: params.action,
       entity: params.entity,
       entityId: params.entityId,

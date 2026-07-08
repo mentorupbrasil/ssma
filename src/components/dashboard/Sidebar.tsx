@@ -22,6 +22,7 @@ import {
   LifeBuoy,
   Sparkles,
   CalendarDays,
+  Newspaper,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/types/roles";
@@ -50,6 +51,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   LifeBuoy,
   Sparkles,
   CalendarDays,
+  Newspaper,
 };
 
 const NAV_SECTIONS = [
@@ -82,7 +84,7 @@ const NAV_SECTIONS = [
   },
   {
     label: "Sistema",
-    hrefs: ["/dashboard/usuarios", "/dashboard/configuracoes", "/dashboard/auditoria"],
+    hrefs: ["/dashboard/usuarios", "/dashboard/configuracoes", "/dashboard/conteudo", "/dashboard/auditoria"],
   },
 ] as const;
 

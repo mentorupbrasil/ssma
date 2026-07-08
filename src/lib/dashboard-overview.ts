@@ -69,6 +69,10 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
     recentPreReferrals,
     pendingDocList,
     negotiatingQuotes,
+    openClosings,
+    overduePayments,
+    openTickets,
+    tasksToday,
   ] = await Promise.all([
     !isEmpresa
       ? prisma.publicReferralRequest.count({
@@ -157,6 +161,37 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           },
         })
       : Promise.resolve([]),
+    !isEmpresa
+      ? prisma.monthlyClosing.count({
+          where: { ...clinicWhere, status: { in: ["RASCUNHO", "EM_REVISAO"] } },
+        })
+      : Promise.resolve(0),
+    !isEmpresa
+      ? prisma.financialEntry.count({
+          where: {
+            ...clinicWhere,
+            type: "PAGAR",
+            status: { in: ["PENDENTE", "ATRASADO", "PARCIAL"] },
+            dueDate: { lt: now },
+          },
+        })
+      : Promise.resolve(0),
+    prisma.ticket.count({
+      where: {
+        ...clinicWhere,
+        scope: "CLINIC",
+        status: { in: ["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_CLIENTE"] },
+      },
+    }),
+    !isEmpresa
+      ? prisma.task.count({
+          where: {
+            ...clinicWhere,
+            status: { notIn: ["CONCLUIDA", "CANCELADA"] },
+            dueDate: { gte: todayStart, lte: todayEnd },
+          },
+        })
+      : Promise.resolve(0),
   ]);
 
   const stats = [
@@ -191,28 +226,28 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
     {
       key: "closings_open",
       title: "Fechamentos em aberto",
-      value: 0,
+      value: openClosings,
       href: "/dashboard/fechamento-mensal",
       show: !isEmpresa,
     },
     {
       key: "payments_overdue",
       title: "Pagamentos em atraso",
-      value: 0,
+      value: overduePayments,
       href: "/dashboard/financeiro",
       show: !isEmpresa,
     },
     {
       key: "tickets_open",
       title: "Chamados abertos",
-      value: 0,
+      value: openTickets,
       href: "/dashboard/chamados",
       show: true,
     },
     {
       key: "tasks_today",
       title: "Tarefas de hoje",
-      value: 0,
+      value: tasksToday,
       href: "/dashboard/tarefas",
       show: !isEmpresa,
     },

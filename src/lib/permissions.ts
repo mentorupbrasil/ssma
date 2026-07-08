@@ -163,6 +163,7 @@ export function canAccessRoute(role: UserRole, pathname: string): boolean {
     { prefix: "/dashboard/exames", permission: "exams.view" },
     { prefix: "/dashboard/usuarios", permission: "users.manage" },
     { prefix: "/dashboard/configuracoes", permission: "settings.manage" },
+    { prefix: "/dashboard/conteudo", permission: "settings.manage" },
     { prefix: "/dashboard/auditoria", permission: "audit.view" },
   ];
 
@@ -188,6 +189,7 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard/exames", label: "Exames e preparos", icon: "Stethoscope", permission: "exams.view" as Permission },
   { href: "/dashboard/usuarios", label: "Usuários", icon: "UserCog", permission: "users.manage" as Permission },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: "Settings", permission: "settings.manage" as Permission },
+  { href: "/dashboard/conteudo", label: "Conteúdo", icon: "Newspaper", permission: "settings.manage" as Permission },
   { href: "/dashboard/auditoria", label: "Auditoria", icon: "Shield", permission: "audit.view" as Permission },
 ];
 

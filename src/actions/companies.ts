@@ -9,6 +9,7 @@ import {
   actionError,
   isPrismaUniqueError,
 } from "@/lib/authz";
+import { resolveClinicId, withClinicId } from "@/lib/scoped-db";
 import { createAuditLog } from "@/lib/server";
 import {
   OPEN_REFERRAL_STATUSES,
@@ -260,6 +261,7 @@ export async function createCompanyFull(data: unknown): Promise<ActionResult<{ i
 
   try {
     const session = await requirePermission("companies.manage");
+    const clinicId = await resolveClinicId(session);
     const d = parsed.data;
 
     const existing = await prisma.company.findUnique({
@@ -271,7 +273,8 @@ export async function createCompanyFull(data: unknown): Promise<ActionResult<{ i
 
     const company = await prisma.$transaction(async (tx) => {
       const created = await tx.company.create({
-        data: {
+        data: withClinicId(
+          {
           legalName: d.legalName.trim(),
           tradeName: d.tradeName?.trim() || null,
           cnpj: d.cnpj.replace(/\D/g, ""),
@@ -292,6 +295,8 @@ export async function createCompanyFull(data: unknown): Promise<ActionResult<{ i
           status: d.status ?? "ATIVA",
           notes: d.notes?.trim() || null,
         },
+        clinicId
+        ),
       });
 
       await tx.companyHistory.create({

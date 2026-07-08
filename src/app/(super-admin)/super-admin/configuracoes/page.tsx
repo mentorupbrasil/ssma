@@ -1,18 +1,13 @@
-import { ModulePlaceholder } from "@/components/dashboard/ModulePlaceholder";
+import { prisma } from "@/lib/prisma";
+import { SuperAdminConfigClient } from "@/components/dashboard/clinics/SuperAdminConfigClient";
 
-export const metadata = { title: "Configurações globais" };
+export const metadata = { title: "Configurações SaaS" };
 
-export default function SuperAdminConfigPage() {
-  return (
-    <ModulePlaceholder
-      title="Configurações globais"
-      description="Parâmetros globais do SaaS, planos e integrações."
-      phase={6}
-      features={[
-        "Planos e assinaturas",
-        "Configurações de IA",
-        "Logs técnicos",
-      ]}
-    />
-  );
+export default async function SuperAdminConfigPage() {
+  const settings = await prisma.setting.findMany({
+    where: { clinicId: null },
+    orderBy: { key: "asc" },
+    select: { key: true, value: true },
+  });
+  return <SuperAdminConfigClient settings={settings} />;
 }

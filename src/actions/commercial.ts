@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { sendEmail } from "@/lib/email";
 import { revalidatePath } from "next/cache";
 import type {
   CommercialEntityType,
@@ -756,10 +757,16 @@ export async function recordWhatsAppOpened(
 
 export async function recordEmailSent(
   entityType: CommercialEntityType,
-  entityId: string
+  entityId: string,
+  toEmail?: string,
+  subject?: string,
+  body?: string
 ): Promise<ActionResult> {
   try {
     const session = await requirePermission("leads.manage");
+    if (toEmail && subject && body) {
+      await sendEmail({ to: toEmail, subject, html: body });
+    }
     await recordHistory(entityType, entityId, "EMAIL_SENT", session.user.id);
     revalidatePath("/dashboard/orcamentos");
     return { success: true };

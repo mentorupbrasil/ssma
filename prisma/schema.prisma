@@ -69,6 +69,12 @@ model Clinic {
   exams           Exam[]
   auditLogs       AuditLog[]
   contactMessages ContactMessage[]
+  tasks           Task[]
+  tickets         Ticket[]
+  financialEntries FinancialEntry[]
+  monthlyClosings MonthlyClosing[]
+  blogPosts       BlogPost[]
+  settings        Setting[]
 }
 
 enum CompanyStatus {
@@ -423,6 +429,11 @@ model User {
   documentAccessLogs DocumentAccessLog[]
   auditLogs      AuditLog[]
   notifications  Notification[]
+  assignedTasks  Task[]              @relation("AssignedTasks")
+  createdTasks   Task[]              @relation("CreatedTasks")
+  createdTickets Ticket[]            @relation("TicketCreatedBy")
+  assignedTickets Ticket[]           @relation("TicketAssignedTo")
+  createdClosings MonthlyClosing[]   @relation("ClosingCreatedBy")
 }
 
 model Company {
@@ -459,6 +470,10 @@ model Company {
   quotes            Quote[]
   contacts          CompanyContact[]
   history           CompanyHistory[]
+  tasks             Task[]
+  tickets           Ticket[]
+  financialEntries  FinancialEntry[]
+  monthlyClosings   MonthlyClosing[]
 }
 
 model CompanyContact {
@@ -882,8 +897,137 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
+enum TaskStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
+}
+
+enum TaskPriority {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+enum TicketStatus {
+  ABERTO
+  EM_ATENDIMENTO
+  AGUARDANDO_CLIENTE
+  RESOLVIDO
+  FECHADO
+}
+
+enum TicketPriority {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum TicketScope {
+  CLINIC
+  SAAS
+}
+
+enum FinancialEntryType {
+  RECEBER
+  PAGAR
+}
+
+enum FinancialEntryStatus {
+  PENDENTE
+  PARCIAL
+  PAGO
+  ATRASADO
+  CANCELADO
+}
+
+enum MonthlyClosingStatus {
+  RASCUNHO
+  EM_REVISAO
+  FECHADO
+  FATURADO
+}
+
+model Task {
+  id                String       @id @default(cuid())
+  clinicId          String?
+  clinic            Clinic?      @relation(fields: [clinicId], references: [id])
+  title             String
+  description       String?
+  status            TaskStatus   @default(PENDENTE)
+  priority          TaskPriority @default(MEDIA)
+  dueDate           DateTime?
+  assignedToUserId  String?
+  assignedTo        User?        @relation("AssignedTasks", fields: [assignedToUserId], references: [id])
+  createdByUserId   String
+  createdBy         User         @relation("CreatedTasks", fields: [createdByUserId], references: [id])
+  companyId         String?
+  company           Company?     @relation(fields: [companyId], references: [id])
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Ticket {
+  id                String         @id @default(cuid())
+  clinicId          String?
+  clinic            Clinic?        @relation(fields: [clinicId], references: [id])
+  scope             TicketScope    @default(CLINIC)
+  subject           String
+  description       String
+  status            TicketStatus   @default(ABERTO)
+  priority          TicketPriority @default(MEDIA)
+  createdByUserId   String
+  createdBy         User           @relation("TicketCreatedBy", fields: [createdByUserId], references: [id])
+  assignedToUserId  String?
+  assignedTo        User?          @relation("TicketAssignedTo", fields: [assignedToUserId], references: [id])
+  companyId         String?
+  company           Company?       @relation(fields: [companyId], references: [id])
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model MonthlyClosing {
+  id              String               @id @default(cuid())
+  clinicId        String?
+  clinic          Clinic?              @relation(fields: [clinicId], references: [id])
+  referenceMonth  DateTime
+  status          MonthlyClosingStatus @default(RASCUNHO)
+  totalAmount     Float?
+  notes           String?
+  companyId       String?
+  company         Company?             @relation(fields: [companyId], references: [id])
+  createdByUserId String
+  createdBy       User                 @relation("ClosingCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  entries         FinancialEntry[]
+}
+
+model FinancialEntry {
+  id              String               @id @default(cuid())
+  clinicId        String?
+  clinic          Clinic?              @relation(fields: [clinicId], references: [id])
+  type            FinancialEntryType
+  description     String
+  amount          Float
+  dueDate         DateTime
+  paidAt          DateTime?
+  status          FinancialEntryStatus @default(PENDENTE)
+  category        String?
+  companyId       String?
+  company         Company?             @relation(fields: [companyId], references: [id])
+  closingId       String?
+  closing         MonthlyClosing?      @relation(fields: [closingId], references: [id])
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+}
+
 model BlogPost {
   id          String   @id @default(cuid())
+  clinicId    String?
+  clinic      Clinic?  @relation(fields: [clinicId], references: [id])
   title       String
   slug        String   @unique
   excerpt     String
@@ -897,9 +1041,13 @@ model BlogPost {
 
 model Setting {
   id        String   @id @default(cuid())
-  key       String   @unique
+  clinicId  String?
+  clinic    Clinic?  @relation(fields: [clinicId], references: [id])
+  key       String
   value     String
   updatedAt DateTime @updatedAt
+
+  @@unique([clinicId, key])
 }
 
 model PublicReferralRequest {

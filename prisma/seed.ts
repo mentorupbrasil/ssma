@@ -399,9 +399,9 @@ async function main() {
 
   for (const s of settings) {
     await prisma.setting.upsert({
-      where: { key: s.key },
+      where: { clinicId_key: { clinicId: DEFAULT_CLINIC_ID, key: s.key } },
       update: { value: s.value },
-      create: s,
+      create: { ...s, clinicId: DEFAULT_CLINIC_ID },
     });
   }
 

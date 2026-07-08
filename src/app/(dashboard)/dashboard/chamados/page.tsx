@@ -1,19 +1,19 @@
-import { ModulePlaceholder } from "@/components/dashboard/ModulePlaceholder";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { scopedWhere } from "@/lib/scoped-db";
+import { ChamadosClient } from "@/components/dashboard/tickets/ChamadosClient";
 
 export const metadata = { title: "Chamados" };
 
-export default function ChamadosPage() {
-  return (
-    <ModulePlaceholder
-      title="Chamados"
-      description="Centralize solicitações das empresas/RH e suporte interno, com histórico e responsáveis."
-      phase={5}
-      features={[
-        "Chamados da empresa para a clínica",
-        "Segunda via de ASO e suporte ao portal",
-        "Prioridade e status de atendimento",
-        "Comentários e anexos",
-      ]}
-    />
-  );
+export default async function ChamadosPage() {
+  const session = await auth();
+  const where = session?.user
+    ? { ...scopedWhere({ user: session.user as never }), scope: "CLINIC" as const }
+    : { scope: "CLINIC" as const };
+  const items = await prisma.ticket.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    include: { createdBy: { select: { name: true } } },
+  });
+  return <ChamadosClient items={items} />;
 }

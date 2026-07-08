@@ -1,19 +1,12 @@
-import { ModulePlaceholder } from "@/components/dashboard/ModulePlaceholder";
+import { prisma } from "@/lib/prisma";
+import { ClinicasClient } from "@/components/dashboard/clinics/ClinicasClient";
 
 export const metadata = { title: "Clínicas" };
 
-export default function SuperAdminClinicasPage() {
-  return (
-    <ModulePlaceholder
-      title="Clínicas"
-      description="Gerencie clínicas clientes, planos, status de assinatura e uso do sistema."
-      phase={6}
-      features={[
-        "Listagem de todas as clínicas",
-        "Status: Ativa, Trial, Suspensa",
-        "Planos e limites",
-        "Métricas de uso por clínica",
-      ]}
-    />
-  );
+export default async function ClinicasPage() {
+  const clinics = await prisma.clinic.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { companies: true, users: true } } },
+  });
+  return <ClinicasClient clinics={clinics} />;
 }

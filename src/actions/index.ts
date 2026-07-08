@@ -14,6 +14,7 @@ import {
   appointmentSchema,
 } from "@/schemas";
 import { createAuditLog, generateProtocol } from "@/lib/server";
+import { resolvePublicClinicId } from "@/lib/scoped-db";
 import { isQuoteRequestSubject } from "@/lib/commercial";
 import { ExamCategory } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -219,10 +220,12 @@ export async function submitPreReferral(
 
   try {
     const protocol = await generateProtocol();
+    const clinicId = await resolvePublicClinicId();
 
     const created = await prisma.publicReferralRequest.create({
       data: {
         protocol,
+        clinicId,
         companyName: d.companyName,
         companyDocument: normalizeDocument(d.companyDocument),
         responsibleName: d.responsibleName,
@@ -302,8 +305,10 @@ export async function submitContactMessage(data: unknown): Promise<ActionResult>
   }
 
   try {
+    const clinicId = await resolvePublicClinicId();
     const contact = await prisma.contactMessage.create({
       data: {
+        clinicId,
         name: d.name,
         email,
         phone: d.phone,
@@ -320,6 +325,7 @@ export async function submitContactMessage(data: unknown): Promise<ActionResult>
     if (isQuoteRequestSubject(d.subject)) {
       const lead = await prisma.lead.create({
         data: {
+          clinicId,
           type: "ORCAMENTO",
           status: "NOVO",
           name: d.name,

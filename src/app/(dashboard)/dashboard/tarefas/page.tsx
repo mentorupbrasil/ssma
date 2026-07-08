@@ -1,19 +1,24 @@
-import { ModulePlaceholder } from "@/components/dashboard/ModulePlaceholder";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { scopedWhere } from "@/lib/scoped-db";
+import { TarefasClient } from "@/components/dashboard/tasks/TarefasClient";
 
-export const metadata = { title: "Tarefas e programação" };
+export const metadata = { title: "Tarefas" };
 
-export default function TarefasPage() {
-  return (
-    <ModulePlaceholder
-      title="Tarefas e programação"
-      description="Organize visitas técnicas, emissão de documentos, retornos comerciais e programação da equipe SST."
-      phase={5}
-      features={[
-        "Lista, Kanban e calendário",
-        "Vínculo com empresa, documento e chamado",
-        "Prioridades e alertas de vencimento",
-        "Checklist e comentários internos",
-      ]}
-    />
-  );
+export default async function TarefasPage() {
+  const session = await auth();
+  const where = session?.user ? scopedWhere({ user: session.user as never }) : {};
+  const [items, users] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
+      include: { assignedTo: { select: { name: true } } },
+    }),
+    prisma.user.findMany({
+      where: { status: "ACTIVE", role: { not: "SUPER_ADMIN" } },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+  return <TarefasClient items={items} users={users} />;
 }
