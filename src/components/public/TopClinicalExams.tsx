@@ -11,14 +11,14 @@ export function TopClinicalExams() {
         <SectionTitle
           eyebrow="Mais solicitados"
           title="Exames clínicos ocupacionais"
-          description="Essenciais para cumprir a legislação e proteger a saúde dos colaboradores."
+          description="Essenciais para admissões, acompanhamento periódico, desligamentos e retorno ao trabalho com conformidade legal."
           className="clinical-exams-title"
         />
 
         <div className="clinical-exams-grid">
           {CLINICAL_EXAM_TYPES.map((exam) => (
             <div key={exam.type} className="clinical-exam-card group">
-              {exam.highlight && <span className="clinical-exam-badge-top">Top 1</span>}
+              {exam.highlight && <span className="clinical-exam-badge-top">TOP 1</span>}
               <span className="clinical-exam-badge-required">{exam.badge}</span>
               <h3 className="clinical-exam-card-title">{exam.label}</h3>
               <p className="clinical-exam-card-desc">{exam.description}</p>
@@ -33,7 +33,7 @@ export function TopClinicalExams() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/exames">
+          <Link href="#preparo-por-exame">
             <Button variant="outline" size="lg" className="rounded-xl">
               Ver preparo de exames
             </Button>

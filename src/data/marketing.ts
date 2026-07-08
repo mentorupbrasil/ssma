@@ -57,35 +57,39 @@ export const CLINICAL_EXAM_TYPES = [
   {
     type: "ADMISSIONAL",
     label: "Admissional",
-    description: "Antes do início das atividades laborais.",
+    description:
+      "Avaliação clínica antes do início das atividades, conforme NR-7 e PCMSO da empresa.",
     badge: "Obrigatório",
     highlight: true,
   },
   {
     type: "PERIODICO",
     label: "Periódico",
-    description: "Acompanhamento regular da saúde ocupacional.",
+    description:
+      "Acompanhamento periódico da saúde do colaborador conforme riscos, função e PCMSO.",
     badge: "Obrigatório",
     highlight: false,
   },
   {
     type: "DEMISSIONAL",
     label: "Demissional",
-    description: "No desligamento do colaborador.",
+    description: "Exame clínico no encerramento do vínculo empregatício, com emissão do ASO.",
     badge: "Obrigatório",
     highlight: false,
   },
   {
     type: "RETORNO_TRABALHO",
     label: "Retorno ao trabalho",
-    description: "Após afastamento por doença ou acidente.",
+    description:
+      "Avaliação após afastamento por doença, acidente ou licença, com emissão do ASO de retorno.",
     badge: "Obrigatório",
     highlight: false,
   },
   {
     type: "MUDANCA_FUNCAO",
     label: "Mudança de função",
-    description: "Quando há alteração de riscos ou atividades.",
+    description:
+      "Avaliação quando há alteração de função, setor, riscos ou atividades do colaborador.",
     badge: "Obrigatório",
     highlight: false,
   },

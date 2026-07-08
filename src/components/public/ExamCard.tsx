@@ -1,60 +1,62 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Share2 } from "lucide-react";
-import { EXAM_CATEGORY_LABELS } from "@/types";
+import { Clock3, Share2 } from "lucide-react";
+import type { ExamGuide } from "@/data/exams";
+import { buildWhatsAppShareMessage, DISPLAY_CATEGORY_LABELS } from "@/lib/exam-preparation";
 import { whatsappLink } from "@/lib/helpers";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ExamCardProps = {
-  name: string;
-  category: string;
-  preparation: string;
-  deliveryTime: string;
-  notes?: string | null;
+  exam: ExamGuide;
+  onViewPreparation: (exam: ExamGuide) => void;
+  className?: string;
 };
 
-export function ExamCard({ name, category, preparation, deliveryTime, notes }: ExamCardProps) {
+export function ExamCard({ exam, onViewPreparation, className }: ExamCardProps) {
   const share = () => {
-    const message = `Preparo para ${name}:\n${preparation}\nPrazo: ${deliveryTime}`;
-    window.open(whatsappLink(message), "_blank");
+    window.open(whatsappLink(buildWhatsAppShareMessage(exam)), "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div className="page-feature-card group flex h-full flex-col">
-      <div className="mb-2 flex items-start justify-between gap-2">
-        <h3 className="page-feature-card-title text-base">{name}</h3>
-        <Badge
-          variant="secondary"
-          className="shrink-0 border border-emerald-200/60 bg-emerald-50 text-[var(--brand-navy)]"
+    <article className={cn("exam-prep-card group", className)}>
+      <div className="exam-prep-card-top">
+        <h3 className="exam-prep-card-title">{exam.name}</h3>
+        <span className="exam-prep-card-category">
+          {DISPLAY_CATEGORY_LABELS[exam.displayCategory]}
+        </span>
+      </div>
+
+      <p className="exam-prep-card-summary">{exam.preparationSummary}</p>
+
+      <div className="exam-prep-card-meta">
+        <div className="exam-prep-card-meta-item">
+          <Clock3 className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
+          <span>{exam.deliveryTime}</span>
+        </div>
+      </div>
+
+      {exam.notes && <p className="exam-prep-card-note">{exam.notes}</p>}
+
+      <div className="exam-prep-card-actions">
+        <Button
+          size="sm"
+          variant="brand"
+          className="exam-prep-card-btn w-full rounded-lg"
+          onClick={() => onViewPreparation(exam)}
         >
-          {EXAM_CATEGORY_LABELS[category] ?? category}
-        </Badge>
+          Ver preparo
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="exam-prep-card-btn w-full rounded-lg"
+          onClick={share}
+        >
+          <Share2 className="mr-2 h-3.5 w-3.5" />
+          Compartilhar
+        </Button>
       </div>
-      <div className="space-y-2.5 text-sm text-slate-600">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Preparo</p>
-          <p className="mt-0.5 leading-relaxed">{preparation}</p>
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Prazo de entrega
-          </p>
-          <p className="mt-0.5">{deliveryTime}</p>
-        </div>
-        {notes && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Observações
-            </p>
-            <p className="mt-0.5 leading-relaxed">{notes}</p>
-          </div>
-        )}
-      </div>
-      <Button size="sm" variant="outline" onClick={share} className="mt-4 w-full rounded-lg">
-        <Share2 className="mr-2 h-4 w-4" />
-        Compartilhar no WhatsApp
-      </Button>
-    </div>
+    </article>
   );
 }

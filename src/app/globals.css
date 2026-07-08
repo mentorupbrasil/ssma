@@ -735,16 +735,381 @@
   }
 
   .exam-catalog-panel {
-    border-radius: 0.875rem;
+    border-radius: 1rem;
     border: 1px solid rgb(226 232 240 / 0.95);
     background: rgb(255 255 255);
-    padding: 1.15rem;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+    padding: 1.25rem;
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 0.04),
+      0 8px 24px rgb(15 23 42 / 0.04);
   }
 
   @media (min-width: 640px) {
     .exam-catalog-panel {
-      padding: 1.35rem;
+      padding: 1.5rem;
+    }
+  }
+
+  .exams-page-hero .container-page {
+    padding-bottom: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .exams-page-hero .container-page {
+      padding-bottom: 2.25rem;
+    }
+  }
+
+  .exams-prep-section {
+    padding-top: 2.5rem;
+    padding-bottom: 2.75rem;
+  }
+
+  @media (min-width: 768px) {
+    .exams-prep-section {
+      padding-top: 2.75rem;
+      padding-bottom: 3rem;
+    }
+  }
+
+  .exams-prep-section-title h2 {
+    letter-spacing: -0.02em;
+  }
+
+  .exam-catalog-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .exam-catalog-search {
+    height: 2.75rem;
+    font-size: 0.9375rem;
+  }
+
+  .exam-catalog-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+    scrollbar-width: none;
+  }
+
+  .exam-catalog-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .exam-catalog-filter-chip {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    border: 1px solid rgb(226 232 240);
+    background: rgb(248 250 252 / 0.9);
+    padding: 0.42rem 0.85rem;
+    font-size: 0.78125rem;
+    font-weight: 600;
+    color: rgb(71 85 105);
+    transition:
+      border-color 0.2s ease,
+      background 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .exam-catalog-filter-chip:hover {
+    border-color: rgb(22 160 133 / 0.25);
+    color: var(--brand-navy);
+  }
+
+  .exam-catalog-filter-chip--active {
+    border-color: rgb(22 160 133 / 0.35);
+    background: rgb(236 253 245 / 0.85);
+    color: rgb(4 100 70);
+    box-shadow: 0 1px 2px rgb(22 160 133 / 0.08);
+  }
+
+  .exam-catalog-counter {
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgb(100 116 139);
+  }
+
+  .exam-catalog-grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.15rem;
+  }
+
+  @media (min-width: 640px) {
+    .exam-catalog-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .exam-catalog-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.15rem;
+    }
+  }
+
+  .exam-prep-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: 0.9375rem;
+    border: 1px solid rgb(226 232 240 / 0.95);
+    background: linear-gradient(180deg, rgb(255 255 255) 0%, rgb(248 250 252 / 0.45) 100%);
+    padding: 1.15rem 1.1rem 1.1rem;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+    transition:
+      transform 0.22s ease,
+      border-color 0.22s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .exam-prep-card:hover {
+    transform: translateY(-2px);
+    border-color: rgb(22 160 133 / 0.22);
+    box-shadow:
+      0 4px 14px rgb(15 23 42 / 0.06),
+      0 1px 2px rgb(22 160 133 / 0.06);
+  }
+
+  .exam-prep-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.65rem;
+  }
+
+  .exam-prep-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--brand-navy);
+  }
+
+  .exam-prep-card-category {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    border: 1px solid rgb(22 160 133 / 0.16);
+    background: rgb(236 253 245 / 0.75);
+    padding: 0.2rem 0.55rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: rgb(4 100 70);
+  }
+
+  .exam-prep-card-summary {
+    margin-top: 0.65rem;
+    flex-grow: 1;
+    font-size: 0.8125rem;
+    line-height: 1.62;
+    color: rgb(71 85 105);
+  }
+
+  .exam-prep-card-meta {
+    margin-top: 0.75rem;
+  }
+
+  .exam-prep-card-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78125rem;
+    font-weight: 600;
+    color: rgb(51 65 85);
+  }
+
+  .exam-prep-card-note {
+    margin-top: 0.55rem;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: rgb(100 116 139);
+  }
+
+  .exam-prep-card-actions {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.95rem;
+    border-top: 1px solid rgb(226 232 240 / 0.85);
+  }
+
+  .exam-prep-card-btn {
+    font-weight: 600;
+    font-size: 0.8125rem;
+  }
+
+  .exam-catalog-empty {
+    margin-top: 1.15rem;
+    border-radius: 0.875rem;
+    border: 1px dashed rgb(203 213 225);
+    background: rgb(248 250 252 / 0.7);
+    padding: 2.25rem 1.25rem;
+    text-align: center;
+  }
+
+  .exam-catalog-empty-title {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--brand-navy);
+  }
+
+  .exam-catalog-empty-text {
+    margin-top: 0.4rem;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: rgb(100 116 139);
+  }
+
+  .exam-catalog-disclaimer {
+    margin-top: 1.35rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid rgb(226 232 240 / 0.85);
+    font-size: 0.78125rem;
+    line-height: 1.65;
+    color: rgb(100 116 139);
+  }
+
+  /* Exam preparation modal */
+  [data-slot="dialog-portal"]:has(.exam-prep-modal) [data-slot="dialog-overlay"] {
+    background: rgb(15 23 42 / 0.42);
+  }
+
+  .exam-prep-modal {
+    max-height: min(92vh, 44rem);
+    width: calc(100% - 1.5rem);
+    border-radius: 1rem;
+    border: 1px solid rgb(226 232 240 / 0.95);
+    box-shadow:
+      0 16px 48px rgb(15 23 42 / 0.14),
+      0 2px 8px rgb(15 23 42 / 0.06);
+  }
+
+  @media (max-width: 767px) {
+    .exam-prep-modal {
+      top: auto !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      transform: none !important;
+      translate: none !important;
+      max-height: 92vh;
+      border-radius: 1.25rem 1.25rem 0 0;
+    }
+  }
+
+  .exam-prep-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid rgb(226 232 240 / 0.9);
+    background: linear-gradient(180deg, rgb(248 250 252 / 0.85) 0%, rgb(255 255 255) 100%);
+    padding: 1.1rem 1.1rem 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .exam-prep-modal-header {
+      padding: 1.2rem 1.25rem 1.05rem;
+    }
+  }
+
+  .exam-prep-modal-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .exam-prep-badge {
+    border-radius: 9999px;
+    padding: 0.22rem 0.6rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .exam-prep-badge--category {
+    border: 1px solid rgb(22 160 133 / 0.18);
+    background: rgb(236 253 245 / 0.8);
+    color: rgb(4 100 70);
+  }
+
+  .exam-prep-badge--status {
+    border: 1px solid rgb(15 61 74 / 0.12);
+    background: rgb(241 245 249 / 0.95);
+    color: var(--brand-navy);
+  }
+
+  .exam-prep-modal-title {
+    margin-top: 0.55rem;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.02em;
+    color: var(--brand-navy);
+  }
+
+  .exam-prep-modal-close {
+    color: rgb(100 116 139);
+  }
+
+  .exam-prep-modal-scroll {
+    overflow-y: auto;
+    padding: 0.35rem 1.1rem 1rem;
+    max-height: min(52vh, 28rem);
+  }
+
+  @media (min-width: 640px) {
+    .exam-prep-modal-scroll {
+      padding: 0.45rem 1.25rem 1.1rem;
+    }
+  }
+
+  .exam-prep-modal-section + .exam-prep-modal-section {
+    margin-top: 0.95rem;
+    padding-top: 0.95rem;
+    border-top: 1px solid rgb(241 245 249);
+  }
+
+  .exam-prep-modal-section-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+  }
+
+  .exam-prep-modal-section-body {
+    margin-top: 0.35rem;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: rgb(51 65 85);
+  }
+
+  .exam-prep-modal-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-top: 1px solid rgb(226 232 240 / 0.9);
+    background: rgb(248 250 252 / 0.75);
+    padding: 0.95rem 1.1rem 1.1rem;
+  }
+
+  @media (min-width: 640px) {
+    .exam-prep-modal-footer {
+      flex-direction: row;
+      flex-wrap: wrap;
+      padding: 1rem 1.25rem 1.15rem;
     }
   }
 
