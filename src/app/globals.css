@@ -4689,51 +4689,68 @@
 
   /* Empresas start CTA section */
   .empresas-start-section {
-    padding: 2rem 0 2.35rem;
-    background: linear-gradient(180deg, rgb(248 250 252 / 0.85) 0%, rgb(241 245 249 / 0.55) 100%);
+    padding-top: 2.35rem;
+    padding-bottom: 2.5rem;
   }
 
   @media (min-width: 768px) {
     .empresas-start-section {
-      padding: 2.25rem 0 2.65rem;
+      padding-top: 2.55rem;
+      padding-bottom: 2.75rem;
     }
   }
 
-  .empresas-start-card {
-    max-width: 56rem;
-    margin-inline: auto;
+  @media (min-width: 1024px) {
+    .empresas-start-section {
+      padding-top: 2.75rem;
+      padding-bottom: 3rem;
+    }
+  }
+
+  .empresas-start-panel {
+    width: 100%;
     border-radius: 1.125rem;
     border: 1px solid rgb(226 232 240 / 0.95);
     background: linear-gradient(
       135deg,
       rgb(255 255 255) 0%,
-      rgb(255 255 255) 48%,
-      rgb(236 253 245 / 0.35) 100%
+      rgb(255 255 255) 52%,
+      rgb(236 253 245 / 0.28) 100%
     );
-    padding: 1.35rem 1.25rem;
+    padding: 1.5rem 1.35rem;
     box-shadow:
       0 1px 0 rgb(255 255 255) inset,
       0 1px 2px rgb(15 23 42 / 0.04),
-      0 14px 40px rgb(15 23 42 / 0.07);
+      0 12px 36px rgb(15 23 42 / 0.06);
   }
 
   @media (min-width: 768px) {
-    .empresas-start-card {
-      padding: 1.65rem 1.75rem;
+    .empresas-start-panel {
+      padding: 1.85rem 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .empresas-start-panel {
+      padding: 2.1rem 2.25rem;
     }
   }
 
   .empresas-start-grid {
     display: grid;
-    gap: 1.5rem;
+    gap: 1.75rem;
     align-items: center;
   }
 
-  @media (min-width: 900px) {
+  @media (min-width: 1024px) {
     .empresas-start-grid {
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-      gap: 2rem;
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+      gap: 2.5rem;
     }
+  }
+
+  .empresas-start-copy {
+    min-width: 0;
   }
 
   .empresas-start-eyebrow {
@@ -4745,55 +4762,59 @@
   }
 
   .empresas-start-title {
-    margin-top: 0.5rem;
-    font-size: clamp(1.375rem, 2.5vw, 1.875rem);
+    margin-top: 0.55rem;
+    max-width: 36rem;
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
     font-weight: 700;
-    line-height: 1.22;
+    line-height: 1.2;
     letter-spacing: -0.02em;
     color: var(--brand-navy);
   }
 
   .empresas-start-desc {
-    margin-top: 0.65rem;
-    max-width: 34rem;
-    font-size: 0.9375rem;
-    line-height: 1.62;
+    margin-top: 0.75rem;
+    max-width: 38rem;
+    font-size: 0.96875rem;
+    line-height: 1.65;
     color: rgb(71 85 105);
+  }
+
+  @media (min-width: 768px) {
+    .empresas-start-desc {
+      font-size: 1rem;
+    }
   }
 
   .empresas-start-list {
     display: grid;
-    gap: 0.55rem;
-    margin-top: 1.15rem;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid rgb(226 232 240 / 0.85);
   }
 
   @media (min-width: 640px) {
     .empresas-start-list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: 1rem;
+      column-gap: 1.25rem;
+      row-gap: 0.65rem;
     }
   }
 
   .empresas-start-list-item {
     display: flex;
     align-items: flex-start;
-    gap: 0.5rem;
-    font-size: 0.8125rem;
-    line-height: 1.5;
+    gap: 0.55rem;
+    font-size: 0.84375rem;
+    line-height: 1.52;
     color: rgb(51 65 85);
   }
 
-  @media (min-width: 640px) {
-    .empresas-start-list-item {
-      font-size: 0.84375rem;
-    }
-  }
-
   .empresas-start-list-icon {
-    width: 1rem;
-    height: 1rem;
+    width: 1.05rem;
+    height: 1.05rem;
     flex-shrink: 0;
-    margin-top: 0.12rem;
+    margin-top: 0.1rem;
     color: var(--brand-green);
   }
 
@@ -4801,7 +4822,9 @@
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
-    margin-top: 1.35rem;
+    margin-top: 1.45rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgb(226 232 240 / 0.85);
   }
 
   @media (min-width: 640px) {
@@ -4809,34 +4832,86 @@
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
+      gap: 0.75rem;
     }
   }
 
-  .empresas-start-action-primary,
-  .empresas-start-action-secondary {
+  .empresas-start-action-link {
     display: flex;
     width: 100%;
   }
 
   @media (min-width: 640px) {
-    .empresas-start-action-primary,
-    .empresas-start-action-secondary {
+    .empresas-start-action-link {
       width: auto;
     }
   }
 
-  .empresas-start-visual-shell {
-    border-radius: 0.9375rem;
-    border: 1px solid rgb(226 232 240 / 0.95);
-    background: linear-gradient(180deg, rgb(248 250 252 / 0.9) 0%, rgb(255 255 255) 100%);
-    padding: 1.1rem 1rem 1.15rem;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  .empresas-start-visual {
+    min-width: 0;
   }
 
-  .empresas-start-visual-label {
+  @media (min-width: 1024px) {
+    .empresas-start-visual {
+      justify-self: stretch;
+    }
+  }
+
+  .empresas-start-visual-shell {
+    overflow: hidden;
+    border-radius: 1rem;
+    border: 1px solid rgb(226 232 240 / 0.95);
+    background: linear-gradient(180deg, rgb(255 255 255) 0%, rgb(248 250 252 / 0.85) 100%);
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 0.04),
+      0 8px 24px rgb(15 23 42 / 0.05);
+  }
+
+  .empresas-start-visual-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    border-bottom: 1px solid rgb(241 245 249);
+    background: linear-gradient(180deg, rgb(248 250 252) 0%, rgb(255 255 255) 100%);
+    padding: 0.95rem 1.1rem;
+  }
+
+  .empresas-start-visual-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    flex-shrink: 0;
+    border-radius: 0.6rem;
+    background: var(--brand-navy);
+    color: white;
+    box-shadow: 0 2px 6px rgb(15 61 74 / 0.16);
+  }
+
+  .empresas-start-visual-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--brand-navy);
+  }
+
+  .empresas-start-visual-subtitle {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: rgb(100 116 139);
+  }
+
+  .empresas-start-visual-badge {
+    margin-left: auto;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    border: 1px solid rgb(226 232 240);
+    background: white;
+    padding: 0.22rem 0.6rem;
     font-size: 0.625rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: rgb(100 116 139);
   }
@@ -4844,31 +4919,48 @@
   .empresas-start-visual-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem;
-    margin-top: 0.75rem;
+    gap: 0.65rem;
+    padding: 1rem 1.1rem 0.85rem;
+  }
+
+  @media (min-width: 1024px) {
+    .empresas-start-visual-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.55rem;
+    }
   }
 
   .empresas-start-module {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.4rem;
-    border-radius: 0.75rem;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 4.75rem;
+    border-radius: 0.8rem;
     border: 1px solid rgb(226 232 240 / 0.95);
     background: white;
-    padding: 0.75rem 0.5rem;
+    padding: 0.75rem 0.45rem;
     text-align: center;
     box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .empresas-start-module:hover {
+    border-color: rgb(22 160 133 / 0.22);
+    box-shadow: 0 4px 12px rgb(15 23 42 / 0.05);
   }
 
   .empresas-start-module-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.55rem;
-    background: rgb(236 253 245 / 0.85);
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 0.6rem;
+    background: rgb(236 253 245 / 0.9);
     color: var(--brand-green);
   }
 
@@ -4879,18 +4971,33 @@
     color: rgb(51 65 85);
   }
 
+  @media (min-width: 1024px) {
+    .empresas-start-module-label {
+      font-size: 0.71875rem;
+    }
+  }
+
   .empresas-start-visual-flow {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 0.35rem;
-    margin-top: 0.85rem;
-    padding-top: 0.85rem;
-    border-top: 1px solid rgb(241 245 249);
+    margin: 0 1.1rem 1.05rem;
+    padding: 0.85rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(241 245 249);
+    background: rgb(248 250 252 / 0.75);
+  }
+
+  .empresas-start-flow-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
   }
 
   .empresas-start-flow-step {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     color: rgb(100 116 139);
     white-space: nowrap;
@@ -4901,7 +5008,7 @@
   }
 
   .empresas-start-flow-line {
-    width: 1.25rem;
+    width: 1.35rem;
     height: 1px;
     background: rgb(203 213 225);
     flex-shrink: 0;

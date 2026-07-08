@@ -11,14 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { EmpresasHero } from "@/components/public/EmpresasHero";
 import { SectionTitle } from "@/components/public/SectionTitle";
-import { CTASection } from "@/components/public/CTASection";
+import { EmpresasStartSection } from "@/components/public/EmpresasStartSection";
 import { PortalShowcase } from "@/components/public/PortalShowcase";
 import { EmpresasComplianceSection } from "@/components/public/EmpresasComplianceSection";
 import { EmpresasPorteSection } from "@/components/public/EmpresasPorteSection";
-import { EmpresasStartSection } from "@/components/public/EmpresasStartSection";
 import { PageSection } from "@/components/public/PageSection";
 import { FeatureCard } from "@/components/public/FeatureCard";
-import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 export const metadata = { title: "Empresas" };
 
@@ -56,8 +54,6 @@ const BENEFITS = [
 ];
 
 export default function EmpresasPage() {
-  const clinic = getClinicInfo();
-
   return (
     <>
       <EmpresasHero />
@@ -113,18 +109,6 @@ export default function EmpresasPage() {
       <EmpresasComplianceSection />
 
       <EmpresasStartSection />
-
-      <CTASection
-        className="empresas-final-cta"
-        title="Pronto para organizar exames, documentos e encaminhamentos da sua empresa?"
-        description="Fale com um especialista e receba uma proposta personalizada para simplificar a rotina ocupacional do seu RH."
-        primaryLabel="Solicitar orçamento sem compromisso"
-        primaryHref="/contato?tipo=orcamento"
-        secondaryHref={whatsappLink(
-          `Olá! Gostaria de falar com um especialista da ${clinic.name}.`
-        )}
-        secondaryLabel="Falar com especialista"
-      />
     </>
   );
 }
