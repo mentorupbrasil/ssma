@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { listExamsForDashboard } from "@/actions/exams";
 import { ExamesClient } from "@/components/dashboard/exams/ExamesClient";

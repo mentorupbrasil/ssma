@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { listCommercialDashboard, getCompaniesForQuoteSelect } from "@/actions/commercial";
 import { OrcamentosClient } from "@/components/dashboard/commercial/OrcamentosClient";

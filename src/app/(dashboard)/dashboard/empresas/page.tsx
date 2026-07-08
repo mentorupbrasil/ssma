@@ -6,9 +6,9 @@ import {
   buildCompanyWhere,
   COMPANY_STAT_CARDS,
   OPEN_REFERRAL_STATUSES,
-import { PENDING_QUOTE_STATUSES } from "@/lib/commercial";
   serializeCompanyListItem,
 } from "@/lib/companies";
+import { PENDING_QUOTE_STATUSES } from "@/lib/commercial";
 import { EmpresasClient } from "@/components/dashboard/companies/EmpresasClient";
 import { getCompanyCities } from "@/actions/companies";
 import { canEditCompanyCommercial } from "@/lib/companies";
