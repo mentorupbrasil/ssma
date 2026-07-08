@@ -542,7 +542,9 @@ export function DocumentosClient({
                           )}
                         </div>
                         {item.sensitive && (
-                          <Shield className="h-4 w-4 shrink-0 text-violet-500" title="Sensível" />
+                          <span title="Sensível">
+                            <Shield className="h-4 w-4 shrink-0 text-violet-500" aria-hidden />
+                          </span>
                         )}
                       </div>
                     </TableCell>
