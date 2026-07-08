@@ -29,7 +29,7 @@ export function Header() {
     <header className="glass-header">
       <div className="container-page flex h-full items-center justify-between">
         <Link href="/" className="group flex items-center">
-          <BrandLogo height={34} priority showLink={false} />
+          <BrandLogo height={28} priority showLink={false} />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">

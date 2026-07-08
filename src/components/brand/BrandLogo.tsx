@@ -20,7 +20,7 @@ export function BrandLogo({
   className,
   priority = false,
 }: BrandLogoProps) {
-  const width = Math.round(height * 4.25);
+  const width = Math.round(height * 4.1);
 
   const image = (
     <span className={cn("inline-flex shrink-0 items-center", className)}>
