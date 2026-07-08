@@ -60,6 +60,7 @@ type PreReferralWizardProps = {
 };
 
 export function PreReferralWizard({ examOptions }: PreReferralWizardProps = {}) {
+  const availableExams = examOptions ?? PRE_REFERRAL_EXAM_OPTIONS;
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [attemptedSteps, setAttemptedSteps] = useState<Set<number>>(new Set());

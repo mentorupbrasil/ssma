@@ -28,6 +28,18 @@ type ActionResult<T extends Record<string, unknown> = Record<string, unknown>> =
   | ({ success: true } & T)
   | { success: false; error: string };
 
+export type DocumentFormOptions = {
+  companies: Array<{ id: string; legalName: string; tradeName: string | null }>;
+  patients: Array<{ id: string; fullName: string; companyId: string | null }>;
+  referrals: Array<{
+    id: string;
+    protocol: string;
+    patient: { fullName: string } | null;
+  }>;
+  exams: Array<{ id: string; name: string }>;
+  quotes: Array<{ id: string; quoteNumber: string | null; companyName: string }>;
+};
+
 async function recordDocHistory(
   documentId: string,
   action: DocumentHistoryAction,
@@ -481,7 +493,7 @@ export async function attachFileToDocument(
   }
 }
 
-export async function getDocumentFormOptions() {
+export async function getDocumentFormOptions(): Promise<DocumentFormOptions> {
   await requirePermission("documents.manage");
   const [companies, patients, referrals, exams, quotes] = await Promise.all([
     prisma.company.findMany({

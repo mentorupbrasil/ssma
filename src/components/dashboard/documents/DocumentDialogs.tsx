@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createDocument, updateDocument } from "@/actions/documents";
+import { createDocument, updateDocument, type DocumentFormOptions } from "@/actions/documents";
 import type { DocumentDetailSerialized } from "@/lib/documents";
 import {
   DOCUMENT_TYPE_LABELS,
@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { Upload, Loader2, FileText } from "lucide-react";
 import type { DocumentStatus, DocumentType } from "@prisma/client";
 
-type FormOptions = Awaited<ReturnType<typeof import("@/actions/documents").getDocumentFormOptions>>;
+type FormOptions = DocumentFormOptions;
 
 type DocumentFormDialogProps = {
   open: boolean;

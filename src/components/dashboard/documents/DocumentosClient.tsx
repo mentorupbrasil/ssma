@@ -35,6 +35,7 @@ import {
   updateDocumentStatus,
   removeDocumentFile,
   deleteDocument,
+  type DocumentFormOptions,
 } from "@/actions/documents";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -79,7 +80,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { DocumentStatus } from "@prisma/client";
 
-type FormOptions = Awaited<ReturnType<typeof import("@/actions/documents").getDocumentFormOptions>>;
+type FormOptions = DocumentFormOptions;
 
 type DocumentosClientProps = {
   initialItems: DocumentListItem[];
