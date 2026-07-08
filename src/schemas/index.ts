@@ -19,12 +19,34 @@ export const loginSchema = z.object({
 
 export const contactSchema = z.object({
   name: z.string().min(2, "Nome obrigatório"),
-  email: z.string().email("E-mail inválido"),
-  phone: z.string().min(10, "Telefone inválido"),
-  companyName: z.string().optional(),
-  message: z.string().min(10, "Mensagem muito curta"),
+  email: z
+    .string()
+    .refine((v) => {
+      const trimmed = v.trim();
+      return trimmed.length === 0 || z.string().email().safeParse(trimmed).success;
+    }, "E-mail inválido"),
+  phone: z.string().min(10, "Telefone/WhatsApp obrigatório"),
+  company: z.string().optional(),
+  subject: z
+    .string()
+    .min(1, "Selecione um assunto")
+    .refine(
+      (v) =>
+        [
+          "Solicitar orçamento",
+          "Encaminhamento de colaborador",
+          "Dúvida sobre exames",
+          "Portal empresarial",
+          "Suporte para empresa",
+          "Outro",
+        ].includes(v),
+      "Assunto inválido"
+    ),
+  message: z.string().min(5, "Mensagem obrigatória"),
   consent: z.literal(true, { message: "Consentimento obrigatório" }),
 });
+
+export type ContactFormData = z.infer<typeof contactSchema>;
 
 export const quoteSchema = z.object({
   name: z.string().min(2, "Nome obrigatório"),
@@ -244,10 +266,17 @@ export const appointmentSchema = z.object({
 
 export const contactActionSchema = z.object({
   name: z.string().min(2),
-  email: z.string().email(),
+  email: z.string().optional(),
   phone: z.string().min(10),
-  companyName: z.string().optional(),
-  employees: z.string().optional(),
-  message: z.string().optional(),
-  type: z.enum(["CONTATO", "ORCAMENTO"]).optional(),
+  company: z.string().optional(),
+  subject: z.string().min(1),
+  message: z.string().min(5),
+  consentAccepted: z.literal(true),
 });
+
+export const contactMessageStatusSchema = z.enum([
+  "NOVO",
+  "EM_ANALISE",
+  "RESPONDIDO",
+  "ARQUIVADO",
+]);

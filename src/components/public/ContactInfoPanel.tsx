@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Clock, ExternalLink, MapPin, MessageCircle, Phone, Mail } from "lucide-react";
+import { Clock, ExternalLink, MapPin, MessageCircle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   formatClinicAddressLines,
@@ -7,13 +7,14 @@ import {
   getClinicSiteConfig,
 } from "@/config/clinic";
 import { formatPhone, whatsappLink } from "@/lib/helpers";
+import { CONTACT_WHATSAPP_MESSAGES } from "@/data/contact";
 
 export function ContactInfoPanel() {
   const clinic = getClinicSiteConfig();
   const hoursLines = formatOpeningHoursLines(clinic.openingHours);
 
   return (
-    <div className="contact-info-panel">
+    <div className="contact-info-panel contact-info-panel-premium">
       <h3 className="contact-info-panel-heading">Informações de contato</h3>
       <dl className="contact-info-list">
         {clinic.hasAddress && (
@@ -31,22 +32,17 @@ export function ContactInfoPanel() {
             </dd>
           </div>
         )}
-        {clinic.phone && (
-          <div className="contact-info-item">
-            <dt>
-              <Phone strokeWidth={1.75} />
-              Telefone
-            </dt>
-            <dd>{clinic.phone}</dd>
-          </div>
-        )}
         {clinic.email && (
           <div className="contact-info-item">
             <dt>
               <Mail strokeWidth={1.75} />
               E-mail
             </dt>
-            <dd>{clinic.email}</dd>
+            <dd>
+              <a href={`mailto:${clinic.email}`} className="contact-info-link">
+                {clinic.email}
+              </a>
+            </dd>
           </div>
         )}
         <div className="contact-info-item">
@@ -77,9 +73,7 @@ export function ContactInfoPanel() {
       <div className="contact-info-actions">
         {clinic.hasWhatsApp && (
           <a
-            href={whatsappLink(
-              `Olá! Gostaria de falar com a ${clinic.clinicName}.`
-            )}
+            href={whatsappLink(CONTACT_WHATSAPP_MESSAGES.direct)}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -97,7 +91,7 @@ export function ContactInfoPanel() {
             </Button>
           </a>
         )}
-        <Link href="/contato?tipo=orcamento">
+        <Link href="/contato?tipo=orcamento#contato-formulario">
           <Button variant="outline" className="w-full rounded-xl">
             Solicitar orçamento
           </Button>

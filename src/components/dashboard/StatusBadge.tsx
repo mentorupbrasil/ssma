@@ -1,9 +1,9 @@
-import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS } from "@/types";
+import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS, CONTACT_MESSAGE_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 
 type StatusBadgeProps = {
   status: string;
-  type?: "referral" | "lead" | "appointment" | "document" | "preReferral";
+  type?: "referral" | "lead" | "appointment" | "document" | "preReferral" | "contact";
 };
 
 const LABEL_MAPS = {
@@ -12,6 +12,7 @@ const LABEL_MAPS = {
   appointment: APPOINTMENT_STATUS_LABELS,
   document: DOCUMENT_STATUS_LABELS,
   preReferral: PRE_REFERRAL_STATUS_LABELS,
+  contact: CONTACT_MESSAGE_STATUS_LABELS,
 };
 
 const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
@@ -33,6 +34,8 @@ const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   PENDENTE: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
   EM_ELABORACAO: { bg: "bg-blue-50", text: "text-blue-800", dot: "bg-blue-500" },
   ENTREGUE: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  RESPONDIDO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  ARQUIVADO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
 };
 
 export function StatusBadge({ status, type = "referral" }: StatusBadgeProps) {

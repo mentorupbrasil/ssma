@@ -38,10 +38,6 @@ export function Footer() {
           <h4 className="footer-column-title">Links úteis</h4>
           <ul className="space-y-2.5 text-sm">
             {[
-              ["/sobre", "Sobre nós"],
-              ["/servicos", "Serviços"],
-              ["/exames", "Exames e preparos"],
-              ["/encaminhamento-online", "Encaminhamento online"],
               ["/atualizacoes", "Atualizações"],
               ["/politica-de-privacidade", "Política de privacidade"],
               ["/termos-de-uso", "Termos de uso"],

@@ -1,207 +1,167 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { contactSchema, quoteSchema } from "@/schemas";
-import { submitContact } from "@/actions";
-import { EMPLOYEE_RANGES } from "@/data/marketing";
-import { whatsappLink } from "@/lib/helpers";
+import { contactSchema, type ContactFormData } from "@/schemas";
+import { submitContactMessage } from "@/actions";
+import { CONTACT_SUBJECTS, CONTACT_WHATSAPP_MESSAGES } from "@/data/contact";
+import { FormField } from "@/components/forms/FormField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MessageCircle } from "lucide-react";
-import { z } from "zod";
+import { CheckCircle2, MessageCircle, Home } from "lucide-react";
+import { whatsappLink } from "@/lib/helpers";
 
 type ContactFormProps = {
-  type?: "contato" | "orcamento";
+  prefill?: {
+    subject?: string;
+    message?: string;
+  };
 };
 
-type ContactData = z.infer<typeof contactSchema>;
-type QuoteData = z.infer<typeof quoteSchema>;
-
-function buildWhatsAppQuote(data: QuoteData): string {
-  const lines = [
-    "Olá! Gostaria de solicitar um orçamento.",
-    `Nome: ${data.name}`,
-    `E-mail: ${data.email}`,
-    `Telefone: ${data.phone}`,
-    `Empresa: ${data.companyName}`,
-  ];
-  if (data.employees) lines.push(`Colaboradores: ${data.employees}`);
-  if (data.message) lines.push(`Mensagem: ${data.message}`);
-  return lines.join("\n");
-}
-
-export function ContactForm({ type = "contato" }: ContactFormProps) {
+export function ContactForm({ prefill }: ContactFormProps) {
   const [loading, setLoading] = useState(false);
-  const isOrcamento = type === "orcamento";
+  const [submitted, setSubmitted] = useState(false);
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
-  const contactForm = useForm<ContactData>({
+  const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
+    mode: "onSubmit",
+    reValidateMode: "onBlur",
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      subject: (prefill?.subject as ContactFormData["subject"]) || "",
+      message: prefill?.message ?? "",
+    },
   });
 
-  const quoteForm = useForm<QuoteData>({
-    resolver: zodResolver(quoteSchema),
-  });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, touchedFields, isSubmitted },
+  } = form;
 
-  const onSubmitContact = async (data: ContactData) => {
+  const showError = (name: keyof ContactFormData) => {
+    const touched = touchedFields[name] || attemptedSubmit || isSubmitted;
+    return touched ? errors[name]?.message : undefined;
+  };
+
+  const onSubmit = async (data: ContactFormData) => {
+    setAttemptedSubmit(true);
     setLoading(true);
-    const result = await submitContact({
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      companyName: data.companyName,
-      message: data.message,
-      type: "CONTATO",
+    const result = await submitContactMessage({
+      ...data,
+      email: data.email.trim() || undefined,
+      company: data.company?.trim() || undefined,
+      consentAccepted: true,
     });
     setLoading(false);
+
     if (result.success) {
-      toast.success("Mensagem enviada!");
-      contactForm.reset();
-    } else {
-      toast.error(result.error);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  const onSubmitQuote = async (data: QuoteData) => {
-    setLoading(true);
-    const result = await submitContact({
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      companyName: data.companyName,
-      employees: data.employees,
-      message: data.message,
-      type: "ORCAMENTO",
-    });
-    setLoading(false);
-    if (result.success) {
-      toast.success("Solicitação enviada!");
-      quoteForm.reset();
-    } else {
-      toast.error(result.error);
-    }
-  };
-
-  if (isOrcamento) {
-    const { register, handleSubmit, setValue, watch, formState: { errors } } = quoteForm;
-    const watched = watch();
-
-    const sendWhatsApp = () => {
-      const parsed = quoteSchema.safeParse(watched);
-      if (!parsed.success) {
-        toast.error("Preencha os campos obrigatórios antes de enviar pelo WhatsApp.");
-        return;
-      }
-      window.open(whatsappLink(buildWhatsAppQuote(parsed.data)), "_blank");
-    };
-
+  if (submitted) {
     return (
-      <form onSubmit={handleSubmit(onSubmitQuote)} className="space-y-4">
-        <div>
-          <Label>Nome</Label>
-          <Input className="form-input" {...register("name")} />
-          {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+      <div className="contact-success">
+        <div className="contact-success-icon">
+          <CheckCircle2 className="h-8 w-8 text-[var(--brand-green)]" strokeWidth={1.75} />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label>E-mail</Label>
-            <Input className="form-input" type="email" {...register("email")} />
-            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-          </div>
-          <div>
-            <Label>WhatsApp / Telefone</Label>
-            <Input className="form-input" {...register("phone")} />
-            {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
-          </div>
+        <h3 className="contact-success-title">Mensagem enviada com sucesso</h3>
+        <p className="contact-success-text">
+          Recebemos seu contato. Nossa equipe irá retornar pelo telefone ou e-mail informado.
+        </p>
+        <div className="flex flex-col gap-3">
+          <a
+            href={whatsappLink(CONTACT_WHATSAPP_MESSAGES.afterSubmit)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="brand" className="w-full rounded-xl">
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Falar agora no WhatsApp
+            </Button>
+          </a>
+          <Link href="/">
+            <Button variant="outline" className="w-full rounded-xl">
+              <Home className="mr-2 h-4 w-4" />
+              Voltar para a página inicial
+            </Button>
+          </Link>
         </div>
-        <div>
-          <Label>Nome da empresa</Label>
-          <Input className="form-input" {...register("companyName")} />
-          {errors.companyName && <p className="text-sm text-red-500">{errors.companyName.message}</p>}
-        </div>
-        <div>
-          <Label>Quantidade de colaboradores</Label>
-          <select {...register("employees")} className="form-select">
-            <option value="">Selecione</option>
-            {EMPLOYEE_RANGES.map((r) => (
-              <option key={r.value} value={r.label}>
-                {r.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <Label>Mensagem (opcional)</Label>
-          <Textarea className="form-input" rows={4} {...register("message")} />
-        </div>
-        <label className="flex items-start gap-3">
-          <Checkbox
-            checked={watch("consent") === true}
-            onCheckedChange={(c) => setValue("consent", c ? true : (undefined as never))}
-          />
-          <span className="text-sm text-slate-600">
-            Concordo com o tratamento dos meus dados conforme a Política de Privacidade.
-          </span>
-        </label>
-        {errors.consent && <p className="text-sm text-red-500">{errors.consent.message}</p>}
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button type="submit" variant="brand" disabled={loading} className="rounded-xl">
-            {loading ? "Enviando..." : "Enviar orçamento"}
-          </Button>
-          <Button type="button" variant="outline" onClick={sendWhatsApp} className="rounded-xl">
-            <MessageCircle className="mr-2 h-4 w-4 text-[var(--brand-green)]" />
-            Enviar via WhatsApp
-          </Button>
-        </div>
-      </form>
+      </div>
     );
   }
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = contactForm;
   return (
-    <form onSubmit={handleSubmit(onSubmitContact)} className="space-y-4">
-      <div>
-        <Label>Nome</Label>
-        <Input className="form-input" {...register("name")} />
-        {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <Label>E-mail</Label>
-          <Input className="form-input" type="email" {...register("email")} />
-          {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-        </div>
-        <div>
-          <Label>Telefone</Label>
-          <Input className="form-input" {...register("phone")} />
-          {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
-        </div>
-      </div>
-      <div>
-        <Label>Empresa (opcional)</Label>
-        <Input className="form-input" {...register("companyName")} />
-      </div>
-      <div>
-        <Label>Mensagem</Label>
-        <Textarea className="form-input" rows={4} {...register("message")} />
-        {errors.message && <p className="text-sm text-red-500">{errors.message.message}</p>}
-      </div>
-      <label className="flex items-start gap-3">
+    <form id="contato-formulario" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <FormField label="Nome *" error={showError("name")}>
+        <Input className="form-input" autoComplete="name" {...register("name")} />
+      </FormField>
+
+      <FormField label="E-mail" hint="Opcional" error={showError("email")}>
+        <Input className="form-input" type="email" autoComplete="email" {...register("email")} />
+      </FormField>
+
+      <FormField label="Telefone / WhatsApp *" error={showError("phone")}>
+        <Input className="form-input" autoComplete="tel" placeholder="(99) 99999-9999" {...register("phone")} />
+      </FormField>
+
+      <FormField label="Empresa" hint="Opcional" error={showError("company")}>
+        <Input className="form-input" autoComplete="organization" {...register("company")} />
+      </FormField>
+
+      <FormField label="Assunto *" error={showError("subject")}>
+        <select className="form-select" {...register("subject")}>
+          <option value="">Selecione um assunto</option>
+          {CONTACT_SUBJECTS.map((subject) => (
+            <option key={subject} value={subject}>
+              {subject}
+            </option>
+          ))}
+        </select>
+      </FormField>
+
+      <FormField label="Mensagem *" error={showError("message")}>
+        <textarea
+          className="form-input min-h-[120px] resize-y"
+          rows={4}
+          placeholder="Como podemos ajudar?"
+          {...register("message")}
+        />
+      </FormField>
+
+      <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
         <Checkbox
           checked={watch("consent") === true}
-          onCheckedChange={(c) => setValue("consent", c ? true : (undefined as never))}
+          onCheckedChange={(c) =>
+            setValue("consent", c ? true : (undefined as never), { shouldValidate: false })
+          }
         />
-        <span className="text-sm text-slate-600">
-          Concordo com o tratamento dos meus dados conforme a Política de Privacidade.
+        <span className="text-sm leading-relaxed text-slate-600">
+          Concordo com o tratamento dos meus dados conforme a{" "}
+          <a
+            href="/politica-de-privacidade"
+            className="font-medium text-[var(--brand-green)] underline"
+            target="_blank"
+          >
+            Política de Privacidade
+          </a>
+          .
         </span>
       </label>
-      {errors.consent && <p className="text-sm text-red-500">{errors.consent.message}</p>}
-      <Button type="submit" variant="brand" disabled={loading} className="rounded-xl">
+      {showError("consent") && <p className="form-error">{showError("consent")}</p>}
+
+      <Button type="submit" variant="brand" disabled={loading} className="w-full rounded-xl sm:w-auto">
         {loading ? "Enviando..." : "Enviar mensagem"}
       </Button>
     </form>

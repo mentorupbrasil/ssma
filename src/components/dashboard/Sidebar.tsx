@@ -15,6 +15,7 @@ import {
   Settings,
   Shield,
   Inbox,
+  Mail,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -39,6 +40,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Settings,
   Shield,
   Inbox,
+  Mail,
 };
 
 type SidebarProps = {

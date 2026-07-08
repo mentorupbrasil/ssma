@@ -11,6 +11,22 @@ export const authConfig = {
   trustHost: true,
   providers: [],
   callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const pathname = nextUrl.pathname;
+      const isDashboard = pathname.startsWith("/dashboard");
+      const isLogin = pathname === "/login";
+
+      if (isDashboard && !isLoggedIn) {
+        return false;
+      }
+
+      if (isLogin && isLoggedIn) {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+
+      return true;
+    },
     jwt({ token, user }) {
       if (user) {
         const u = user as { id: string; role: UserRole; companyId?: string | null };

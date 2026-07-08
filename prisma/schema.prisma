@@ -101,6 +101,13 @@ enum PreReferralStatus {
   CANCELADO
 }
 
+enum ContactMessageStatus {
+  NOVO
+  EM_ANALISE
+  RESPONDIDO
+  ARQUIVADO
+}
+
 enum DocumentType {
   ASO
   PCMSO
@@ -343,4 +350,19 @@ model PublicReferralRequest {
   status            PreReferralStatus           @default(NOVO)
   createdAt         DateTime                    @default(now())
   updatedAt         DateTime                    @updatedAt
+}
+
+model ContactMessage {
+  id              String                @id @default(cuid())
+  name            String
+  email           String?
+  phone           String
+  company         String?
+  subject         String
+  message         String
+  consentAccepted Boolean               @default(false)
+  source          String                @default("site_contato")
+  status          ContactMessageStatus  @default(NOVO)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 }

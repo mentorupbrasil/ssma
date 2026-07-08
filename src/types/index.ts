@@ -6,6 +6,7 @@ import {
   PreReferralStatus,
   PreReferralClinicalExamType,
   ExamSelectionMode,
+  ContactMessageStatus,
 } from "@prisma/client";
 
 export const REFERRAL_STATUS_LABELS: Record<ReferralStatus, string> = {
@@ -87,6 +88,13 @@ export const PRE_REFERRAL_STATUS_COLORS: Record<PreReferralStatus, string> = {
   EM_ANALISE: "bg-amber-100 text-amber-800",
   CONVERTIDO: "bg-emerald-100 text-emerald-800",
   CANCELADO: "bg-slate-100 text-slate-600",
+};
+
+export const CONTACT_MESSAGE_STATUS_LABELS: Record<ContactMessageStatus, string> = {
+  NOVO: "Novo",
+  EM_ANALISE: "Em análise",
+  RESPONDIDO: "Respondido",
+  ARQUIVADO: "Arquivado",
 };
 
 export const EXAM_CATEGORY_LABELS: Record<string, string> = {

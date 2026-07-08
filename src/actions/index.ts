@@ -9,8 +9,9 @@ import {
   leadStatusSchema,
   preReferralFormSchema,
   preReferralStatusSchema,
-  appointmentSchema,
   contactActionSchema,
+  contactMessageStatusSchema,
+  appointmentSchema,
 } from "@/schemas";
 import { createAuditLog, generateProtocol } from "@/lib/server";
 import { ExamCategory } from "@prisma/client";
@@ -280,39 +281,86 @@ export async function updatePreReferralStatus(
   }
 }
 
-export async function submitContact(data: unknown): Promise<ActionResult> {
+export async function submitContactMessage(data: unknown): Promise<ActionResult> {
   const parsed = contactActionSchema.safeParse(data);
   if (!parsed.success) {
     return { success: false, error: "Dados inválidos. Verifique o formulário." };
   }
 
   const d = parsed.data;
+  const email = d.email?.trim() || null;
+  const company = d.company?.trim() || null;
+
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { success: false, error: "E-mail inválido." };
+  }
 
   try {
-    await prisma.lead.create({
+    await prisma.contactMessage.create({
       data: {
-        type: d.type === "ORCAMENTO" ? "ORCAMENTO" : "CONTATO",
-        status: "NOVO",
         name: d.name,
-        email: d.email,
+        email,
         phone: d.phone,
-        companyName: d.companyName,
-        message: [d.employees && `Colaboradores: ${d.employees}`, d.message]
-          .filter(Boolean)
-          .join("\n") || undefined,
+        company,
+        subject: d.subject,
+        message: d.message,
+        consentAccepted: true,
+        source: "site_contato",
+        status: "NOVO",
       },
     });
 
     await createAuditLog({
       action: "CREATE",
-      entity: "Lead",
-      details: `Contato de ${d.name}`,
+      entity: "ContactMessage",
+      details: `Contato: ${d.name} — ${d.subject}`,
     });
 
+    revalidatePath("/dashboard/contatos");
     revalidatePath("/dashboard/orcamentos");
     return { success: true };
-  } catch {
+  } catch (error) {
+    console.error("submitContactMessage error:", error);
     return { success: false, error: "Erro ao enviar mensagem." };
+  }
+}
+
+/** @deprecated Use submitContactMessage */
+export async function submitContact(data: unknown): Promise<ActionResult> {
+  return submitContactMessage(data);
+}
+
+export async function updateContactMessageStatus(
+  id: string,
+  status: unknown
+): Promise<ActionResult> {
+  const parsedStatus = contactMessageStatusSchema.safeParse(status);
+  if (!parsedStatus.success) {
+    return { success: false, error: "Status inválido." };
+  }
+
+  try {
+    const session = await requirePermission("leads.manage");
+
+    await prisma.contactMessage.update({
+      where: { id },
+      data: { status: parsedStatus.data },
+    });
+
+    await createAuditLog({
+      userId: session.user.id,
+      action: "UPDATE",
+      entity: "ContactMessage",
+      entityId: id,
+      details: `Status alterado para ${parsedStatus.data}`,
+    });
+
+    revalidatePath("/dashboard/contatos");
+    revalidatePath(`/dashboard/contatos/${id}`);
+
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: actionError(e, "Não autorizado.") };
   }
 }
 

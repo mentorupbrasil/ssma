@@ -59,14 +59,23 @@ function LoginForm() {
       const message =
         result?.error === "CredentialsSignin"
           ? "E-mail ou senha inválidos."
-          : "Não foi possível entrar. Verifique AUTH_SECRET e NEXTAUTH_URL no .env.";
+          : "Não foi possível entrar. Verifique AUTH_SECRET e AUTH_URL na Vercel.";
       toast.error(message);
       return;
     }
 
+    const sessionRes = await fetch("/api/auth/session", { cache: "no-store" });
+    const session = (await sessionRes.json()) as { user?: { email?: string } };
+
+    if (!session?.user) {
+      toast.error(
+        "Credenciais aceitas, mas a sessão não foi criada. Confira AUTH_SECRET e AUTH_URL no ambiente de produção."
+      );
+      return;
+    }
+
     toast.success("Login realizado!");
-    // Navegação completa garante que o cookie de sessão seja enviado ao middleware
-    window.location.href = callbackUrl;
+    window.location.assign(callbackUrl);
   };
 
   return (
@@ -81,7 +90,7 @@ function LoginForm() {
       <CardContent>
         {authError && (
           <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            Sessão não iniciada. Confira suas credenciais e as variáveis AUTH_SECRET / NEXTAUTH_URL.
+            Sessão não iniciada. Confira AUTH_SECRET e AUTH_URL nas variáveis de ambiente.
           </p>
         )}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -99,6 +108,10 @@ function LoginForm() {
             {loading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
+        <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs leading-relaxed text-slate-600">
+          <p className="font-semibold text-slate-700">Acesso demo (após seed do banco)</p>
+          <p className="mt-1">Admin: admin@demo.com · Admin@123</p>
+        </div>
         <p className="mt-6 text-center text-sm text-slate-500">
           <Link href="/" className="text-[#16A085] hover:underline">Voltar ao site</Link>
         </p>
