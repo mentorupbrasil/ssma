@@ -4,14 +4,19 @@
  *
  * - Tries `migrate deploy` when migration history exists.
  * - On P3005 (DB created earlier via db push, no _prisma_migrations),
- *   falls back to `db push` so deploy does not fail.
+ *   runs idempotent SQL patch then `db push`.
  */
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 
-function run(command, args) {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const patchFile = path.join(__dirname, "production-schema-patch.sql");
+
+function run(command, args, options = {}) {
   return spawnSync(command, args, {
     encoding: "utf8",
-    stdio: ["inherit", "pipe", "pipe"],
+    stdio: options.inherit ? "inherit" : ["inherit", "pipe", "pipe"],
     shell: process.platform === "win32",
   });
 }
@@ -30,9 +35,19 @@ const output = `${migrate.stdout ?? ""}${migrate.stderr ?? ""}`;
 if (output.includes("P3005")) {
   console.warn("");
   console.warn("⚠ P3005: o banco já existia sem histórico de migrations.");
-  console.warn("→ Sincronizando schema com prisma db push...");
+  console.warn("→ Aplicando patch SQL idempotente...");
   console.warn("");
 
+  const patch = run("npx", ["prisma", "db", "execute", "--file", patchFile]);
+  if (patch.status !== 0) {
+    process.stderr.write(patch.stdout ?? "");
+    process.stderr.write(patch.stderr ?? "");
+    console.warn("⚠ Patch SQL falhou ou parcial — tentando db push mesmo assim...");
+  } else {
+    console.log("✓ Patch SQL aplicado");
+  }
+
+  console.warn("→ Sincronizando schema com prisma db push...");
   const push = run("npx", ["prisma", "db", "push", "--skip-generate"]);
   if (push.status !== 0) {
     process.stderr.write(push.stdout ?? "");

@@ -30,7 +30,7 @@ ALTER TABLE "Referral" ADD CONSTRAINT "Referral_preReferralId_fkey" FOREIGN KEY 
 -- ReferralExam
 ALTER TABLE "ReferralExam" ADD COLUMN "status" "ReferralExamStatus" NOT NULL DEFAULT 'PENDENTE';
 ALTER TABLE "ReferralExam" ADD COLUMN "resultAvailableAt" TIMESTAMP(3);
-ALTER TABLE "ReferralExam" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "ReferralExam" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 -- ReferralStatusHistory
 CREATE TABLE "ReferralStatusHistory" (
