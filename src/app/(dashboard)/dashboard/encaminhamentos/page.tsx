@@ -2,8 +2,8 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { isEmpresaUser } from "@/lib/authz";
+import { requireAuthSession } from "@/lib/page-auth";
+import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
@@ -12,11 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CLINICAL_EXAM_LABELS } from "@/types";
 
 export default async function EncaminhamentosPage() {
-  const session = await auth();
+  const session = await requireAuthSession();
   const isEmpresa = isEmpresaUser(session);
-  const where = session?.user?.role === "EMPRESA" && session.user.companyId
-    ? { companyId: session.user.companyId }
-    : {};
+  const where = getCompanyFilter(session);
 
   const referrals = await prisma.referral.findMany({
     where,
