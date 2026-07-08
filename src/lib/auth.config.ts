@@ -11,15 +11,6 @@ export const authConfig = {
   trustHost: true,
   providers: [],
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isDashboard = nextUrl.pathname.startsWith("/dashboard");
-
-      if (isDashboard) {
-        return !!auth?.user;
-      }
-
-      return true;
-    },
     jwt({ token, user }) {
       if (user) {
         const u = user as { id: string; role: UserRole; companyId?: string | null };

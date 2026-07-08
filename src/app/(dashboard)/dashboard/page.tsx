@@ -110,15 +110,14 @@ export default async function DashboardPage() {
       take: 5,
     }),
     canManageReferrals && !isEmpresa
-      ? prisma.publicReferralRequest.count({
-          where: { status: { in: ["NOVO", "EM_ANALISE"] } },
-        })
+      ? prisma.publicReferralRequest
+          .count({ where: { status: { in: ["NOVO", "EM_ANALISE"] } } })
+          .catch(() => 0)
       : Promise.resolve(0),
     canManageReferrals && !isEmpresa
-      ? prisma.publicReferralRequest.findMany({
-          orderBy: { createdAt: "desc" },
-          take: 5,
-        })
+      ? prisma.publicReferralRequest
+          .findMany({ orderBy: { createdAt: "desc" }, take: 5 })
+          .catch(() => [])
       : Promise.resolve([]),
   ]);
 

@@ -50,11 +50,13 @@ export async function generateProtocol(): Promise<string> {
       orderBy: { protocol: "desc" },
       select: { protocol: true },
     }),
-    prisma.publicReferralRequest.findFirst({
-      where: { protocol: { startsWith: prefix } },
-      orderBy: { protocol: "desc" },
-      select: { protocol: true },
-    }),
+    prisma.publicReferralRequest
+      .findFirst({
+        where: { protocol: { startsWith: prefix } },
+        orderBy: { protocol: "desc" },
+        select: { protocol: true },
+      })
+      .catch(() => null),
   ]);
 
   const numbers = [lastReferral, lastPreReferral]
