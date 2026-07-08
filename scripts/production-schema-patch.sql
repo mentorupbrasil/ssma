@@ -1,10 +1,7 @@
 -- Idempotent schema patches for production DB (created via db push, no migration history).
 -- Safe to run multiple times.
 
--- === Enums (ReferralStatus extensions) ===
-ALTER TYPE "ReferralStatus" ADD VALUE IF NOT EXISTS 'AGUARDANDO_RESULTADO';
-ALTER TYPE "ReferralStatus" ADD VALUE IF NOT EXISTS 'AGUARDANDO_DOCUMENTO';
-ALTER TYPE "ReferralStatus" ADD VALUE IF NOT EXISTS 'ASO_DISPONIVEL';
+-- Enum extensions run separately via production-schema-patch-enums.sql
 
 DO $$ BEGIN
   CREATE TYPE "PreReferralClinicalExamType" AS ENUM (
@@ -191,9 +188,6 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- === Pre-referral operations (v2) ===
-ALTER TYPE "PreReferralStatus" ADD VALUE IF NOT EXISTS 'AGUARDANDO_RETORNO';
-ALTER TYPE "PreReferralStatus" ADD VALUE IF NOT EXISTS 'DUPLICADO';
-
 ALTER TABLE "PublicReferralRequest" ADD COLUMN IF NOT EXISTS "source" TEXT NOT NULL DEFAULT 'site_pre_referral';
 ALTER TABLE "PublicReferralRequest" ADD COLUMN IF NOT EXISTS "assignedToId" TEXT;
 ALTER TABLE "PublicReferralRequest" ADD COLUMN IF NOT EXISTS "convertedReferralId" TEXT;
@@ -232,10 +226,6 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- === Appointment operations ===
-ALTER TYPE "AppointmentStatus" ADD VALUE IF NOT EXISTS 'EM_ATENDIMENTO';
-ALTER TYPE "AppointmentStatus" ADD VALUE IF NOT EXISTS 'CONCLUIDO';
-ALTER TYPE "AppointmentStatus" ADD VALUE IF NOT EXISTS 'REAGENDADO';
-
 UPDATE "Appointment" SET status = 'CONCLUIDO' WHERE status = 'REALIZADO';
 
 DO $$ BEGIN
@@ -324,11 +314,6 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- === Company operations ===
-ALTER TYPE "CompanyStatus" ADD VALUE IF NOT EXISTS 'ATIVA';
-ALTER TYPE "CompanyStatus" ADD VALUE IF NOT EXISTS 'INATIVA';
-ALTER TYPE "CompanyStatus" ADD VALUE IF NOT EXISTS 'PENDENTE';
-ALTER TYPE "CompanyStatus" ADD VALUE IF NOT EXISTS 'BLOQUEADA';
-
 UPDATE "Company" SET status = 'ATIVA' WHERE status = 'ACTIVE';
 UPDATE "Company" SET status = 'INATIVA' WHERE status = 'INACTIVE';
 
@@ -363,15 +348,8 @@ ALTER TABLE "Company" ADD COLUMN IF NOT EXISTS "zipCode" TEXT;
 ALTER TABLE "Company" ADD COLUMN IF NOT EXISTS "contractType" "CompanyContractType";
 ALTER TABLE "Company" ADD COLUMN IF NOT EXISTS "portalEnabled" BOOLEAN NOT NULL DEFAULT false;
 
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'PGR';
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'CONTRATO';
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'PROPOSTA';
-ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'EM_DIA';
-ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'VENCIDO';
-ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'ARQUIVADO';
 ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "validUntil" TIMESTAMP(3);
 
-ALTER TYPE "LeadStatus" ADD VALUE IF NOT EXISTS 'EXPIRADO';
 ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "quoteNumber" TEXT;
 ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "serviceTitle" TEXT;
 ALTER TABLE "Lead" ADD COLUMN IF NOT EXISTS "validUntil" TIMESTAMP(3);
@@ -426,12 +404,6 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- === Collaborator (Patient) operations ===
-ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'ATIVO';
-ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'INATIVO';
-ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'AFASTADO';
-ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'DESLIGADO';
-ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'PENDENTE';
-
 UPDATE "Patient" SET status = 'ATIVO' WHERE status = 'ACTIVE';
 UPDATE "Patient" SET status = 'INATIVO' WHERE status = 'INACTIVE';
 
@@ -445,8 +417,6 @@ END $$;
 
 ALTER TABLE "Patient" ADD COLUMN IF NOT EXISTS "admissionDate" TIMESTAMP(3);
 ALTER TABLE "Patient" ADD COLUMN IF NOT EXISTS "nextPeriodicDate" TIMESTAMP(3);
-
-ALTER TYPE "PatientStatus" ADD VALUE IF NOT EXISTS 'ATIVO';
 
 CREATE TABLE IF NOT EXISTS "PatientHistory" (
     "id" TEXT NOT NULL,
@@ -500,11 +470,6 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
-
-ALTER TYPE "ExamCategory" ADD VALUE IF NOT EXISTS 'CLINICO_OCUPACIONAL';
-ALTER TYPE "ExamCategory" ADD VALUE IF NOT EXISTS 'IMAGEM';
-ALTER TYPE "ExamCategory" ADD VALUE IF NOT EXISTS 'TOXICOLOGICO';
-ALTER TYPE "ExamCategory" ADD VALUE IF NOT EXISTS 'AVALIACAO_ESPECIALIZADA';
 
 ALTER TABLE "Exam" ADD COLUMN IF NOT EXISTS "shortDescription" TEXT;
 ALTER TABLE "Exam" ADD COLUMN IF NOT EXISTS "preparationType" "ExamPreparationType" NOT NULL DEFAULT 'SEM_PREPARO';
@@ -595,11 +560,6 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- === Commercial / Quotes ===
-ALTER TYPE "LeadStatus" ADD VALUE IF NOT EXISTS 'EM_ANALISE';
-ALTER TYPE "LeadStatus" ADD VALUE IF NOT EXISTS 'AGUARDANDO_RETORNO';
-ALTER TYPE "LeadStatus" ADD VALUE IF NOT EXISTS 'CONVERTIDO_ORCAMENTO';
-ALTER TYPE "LeadStatus" ADD VALUE IF NOT EXISTS 'ARQUIVADO';
-
 DO $$ BEGIN
   CREATE TYPE "QuoteStatus" AS ENUM (
     'RASCUNHO', 'EM_ANALISE', 'ENVIADO', 'AGUARDANDO_RESPOSTA',
@@ -734,17 +694,6 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- === Document operations ===
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'LAUDO_INSALUBRIDADE';
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'LAUDO_PERICULOSIDADE';
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'RESULTADO_EXAME';
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'GUIA_ENCAMINHAMENTO';
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'PROPOSTA_ORCAMENTO';
-ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'DOCUMENTO_ADMINISTRATIVO';
-
-ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'EM_EMISSAO';
-ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'DISPONIVEL';
-ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'ENVIADO';
-
 DO $$ BEGIN CREATE TYPE "DocumentHistoryAction" AS ENUM ('CREATED','FILE_ATTACHED','FILE_REPLACED','STATUS_CHANGED','DOWNLOADED','VIEWED','SENT','ARCHIVED','PORTAL_ENABLED','PORTAL_DISABLED','DELETED'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE "DocumentAccessAction" AS ENUM ('VIEW','DOWNLOAD'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
@@ -784,5 +733,3 @@ DO $$ BEGIN ALTER TABLE "DocumentHistory" ADD CONSTRAINT "DocumentHistory_docume
 DO $$ BEGIN ALTER TABLE "DocumentHistory" ADD CONSTRAINT "DocumentHistory_performedByUserId_fkey" FOREIGN KEY ("performedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "DocumentAccessLog" ADD CONSTRAINT "DocumentAccessLog_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER TABLE "DocumentAccessLog" ADD CONSTRAINT "DocumentAccessLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-
--- === Phase 1: Product repositioning — run prisma/migrations/20260708150000_product_repositioning_phase1/migration.sql ===
