@@ -20,6 +20,10 @@ import {
   PATIENT_HISTORY_ACTION_LABELS,
   PATIENT_STATUS_LABELS,
 } from "@/lib/collaborators";
+import {
+  DOCUMENT_TYPE_LABELS,
+  normalizeDocumentStatus,
+} from "@/lib/documents";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -502,51 +506,71 @@ function ExamsTab({ collaborator }: { collaborator: CollaboratorDetailSerialized
 
 function DocumentsTab({ collaborator }: { collaborator: CollaboratorDetailSerialized }) {
   return collaborator.documents.length === 0 ? (
-    <p className="text-sm text-slate-500">Nenhum documento vinculado.</p>
+    <div className="space-y-4">
+      <p className="text-sm text-slate-500">Nenhum documento vinculado.</p>
+      <Link
+        href={`/dashboard/documentos?patientId=${collaborator.id}`}
+        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+      >
+        <Plus className="mr-2 h-4 w-4" /> Anexar documento
+      </Link>
+    </div>
   ) : (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Nome</TableHead>
-          <TableHead>Validade</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Anexado em</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {collaborator.documents.map((d) => (
-          <TableRow key={d.id}>
-            <TableCell>{d.type}</TableCell>
-            <TableCell>
-              {d.fileUrl ? (
-                <a
-                  href={d.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#16A085] hover:underline"
-                >
-                  {d.title}
-                </a>
-              ) : (
-                d.title
-              )}
-            </TableCell>
-            <TableCell>
-              {d.validUntil
-                ? format(new Date(d.validUntil), "dd/MM/yyyy", { locale: ptBR })
-                : "—"}
-            </TableCell>
-            <TableCell>
-              <StatusBadge status={d.status} type="document" />
-            </TableCell>
-            <TableCell>
-              {format(new Date(d.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-            </TableCell>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Link
+          href={`/dashboard/documentos?patientId=${collaborator.id}`}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+        >
+          Ver na central de documentos
+        </Link>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Tipo</TableHead>
+            <TableHead>Nome</TableHead>
+            <TableHead>Validade</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Anexado em</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {collaborator.documents.map((d) => (
+            <TableRow key={d.id}>
+              <TableCell>
+                {DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS] ?? d.type}
+              </TableCell>
+              <TableCell>
+                {d.fileUrl ? (
+                  <a
+                    href={`/api/documents/${d.id}/file`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#16A085] hover:underline"
+                  >
+                    {d.title}
+                  </a>
+                ) : (
+                  d.title
+                )}
+              </TableCell>
+              <TableCell>
+                {d.validUntil
+                  ? format(new Date(d.validUntil), "dd/MM/yyyy", { locale: ptBR })
+                  : "—"}
+              </TableCell>
+              <TableCell>
+                <StatusBadge status={normalizeDocumentStatus(d.status as import("@prisma/client").DocumentStatus)} type="document" />
+              </TableCell>
+              <TableCell>
+                {format(new Date(d.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 

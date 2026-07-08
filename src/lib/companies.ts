@@ -116,7 +116,7 @@ export function buildCompanyWhere(filters: CompanyListFilters): Prisma.CompanyWh
 
   if (filters.status && filters.status !== "ALL") {
     if (filters.status === "DOCS_PENDING") {
-      where.documents = { some: { status: { in: ["PENDENTE", "EM_ELABORACAO", "VENCIDO"] } } };
+      where.documents = { some: { status: { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO", "VENCIDO"] } } };
     } else if (filters.status === "REFERRALS_OPEN") {
       where.referrals = { some: { status: { in: OPEN_REFERRAL_STATUSES } } };
     } else if (filters.status === "QUOTES_PENDING") {
@@ -189,7 +189,7 @@ export function computeDocumentSummary(
   );
   if (hasExpired) return "VENCIDO";
   const hasPending = documents.some((d) =>
-    ["PENDENTE", "EM_ELABORACAO"].includes(d.status)
+    ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO"].includes(d.status)
   );
   if (hasPending) return "PENDENTE";
   return "EM_DIA";

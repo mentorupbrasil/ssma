@@ -1,59 +1,95 @@
-import { prisma } from "@/lib/prisma";
-import { PageHeader } from "@/components/dashboard/PageHeader";
-import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { format } from "date-fns";
-import { requireAuthSession } from "@/lib/page-auth";
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { hasPermission } from "@/lib/permissions";
 import { getCompanyFilter } from "@/lib/authz";
+import {
+  listDocumentsForDashboard,
+  getDocumentFormOptions,
+} from "@/actions/documents";
+import { DocumentosClient } from "@/components/dashboard/documents/DocumentosClient";
+import { Loader2 } from "lucide-react";
 
-export default async function DocumentosPage() {
-  const session = await requireAuthSession();
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function param(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+async function DocumentosContent({ searchParams }: { searchParams: SearchParams }) {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  const canView = hasPermission(session.user.role, "documents.manage");
+  if (!canView) redirect("/dashboard");
+
   const companyFilter = getCompanyFilter(session);
+  const sp = await searchParams;
+  const page = Math.max(1, parseInt(param(sp.page) ?? "1", 10) || 1);
 
-  const documents = await prisma.document.findMany({
-    where: companyFilter.companyId ? { companyId: companyFilter.companyId } : undefined,
-    include: { company: true, patient: true, referral: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const [data, formOptions] = await Promise.all([
+    listDocumentsForDashboard(
+      {
+        q: param(sp.q),
+        card: param(sp.card),
+        type: param(sp.type),
+        status: param(sp.status),
+        companyId: param(sp.companyId),
+        patientId: param(sp.patientId),
+        referralId: param(sp.referralId),
+        dateFrom: param(sp.dateFrom),
+        dateTo: param(sp.dateTo),
+        validity: param(sp.validity),
+        sensitive: param(sp.sensitive),
+        sort: param(sp.sort),
+        page,
+      },
+      companyFilter.companyId
+    ),
+    getDocumentFormOptions(),
+  ]);
 
   return (
-    <div>
-      <PageHeader title="Documentos" description="ASO, PCMSO, laudos e demais documentos" />
+    <DocumentosClient
+      initialItems={data.items}
+      initialTotal={data.total}
+      initialPage={data.page}
+      pageSize={data.pageSize}
+      statCounts={data.statCounts}
+      canManage={canView}
+      formOptions={formOptions}
+      filters={{
+        q: param(sp.q),
+        card: param(sp.card),
+        type: param(sp.type),
+        status: param(sp.status),
+        companyId: param(sp.companyId),
+        patientId: param(sp.patientId),
+        referralId: param(sp.referralId),
+        dateFrom: param(sp.dateFrom),
+        dateTo: param(sp.dateTo),
+        validity: param(sp.validity),
+        sensitive: param(sp.sensitive),
+        sort: param(sp.sort),
+      }}
+    />
+  );
+}
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Título</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Vínculo</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {documents.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-slate-500 py-8">
-                  Nenhum documento cadastrado. Estrutura pronta para upload em fase futura.
-                </TableCell>
-              </TableRow>
-            ) : (
-              documents.map((d) => (
-                <TableRow key={d.id}>
-                  <TableCell className="font-medium">{d.title}</TableCell>
-                  <TableCell>{d.type}</TableCell>
-                  <TableCell>
-                    {d.company?.tradeName ?? d.patient?.fullName ?? d.referral?.protocol ?? "—"}
-                  </TableCell>
-                  <TableCell>{format(d.createdAt, "dd/MM/yyyy")}</TableCell>
-                  <TableCell><StatusBadge status={d.status} type="document" /></TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+export default function DocumentosPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-[#16A085]" />
+        </div>
+      }
+    >
+      <DocumentosContent searchParams={searchParams} />
+    </Suspense>
   );
 }

@@ -305,6 +305,11 @@ async function main() {
     });
   }
 
+  const referralCarlos = await prisma.referral.findUnique({
+    where: { protocol: "UNI-2026-000001" },
+    select: { id: true },
+  });
+
   await prisma.document.createMany({
     data: [
       {
@@ -313,11 +318,22 @@ async function main() {
         status: "PENDENTE",
         companyId: company1.id,
         patientId: patient1.id,
+        referralId: referralCarlos?.id,
+        sensitive: true,
+        asoClinicalType: "ADMISSIONAL",
       },
       {
         title: "PCMSO — Alfa Indústria",
         type: "PCMSO",
-        status: "CONCLUIDO",
+        status: "DISPONIVEL",
+        companyId: company1.id,
+        validUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        availableOnPortal: true,
+      },
+      {
+        title: "PGR — Alfa Indústria",
+        type: "PGR",
+        status: "EM_EMISSAO",
         companyId: company1.id,
       },
     ],

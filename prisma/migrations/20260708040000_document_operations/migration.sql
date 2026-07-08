@@ -1,0 +1,85 @@
+-- Document module expansion
+
+ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'LAUDO_INSALUBRIDADE';
+ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'LAUDO_PERICULOSIDADE';
+ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'RESULTADO_EXAME';
+ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'GUIA_ENCAMINHAMENTO';
+ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'PROPOSTA_ORCAMENTO';
+ALTER TYPE "DocumentType" ADD VALUE IF NOT EXISTS 'DOCUMENTO_ADMINISTRATIVO';
+
+ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'EM_EMISSAO';
+ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'DISPONIVEL';
+ALTER TYPE "DocumentStatus" ADD VALUE IF NOT EXISTS 'ENVIADO';
+
+DO $$ BEGIN
+  CREATE TYPE "DocumentHistoryAction" AS ENUM (
+    'CREATED', 'FILE_ATTACHED', 'FILE_REPLACED', 'STATUS_CHANGED',
+    'DOWNLOADED', 'VIEWED', 'SENT', 'ARCHIVED', 'PORTAL_ENABLED',
+    'PORTAL_DISABLED', 'DELETED'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE "DocumentAccessAction" AS ENUM ('VIEW', 'DOWNLOAD');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "fileName" TEXT;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "fileMimeType" TEXT;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "fileSize" INTEGER;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "examId" TEXT;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "quoteId" TEXT;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "issuedAt" TIMESTAMP(3);
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "sensitive" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "availableOnPortal" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "uploadedByUserId" TEXT;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "asoClinicalType" "ClinicalExamType";
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "asoExamDate" TIMESTAMP(3);
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "asoProfessionalName" TEXT;
+ALTER TABLE "Document" ADD COLUMN IF NOT EXISTS "clientNotes" TEXT;
+
+UPDATE "Document" SET "status" = 'EM_EMISSAO' WHERE "status"::text = 'EM_ELABORACAO';
+UPDATE "Document" SET "status" = 'DISPONIVEL' WHERE "status"::text IN ('CONCLUIDO', 'EM_DIA', 'ENTREGUE');
+
+CREATE TABLE IF NOT EXISTS "DocumentHistory" (
+    "id" TEXT NOT NULL,
+    "documentId" TEXT NOT NULL,
+    "action" "DocumentHistoryAction" NOT NULL,
+    "notes" TEXT,
+    "performedByUserId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "DocumentHistory_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS "DocumentAccessLog" (
+    "id" TEXT NOT NULL,
+    "documentId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "action" "DocumentAccessAction" NOT NULL,
+    "ipAddress" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "DocumentAccessLog_pkey" PRIMARY KEY ("id")
+);
+
+DO $$ BEGIN
+  ALTER TABLE "Document" ADD CONSTRAINT "Document_examId_fkey" FOREIGN KEY ("examId") REFERENCES "Exam"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "Document" ADD CONSTRAINT "Document_quoteId_fkey" FOREIGN KEY ("quoteId") REFERENCES "Quote"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "Document" ADD CONSTRAINT "Document_uploadedByUserId_fkey" FOREIGN KEY ("uploadedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "DocumentHistory" ADD CONSTRAINT "DocumentHistory_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "DocumentHistory" ADD CONSTRAINT "DocumentHistory_performedByUserId_fkey" FOREIGN KEY ("performedByUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "DocumentAccessLog" ADD CONSTRAINT "DocumentAccessLog_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  ALTER TABLE "DocumentAccessLog" ADD CONSTRAINT "DocumentAccessLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;

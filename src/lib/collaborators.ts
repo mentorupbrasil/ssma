@@ -79,7 +79,7 @@ export function buildCollaboratorWhere(
         },
       };
     } else if (filters.status === "DOCS_PENDING") {
-      where.documents = { some: { status: { in: ["PENDENTE", "EM_ELABORACAO", "VENCIDO"] } } };
+      where.documents = { some: { status: { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO", "VENCIDO"] } } };
     } else if (filters.status === "PERIODIC_DUE") {
       const in30 = addDays(new Date(), 30);
       where.OR = [
@@ -114,7 +114,7 @@ export function buildCollaboratorWhere(
   }
 
   if (filters.docsPending === "true") {
-    where.documents = { some: { status: { in: ["PENDENTE", "VENCIDO"] } } };
+    where.documents = { some: { status: { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO", "VENCIDO"] } } };
   }
 
   if (filters.periodicDue === "true") {
@@ -168,7 +168,7 @@ export function serializeCollaboratorListItem(
     include: {
       company: true;
       referrals: { orderBy: { createdAt: "desc" }; take: 1 };
-      documents: { where: { status: { in: ["PENDENTE", "VENCIDO", "EM_ELABORACAO"] } }; take: 1 };
+      documents: { where: { status: { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO", "VENCIDO"] } }; take: 1 };
     };
   }>
 ): CollaboratorListItem {

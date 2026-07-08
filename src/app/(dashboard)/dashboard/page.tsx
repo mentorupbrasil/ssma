@@ -23,6 +23,8 @@ import { CLINICAL_EXAM_LABELS } from "@/types";
 import { requireAuthSession } from "@/lib/page-auth";
 import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
 import { hasPermission } from "@/lib/permissions";
+import { countPendingQuotes } from "@/actions/commercial";
+import { countPendingDocuments } from "@/actions/documents";
 
 export default async function DashboardPage() {
   const session = await requireAuthSession();
@@ -34,7 +36,6 @@ export default async function DashboardPage() {
   const canManagePatients = hasPermission(session.user.role, "patients.manage");
   const canManageAppointments = hasPermission(session.user.role, "appointments.manage");
   const canViewLeads = hasPermission(session.user.role, "leads.manage") && !isEmpresa;
-  const { countPendingQuotes } = await import("@/actions/commercial");
   const canViewDocs = hasPermission(session.user.role, "documents.manage");
 
   const todayStart = new Date();
@@ -87,12 +88,7 @@ export default async function DashboardPage() {
       ? countPendingQuotes()
       : Promise.resolve(0),
     canViewDocs
-      ? prisma.document.count({
-          where: {
-            status: "PENDENTE",
-            ...(companyFilter.companyId ? { companyId: companyFilter.companyId } : {}),
-          },
-        })
+      ? countPendingDocuments(companyFilter.companyId)
       : Promise.resolve(0),
     prisma.referral.count({
       where: {
@@ -139,7 +135,7 @@ export default async function DashboardPage() {
     },
     { title: "Colaboradores", value: totalPatients, icon: Users, show: canManagePatients, href: "/dashboard/colaboradores" },
     { title: "Orçamentos pendentes", value: pendingLeads, icon: DollarSign, show: canViewLeads, href: "/dashboard/orcamentos" },
-    { title: "Documentos pendentes", value: pendingDocs, icon: FolderOpen, show: canViewDocs, href: "/dashboard/documentos" },
+    { title: "Documentos pendentes", value: pendingDocs, icon: FolderOpen, show: canViewDocs, href: "/dashboard/documentos?card=PENDENTE" },
     { title: "Concluídos no mês", value: completedReferrals, icon: CheckCircle2, show: true, href: "/dashboard/encaminhamentos?status=CONCLUIDO" },
   ].filter((s) => s.show);
 

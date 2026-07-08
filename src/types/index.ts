@@ -96,10 +96,16 @@ export const APPOINTMENT_STATUS_COLORS: Record<AppointmentStatus, string> = {
 
 export const DOCUMENT_STATUS_LABELS: Record<DocumentStatus, string> = {
   PENDENTE: "Pendente",
-  EM_ELABORACAO: "Em elaboração",
-  CONCLUIDO: "Concluído",
-  ENTREGUE: "Entregue",
+  EM_EMISSAO: "Em emissão",
+  DISPONIVEL: "Disponível",
+  ENVIADO: "Enviado",
+  VENCIDO: "Vencido",
+  ARQUIVADO: "Arquivado",
   CANCELADO: "Cancelado",
+  EM_ELABORACAO: "Em emissão",
+  CONCLUIDO: "Disponível",
+  ENTREGUE: "Enviado",
+  EM_DIA: "Disponível",
 };
 
 export const CLINICAL_EXAM_LABELS: Record<string, string> = {
