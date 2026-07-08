@@ -1,0 +1,9 @@
+export { DashboardShell } from "@/components/dashboard/DashboardShell";
+export { Sidebar } from "@/components/dashboard/Sidebar";
+export { Topbar } from "@/components/dashboard/Topbar";
+export { PageHeader as ModuleHeader } from "@/components/dashboard/PageHeader";
+export { FilterBar } from "@/components/dashboard/FilterBar";
+export { DataTable as AdminTable } from "@/components/dashboard/DataTable";
+export { StatCard } from "@/components/dashboard/StatCard";
+export { EmptyState } from "@/components/dashboard/EmptyState";
+export { StatusBadge } from "@/components/dashboard/StatusBadge";

@@ -59,10 +59,7 @@ export default function ServicosPage() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Button
-            variant="outline"
-            className="rounded-xl border-white/25 bg-white/5 text-white hover:bg-white/10 hover:text-white"
-          >
+          <Button variant="outline-light" className="rounded-xl">
             Falar com especialista
           </Button>
         </a>

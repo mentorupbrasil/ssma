@@ -30,6 +30,7 @@ import { getReferralDetail } from "@/actions/referrals";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -312,18 +313,16 @@ export function EncaminhamentosClient({
 
       <DataTable className={cn(isPending && "opacity-60")}>
         {initialItems.length === 0 ? (
-          <div className="referral-empty-state">
-            <p className="font-medium text-slate-700">Nenhum encaminhamento encontrado</p>
-            <p className="text-sm text-slate-500">
-              Crie um novo encaminhamento ou ajuste os filtros.
-            </p>
-            <Link href="/dashboard/encaminhamentos/novo">
-              <Button variant="brand" size="sm" className="mt-4">
-                <Plus className="mr-1.5 h-4 w-4" />
-                Novo encaminhamento
-              </Button>
-            </Link>
-          </div>
+          <EmptyState
+            compact
+            className="border-0 bg-transparent"
+            title="Nenhum encaminhamento encontrado"
+            description="Crie um novo encaminhamento ou ajuste os filtros."
+            action={{
+              label: "Novo encaminhamento",
+              href: "/dashboard/encaminhamentos/novo",
+            }}
+          />
         ) : (
           <Table>
             <TableHeader>

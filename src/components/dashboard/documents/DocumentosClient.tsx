@@ -38,6 +38,8 @@ import {
 } from "@/actions/documents";
 import type { DocumentFormOptions } from "@/lib/documents";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { LoadingState } from "@/components/ui/loading-state";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DocumentDetailContent } from "./DocumentDetailContent";
 import { DocumentFormDialog } from "./DocumentDialogs";
@@ -476,31 +478,32 @@ export function DocumentosClient({
       </div>
 
       {empty ? (
-        <div className="mt-8 rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center">
-          <FolderOpen className="mx-auto h-10 w-10 text-slate-300" />
-          <h3 className="mt-4 text-lg font-semibold text-slate-800">Nenhum documento cadastrado</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            Anexe documentos ocupacionais, ASOs, laudos e arquivos vinculados às empresas e
-            colaboradores.
-          </p>
-          {canManage && (
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button variant="outline" onClick={() => openForm(true)}>
-                <Paperclip className="mr-2 h-4 w-4" /> Anexar arquivo
-              </Button>
-              <Button variant="brand" onClick={() => openForm(false)}>
-                <Plus className="mr-2 h-4 w-4" /> Novo documento
-              </Button>
-            </div>
-          )}
-        </div>
+        <EmptyState
+          icon={FolderOpen}
+          className="mt-8 bg-white"
+          title="Nenhum documento cadastrado"
+          description="Anexe documentos ocupacionais, ASOs, laudos e arquivos vinculados às empresas e colaboradores."
+          secondaryAction={
+            canManage
+              ? {
+                  label: "Anexar arquivo",
+                  onClick: () => openForm(true),
+                  variant: "outline",
+                }
+              : undefined
+          }
+          action={
+            canManage
+              ? {
+                  label: "Novo documento",
+                  onClick: () => openForm(false),
+                }
+              : undefined
+          }
+        />
       ) : (
         <div className="relative mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-          {isPending && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60">
-              <Loader2 className="h-6 w-6 animate-spin text-[#16A085]" />
-            </div>
-          )}
+          {isPending && <LoadingState overlay label="Atualizando documentos..." />}
           <Table>
             <TableHeader>
               <TableRow>

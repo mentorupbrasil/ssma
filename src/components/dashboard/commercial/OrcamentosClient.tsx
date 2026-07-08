@@ -57,6 +57,8 @@ import {
   addCommercialNote,
 } from "@/actions/commercial";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { LoadingState } from "@/components/ui/loading-state";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import {
   LeadDetailContent,
@@ -346,23 +348,22 @@ export function OrcamentosClient({
       </div>
 
       {isEmpty ? (
-        <div className="mt-8 rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center">
-          <DollarSign className="mx-auto h-10 w-10 text-slate-300" />
-          <h3 className="mt-4 text-lg font-semibold text-slate-800">{emptyStates[activeTab].title}</h3>
-          <p className="mt-2 text-sm text-slate-500">{emptyStates[activeTab].desc}</p>
-          {canManage && activeTab === "orcamentos" && (
-            <Button variant="brand" className="mt-6" onClick={() => setQuoteFormOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Novo orçamento
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={DollarSign}
+          title={emptyStates[activeTab].title}
+          description={emptyStates[activeTab].desc}
+          action={
+            canManage && activeTab === "orcamentos"
+              ? {
+                  label: "Novo orçamento",
+                  onClick: () => setQuoteFormOpen(true),
+                }
+              : undefined
+          }
+        />
       ) : (
         <div className="relative mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-          {isPending && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/60">
-              <Loader2 className="h-6 w-6 animate-spin text-[#16A085]" />
-            </div>
-          )}
+          {isPending && <LoadingState overlay label="Atualizando lista..." />}
           <Table>
             <TableHeader>
               {activeTab === "solicitacoes" && (

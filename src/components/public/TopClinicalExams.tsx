@@ -33,7 +33,7 @@ export function TopClinicalExams() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-          <Link href="#preparo-por-exame">
+          <Link href="/exames#preparo-por-exame">
             <Button variant="outline" size="lg" className="rounded-xl">
               Ver preparo de exames
             </Button>

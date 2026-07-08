@@ -38,6 +38,7 @@ import {
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -357,21 +358,21 @@ export function PreEncaminhamentosClient(props: Props) {
 
           <DataTable className={cn(isPending && "opacity-60")}>
             {items.length === 0 ? (
-              <div className="referral-empty-state">
-                <p className="font-medium text-slate-700">Nenhum pré-encaminhamento encontrado</p>
-                <p className="max-w-md text-sm text-slate-500">
-                  As solicitações enviadas pelo formulário público aparecerão aqui para análise e
-                  conversão em encaminhamento oficial.
-                </p>
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  <Link href="/encaminhamento-online">
-                    <Button variant="outline" size="sm">Ver formulário público</Button>
-                  </Link>
-                  <Link href="/dashboard/encaminhamentos/novo">
-                    <Button variant="brand" size="sm">Criar encaminhamento manual</Button>
-                  </Link>
-                </div>
-              </div>
+              <EmptyState
+                compact
+                className="border-0 bg-transparent"
+                title="Nenhum pré-encaminhamento encontrado"
+                description="As solicitações enviadas pelo formulário público aparecerão aqui para análise e conversão em encaminhamento oficial."
+                secondaryAction={{
+                  label: "Ver formulário público",
+                  href: "/encaminhamento-online",
+                  variant: "outline",
+                }}
+                action={{
+                  label: "Criar encaminhamento manual",
+                  href: "/dashboard/encaminhamentos/novo",
+                }}
+              />
             ) : (
               <Table>
                 <TableHeader>
