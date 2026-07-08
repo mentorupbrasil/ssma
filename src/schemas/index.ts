@@ -86,41 +86,38 @@ export const referralFormSchema = referralStep1Schema
 
 export type ReferralFormData = z.infer<typeof referralFormSchema>;
 
-const optionalDocumentSchema = z
+const optionalDocumentField = z
   .string()
-  .transform((v) => {
+  .refine((v) => {
     const digits = v.replace(/\D/g, "");
-    return digits.length > 0 ? digits : undefined;
-  })
-  .refine((v) => !v || v.length === 11 || v.length === 14, "Documento inválido");
+    return digits.length === 0 || digits.length === 11 || digits.length === 14;
+  }, "Documento inválido");
 
-const optionalCpfSchema = z
+const optionalCpfField = z
   .string()
-  .transform((v) => {
+  .refine((v) => {
     const digits = v.replace(/\D/g, "");
-    return digits.length > 0 ? digits : undefined;
-  })
-  .refine((v) => !v || v.length === 11, "CPF inválido");
+    return digits.length === 0 || digits.length === 11;
+  }, "CPF inválido");
 
-const optionalEmailSchema = z
+const optionalEmailField = z
   .string()
-  .transform((v) => {
+  .refine((v) => {
     const trimmed = v.trim();
-    return trimmed.length > 0 ? trimmed : undefined;
-  })
-  .refine((v) => !v || z.string().email().safeParse(v).success, "E-mail inválido");
+    return trimmed.length === 0 || z.string().email().safeParse(trimmed).success;
+  }, "E-mail inválido");
 
 export const preReferralStep1Schema = z.object({
   companyName: z.string().min(2, "Nome da empresa obrigatório"),
-  companyDocument: optionalDocumentSchema,
+  companyDocument: optionalDocumentField,
   responsibleName: z.string().min(2, "Nome do responsável obrigatório"),
   whatsapp: z.string().min(10, "WhatsApp obrigatório"),
-  email: optionalEmailSchema,
+  email: optionalEmailField,
 });
 
 export const preReferralStep2Schema = z.object({
   employeeName: z.string().min(2, "Nome do colaborador obrigatório"),
-  employeeDocument: optionalCpfSchema,
+  employeeDocument: optionalCpfField,
   employeeRole: z.string().min(2, "Função obrigatória"),
   clinicalExamType: z.enum([
     "ADMISSIONAL",

@@ -188,6 +188,16 @@ export async function submitPreReferral(
 
   const d = parsed.data;
 
+  const normalizeDocument = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    return digits.length > 0 ? digits : null;
+  };
+
+  const normalizeEmail = (value: string) => {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  };
+
   try {
     const protocol = await generateProtocol();
 
@@ -195,12 +205,12 @@ export async function submitPreReferral(
       data: {
         protocol,
         companyName: d.companyName,
-        companyDocument: d.companyDocument || null,
+        companyDocument: normalizeDocument(d.companyDocument),
         responsibleName: d.responsibleName,
         whatsapp: d.whatsapp.replace(/\D/g, ""),
-        email: d.email || null,
+        email: normalizeEmail(d.email),
         employeeName: d.employeeName,
-        employeeDocument: d.employeeDocument || null,
+        employeeDocument: normalizeDocument(d.employeeDocument),
         employeeRole: d.employeeRole,
         clinicalExamType: d.clinicalExamType,
         examSelectionMode: d.examSelectionMode,

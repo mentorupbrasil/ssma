@@ -66,6 +66,9 @@ export function PreReferralWizard() {
     mode: "onSubmit",
     reValidateMode: "onSubmit",
     defaultValues: {
+      companyDocument: "",
+      email: "",
+      employeeDocument: "",
       selectedExams: [],
       examSelectionMode: "NAO_SEI",
     },
@@ -113,6 +116,9 @@ export function PreReferralWizard() {
 
   const resetForm = () => {
     form.reset({
+      companyDocument: "",
+      email: "",
+      employeeDocument: "",
       selectedExams: [],
       examSelectionMode: "NAO_SEI",
     });
