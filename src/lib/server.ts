@@ -43,15 +43,26 @@ export async function createAuditLog(params: {
 export async function generateProtocol(): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `UNI-${year}-`;
-  const last = await prisma.referral.findFirst({
-    where: { protocol: { startsWith: prefix } },
-    orderBy: { protocol: "desc" },
-    select: { protocol: true },
-  });
 
-  const lastNumber = last
-    ? parseInt(last.protocol.replace(prefix, ""), 10)
-    : 0;
+  const [lastReferral, lastPreReferral] = await Promise.all([
+    prisma.referral.findFirst({
+      where: { protocol: { startsWith: prefix } },
+      orderBy: { protocol: "desc" },
+      select: { protocol: true },
+    }),
+    prisma.publicReferralRequest.findFirst({
+      where: { protocol: { startsWith: prefix } },
+      orderBy: { protocol: "desc" },
+      select: { protocol: true },
+    }),
+  ]);
+
+  const numbers = [lastReferral, lastPreReferral]
+    .filter(Boolean)
+    .map((item) => parseInt(item!.protocol.replace(prefix, ""), 10))
+    .filter((n) => !Number.isNaN(n));
+
+  const lastNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
 
   return `${prefix}${String(lastNumber + 1).padStart(6, "0")}`;
 }

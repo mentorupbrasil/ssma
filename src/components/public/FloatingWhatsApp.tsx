@@ -4,7 +4,7 @@ import { MessageCircle } from "lucide-react";
 import { whatsappLink } from "@/lib/helpers";
 
 const DEFAULT_MESSAGE =
-  "Olá! Gostaria de falar com um especialista em Saúde e Segurança do Trabalho.";
+  "Olá! Quero fazer um encaminhamento ocupacional e preciso de ajuda.";
 
 export function FloatingWhatsApp() {
   return (

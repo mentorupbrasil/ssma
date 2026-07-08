@@ -7,6 +7,8 @@ import {
   patientSchema,
   referralStatusSchema,
   leadStatusSchema,
+  preReferralFormSchema,
+  preReferralStatusSchema,
   appointmentSchema,
   contactActionSchema,
 } from "@/schemas";
@@ -166,6 +168,105 @@ export async function submitReferral(
       return { success: false, error: "CPF ou CNPJ já cadastrado com dados conflitantes." };
     }
     return { success: false, error: "Erro ao enviar encaminhamento. Tente novamente." };
+  }
+}
+
+export async function submitPreReferral(
+  data: unknown
+): Promise<
+  ActionResult<{
+    protocol: string;
+    companyName: string;
+    employeeName: string;
+    clinicalExamType: string;
+  }>
+> {
+  const parsed = preReferralFormSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: "Dados inválidos. Verifique o formulário." };
+  }
+
+  const d = parsed.data;
+
+  try {
+    const protocol = await generateProtocol();
+
+    await prisma.publicReferralRequest.create({
+      data: {
+        protocol,
+        companyName: d.companyName,
+        companyDocument: d.companyDocument || null,
+        responsibleName: d.responsibleName,
+        whatsapp: d.whatsapp.replace(/\D/g, ""),
+        email: d.email || null,
+        employeeName: d.employeeName,
+        employeeDocument: d.employeeDocument || null,
+        employeeRole: d.employeeRole,
+        clinicalExamType: d.clinicalExamType,
+        examSelectionMode: d.examSelectionMode,
+        selectedExams:
+          d.examSelectionMode === "SELECIONAR" ? d.selectedExams : [],
+        notes: d.notes?.trim() || null,
+        consentAccepted: true,
+        status: "NOVO",
+      },
+    });
+
+    await createAuditLog({
+      action: "CREATE",
+      entity: "PublicReferralRequest",
+      details: `Pré-encaminhamento público ${protocol}`,
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/pre-encaminhamentos");
+    revalidatePath("/dashboard/encaminhamentos");
+
+    return {
+      success: true,
+      protocol,
+      companyName: d.companyName,
+      employeeName: d.employeeName,
+      clinicalExamType: d.clinicalExamType,
+    };
+  } catch (error) {
+    console.error("submitPreReferral error:", error);
+    return { success: false, error: "Erro ao enviar pré-encaminhamento. Tente novamente." };
+  }
+}
+
+export async function updatePreReferralStatus(
+  id: string,
+  status: unknown
+): Promise<ActionResult> {
+  const parsedStatus = preReferralStatusSchema.safeParse(status);
+  if (!parsedStatus.success) {
+    return { success: false, error: "Status inválido." };
+  }
+
+  try {
+    const session = await requirePermission("referrals.manage");
+
+    await prisma.publicReferralRequest.update({
+      where: { id },
+      data: { status: parsedStatus.data },
+    });
+
+    await createAuditLog({
+      userId: session.user.id,
+      action: "UPDATE",
+      entity: "PublicReferralRequest",
+      entityId: id,
+      details: `Status alterado para ${parsedStatus.data}`,
+    });
+
+    revalidatePath("/dashboard/pre-encaminhamentos");
+    revalidatePath(`/dashboard/pre-encaminhamentos/${id}`);
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: actionError(e, "Não autorizado.") };
   }
 }
 

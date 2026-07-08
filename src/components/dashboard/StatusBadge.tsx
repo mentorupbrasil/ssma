@@ -1,9 +1,9 @@
-import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS } from "@/types";
+import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_COLORS, LEAD_STATUS_LABELS, APPOINTMENT_STATUS_LABELS, DOCUMENT_STATUS_LABELS, PRE_REFERRAL_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 
 type StatusBadgeProps = {
   status: string;
-  type?: "referral" | "lead" | "appointment" | "document";
+  type?: "referral" | "lead" | "appointment" | "document" | "preReferral";
 };
 
 const LABEL_MAPS = {
@@ -11,6 +11,7 @@ const LABEL_MAPS = {
   lead: LEAD_STATUS_LABELS,
   appointment: APPOINTMENT_STATUS_LABELS,
   document: DOCUMENT_STATUS_LABELS,
+  preReferral: PRE_REFERRAL_STATUS_LABELS,
 };
 
 const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
@@ -20,6 +21,7 @@ const COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   AGENDADO: { bg: "bg-violet-50", text: "text-violet-800", dot: "bg-violet-500" },
   EM_ATENDIMENTO: { bg: "bg-cyan-50", text: "text-cyan-800", dot: "bg-cyan-500" },
   CONCLUIDO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
+  CONVERTIDO: { bg: "bg-emerald-50", text: "text-emerald-800", dot: "bg-emerald-500" },
   CANCELADO: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-400" },
   EM_CONTATO: { bg: "bg-amber-50", text: "text-amber-800", dot: "bg-amber-500" },
   PROPOSTA_ENVIADA: { bg: "bg-purple-50", text: "text-purple-800", dot: "bg-purple-500" },

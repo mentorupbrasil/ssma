@@ -86,6 +86,83 @@ export const referralFormSchema = referralStep1Schema
 
 export type ReferralFormData = z.infer<typeof referralFormSchema>;
 
+const optionalDocumentSchema = z
+  .string()
+  .transform((v) => {
+    const digits = v.replace(/\D/g, "");
+    return digits.length > 0 ? digits : undefined;
+  })
+  .refine((v) => !v || v.length === 11 || v.length === 14, "Documento inválido");
+
+const optionalCpfSchema = z
+  .string()
+  .transform((v) => {
+    const digits = v.replace(/\D/g, "");
+    return digits.length > 0 ? digits : undefined;
+  })
+  .refine((v) => !v || v.length === 11, "CPF inválido");
+
+const optionalEmailSchema = z
+  .string()
+  .transform((v) => {
+    const trimmed = v.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  })
+  .refine((v) => !v || z.string().email().safeParse(v).success, "E-mail inválido");
+
+export const preReferralStep1Schema = z.object({
+  companyName: z.string().min(2, "Nome da empresa obrigatório"),
+  companyDocument: optionalDocumentSchema,
+  responsibleName: z.string().min(2, "Nome do responsável obrigatório"),
+  whatsapp: z.string().min(10, "WhatsApp obrigatório"),
+  email: optionalEmailSchema,
+});
+
+export const preReferralStep2Schema = z.object({
+  employeeName: z.string().min(2, "Nome do colaborador obrigatório"),
+  employeeDocument: optionalCpfSchema,
+  employeeRole: z.string().min(2, "Função obrigatória"),
+  clinicalExamType: z.enum([
+    "ADMISSIONAL",
+    "DEMISSIONAL",
+    "PERIODICO",
+    "RETORNO_TRABALHO",
+    "MUDANCA_FUNCAO",
+    "NAO_SEI_INFORMAR",
+  ]),
+});
+
+export const preReferralStep3Schema = z.object({
+  examSelectionMode: z.enum(["NAO_SEI", "SELECIONAR", "ANEXAR_FUTURO"]),
+  selectedExams: z.array(z.string()),
+  notes: z.string().optional(),
+  consentAccepted: z.literal(true, {
+    message: "É necessário aceitar o termo para continuar",
+  }),
+});
+
+export const preReferralFormSchema = preReferralStep1Schema
+  .merge(preReferralStep2Schema)
+  .merge(preReferralStep3Schema)
+  .superRefine((data, ctx) => {
+    if (data.examSelectionMode === "SELECIONAR" && data.selectedExams.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Selecione ao menos um exame complementar",
+        path: ["selectedExams"],
+      });
+    }
+  });
+
+export type PreReferralFormData = z.infer<typeof preReferralFormSchema>;
+
+export const preReferralStatusSchema = z.enum([
+  "NOVO",
+  "EM_ANALISE",
+  "CONVERTIDO",
+  "CANCELADO",
+]);
+
 export const companySchema = z.object({
   legalName: z.string().min(2),
   tradeName: z.string().optional(),

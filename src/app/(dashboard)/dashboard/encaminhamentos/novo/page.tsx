@@ -20,7 +20,7 @@ export default async function NovoEncaminhamentoPage() {
         <p className="mt-4 text-sm text-slate-500">
           Ou direcione a empresa ao{" "}
           <Link href="/encaminhamento-online" className="text-[#16A085] underline">
-            formulário online
+            pré-encaminhamento rápido
           </Link>
           .
         </p>

@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { isEmpresaUser } from "@/lib/authz";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
@@ -12,6 +13,7 @@ import { CLINICAL_EXAM_LABELS } from "@/types";
 
 export default async function EncaminhamentosPage() {
   const session = await auth();
+  const isEmpresa = isEmpresaUser(session);
   const where = session?.user?.role === "EMPRESA" && session.user.companyId
     ? { companyId: session.user.companyId }
     : {};
@@ -24,10 +26,17 @@ export default async function EncaminhamentosPage() {
 
   return (
     <div>
-      <PageHeader title="Encaminhamentos" description="Gestão de encaminhamentos online e internos">
-        <Link href="/dashboard/encaminhamentos/novo">
-          <Button variant="brand"><Plus className="mr-2 h-4 w-4" /> Novo</Button>
-        </Link>
+      <PageHeader title="Encaminhamentos" description="Gestão de encaminhamentos do portal e solicitações internas">
+        <div className="flex flex-wrap gap-2">
+          {!isEmpresa && (
+            <Link href="/dashboard/pre-encaminhamentos">
+              <Button variant="outline">Pré-encaminhamentos</Button>
+            </Link>
+          )}
+          <Link href="/dashboard/encaminhamentos/novo">
+            <Button variant="brand"><Plus className="mr-2 h-4 w-4" /> Novo</Button>
+          </Link>
+        </div>
       </PageHeader>
 
       <DataTable>

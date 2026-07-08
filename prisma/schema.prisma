@@ -79,6 +79,28 @@ enum LeadType {
   GERAL
 }
 
+enum PreReferralClinicalExamType {
+  ADMISSIONAL
+  DEMISSIONAL
+  PERIODICO
+  RETORNO_TRABALHO
+  MUDANCA_FUNCAO
+  NAO_SEI_INFORMAR
+}
+
+enum ExamSelectionMode {
+  NAO_SEI
+  SELECIONAR
+  ANEXAR_FUTURO
+}
+
+enum PreReferralStatus {
+  NOVO
+  EM_ANALISE
+  CONVERTIDO
+  CANCELADO
+}
+
 enum DocumentType {
   ASO
   PCMSO
@@ -300,4 +322,25 @@ model Setting {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model PublicReferralRequest {
+  id                String                      @id @default(cuid())
+  protocol          String                      @unique
+  companyName       String
+  companyDocument   String?
+  responsibleName   String
+  whatsapp          String
+  email             String?
+  employeeName      String
+  employeeDocument  String?
+  employeeRole      String
+  clinicalExamType  PreReferralClinicalExamType
+  examSelectionMode ExamSelectionMode
+  selectedExams     String[]
+  notes             String?
+  consentAccepted   Boolean                     @default(false)
+  status            PreReferralStatus           @default(NOVO)
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
 }
