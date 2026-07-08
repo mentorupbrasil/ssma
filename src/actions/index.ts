@@ -109,7 +109,7 @@ export async function submitReferral(
           jobTitle: d.jobTitle,
           department: d.department,
           companyId: company.id,
-          status: "ATIVA",
+          status: "ATIVO",
         },
       });
     } else {

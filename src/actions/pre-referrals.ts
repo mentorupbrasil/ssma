@@ -436,7 +436,7 @@ export async function convertPreReferralWithOptions(
           cpf,
           jobTitle: pre.employeeRole,
           companyId: company.id,
-          status: "ATIVA",
+          status: "ATIVO",
         },
       });
     }
