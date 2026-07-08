@@ -114,9 +114,11 @@ export default function EmpresasPage() {
       <EmpresasStartSection />
 
       <CTASection
-        title="Pronto para organizar a saúde ocupacional da sua empresa?"
-        description="Fale com um especialista e receba uma proposta personalizada."
+        className="empresas-final-cta"
+        title="Pronto para organizar exames, documentos e encaminhamentos da sua empresa?"
+        description="Fale com um especialista e receba uma proposta personalizada para simplificar a rotina ocupacional do seu RH."
         primaryLabel="Solicitar orçamento sem compromisso"
+        primaryHref="/contato?tipo=orcamento"
         secondaryHref={whatsappLink(
           `Olá! Gostaria de falar com um especialista da ${clinic.name}.`
         )}
