@@ -37,15 +37,16 @@ export function HomeHero() {
   const clinic = getClinicInfo();
 
   return (
-    <section className="hero-section relative overflow-hidden bg-[var(--brand-navy)]">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_0%,rgba(22,160,133,0.14),transparent_50%)]" />
-      <div className="absolute -right-32 top-24 h-72 w-72 rounded-full bg-[var(--brand-green)]/[0.07] blur-3xl" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-40" />
+    <section className="hero-section home-hero-refined relative overflow-hidden bg-[var(--brand-navy)]">
+      <div className="home-hero-refined-bg absolute inset-0" aria-hidden />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_18%_0%,rgba(22,160,133,0.08),transparent_42%)]" aria-hidden />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_92%_18%,rgba(22,160,133,0.11),transparent_48%)]" aria-hidden />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" aria-hidden />
 
       <div className="container-page relative">
-        <div className="hero-main-grid grid items-start gap-8 pb-7 sm:items-center lg:grid-cols-2 lg:items-center lg:gap-10 lg:pb-8 xl:gap-14">
-          <div className="animate-fade-up order-2 lg:order-1 lg:self-center">
-            <p className="mb-3.5 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
+        <div className="hero-main-grid home-hero-main grid items-start gap-6 pb-4 sm:items-center lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.78fr)] lg:items-center lg:gap-8 lg:pb-5 xl:gap-10">
+          <div className="animate-fade-up home-hero-copy order-2 lg:order-1 lg:self-center lg:pr-2 xl:pr-6">
+            <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
               <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" />
               Saúde e Segurança do Trabalho · Atendimento empresarial
             </p>
@@ -55,13 +56,13 @@ export function HomeHero() {
               <span className="text-gradient-hero">multas na fiscalização</span>
             </h1>
 
-            <p className="mt-4 max-w-lg text-[0.95rem] leading-relaxed text-slate-300/95 sm:text-base lg:text-[1rem] lg:leading-relaxed">
+            <p className="mt-3 max-w-lg text-[0.95rem] leading-relaxed text-slate-300/95 sm:text-base lg:text-[1rem] lg:leading-relaxed">
               Da admissão ao desligamento, sua empresa com PCMSO, ASO e toda a documentação
               ocupacional organizada — acompanhada em tempo real por um portal que o RH realmente
               usa no dia a dia.
             </p>
 
-            <div className="mt-3.5 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {CHIPS.map((tag) => (
                 <span
                   key={tag}
@@ -72,7 +73,7 @@ export function HomeHero() {
               ))}
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <a
                 href={whatsappLink(
                   `Olá! Gostaria de falar com um especialista em SST da ${clinic.name}.`
@@ -93,7 +94,7 @@ export function HomeHero() {
               </Link>
             </div>
 
-            <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.08] pt-4">
+            <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.08] pt-3.5">
               {TRUST_ITEMS.map((item) => (
                 <li key={item.label} className="inline-flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
                   <item.icon className="h-3.5 w-3.5 text-[var(--brand-green)]/80" strokeWidth={1.5} />
@@ -103,10 +104,10 @@ export function HomeHero() {
             </ul>
           </div>
 
-          <div className="animate-fade-up-delay order-1 flex justify-center lg:order-2 lg:justify-end lg:self-center lg:pl-2 xl:pl-6">
-            <div className="home-hero-visual-frame relative w-full max-w-[26rem]">
+          <div className="animate-fade-up-delay home-hero-visual order-1 flex justify-center lg:order-2 lg:justify-end lg:self-center">
+            <div className="home-hero-visual-frame relative w-full">
               <div
-                className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-[radial-gradient(ellipse_at_center,rgba(22,160,133,0.18),transparent_65%)] blur-2xl"
+                className="pointer-events-none absolute -inset-4 rounded-[1.5rem] bg-[radial-gradient(ellipse_at_center,rgba(22,160,133,0.12),transparent_70%)] blur-xl"
                 aria-hidden
               />
 
@@ -128,7 +129,7 @@ export function HomeHero() {
           </div>
         </div>
 
-        <div className="grid gap-3 border-t border-white/[0.08] pt-7 pb-9 sm:grid-cols-2 sm:gap-3.5 lg:grid-cols-4 lg:pb-10">
+        <div className="hero-feature-strip grid gap-2.5 border-t border-white/[0.08] pt-5 pb-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3 lg:pb-7">
           {QUICK_CARDS.map((card) => (
             <div key={card.title} className="hero-feature-card">
               <span className="hero-feature-card-icon">
