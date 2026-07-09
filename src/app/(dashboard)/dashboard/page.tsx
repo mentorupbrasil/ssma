@@ -12,6 +12,7 @@ import {
   Inbox,
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageShell } from "@/components/dashboard/PageShell";
 import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
 import { QuickActionGrid } from "@/components/dashboard/QuickActionGrid";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -43,48 +44,53 @@ export default async function DashboardPage() {
       ];
 
   return (
-    <div className="dashboard-overview space-y-6">
+    <PageShell>
       <PageHeader
+        eyebrow={isEmpresa ? "Portal empresarial" : "Cockpit operacional"}
         title="Visão geral"
         description={
           isEmpresa
-            ? "Portal empresarial — documentos, encaminhamentos e solicitações da sua empresa"
-            : "Cockpit operacional da clínica — pendências, produção e ações prioritárias"
+            ? "Documentos, encaminhamentos e solicitações da sua empresa em um só lugar."
+            : "Pendências, produção e ações prioritárias da clínica — atualizado em tempo real."
         }
       />
 
       <PlatformPositioningBanner />
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Atalhos rápidos</h2>
+        <h2 className="section-label">Atalhos rápidos</h2>
         <QuickActionGrid actions={quickActions} />
       </section>
 
-      <div className="dashboard-stats-grid">
-        {overview.stats
-          .filter((stat) => stat.show)
-          .map((stat) => (
-            <Link key={stat.key} href={stat.href} className="block h-full">
-              <StatCard
-                title={stat.title}
-                value={stat.value}
-                icon={Building2}
-                className="h-full transition hover:border-[var(--brand-green)]/35 hover:shadow-md"
-              />
-            </Link>
-          ))}
-      </div>
+      <section>
+        <h2 className="section-label">Indicadores</h2>
+        <div className="dashboard-stats-grid">
+          {overview.stats
+            .filter((stat) => stat.show)
+            .map((stat) => (
+              <Link key={stat.key} href={stat.href} className="block h-full">
+                <StatCard
+                  title={stat.title}
+                  value={stat.value}
+                  icon={Building2}
+                  variant="positive"
+                  className="h-full"
+                />
+              </Link>
+            ))}
+        </div>
+      </section>
 
       <div className="dashboard-panels-grid">
-        <DashboardPanel title="O que precisa de ação agora" icon={AlertTriangle}>
+        <DashboardPanel title="Precisa de ação agora" icon={AlertTriangle}>
           {overview.pendingActions.length === 0 ? (
-            <InlineEmptyNote>Nenhuma pendência crítica no momento.</InlineEmptyNote>
+            <InlineEmptyNote>Nenhuma pendência crítica no momento. Operação em dia.</InlineEmptyNote>
           ) : (
             <div className="dashboard-list">
               {overview.pendingActions.map((item) => (
                 <Link key={`${item.type}-${item.id}`} href={item.href} className="dashboard-list-item">
-                  <p className="text-sm font-medium text-slate-900">{item.title}</p>
-                  <p className="text-xs text-slate-500">{item.subtitle}</p>
+                  <p className="text-sm font-semibold text-[var(--brand-navy)]">{item.title}</p>
+                  <p className="text-xs text-[var(--dash-text-muted)]">{item.subtitle}</p>
                 </Link>
               ))}
             </div>
@@ -92,7 +98,7 @@ export default async function DashboardPage() {
         </DashboardPanel>
 
         {!isEmpresa && (
-          <DashboardPanel title="Atividades recentes — pré-encaminhamentos" icon={FileText}>
+          <DashboardPanel title="Atividades recentes" description="Pré-encaminhamentos recebidos" icon={FileText}>
             {overview.recentPreReferrals.length === 0 ? (
               <InlineEmptyNote>Nenhum pré-encaminhamento recente.</InlineEmptyNote>
             ) : (
@@ -104,11 +110,11 @@ export default async function DashboardPage() {
                     className="dashboard-list-item dashboard-list-item-row"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium">{p.protocol}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-sm font-semibold text-[var(--brand-navy)]">{p.protocol}</p>
+                      <p className="text-xs text-[var(--dash-text-muted)]">
                         {p.employeeName} — {p.companyName}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-[var(--dash-text-subtle)]">
                         {format(p.createdAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
                       </p>
                     </div>
@@ -132,8 +138,8 @@ export default async function DashboardPage() {
                   className="dashboard-list-item dashboard-list-item-row"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{d.title}</p>
-                    <p className="text-xs text-slate-500">{d.companyName ?? "Não informado"}</p>
+                    <p className="text-sm font-semibold text-[var(--brand-navy)]">{d.title}</p>
+                    <p className="text-xs text-[var(--dash-text-muted)]">{d.companyName ?? "Não informado"}</p>
                   </div>
                   <StatusBadge status={d.status} type="document" />
                 </Link>
@@ -155,8 +161,8 @@ export default async function DashboardPage() {
                     className="dashboard-list-item dashboard-list-item-row"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium">{q.quoteNumber}</p>
-                      <p className="text-xs text-slate-500">{q.companyName}</p>
+                      <p className="text-sm font-semibold text-[var(--brand-navy)]">{q.quoteNumber}</p>
+                      <p className="text-xs text-[var(--dash-text-muted)]">{q.companyName}</p>
                     </div>
                     <StatusBadge status={q.status} type="quote" />
                   </Link>
@@ -166,6 +172,6 @@ export default async function DashboardPage() {
           </DashboardPanel>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }

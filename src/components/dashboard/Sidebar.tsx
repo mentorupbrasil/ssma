@@ -100,18 +100,28 @@ type SidebarProps = {
   user: { name: string; email: string; role: UserRole };
 };
 
+function userInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
+}
+
 function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNavigate?: () => void }) {
   const pathname = usePathname();
   const items = DASHBOARD_NAV.filter((item) => hasPermission(user.role, item.permission));
   const itemByHref = new Map(items.map((item) => [item.href, item]));
+  const initials = userInitials(user.name);
 
   return (
     <div className="app-shell-sidebar-inner">
       <div className="app-shell-sidebar-brand">
         <Link href="/dashboard" onClick={onNavigate} className="app-shell-sidebar-brand-link">
-          <BrandLogo height={26} showLink={false} className="app-shell-sidebar-logo" />
+          <BrandLogo height={28} showLink={false} className="app-shell-sidebar-logo" />
           <div className="app-shell-sidebar-brand-copy">
-            <p className="app-shell-sidebar-brand-title">Painel</p>
+            <p className="app-shell-sidebar-brand-title">Unimetra · Painel</p>
             <p className="app-shell-sidebar-brand-role">{getRoleLabel(user.role)}</p>
           </div>
         </Link>
@@ -128,7 +138,7 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
           return (
             <div key={section.label} className="app-shell-nav-section">
               <p className="app-shell-nav-label">{section.label}</p>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {sectionItems.map((item) => {
                   const Icon = ICONS[item.icon] ?? LayoutDashboard;
                   const active =
@@ -142,7 +152,7 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
                       onClick={onNavigate}
                       className={cn("app-shell-nav-link", active && "app-shell-nav-link-active")}
                     >
-                      <Icon className="h-4 w-4 shrink-0" />
+                      <Icon className="h-4 w-4 shrink-0 [&_svg]:stroke-[2]" />
                       <span className="truncate">{item.label}</span>
                     </Link>
                   );
@@ -155,12 +165,17 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
 
       <div className="app-shell-sidebar-footer">
         <div className="app-shell-user-card">
-          <p className="truncate text-sm font-medium text-slate-700">{user.name}</p>
-          <p className="truncate text-xs text-slate-500">{user.email}</p>
+          <span className="app-shell-user-avatar" aria-hidden>
+            {initials || "U"}
+          </span>
+          <div className="app-shell-user-meta">
+            <p className="truncate text-sm font-semibold text-[var(--brand-navy)]">{user.name}</p>
+            <p className="truncate text-xs text-[var(--dash-text-muted)]">{user.email}</p>
+          </div>
         </div>
         <Button
           variant="ghost"
-          className="w-full justify-start rounded-xl text-slate-600 hover:text-red-600"
+          className="w-full justify-start rounded-xl text-sm text-slate-600 hover:bg-red-50 hover:text-red-600"
           onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />
@@ -193,7 +208,7 @@ export function Sidebar({ user }: SidebarProps) {
               </Button>
             }
           />
-          <SheetContent side="left" className="w-72 p-0">
+          <SheetContent side="left" className="w-[var(--dash-sidebar-w)] p-0">
             <NavContent user={user} onNavigate={() => setOpen(false)} />
           </SheetContent>
         </Sheet>

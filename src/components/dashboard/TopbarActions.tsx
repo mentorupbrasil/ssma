@@ -40,36 +40,41 @@ export function TopbarSearch() {
   }
 
   return (
-    <div className="relative mt-3 hidden max-w-lg md:block">
-        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-        <Input
-          placeholder="Buscar encaminhamentos, empresas, colaboradores..."
-          className="h-10 rounded-xl border-slate-200/90 bg-white pl-10 shadow-none focus:bg-white"
-          value={query}
-          onChange={(e) => runSearch(e.target.value)}
-        />
-        {results.length > 0 && (
-          <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-            {results.map((r) => (
-              <Link
-                key={`${r.type}-${r.id}`}
-                href={r.href}
-                className="block rounded-lg px-3 py-2 hover:bg-slate-50"
-                onClick={() => setResults([])}
-              >
-                <p className="text-xs font-semibold text-slate-500">{r.type}</p>
-                <p className="text-sm font-medium">{r.title}</p>
-                <p className="text-xs text-slate-500">{r.subtitle}</p>
-              </Link>
-            ))}
-          </div>
-        )}
-        {pending && query.length >= 2 && results.length === 0 && (
-          <div className="absolute z-50 mt-2 w-full rounded-xl border bg-white p-3 text-sm text-slate-500 shadow-lg">
-            Buscando...
-          </div>
-        )}
-      </div>
+    <div className="topbar-search-shell hidden md:block">
+      <Search
+        className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--dash-text-subtle)]"
+        strokeWidth={2}
+      />
+      <Input
+        placeholder="Buscar empresas, colaboradores, protocolos, documentos, orçamentos..."
+        className="topbar-search-input"
+        value={query}
+        onChange={(e) => runSearch(e.target.value)}
+      />
+      {results.length > 0 && (
+        <div className="topbar-search-results absolute z-50 mt-2 w-full p-1.5">
+          {results.map((r) => (
+            <Link
+              key={`${r.type}-${r.id}`}
+              href={r.href}
+              className="topbar-search-result block rounded-lg"
+              onClick={() => setResults([])}
+            >
+              <p className="text-[0.625rem] font-bold uppercase tracking-wide text-[var(--dash-text-subtle)]">
+                {r.type}
+              </p>
+              <p className="text-sm font-semibold text-[var(--brand-navy)]">{r.title}</p>
+              <p className="text-xs text-[var(--dash-text-muted)]">{r.subtitle}</p>
+            </Link>
+          ))}
+        </div>
+      )}
+      {pending && query.length >= 2 && results.length === 0 && (
+        <div className="topbar-search-results absolute z-50 mt-2 w-full p-3 text-sm text-[var(--dash-text-muted)]">
+          Buscando...
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -92,42 +97,48 @@ export function TopbarNotifications() {
 
   return (
     <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" size="icon" className="relative rounded-xl border border-transparent hover:border-slate-200 hover:bg-white">
-              <Bell className="h-4 w-4 text-slate-600" />
-              {unread > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
-                  {unread}
-                </span>
-              )}
-            </Button>
-          }
-        />
-        <DropdownMenuContent align="end" className="w-80">
-          <div className="flex items-center justify-between border-b px-3 py-2">
-            <span className="text-sm font-semibold">Notificações</span>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" size="icon" className="topbar-icon-btn relative">
+            <Bell className="h-4 w-4 text-slate-600" strokeWidth={2} />
             {unread > 0 && (
-              <button type="button" className="text-xs text-[var(--brand-green)]" onClick={markAllRead}>
-                Marcar todas lidas
-              </button>
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-sm">
+                {unread}
+              </span>
             )}
-          </div>
-          {notifications.length === 0 ? (
-            <p className="p-4 text-sm text-slate-500">Nenhuma notificação.</p>
-          ) : (
-            notifications.slice(0, 8).map((n) => (
-              <DropdownMenuItem key={n.id} className="flex flex-col items-start gap-0.5 p-3">
-                {n.link ? (
-                  <Link href={n.link} className="font-medium text-slate-800">{n.title}</Link>
-                ) : (
-                  <span className="font-medium text-slate-800">{n.title}</span>
-                )}
-                <span className="text-xs text-slate-500">{n.message}</span>
-              </DropdownMenuItem>
-            ))
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-80 rounded-xl border-[var(--dash-border)] shadow-[var(--dash-shadow-md)]">
+        <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2.5">
+          <span className="text-sm font-bold text-[var(--brand-navy)]">Notificações</span>
+          {unread > 0 && (
+            <button
+              type="button"
+              className="text-xs font-semibold text-[var(--brand-green)] hover:underline"
+              onClick={markAllRead}
+            >
+              Marcar todas lidas
+            </button>
           )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </div>
+        {notifications.length === 0 ? (
+          <p className="p-4 text-sm text-[var(--dash-text-muted)]">Nenhuma notificação no momento.</p>
+        ) : (
+          notifications.slice(0, 8).map((n) => (
+            <DropdownMenuItem key={n.id} className="flex flex-col items-start gap-0.5 rounded-lg p-3">
+              {n.link ? (
+                <Link href={n.link} className="font-semibold text-[var(--brand-navy)]">
+                  {n.title}
+                </Link>
+              ) : (
+                <span className="font-semibold text-[var(--brand-navy)]">{n.title}</span>
+              )}
+              <span className="text-xs text-[var(--dash-text-muted)]">{n.message}</span>
+            </DropdownMenuItem>
+          ))
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

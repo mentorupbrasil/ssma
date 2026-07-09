@@ -8,26 +8,30 @@ type TopbarProps = {
   userName: string;
 };
 
-export function Topbar({ userName }: TopbarProps) {
-  const initials = userName
+function userInitials(name: string) {
+  return name
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+}
+
+export function Topbar({ userName }: TopbarProps) {
+  const initials = userInitials(userName);
 
   return (
     <header className="app-shell-topbar">
       <div className="app-shell-topbar-inner">
-        <div className="min-w-0 flex-1">
+        <div className="app-shell-topbar-leading">
           <TopbarBreadcrumb />
           <TopbarSearch />
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="app-shell-topbar-trailing">
           <Link href="/" target="_blank">
-            <Button variant="ghost" size="sm" className="hidden rounded-xl text-slate-600 sm:flex">
-              <ExternalLink className="mr-2 h-4 w-4" />
+            <Button variant="ghost" size="sm" className="topbar-site-link">
+              <ExternalLink className="mr-2 h-4 w-4" strokeWidth={2} />
               Ver site
             </Button>
           </Link>
@@ -36,7 +40,9 @@ export function Topbar({ userName }: TopbarProps) {
             <span className="topbar-user-avatar" aria-hidden>
               {initials || "U"}
             </span>
-            <span className="max-w-[10rem] truncate text-sm font-medium text-slate-700">{userName}</span>
+            <span className="max-w-[9rem] truncate text-sm font-semibold text-[var(--brand-navy)]">
+              {userName}
+            </span>
           </div>
         </div>
       </div>

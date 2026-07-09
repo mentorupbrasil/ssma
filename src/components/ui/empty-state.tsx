@@ -50,17 +50,17 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/80 text-center",
-        compact ? "px-6 py-10" : "px-6 py-16",
+        "empty-state-premium flex flex-col items-center justify-center",
+        compact ? "px-6 py-10" : "px-8 py-16",
         className
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-slate-200 shadow-sm">
-        <Icon className="h-6 w-6 text-slate-400" aria-hidden />
+      <div className="empty-state-premium-icon">
+        <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden />
       </div>
-      <h3 className="mt-4 text-lg font-semibold text-slate-700">{title}</h3>
+      <h3 className="empty-state-premium-title mt-5">{title}</h3>
       {description && (
-        <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-500">{description}</p>
+        <p className="empty-state-premium-desc mt-2 max-w-md">{description}</p>
       )}
       {(action || secondaryAction) && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
