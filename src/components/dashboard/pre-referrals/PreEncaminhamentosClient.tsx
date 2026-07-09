@@ -37,6 +37,7 @@ import {
   updatePreReferralStatusWithNotes,
 } from "@/actions/pre-referrals";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -261,33 +262,26 @@ export function PreEncaminhamentosClient(props: Props) {
 
       {dbReady && !loadError && (
         <>
-          <div className="referral-stat-grid referral-stat-grid-6">
-            <button
-              type="button"
-              className={cn(
-                "referral-stat-card",
-                filters.queue === "active" && "referral-stat-card-active"
-              )}
-              onClick={() => updateFilters({ queue: "active", status: undefined })}
-            >
-              <span className="referral-stat-count">{queueCount}</span>
-              <span className="referral-stat-label">Fila ativa</span>
-            </button>
-            {PRE_REFERRAL_STAT_CARDS.map((card) => (
-              <button
-                key={card.status}
-                type="button"
-                className={cn(
-                  "referral-stat-card",
-                  activeTab === card.status && "referral-stat-card-active"
-                )}
-                onClick={() => updateFilters({ status: card.status, queue: undefined })}
-              >
-                <span className="referral-stat-count">{statusCounts[card.status] ?? 0}</span>
-                <span className="referral-stat-label">{card.label}</span>
-              </button>
-            ))}
-          </div>
+          <FilterMetricGrid
+            items={[
+              {
+                key: "queue_active",
+                metaKey: "pre_referral:queue_active",
+                label: "Fila ativa",
+                value: queueCount,
+                active: filters.queue === "active",
+                onClick: () => updateFilters({ queue: "active", status: undefined }),
+              },
+              ...PRE_REFERRAL_STAT_CARDS.map((card) => ({
+                key: card.status,
+                metaKey: `pre_referral:${card.status}`,
+                label: card.label,
+                value: statusCounts[card.status] ?? 0,
+                active: activeTab === card.status,
+                onClick: () => updateFilters({ status: card.status, queue: undefined }),
+              })),
+            ]}
+          />
 
           {staleItems.length > 0 && (
             <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">

@@ -21,6 +21,7 @@ import {
 } from "@/lib/appointments";
 import { getAppointmentDetail, cancelAppointment, markAppointmentNoShow } from "@/actions/appointments";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
@@ -272,29 +273,24 @@ export function AgendaClient({
         </div>
       </PageHeader>
 
-      <div className="referral-stat-grid referral-stat-grid-3 lg:grid-cols-6">
-        {APPOINTMENT_STAT_CARDS.map((card) => {
-          const count = statusCounts[card.key] ?? 0;
+      <FilterMetricGrid
+        items={APPOINTMENT_STAT_CARDS.map((card) => {
           const isActive = activeStatus === card.status;
-          return (
-            <button
-              key={card.key}
-              type="button"
-              className={cn("referral-stat-card text-left", isActive && "referral-stat-card-active")}
-              onClick={() =>
-                updateFilters({
-                  status: isActive ? "ALL" : card.status,
-                  date: anchorDate,
-                  view: activeView,
-                })
-              }
-            >
-              <span className="referral-stat-count">{count}</span>
-              <span className="referral-stat-label">{card.label}</span>
-            </button>
-          );
+          return {
+            key: card.key,
+            metaKey: `appointment:${card.key}`,
+            label: card.label,
+            value: statusCounts[card.key] ?? 0,
+            active: isActive,
+            onClick: () =>
+              updateFilters({
+                status: isActive ? "ALL" : card.status,
+                date: anchorDate,
+                view: activeView,
+              }),
+          };
         })}
-      </div>
+      />
 
       <div className="referral-filters mt-6">
         <div className="referral-filters-grid">

@@ -11,6 +11,8 @@ export { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
 export { DataTable as AdminTable } from "@/components/dashboard/DataTable";
 export { StatCard } from "@/components/dashboard/StatCard";
 export { MetricCard } from "@/components/dashboard/MetricCard";
+export { MetricGrid } from "@/components/dashboard/MetricGrid";
+export { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 export { EmptyState } from "@/components/dashboard/EmptyState";
 export { StatusBadge } from "@/components/dashboard/StatusBadge";
 export { InfoBanner } from "@/components/dashboard/InfoBanner";

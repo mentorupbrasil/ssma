@@ -8,6 +8,7 @@ type StatCardProps = {
   description?: string;
   icon: LucideIcon;
   trend?: string;
+  badge?: string;
   variant?: MetricCardVariant;
   className?: string;
 };
@@ -18,17 +19,19 @@ export function StatCard({
   description,
   icon,
   trend,
-  variant = "positive",
+  badge,
+  variant = "success",
   className,
 }: StatCardProps) {
-  const hint = [description, trend].filter(Boolean).join(" · ") || undefined;
+  const microcopy = [description, trend].filter(Boolean).join(" · ") || undefined;
 
   return (
     <MetricCard
       label={title}
       value={value}
       icon={icon}
-      hint={hint}
+      description={microcopy}
+      badge={badge}
       variant={variant}
       className={cn("h-full", className)}
     />

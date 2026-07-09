@@ -4,11 +4,13 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, Wallet, AlertCircle, Clock, Receipt } from "lucide-react";
+import { Plus, Wallet } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageShell } from "@/components/dashboard/PageShell";
 import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
 import { MetricCard } from "@/components/dashboard/MetricCard";
+import { MetricGrid } from "@/components/dashboard/MetricGrid";
+import { getMetricMeta } from "@/lib/metric-cards";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
@@ -162,13 +164,56 @@ export function FinanceiroClient({
 
       <section>
         <h2 className="section-label">Resumo financeiro</h2>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <MetricCard label="A receber no mês" value={formatCurrency(summary.receivableMonth)} icon={Wallet} variant="financial" />
-          <MetricCard label="Recebido" value={formatCurrency(summary.received)} icon={Receipt} variant="positive" />
-          <MetricCard label="Em atraso" value={formatCurrency(summary.overdue)} icon={AlertCircle} variant="critical" badge={summary.overdue > 0 ? "Ação necessária" : undefined} />
-          <MetricCard label="Aguardando faturamento" value={summary.awaitingInvoice} icon={Clock} variant="attention" />
-          <MetricCard label="Empresas pendentes" value={summary.pendingCompanies} icon={Wallet} variant="operational" />
-        </div>
+        <MetricGrid>
+          {(
+            [
+              {
+                key: "receivable_month",
+                label: "A receber no mês",
+                value: formatCurrency(summary.receivableMonth),
+              },
+              {
+                key: "received",
+                label: "Recebido",
+                value: formatCurrency(summary.received),
+              },
+              {
+                key: "overdue",
+                label: "Em atraso",
+                value: formatCurrency(summary.overdue),
+                badge: summary.overdue > 0 ? "Ação necessária" : undefined,
+              },
+              {
+                key: "awaiting_invoice",
+                label: "Aguardando faturamento",
+                value: summary.awaitingInvoice,
+              },
+              {
+                key: "pending_companies",
+                label: "Empresas pendentes",
+                value: summary.pendingCompanies,
+              },
+            ] satisfies Array<{
+              key: string;
+              label: string;
+              value: string | number;
+              badge?: string;
+            }>
+          ).map((item) => {
+            const meta = getMetricMeta(`finance:${item.key}`);
+            return (
+              <MetricCard
+                key={item.key}
+                label={item.label}
+                value={item.value}
+                icon={meta.icon}
+                description={meta.description}
+                variant={meta.tone}
+                badge={item.badge ?? meta.badge}
+              />
+            );
+          })}
+        </MetricGrid>
       </section>
 
       <FilterBar

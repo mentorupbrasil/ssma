@@ -22,6 +22,7 @@ import {
 import type { CollaboratorListItem } from "@/lib/collaborators";
 import { COLLABORATOR_STAT_CARDS, getPeriodicExamBadge } from "@/lib/collaborators";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -188,22 +189,19 @@ export function ColaboradoresClient({
         )}
       </PageHeader>
 
-      <div className="referral-stat-grid referral-stat-grid-3 lg:grid-cols-6">
-        {COLLABORATOR_STAT_CARDS.map((card) => {
+      <FilterMetricGrid
+        items={COLLABORATOR_STAT_CARDS.map((card) => {
           const isActive = activeStatus === card.filter;
-          return (
-            <button
-              key={card.key}
-              type="button"
-              className={cn("referral-stat-card text-left", isActive && "referral-stat-card-active")}
-              onClick={() => updateFilters({ status: isActive ? "ALL" : card.filter })}
-            >
-              <span className="referral-stat-count">{statCounts[card.key] ?? 0}</span>
-              <span className="referral-stat-label">{card.label}</span>
-            </button>
-          );
+          return {
+            key: card.key,
+            metaKey: `collaborator:${card.key}`,
+            label: card.label,
+            value: statCounts[card.key] ?? 0,
+            active: isActive,
+            onClick: () => updateFilters({ status: isActive ? "ALL" : card.filter }),
+          };
         })}
-      </div>
+      />
 
       <FilterBar
         className="mt-6"

@@ -17,7 +17,7 @@ export const COMPANY_STAT_CARDS: { key: string; filter: string; label: string }[
   { key: "ativas", filter: "ATIVA", label: "Empresas ativas" },
   { key: "inativas", filter: "INATIVA", label: "Empresas inativas" },
   { key: "docs_pendentes", filter: "DOCS_PENDING", label: "Com documentos pendentes" },
-  { key: "ref_abertos", filter: "REFERRALS_OPEN", label: "Com encaminhamentos em aberto" },
+  { key: "ref_abertos", filter: "REFERRALS_OPEN", label: "Encaminhamentos em aberto" },
   { key: "orc_pendentes", filter: "QUOTES_PENDING", label: "Com orçamento pendente" },
 ];
 

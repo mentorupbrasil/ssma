@@ -15,13 +15,15 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageShell } from "@/components/dashboard/PageShell";
 import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
 import { QuickActionGrid } from "@/components/dashboard/QuickActionGrid";
-import { StatCard } from "@/components/dashboard/StatCard";
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { MetricGrid } from "@/components/dashboard/MetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel";
 import { requireAuthSession } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
 import { getDashboardOverview } from "@/lib/dashboard-overview";
+import { getMetricMeta } from "@/lib/metric-cards";
 
 export default async function DashboardPage() {
   const session = await requireAuthSession();
@@ -64,21 +66,26 @@ export default async function DashboardPage() {
 
       <section>
         <h2 className="section-label">Indicadores</h2>
-        <div className="dashboard-stats-grid">
+        <MetricGrid>
           {overview.stats
             .filter((stat) => stat.show)
-            .map((stat) => (
-              <Link key={stat.key} href={stat.href} className="block h-full">
-                <StatCard
-                  title={stat.title}
-                  value={stat.value}
-                  icon={Building2}
-                  variant="positive"
-                  className="h-full"
-                />
-              </Link>
-            ))}
-        </div>
+            .map((stat) => {
+              const meta = getMetricMeta(`overview:${stat.key}`);
+              return (
+                <Link key={stat.key} href={stat.href} className="block h-full">
+                  <MetricCard
+                    label={stat.title}
+                    value={stat.value}
+                    icon={meta.icon}
+                    description={meta.description}
+                    variant={meta.tone}
+                    badge={meta.badge}
+                    className="h-full"
+                  />
+                </Link>
+              );
+            })}
+        </MetricGrid>
       </section>
 
       <div className="dashboard-panels-grid">
@@ -126,20 +133,18 @@ export default async function DashboardPage() {
           </DashboardPanel>
         )}
 
-        <DashboardPanel title="Documentos aguardando arquivo" icon={FolderOpen}>
+        <DashboardPanel title="Documentos pendentes" icon={FolderOpen}>
           {overview.pendingDocuments.length === 0 ? (
-            <InlineEmptyNote>Nenhum documento pendente de upload.</InlineEmptyNote>
+            <InlineEmptyNote>Nenhum documento pendente.</InlineEmptyNote>
           ) : (
             <div className="dashboard-list">
               {overview.pendingDocuments.map((d) => (
-                <Link
-                  key={d.id}
-                  href="/dashboard/documentos?card=PENDENTE"
-                  className="dashboard-list-item dashboard-list-item-row"
-                >
+                <Link key={d.id} href="/dashboard/documentos" className="dashboard-list-item dashboard-list-item-row">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[var(--brand-navy)]">{d.title}</p>
-                    <p className="text-xs text-[var(--dash-text-muted)]">{d.companyName ?? "Não informado"}</p>
+                    {d.companyName && (
+                      <p className="text-xs text-[var(--dash-text-muted)]">{d.companyName}</p>
+                    )}
                   </div>
                   <StatusBadge status={d.status} type="document" />
                 </Link>
@@ -151,17 +156,19 @@ export default async function DashboardPage() {
         {!isEmpresa && (
           <DashboardPanel title="Orçamentos em negociação" icon={DollarSign}>
             {overview.negotiatingQuotes.length === 0 ? (
-              <InlineEmptyNote>Nenhum orçamento aguardando resposta.</InlineEmptyNote>
+              <InlineEmptyNote>Nenhum orçamento em negociação.</InlineEmptyNote>
             ) : (
               <div className="dashboard-list">
                 {overview.negotiatingQuotes.map((q) => (
                   <Link
                     key={q.id}
-                    href="/dashboard/orcamentos?tab=orcamentos"
+                    href={`/dashboard/orcamentos?tab=orcamentos&id=${q.id}`}
                     className="dashboard-list-item dashboard-list-item-row"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[var(--brand-navy)]">{q.quoteNumber}</p>
+                      <p className="text-sm font-semibold text-[var(--brand-navy)]">
+                        {q.quoteNumber ?? "Sem número"}
+                      </p>
                       <p className="text-xs text-[var(--dash-text-muted)]">{q.companyName}</p>
                     </div>
                     <StatusBadge status={q.status} type="quote" />

@@ -28,6 +28,7 @@ import {
 } from "@/lib/exams";
 import { getExamDetail, toggleExamStatus, duplicateExam } from "@/actions/exams";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
@@ -252,24 +253,19 @@ export function ExamesClient({
         )}
       </PageHeader>
 
-      <div className="referral-stat-grid referral-stat-grid-3 lg:grid-cols-6">
-        {EXAM_STAT_CARDS.map((card) => {
+      <FilterMetricGrid
+        items={EXAM_STAT_CARDS.map((card) => {
           const isActive = activeCard === card.filter;
-          return (
-            <button
-              key={card.key}
-              type="button"
-              className={cn("referral-stat-card text-left", isActive && "referral-stat-card-active")}
-              onClick={() =>
-                updateFilters({ card: isActive ? "ALL" : card.filter })
-              }
-            >
-              <span className="referral-stat-count">{statCounts[card.key] ?? 0}</span>
-              <span className="referral-stat-label">{card.label}</span>
-            </button>
-          );
+          return {
+            key: card.key,
+            metaKey: `exam:${card.key}`,
+            label: card.label,
+            value: statCounts[card.key] ?? 0,
+            active: isActive,
+            onClick: () => updateFilters({ card: isActive ? "ALL" : card.filter }),
+          };
         })}
-      </div>
+      />
 
       <FilterBar className="mt-6" onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
         <div className="referral-filter-search sm:col-span-2">

@@ -29,6 +29,7 @@ import {
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { getReferralDetail } from "@/actions/referrals";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -231,22 +232,16 @@ export function EncaminhamentosClient({
         </div>
       </PageHeader>
 
-      <div className="referral-stat-grid">
-        {REFERRAL_STAT_CARDS.map((card) => (
-          <button
-            key={card.status}
-            type="button"
-            className={cn(
-              "referral-stat-card",
-              activeStatus === card.status && "referral-stat-card-active"
-            )}
-            onClick={() => updateFilters({ status: card.status })}
-          >
-            <span className="referral-stat-count">{statusCounts[card.status] ?? 0}</span>
-            <span className="referral-stat-label">{card.label}</span>
-          </button>
-        ))}
-      </div>
+      <FilterMetricGrid
+        items={REFERRAL_STAT_CARDS.map((card) => ({
+          key: card.status,
+          metaKey: `referral:${card.status}`,
+          label: card.label,
+          value: statusCounts[card.status] ?? 0,
+          active: activeStatus === card.status,
+          onClick: () => updateFilters({ status: card.status }),
+        }))}
+      />
 
       <div className="referral-tabs">
         {REFERRAL_STATUS_TABS.map((tab) => (

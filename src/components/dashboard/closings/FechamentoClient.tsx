@@ -9,6 +9,8 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageShell } from "@/components/dashboard/PageShell";
 import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
 import { MetricCard } from "@/components/dashboard/MetricCard";
+import { MetricGrid } from "@/components/dashboard/MetricGrid";
+import { getMetricMeta } from "@/lib/metric-cards";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
@@ -202,13 +204,57 @@ export function FechamentoClient({
 
       <section>
         <h2 className="section-label">Indicadores</h2>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <MetricCard label="Fechamentos abertos" value={summary.openClosings} icon={Calculator} variant="operational" />
-          <MetricCard label="Importações no mês" value={summary.monthImports} icon={Upload} variant="neutral" />
-          <MetricCard label="Itens sem preço" value={summary.withoutPrice} icon={Calculator} variant="attention" badge={summary.withoutPrice > 0 ? "Revisar" : undefined} />
-          <MetricCard label="Divergências" value={summary.divergences} icon={Calculator} variant="critical" badge={summary.divergences > 0 ? "Corrigir" : undefined} />
-          <MetricCard label="Total previsto" value={formatCurrency(summary.totalPreview)} icon={Calculator} variant="financial" />
-        </div>
+        <MetricGrid>
+          {(
+            [
+              {
+                key: "open",
+                label: "Fechamentos abertos",
+                value: summary.openClosings,
+              },
+              {
+                key: "imports",
+                label: "Importações no mês",
+                value: summary.monthImports,
+              },
+              {
+                key: "without_price",
+                label: "Itens sem preço",
+                value: summary.withoutPrice,
+                badge: summary.withoutPrice > 0 ? "Revisar" : undefined,
+              },
+              {
+                key: "divergences",
+                label: "Divergências",
+                value: summary.divergences,
+                badge: summary.divergences > 0 ? "Corrigir" : undefined,
+              },
+              {
+                key: "total_preview",
+                label: "Total previsto",
+                value: formatCurrency(summary.totalPreview),
+              },
+            ] satisfies Array<{
+              key: string;
+              label: string;
+              value: string | number;
+              badge?: string;
+            }>
+          ).map((item) => {
+            const meta = getMetricMeta(`closing:${item.key}`);
+            return (
+              <MetricCard
+                key={item.key}
+                label={item.label}
+                value={item.value}
+                icon={meta.icon}
+                description={meta.description}
+                variant={meta.tone}
+                badge={item.badge ?? meta.badge}
+              />
+            );
+          })}
+        </MetricGrid>
       </section>
 
       {imports.length > 0 && (

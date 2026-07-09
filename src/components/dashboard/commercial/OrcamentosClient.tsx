@@ -57,6 +57,7 @@ import {
   addCommercialNote,
 } from "@/actions/commercial";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -292,22 +293,19 @@ export function OrcamentosClient({
         )}
       </PageHeader>
 
-      <div className="referral-stat-grid referral-stat-grid-3 lg:grid-cols-7">
-        {COMMERCIAL_STAT_CARDS.map((card) => {
+      <FilterMetricGrid
+        items={COMMERCIAL_STAT_CARDS.map((card) => {
           const isActive = activeCard === card.filter;
-          return (
-            <button
-              key={card.key}
-              type="button"
-              className={cn("referral-stat-card text-left", isActive && "referral-stat-card-active")}
-              onClick={() => updateFilters({ card: isActive ? "ALL" : card.filter, tab: activeTab })}
-            >
-              <span className="referral-stat-count">{statCounts[card.key] ?? 0}</span>
-              <span className="referral-stat-label">{card.label}</span>
-            </button>
-          );
+          return {
+            key: card.key,
+            metaKey: `commercial:${card.key}`,
+            label: card.label,
+            value: statCounts[card.key] ?? 0,
+            active: isActive,
+            onClick: () => updateFilters({ card: isActive ? "ALL" : card.filter, tab: activeTab }),
+          };
         })}
-      </div>
+      />
 
       <Tabs value={activeTab} onValueChange={(v) => setTab(v as CommercialTab)} className="mt-6">
         <TabsList className="mb-4 h-auto flex-wrap gap-1 bg-transparent p-0">
