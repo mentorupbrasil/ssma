@@ -21,6 +21,7 @@ import {
 } from "@/lib/appointments";
 import { getAppointmentDetail, cancelAppointment, markAppointmentNoShow } from "@/actions/appointments";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -244,7 +245,7 @@ export function AgendaClient({
   const showDateGroups = activeView === "week" || activeView === "month" || activeView === "list";
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Agenda"
         description="Agendamentos de atendimentos e exames ocupacionais"
@@ -569,7 +570,7 @@ export function AgendaClient({
           />
         </>
       )}
-    </div>
+    </PageModule>
   );
 }
 

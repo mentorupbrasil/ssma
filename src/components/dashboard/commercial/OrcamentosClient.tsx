@@ -57,6 +57,7 @@ import {
   addCommercialNote,
 } from "@/actions/commercial";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
@@ -276,7 +277,7 @@ export function OrcamentosClient({
   const isEmpty = initialItems.length === 0 && !filters.q && activeCard === "ALL";
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Orçamentos"
         description="Solicitações comerciais, propostas e leads recebidos pelo site"
@@ -307,7 +308,7 @@ export function OrcamentosClient({
         })}
       />
 
-      <Tabs value={activeTab} onValueChange={(v) => setTab(v as CommercialTab)} className="mt-6">
+      <Tabs value={activeTab} onValueChange={(v) => setTab(v as CommercialTab)}>
         <TabsList className="mb-4 h-auto flex-wrap gap-1 bg-transparent p-0">
           {TABS.map((t) => (
             <TabsTrigger key={t.id} value={t.id} className="rounded-lg border border-slate-200 bg-white px-4 py-2 data-[state=active]:border-[#16A085] data-[state=active]:bg-[#16A085]/10">
@@ -553,7 +554,7 @@ export function OrcamentosClient({
           <RejectQuoteDialog open={rejectOpen} onOpenChange={setRejectOpen} quoteId={rejectQuoteId} onSuccess={() => router.refresh()} />
         </>
       )}
-    </div>
+    </PageModule>
   );
 }
 

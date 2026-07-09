@@ -23,12 +23,12 @@ import type { ReferralStatus } from "@prisma/client";
 import type { ReferralListItem, ReferralDetailSerialized } from "@/lib/referrals";
 import {
   REFERRAL_STAT_CARDS,
-  REFERRAL_STATUS_TABS,
   buildReferralWhatsAppMessage,
 } from "@/lib/referrals";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { getReferralDetail } from "@/actions/referrals";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
@@ -212,7 +212,7 @@ export function EncaminhamentosClient({
   };
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Encaminhamentos"
         description="Gestão de encaminhamentos do portal e solicitações internas"
@@ -233,31 +233,19 @@ export function EncaminhamentosClient({
       </PageHeader>
 
       <FilterMetricGrid
-        items={REFERRAL_STAT_CARDS.map((card) => ({
-          key: card.status,
-          metaKey: `referral:${card.status}`,
-          label: card.label,
-          value: statusCounts[card.status] ?? 0,
-          active: activeStatus === card.status,
-          onClick: () => updateFilters({ status: card.status }),
-        }))}
+        items={REFERRAL_STAT_CARDS.map((card) => {
+          const isActive = filters.status === card.status;
+          return {
+            key: card.status,
+            metaKey: `referral:${card.status}`,
+            label: card.label,
+            value: statusCounts[card.status] ?? 0,
+            active: isActive,
+            onClick: () =>
+              updateFilters({ status: isActive ? undefined : card.status }),
+          };
+        })}
       />
-
-      <div className="referral-tabs">
-        {REFERRAL_STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            className={cn(
-              "referral-tab",
-              activeStatus === tab.value && "referral-tab-active"
-            )}
-            onClick={() => updateFilters({ status: tab.value === "ALL" ? undefined : tab.value })}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
 
       <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending} activeChips={activeChips} onRemoveChip={removeChip} onClearChips={clearFilters}>
         <div className="relative col-span-full sm:col-span-2">
@@ -550,6 +538,6 @@ export function EncaminhamentosClient({
           />
         </>
       )}
-    </div>
+    </PageModule>
   );
 }

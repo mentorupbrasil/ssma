@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { requireAuthSession, handleAccessError } from "@/lib/page-auth";
 import { assertReferralAccess } from "@/lib/authz";
@@ -48,7 +49,7 @@ export default async function EncaminhamentoDetailPage({
   const serialized = serializeReferralDetail(referral);
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title={referral.protocol}
         description={`Colaborador: ${referral.patient.fullName} · Criado em ${format(referral.createdAt, "dd/MM/yyyy 'às' HH:mm")}`}
@@ -62,6 +63,6 @@ export default async function EncaminhamentoDetailPage({
           canManage={canManage}
         />
       </div>
-    </div>
+    </PageModule>
   );
 }

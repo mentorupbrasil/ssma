@@ -4,6 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Pencil, UserX, UserCheck } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
+import { MetricGrid } from "@/components/dashboard/MetricGrid";
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { getMetricMeta } from "@/lib/metric-cards";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Button } from "@/components/ui/button";
@@ -126,7 +130,7 @@ export function UsuariosClient({
   }
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Usuários e permissões"
         description="Gestão de acesso ao sistema"
@@ -150,22 +154,29 @@ export function UsuariosClient({
         }
       />
 
-      <div className="referral-stat-grid referral-stat-grid-3 mb-6">
-        <div className="referral-stat-card">
-          <span className="referral-stat-count">{users.length}</span>
-          <span className="referral-stat-label">Total</span>
-        </div>
-        <div className="referral-stat-card">
-          <span className="referral-stat-count">{activeCount}</span>
-          <span className="referral-stat-label">Ativos</span>
-        </div>
-        <div className="referral-stat-card">
-          <span className="referral-stat-count">{inactiveCount}</span>
-          <span className="referral-stat-label">Inativos</span>
-        </div>
-      </div>
+      <MetricGrid>
+        {(
+          [
+            { key: "total", label: "Total de usuários", value: users.length },
+            { key: "active", label: "Ativos", value: activeCount },
+            { key: "inactive", label: "Inativos", value: inactiveCount },
+          ] as const
+        ).map((item) => {
+          const meta = getMetricMeta(`user:${item.key}`);
+          return (
+            <MetricCard
+              key={item.key}
+              label={item.label}
+              value={item.value}
+              icon={meta.icon}
+              description={meta.description}
+              variant={meta.tone}
+            />
+          );
+        })}
+      </MetricGrid>
 
-      <FilterBar className="mb-4">
+      <FilterBar>
         <Input
           placeholder="Buscar nome, e-mail ou perfil..."
           value={search}
@@ -251,7 +262,7 @@ export function UsuariosClient({
           <Button onClick={handleUpdate} disabled={pending}>Salvar alterações</Button>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageModule>
   );
 }
 

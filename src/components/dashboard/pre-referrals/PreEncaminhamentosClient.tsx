@@ -24,7 +24,6 @@ import type { PreReferralStatus } from "@prisma/client";
 import type { PreReferralListItem, PreReferralDetailSerialized } from "@/lib/pre-referrals";
 import {
   PRE_REFERRAL_STAT_CARDS,
-  PRE_REFERRAL_STATUS_TABS,
   PRE_REFERRAL_SOURCE_LABELS,
   buildPreReferralWhatsAppMessage,
   getMissingPreReferralFields,
@@ -37,7 +36,9 @@ import {
   updatePreReferralStatusWithNotes,
 } from "@/actions/pre-referrals";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
+import { FilterBar } from "@/components/dashboard/FilterBar";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -223,7 +224,7 @@ export function PreEncaminhamentosClient(props: Props) {
   };
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Pré-encaminhamentos"
         description="Solicitações rápidas do site — leads para análise e conversão em encaminhamento oficial"
@@ -293,26 +294,12 @@ export function PreEncaminhamentosClient(props: Props) {
             </div>
           )}
 
-          <div className="referral-tabs">
-            {PRE_REFERRAL_STATUS_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                className={cn("referral-tab", activeTab === tab.value && "referral-tab-active")}
-                onClick={() =>
-                  updateFilters({
-                    status: tab.value === "ALL" || tab.value === "QUEUE" ? undefined : tab.value,
-                    queue: tab.value === "QUEUE" ? "active" : undefined,
-                  })
-                }
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="referral-filters dashboard-surface">
-            <div className="referral-filters-grid referral-filters-grid-pre-ext">
+          <FilterBar
+            onSearch={handleSearch}
+            onClear={clearFilters}
+            isPending={isPending}
+            gridClassName="referral-filters-grid-pre-ext"
+          >
               <div className="relative col-span-full lg:col-span-2">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
@@ -401,14 +388,7 @@ export function PreEncaminhamentosClient(props: Props) {
                 <Label className="text-xs text-slate-500">Data final</Label>
                 <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="referral-date-input w-full" />
               </div>
-            </div>
-            <div className="referral-filters-actions">
-              <Button variant="brand" size="sm" onClick={handleSearch} disabled={isPending}>
-                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Filtrar"}
-              </Button>
-              <Button variant="outline" size="sm" onClick={clearFilters}>Limpar filtros</Button>
-            </div>
-          </div>
+          </FilterBar>
 
           <DataTable className={cn(isPending && "opacity-60")}>
             {items.length === 0 ? (
@@ -603,6 +583,6 @@ export function PreEncaminhamentosClient(props: Props) {
         </>
       )}
       <ConfirmDialogHost />
-    </div>
+    </PageModule>
   );
 }

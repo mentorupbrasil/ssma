@@ -120,7 +120,14 @@ export function MetricCard({
         )}
       </div>
 
-      <p className="text-[1.75rem] font-extrabold leading-none tracking-tight text-slate-900">
+      <p
+        className={cn(
+          "font-extrabold tracking-tight text-slate-900",
+          typeof value === "string" && value.length > 14
+            ? "text-base font-semibold leading-snug"
+            : "text-[1.75rem] leading-none"
+        )}
+      >
         {value}
       </p>
 

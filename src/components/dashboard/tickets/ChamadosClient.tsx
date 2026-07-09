@@ -6,6 +6,9 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Plus, Loader2, MessageSquare, ListTodo } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
+import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
+import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { FilterBar } from "@/components/dashboard/FilterBar";
@@ -130,7 +133,7 @@ export function ChamadosClient({
   }
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title={saasMode ? "Chamados SaaS" : "Chamados"}
         description={saasMode ? "Suporte entre clínicas e plataforma" : "Suporte interno e solicitações de empresas"}
@@ -165,24 +168,18 @@ export function ChamadosClient({
         }
       />
 
-      <div className="referral-stat-grid referral-stat-grid-6 mb-6">
-        {TICKET_STAT_CARDS.map((card) => (
-          <button
-            key={card.key}
-            type="button"
-            className={cn(
-              "referral-stat-card text-left",
-              filters.card === card.key && "referral-stat-card-active"
-            )}
-            onClick={() => setFilter("card", filters.card === card.key ? "" : card.key)}
-          >
-            <span className="referral-stat-count">{statCounts[card.key] ?? 0}</span>
-            <span className="referral-stat-label">{card.label}</span>
-          </button>
-        ))}
-      </div>
+      <FilterMetricGrid
+        items={TICKET_STAT_CARDS.map((card) => ({
+          key: card.key,
+          metaKey: `ticket:${card.key}`,
+          label: card.label,
+          value: statCounts[card.key] ?? 0,
+          active: filters.card === card.key,
+          onClick: () => setFilter("card", filters.card === card.key ? "" : card.key),
+        }))}
+      />
 
-      <FilterBar className="mb-4">
+      <FilterBar>
         <Input
           placeholder="Buscar chamado..."
           defaultValue={filters.q}
@@ -205,7 +202,7 @@ export function ChamadosClient({
       {items.length === 0 ? (
         <EmptyState title="Nenhum chamado" description="Abra um chamado quando precisar de suporte ou acompanhamento." />
       ) : (
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <DataTable>
           <Table>
             <TableHeader>
               <TableRow>
@@ -265,7 +262,7 @@ export function ChamadosClient({
             </TableBody>
           </Table>
           <p className="border-t px-4 py-2 text-xs text-slate-500">{items.length} de {total} chamados</p>
-        </div>
+        </DataTable>
       )}
 
       <Sheet open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)}>
@@ -346,6 +343,6 @@ export function ChamadosClient({
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </PageModule>
   );
 }

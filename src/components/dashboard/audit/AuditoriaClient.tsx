@@ -5,6 +5,7 @@ import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,7 @@ export function AuditoriaClient({
   }
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader title="Logs de auditoria" description="Registro de ações críticas no sistema" />
 
       <form action={applyFilters} className="mb-4">
@@ -164,6 +165,6 @@ export function AuditoriaClient({
           </div>
         </>
       )}
-    </div>
+    </PageModule>
   );
 }

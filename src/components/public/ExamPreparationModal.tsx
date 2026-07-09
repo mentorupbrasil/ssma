@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Copy, MessageCircle, X } from "lucide-react";
-import { toast } from "sonner";
+import { MessageCircle, X } from "lucide-react";
 import type { ExamGuide } from "@/data/exams";
 import {
   buildWhatsAppShareMessage,
@@ -13,6 +12,7 @@ import {
 } from "@/lib/exam-preparation";
 import { whatsappLink } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/copy-button";
 import {
   Dialog,
   DialogClose,
@@ -38,15 +38,6 @@ function ModalSection({ title, children }: { title: string; children: ReactNode 
 
 export function ExamPreparationModal({ exam, open, onOpenChange }: ExamPreparationModalProps) {
   if (!exam) return null;
-
-  const handleCopy = async () => {
-    try {
-      await copyExamInstructions(exam);
-      toast.success("Orientações copiadas com sucesso.");
-    } catch {
-      toast.error("Não foi possível copiar as orientações.");
-    }
-  };
 
   const handleWhatsApp = () => {
     window.open(whatsappLink(buildWhatsAppShareMessage(exam)), "_blank", "noopener,noreferrer");
@@ -117,15 +108,13 @@ export function ExamPreparationModal({ exam, open, onOpenChange }: ExamPreparati
             <MessageCircle className="mr-2 h-4 w-4" />
             Compartilhar no WhatsApp
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          <CopyButton
             className="w-full rounded-lg sm:w-auto"
-            onClick={handleCopy}
-          >
-            <Copy className="mr-2 h-4 w-4" />
-            Copiar orientações
-          </Button>
+            label="Copiar orientações"
+            onCopy={() => copyExamInstructions(exam)}
+            successMessage="Orientações copiadas com sucesso."
+            errorMessage="Não foi possível copiar as orientações."
+          />
           <DialogClose
             render={
               <Button variant="ghost" size="sm" className="w-full rounded-lg sm:w-auto">

@@ -22,6 +22,7 @@ import {
 import type { CollaboratorListItem } from "@/lib/collaborators";
 import { COLLABORATOR_STAT_CARDS, getPeriodicExamBadge } from "@/lib/collaborators";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
@@ -177,7 +178,7 @@ export function ColaboradoresClient({
   }, [searchParams, canManage]);
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Colaboradores"
         description="Colaboradores cadastrados e histórico ocupacional"
@@ -204,7 +205,6 @@ export function ColaboradoresClient({
       />
 
       <FilterBar
-        className="mt-6"
         onSearch={handleSearch}
         onClear={clearFilters}
         isPending={isPending}
@@ -533,6 +533,6 @@ export function ColaboradoresClient({
           router.refresh();
         }}
       />
-    </div>
+    </PageModule>
   );
 }

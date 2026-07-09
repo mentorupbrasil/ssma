@@ -7,6 +7,10 @@ import { ptBR } from "date-fns/locale";
 import { Plus, Pencil, ExternalLink, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
+import { MetricGrid } from "@/components/dashboard/MetricGrid";
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { getMetricMeta } from "@/lib/metric-cards";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { Button } from "@/components/ui/button";
@@ -126,7 +130,7 @@ export function ConteudoClient({ posts }: { posts: Post[] }) {
   );
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Conteúdo / Blog"
         description="Gerencie publicações do site"
@@ -142,22 +146,29 @@ export function ConteudoClient({ posts }: { posts: Post[] }) {
         }
       />
 
-      <div className="referral-stat-grid referral-stat-grid-3 mb-6">
-        <div className="referral-stat-card">
-          <span className="referral-stat-count">{posts.length}</span>
-          <span className="referral-stat-label">Total</span>
-        </div>
-        <div className="referral-stat-card">
-          <span className="referral-stat-count">{posts.filter((p) => p.published).length}</span>
-          <span className="referral-stat-label">Publicados</span>
-        </div>
-        <div className="referral-stat-card">
-          <span className="referral-stat-count">{posts.filter((p) => !p.published).length}</span>
-          <span className="referral-stat-label">Rascunhos</span>
-        </div>
-      </div>
+      <MetricGrid>
+        {(
+          [
+            { key: "total", label: "Total de publicações", value: posts.length },
+            { key: "published", label: "Publicados", value: posts.filter((p) => p.published).length },
+            { key: "drafts", label: "Rascunhos", value: posts.filter((p) => !p.published).length },
+          ] as const
+        ).map((item) => {
+          const meta = getMetricMeta(`content:${item.key}`);
+          return (
+            <MetricCard
+              key={item.key}
+              label={item.label}
+              value={item.value}
+              icon={meta.icon}
+              description={meta.description}
+              variant={meta.tone}
+            />
+          );
+        })}
+      </MetricGrid>
 
-      <FilterBar className="mb-4">
+      <FilterBar>
         <Input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs" />
         <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v ?? "ALL")}>
           <SelectTrigger className="w-44"><SelectValue placeholder="Categoria" /></SelectTrigger>
@@ -231,6 +242,6 @@ export function ConteudoClient({ posts }: { posts: Post[] }) {
           <Button onClick={handleUpdate} disabled={pending}>Salvar alterações</Button>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageModule>
   );
 }

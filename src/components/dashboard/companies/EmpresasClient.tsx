@@ -24,6 +24,7 @@ import {
   buildCompanyWhatsAppMessage,
 } from "@/lib/companies";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
@@ -219,7 +220,7 @@ export function EmpresasClient({
   };
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader title="Empresas" description="Gestão de empresas clientes">
         {canManage && (
           <Button variant="brand" onClick={() => setNewDialogOpen(true)}>
@@ -243,7 +244,6 @@ export function EmpresasClient({
       />
 
       <FilterBar
-        className="mt-6"
         onSearch={handleSearch}
         onClear={clearFilters}
         isPending={isPending}
@@ -497,6 +497,6 @@ export function EmpresasClient({
           router.refresh();
         }}
       />
-    </div>
+    </PageModule>
   );
 }

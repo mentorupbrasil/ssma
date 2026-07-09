@@ -280,44 +280,6 @@ export const LAB_EXAM_OPTIONS = [
   "VDRL",
 ];
 
-export const FAQ_ITEMS = [
-  {
-    question: "Como solicitar orçamento para minha empresa?",
-    answer:
-      "Você pode solicitar orçamento pelo formulário do site ou falar diretamente com um especialista. Nossa equipe entende o porte da empresa, quantidade de colaboradores, exames necessários e documentos ocupacionais para montar uma proposta adequada.",
-  },
-  {
-    question: "A empresa pode encaminhar colaboradores online?",
-    answer:
-      "Sim. O encaminhamento online permite enviar os dados do colaborador, tipo de exame ocupacional e exames complementares de forma mais organizada, reduzindo retrabalho para o RH.",
-  },
-  {
-    question: "Quanto tempo demora o resultado dos exames?",
-    answer:
-      "O prazo pode variar conforme o tipo de exame e a demanda de atendimento. Exames clínicos e ocupacionais seguem fluxo interno da clínica, e a empresa pode acompanhar as orientações e status conforme o serviço contratado.",
-  },
-  {
-    question: "Vocês atendem empresas de qualquer porte?",
-    answer:
-      "Sim. A estrutura atende empresas de pequeno, médio e grande porte, com soluções para admissões, periódicos, demissionais, retorno ao trabalho, mudança de função e demandas de SST.",
-  },
-  {
-    question: "Como funciona a integração com SOC?",
-    answer:
-      "A clínica pode apoiar empresas que utilizam SOC ou outros fluxos de gestão ocupacional, auxiliando no encaminhamento, organização das informações e acompanhamento dos processos necessários.",
-  },
-  {
-    question: "Quais documentos ocupacionais a empresa precisa manter em dia?",
-    answer:
-      "Entre os principais documentos estão PCMSO, ASO, PGR, LTCAT, PPP e eventos de SST no eSocial, conforme o tipo de atividade, riscos ocupacionais e exigências legais aplicáveis.",
-  },
-  {
-    question: "O RH consegue acompanhar o status dos colaboradores?",
-    answer:
-      "Sim. A proposta do portal empresarial é permitir que a empresa acompanhe encaminhamentos, exames, histórico e status dos colaboradores com mais clareza e menos dependência de planilhas e ligações.",
-  },
-];
-
 export const BLOG_POSTS = [
   {
     title: "PCMSO: obrigações e prazos para empresas",

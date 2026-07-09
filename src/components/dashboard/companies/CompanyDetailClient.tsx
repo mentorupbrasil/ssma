@@ -34,6 +34,10 @@ import {
 } from "@/lib/documents";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
+import { MetricGrid } from "@/components/dashboard/MetricGrid";
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { getMetricMeta } from "@/lib/metric-cards";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -111,7 +115,7 @@ export function CompanyDetailClient({
   };
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader title={company.legalName} description={company.tradeName ?? "Gestão da empresa"}>
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={company.status} type="company" />
@@ -153,15 +157,15 @@ export function CompanyDetailClient({
 
       <p className="mb-4 text-sm text-slate-500">CNPJ: {formatCNPJ(company.cnpj)}</p>
 
-      <div className="referral-status-tabs mb-6 flex flex-wrap gap-1">
+      <div className="dash-module-tabs">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setTab(tab.id)}
             className={cn(
-              "referral-status-tab",
-              activeTab === tab.id && "referral-status-tab-active"
+              "dash-module-tab",
+              activeTab === tab.id && "dash-module-tab-active"
             )}
           >
             <tab.icon className="mr-1.5 inline h-3.5 w-3.5" />
@@ -222,7 +226,7 @@ export function CompanyDetailClient({
         companyId={company.id}
         onSuccess={refresh}
       />
-    </div>
+    </PageModule>
   );
 }
 
@@ -234,28 +238,31 @@ function OverviewTab({
   onNavigate: (tab: TabId) => void;
 }) {
   const stats = [
-    { label: "Colaboradores", value: company.stats.employees, tab: "employees" as TabId },
-    { label: "Encaminhamentos em aberto", value: company.stats.openReferrals, tab: "referrals" as TabId },
-    { label: "Agendamentos futuros", value: company.stats.upcomingAppointments, tab: "agenda" as TabId },
-    { label: "Documentos pendentes", value: company.stats.pendingDocuments, tab: "documents" as TabId },
-    { label: "Orçamentos pendentes", value: company.stats.pendingQuotes, tab: "quotes" as TabId },
+    { key: "employees", label: "Colaboradores", value: company.stats.employees, tab: "employees" as TabId },
+    { key: "open_referrals", label: "Encaminhamentos em aberto", value: company.stats.openReferrals, tab: "referrals" as TabId },
+    { key: "upcoming_appointments", label: "Agendamentos futuros", value: company.stats.upcomingAppointments, tab: "agenda" as TabId },
+    { key: "pending_documents", label: "Documentos pendentes", value: company.stats.pendingDocuments, tab: "documents" as TabId },
+    { key: "pending_quotes", label: "Orçamentos pendentes", value: company.stats.pendingQuotes, tab: "quotes" as TabId },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="referral-stat-grid referral-stat-grid-5">
-        {stats.map((s) => (
-          <button
-            key={s.label}
-            type="button"
-            className="referral-stat-card text-left"
-            onClick={() => onNavigate(s.tab)}
-          >
-            <span className="referral-stat-count">{s.value}</span>
-            <span className="referral-stat-label">{s.label}</span>
-          </button>
-        ))}
-      </div>
+      <MetricGrid>
+        {stats.map((s) => {
+          const meta = getMetricMeta(`company_detail:${s.key}`);
+          return (
+            <MetricCard
+              key={s.key}
+              label={s.label}
+              value={s.value}
+              icon={meta.icon}
+              description={meta.description}
+              variant={meta.tone}
+              onClick={() => onNavigate(s.tab)}
+            />
+          );
+        })}
+      </MetricGrid>
 
       <Card>
         <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">

@@ -36,6 +36,11 @@ import {
   ThumbsUp,
   LifeBuoy,
   ListTodo,
+  UserCheck,
+  Newspaper,
+  FilePen,
+  AlertTriangle,
+  Calendar,
 } from "lucide-react";
 
 export type MetricTone = "default" | "success" | "warning" | "danger" | "info" | "finance";
@@ -352,6 +357,46 @@ export const METRIC_META: Record<string, MetricMeta> = {
     icon: Wallet,
     description: "Valor total previsto",
   },
+
+  // Tarefas
+  "task:pendentes": { tone: "warning", icon: ListTodo, description: "Aguardando início" },
+  "task:em_andamento": { tone: "info", icon: Activity, description: "Em execução pela equipe" },
+  "task:concluidas": { tone: "success", icon: CheckCircle2, description: "Finalizadas" },
+  "task:atrasadas": { tone: "danger", icon: AlertTriangle, description: "Prazo vencido", badge: "Ação" },
+  "task:hoje": { tone: "warning", icon: Calendar, description: "Vencimento hoje" },
+  "task:urgentes": { tone: "danger", icon: AlertCircle, description: "Prioridade alta ou crítica" },
+
+  // Chamados
+  "ticket:abertos": { tone: "info", icon: Inbox, description: "Novos chamados na fila" },
+  "ticket:em_atendimento": { tone: "info", icon: LifeBuoy, description: "Em atendimento pela equipe" },
+  "ticket:aguardando": { tone: "warning", icon: Clock3, description: "Aguardando retorno do cliente" },
+  "ticket:resolvidos": { tone: "success", icon: CheckCircle2, description: "Problemas resolvidos" },
+  "ticket:fechados": { tone: "default", icon: XCircle, description: "Chamados encerrados" },
+  "ticket:alta_prioridade": { tone: "danger", icon: AlertCircle, description: "Prioridade alta ou crítica" },
+
+  // Conteúdo
+  "content:total": { tone: "default", icon: Newspaper, description: "Total de publicações" },
+  "content:published": { tone: "success", icon: Eye, description: "Visíveis no site" },
+  "content:drafts": { tone: "warning", icon: FilePen, description: "Rascunhos não publicados" },
+
+  // Usuários
+  "user:total": { tone: "default", icon: Users, description: "Contas cadastradas" },
+  "user:active": { tone: "success", icon: UserCheck, description: "Com acesso ativo" },
+  "user:inactive": { tone: "default", icon: UserX, description: "Acesso desativado" },
+
+  // Detalhe empresa
+  "company_detail:employees": { tone: "info", icon: Users, description: "Colaboradores vinculados" },
+  "company_detail:open_referrals": { tone: "info", icon: ClipboardList, description: "Encaminhamentos em andamento" },
+  "company_detail:upcoming_appointments": { tone: "info", icon: CalendarCheck, description: "Próximos atendimentos" },
+  "company_detail:pending_documents": { tone: "warning", icon: FileWarning, description: "Documentação pendente" },
+  "company_detail:pending_quotes": { tone: "warning", icon: Receipt, description: "Orçamentos em abertura" },
+
+  // Detalhe colaborador
+  "collaborator_detail:open_referrals": { tone: "info", icon: ClipboardList, description: "Encaminhamentos ativos" },
+  "collaborator_detail:upcoming_appointments": { tone: "info", icon: CalendarCheck, description: "Exames agendados" },
+  "collaborator_detail:available_documents": { tone: "success", icon: FileCheck, description: "Documentos liberados" },
+  "collaborator_detail:pending_exams": { tone: "warning", icon: Clock, description: "Exames pendentes" },
+  "collaborator_detail:last_exam": { tone: "default", icon: Stethoscope, description: "Último exame registrado" },
 };
 
 export function getMetricMeta(key: string): MetricMeta {

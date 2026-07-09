@@ -14,6 +14,7 @@ import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositi
 import { QuickActionGrid } from "@/components/dashboard/QuickActionGrid";
 import { InfoBanner } from "@/components/dashboard/InfoBanner";
 import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/copy-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -188,9 +189,7 @@ export function AssistenteSstClient({ companies }: { companies: CompanyOption[] 
           </pre>
           {preview && (
             <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-              <Button variant="outline" onClick={() => navigator.clipboard.writeText(preview)}>
-                Copiar texto
-              </Button>
+              <CopyButton text={preview} label="Copiar texto" />
               <Button variant="outline" onClick={() => window.print()}>
                 Imprimir / PDF
               </Button>

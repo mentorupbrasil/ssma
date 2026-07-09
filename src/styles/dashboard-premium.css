@@ -73,8 +73,10 @@
   .app-shell-nav-label {
     margin-bottom: 0.5rem;
     padding: 0 0.65rem;
-    font-size: 0.625rem;
-    letter-spacing: 0.14em;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--dash-text-subtle);
   }
 
@@ -336,13 +338,32 @@
   .page-stack {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.75rem;
   }
 
   @media (min-width: 1024px) {
     .page-stack {
-      gap: 1.5rem;
+      gap: 2rem;
     }
+  }
+
+  /* ── Module layout (substitui referrals-module) ─────── */
+  .dash-module {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .dash-module {
+      gap: 1.75rem;
+    }
+  }
+
+  .dash-module-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 
   /* ── Page header ─────────────────────────────────────── */
@@ -373,11 +394,10 @@
     border-radius: 9999px;
     border: 1px solid rgb(22 160 133 / 0.18);
     background: rgb(223 247 240 / 0.6);
-    padding: 0.2rem 0.65rem;
-    font-size: 0.6875rem;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
     color: var(--brand-green-dark);
   }
 
@@ -607,13 +627,49 @@
     color: var(--dash-text-muted);
   }
 
+  /* ── Module tabs (detalhe) ───────────────────────────── */
+  .dash-module-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.3rem;
+    border-radius: var(--dash-radius-lg);
+    border: 1px solid var(--dash-border);
+    background: rgb(248 250 252 / 0.85);
+  }
+
+  .dash-module-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: calc(var(--dash-radius-lg) - 2px);
+    padding: 0.48rem 0.9rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--dash-text-muted);
+    transition: all var(--dash-transition);
+  }
+
+  .dash-module-tab:hover {
+    color: var(--brand-navy);
+    background: rgb(255 255 255 / 0.75);
+  }
+
+  .dash-module-tab-active {
+    border: 1px solid rgb(22 160 133 / 0.18);
+    background: white;
+    color: var(--brand-navy);
+    font-weight: 600;
+    box-shadow: var(--dash-shadow-xs);
+  }
+
   /* ── Filter bar ──────────────────────────────────────── */
   .referral-filters,
   .filter-bar-premium {
-    padding: 1rem 1.05rem;
+    padding: 1.1rem 1.15rem;
     border-radius: var(--dash-radius-lg);
     border: 1px solid var(--dash-border);
-    background: white;
+    background: linear-gradient(180deg, white 0%, rgb(248 250 252 / 0.35) 100%);
     box-shadow: var(--dash-shadow-sm);
   }
 
@@ -978,12 +1034,11 @@
 
   /* ── Section label ───────────────────────────────────── */
   .section-label {
-    margin-bottom: 0.65rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--dash-text-subtle);
+    margin-bottom: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--dash-text-muted);
   }
 
   /* ── Drawers / sheets ────────────────────────────────── */

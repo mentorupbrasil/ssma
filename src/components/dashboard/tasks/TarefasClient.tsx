@@ -6,6 +6,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Plus, LayoutGrid, List, Trash2, GripVertical } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
+import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { FilterBar } from "@/components/dashboard/FilterBar";
@@ -119,7 +121,7 @@ export function TarefasClient({
   }));
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Tarefas"
         description="Organize pendências internas da clínica"
@@ -169,24 +171,18 @@ export function TarefasClient({
         }
       />
 
-      <div className="referral-stat-grid referral-stat-grid-6 mb-6">
-        {TASK_STAT_CARDS.map((card) => (
-          <button
-            key={card.key}
-            type="button"
-            className={cn(
-              "referral-stat-card text-left",
-              filters.card === card.key && "referral-stat-card-active"
-            )}
-            onClick={() => setFilter("card", filters.card === card.key ? "" : card.key)}
-          >
-            <span className="referral-stat-count">{statCounts[card.key] ?? 0}</span>
-            <span className="referral-stat-label">{card.label}</span>
-          </button>
-        ))}
-      </div>
+      <FilterMetricGrid
+        items={TASK_STAT_CARDS.map((card) => ({
+          key: card.key,
+          metaKey: `task:${card.key}`,
+          label: card.label,
+          value: statCounts[card.key] ?? 0,
+          active: filters.card === card.key,
+          onClick: () => setFilter("card", filters.card === card.key ? "" : card.key),
+        }))}
+      />
 
-      <FilterBar className="mb-4">
+      <FilterBar>
         <Input
           placeholder="Buscar tarefa..."
           defaultValue={filters.q}
@@ -292,7 +288,7 @@ export function TarefasClient({
           <p className="border-t px-4 py-2 text-xs text-slate-500">{items.length} de {total} tarefas</p>
         </div>
       )}
-    </div>
+    </PageModule>
   );
 }
 

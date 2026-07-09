@@ -15,6 +15,7 @@ const buttonVariants = cva(
           "bg-[var(--brand-navy)] text-white shadow-sm hover:bg-[var(--brand-navy-deep)] hover:shadow-md focus-visible:ring-[var(--brand-navy)]/30",
         outline:
           "border-border bg-background shadow-sm hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+        copy: "border border-input bg-background shadow-sm shadow-black/5 hover:bg-accent hover:text-accent-foreground outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 focus-visible:ring-0",
         "outline-light":
           "border-white/25 bg-white/10 text-white shadow-sm hover:bg-white/20 hover:text-white",
         secondary:

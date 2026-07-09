@@ -41,6 +41,7 @@ import {
 } from "@/actions/documents";
 import type { DocumentFormOptions } from "@/lib/documents";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
@@ -368,7 +369,7 @@ export function DocumentosClient({
   const empty = initialItems.length === 0 && !hasActiveFilters;
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title="Documentos"
         description="ASO, PCMSO, laudos e demais documentos ocupacionais"
@@ -404,7 +405,7 @@ export function DocumentosClient({
         })}
       />
 
-      <FilterBar className="mt-6" onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
+      <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
         <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
@@ -905,6 +906,6 @@ export function DocumentosClient({
         </DialogContent>
       </Dialog>
       <ConfirmDialogHost />
-    </div>
+    </PageModule>
   );
 }

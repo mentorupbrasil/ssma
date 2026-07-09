@@ -28,6 +28,10 @@ import {
 } from "@/lib/documents";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
+import { MetricGrid } from "@/components/dashboard/MetricGrid";
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { getMetricMeta } from "@/lib/metric-cards";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -93,7 +97,7 @@ export function ColaboradorDetailClient({
   const timeline = buildCollaboratorTimeline(collaborator);
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader
         title={collaborator.fullName}
         description={companyName ?? "Colaborador"}
@@ -155,15 +159,15 @@ export function ColaboradorDetailClient({
         )}
       </p>
 
-      <div className="referral-status-tabs mb-6 flex flex-wrap gap-1">
+      <div className="dash-module-tabs">
         {visibleTabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setTab(tab.id)}
             className={cn(
-              "referral-status-tab",
-              resolvedTab === tab.id && "referral-status-tab-active"
+              "dash-module-tab",
+              resolvedTab === tab.id && "dash-module-tab-active"
             )}
           >
             <tab.icon className="mr-1.5 inline h-3.5 w-3.5" />
@@ -211,7 +215,7 @@ export function ColaboradorDetailClient({
           onSuccess={refresh}
         />
       )}
-    </div>
+    </PageModule>
   );
 }
 
@@ -226,53 +230,58 @@ function OverviewTab({
 }) {
   const stats = [
     {
+      key: "open_referrals",
       label: "Encaminhamentos em aberto",
       value: collaborator.stats.openReferrals,
       tab: "referrals" as TabId,
     },
     {
+      key: "upcoming_appointments",
       label: "Agendamentos futuros",
       value: collaborator.stats.upcomingAppointments,
       tab: "agenda" as TabId,
     },
     {
+      key: "available_documents",
       label: "Documentos disponíveis",
       value: collaborator.stats.availableDocuments,
       tab: "documents" as TabId,
     },
     {
+      key: "pending_exams",
       label: "Exames pendentes",
       value: collaborator.stats.pendingExams,
       tab: "exams" as TabId,
     },
     {
+      key: "last_exam",
       label: "Último exame",
       value:
         collaborator.stats.lastExamLabel && collaborator.stats.lastExamDate
           ? `${collaborator.stats.lastExamLabel} · ${format(new Date(collaborator.stats.lastExamDate), "dd/MM/yyyy", { locale: ptBR })}`
           : "—",
       tab: "referrals" as TabId,
-      isText: true,
     },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="referral-stat-grid referral-stat-grid-5">
-        {stats.map((s) => (
-          <button
-            key={s.label}
-            type="button"
-            className="referral-stat-card text-left"
-            onClick={() => onNavigate(s.tab)}
-          >
-            <span className={cn("referral-stat-count", s.isText && "text-base leading-snug")}>
-              {s.value}
-            </span>
-            <span className="referral-stat-label">{s.label}</span>
-          </button>
-        ))}
-      </div>
+      <MetricGrid>
+        {stats.map((s) => {
+          const meta = getMetricMeta(`collaborator_detail:${s.key}`);
+          return (
+            <MetricCard
+              key={s.key}
+              label={s.label}
+              value={s.value}
+              icon={meta.icon}
+              description={meta.description}
+              variant={meta.tone}
+              onClick={() => onNavigate(s.tab)}
+            />
+          );
+        })}
+      </MetricGrid>
 
       <Card>
         <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">

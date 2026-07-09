@@ -28,6 +28,7 @@ import {
 } from "@/lib/exams";
 import { getExamDetail, toggleExamStatus, duplicateExam } from "@/actions/exams";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -238,7 +239,7 @@ export function ExamesClient({
   const empty = initialItems.length === 0 && !filters.q && activeCard === "ALL";
 
   return (
-    <div className="referrals-module">
+    <PageModule>
       <PageHeader title="Exames" description="Catálogo de exames, preparos e prazos">
         {canManage && (
           <Button
@@ -267,7 +268,7 @@ export function ExamesClient({
         })}
       />
 
-      <FilterBar className="mt-6" onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
+      <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
         <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
@@ -583,6 +584,6 @@ export function ExamesClient({
           }}
         />
       )}
-    </div>
+    </PageModule>
   );
 }
