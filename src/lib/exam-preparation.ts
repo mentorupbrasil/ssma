@@ -109,3 +109,28 @@ ${exam.whenToInformClinic}`;
 export async function copyExamInstructions(exam: ExamGuide): Promise<void> {
   await navigator.clipboard.writeText(buildCopyText(exam));
 }
+
+export type ExamStatusTone = "neutral" | "warning" | "success" | "info" | "caution";
+
+export function getExamStatusChip(exam: ExamGuide): { label: string; tone: ExamStatusTone } {
+  if (exam.deliveryTime.toLowerCase().includes("no dia")) {
+    return { label: "Resultado no dia", tone: "success" };
+  }
+
+  switch (exam.preparationStatus) {
+    case "SEM_PREPARO":
+      return { label: "Sem preparo específico", tone: "neutral" };
+    case "JEJUM_NECESSARIO":
+      return { label: "Jejum necessário", tone: "warning" };
+    case "PREPARO_NECESSARIO":
+      return { label: "Preparo obrigatório", tone: "info" };
+    case "ATENCAO_ESPECIAL":
+      return { label: "Exige atenção", tone: "caution" };
+    case "VERIFICAR_EXAME":
+      return { label: "Verificar exame", tone: "caution" };
+    case "ORIENTACAO_ESPECIFICA":
+      return { label: "Orientação específica", tone: "info" };
+    default:
+      return { label: PREPARATION_STATUS_LABELS[exam.preparationStatus], tone: "neutral" };
+  }
+}

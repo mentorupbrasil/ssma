@@ -1,10 +1,23 @@
 "use client";
 
-import { Clock3, Share2 } from "lucide-react";
+import type { MouseEvent } from "react";
+import {
+  Clock3,
+  FlaskConical,
+  Microscope,
+  Radiation,
+  Share2,
+  Stethoscope,
+  ArrowRight,
+} from "lucide-react";
 import type { ExamGuide } from "@/data/exams";
-import { buildWhatsAppShareMessage, DISPLAY_CATEGORY_LABELS } from "@/lib/exam-preparation";
+import {
+  buildWhatsAppShareMessage,
+  DISPLAY_CATEGORY_LABELS,
+  getExamStatusChip,
+  type ExamStatusTone,
+} from "@/lib/exam-preparation";
 import { whatsappLink } from "@/lib/helpers";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type ExamCardProps = {
@@ -13,50 +26,79 @@ type ExamCardProps = {
   className?: string;
 };
 
+const CATEGORY_ICONS = {
+  COMPLEMENTAR: Stethoscope,
+  LABORATORIAL: FlaskConical,
+  IMAGEM: Radiation,
+  TOXICOLOGICO: Microscope,
+} as const;
+
+const STATUS_CLASS: Record<ExamStatusTone, string> = {
+  neutral: "exam-card-status--neutral",
+  warning: "exam-card-status--warning",
+  success: "exam-card-status--success",
+  info: "exam-card-status--info",
+  caution: "exam-card-status--caution",
+};
+
 export function ExamCard({ exam, onViewPreparation, className }: ExamCardProps) {
-  const share = () => {
+  const CategoryIcon = CATEGORY_ICONS[exam.displayCategory] ?? Stethoscope;
+  const status = getExamStatusChip(exam);
+
+  const share = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     window.open(whatsappLink(buildWhatsAppShareMessage(exam)), "_blank", "noopener,noreferrer");
   };
 
+  const open = () => onViewPreparation(exam);
+
   return (
-    <article className={cn("exam-prep-card group", className)}>
-      <div className="exam-prep-card-top">
-        <h3 className="exam-prep-card-title">{exam.name}</h3>
-        <span className="exam-prep-card-category">
-          {DISPLAY_CATEGORY_LABELS[exam.displayCategory]}
-        </span>
+    <article
+      className={cn("exam-card group", className)}
+      role="button"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open();
+        }
+      }}
+    >
+      <button
+        type="button"
+        className="exam-card-share"
+        onClick={share}
+        aria-label={`Compartilhar preparo de ${exam.name}`}
+        title="Compartilhar preparo"
+      >
+        <Share2 strokeWidth={1.75} />
+      </button>
+
+      <div className="exam-card-top">
+        <div className="exam-card-icon" aria-hidden>
+          <CategoryIcon strokeWidth={1.75} />
+        </div>
+        <span className="exam-card-category">{DISPLAY_CATEGORY_LABELS[exam.displayCategory]}</span>
       </div>
 
-      <p className="exam-prep-card-summary">{exam.preparationSummary}</p>
+      <h3 className="exam-card-title">{exam.name}</h3>
+      <p className="exam-card-summary">{exam.preparationSummary}</p>
 
-      <div className="exam-prep-card-meta">
-        <div className="exam-prep-card-meta-item">
+      <div className="exam-card-meta">
+        <div className="exam-card-meta-item">
           <Clock3 className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
           <span>{exam.deliveryTime}</span>
         </div>
+        <span className={cn("exam-card-status", STATUS_CLASS[status.tone])}>{status.label}</span>
       </div>
 
-      {exam.notes && <p className="exam-prep-card-note">{exam.notes}</p>}
+      {exam.notes && <p className="exam-card-note">{exam.notes}</p>}
 
-      <div className="exam-prep-card-actions">
-        <Button
-          size="sm"
-          variant="brand"
-          className="exam-prep-card-btn w-full rounded-lg"
-          onClick={() => onViewPreparation(exam)}
-        >
-          Ver preparo
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="exam-prep-card-btn w-full rounded-lg"
-          onClick={share}
-        >
-          <Share2 className="mr-2 h-3.5 w-3.5" />
-          Compartilhar
-        </Button>
-      </div>
+      <span className="exam-card-link">
+        Ver preparo completo
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      </span>
     </article>
   );
 }

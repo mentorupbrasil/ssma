@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import type { ExamGuide } from "@/data/exams";
 import { ExamCard } from "@/components/public/ExamCard";
-import { ExamPreparationModal } from "@/components/public/ExamPreparationModal";
+import { ExamPreparationDrawer } from "@/components/public/ExamPreparationDrawer";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,11 +25,11 @@ export function ExamSearch({ exams }: ExamSearchProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<ExamFilterId>("all");
   const [selectedExam, setSelectedExam] = useState<ExamGuide | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const openModal = (exam: ExamGuide) => {
+  const openDrawer = (exam: ExamGuide) => {
     setSelectedExam(exam);
-    setModalOpen(true);
+    setDrawerOpen(true);
   };
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export function ExamSearch({ exams }: ExamSearchProps) {
     if (match) {
       setSearch(match.name);
       setSelectedExam(match);
-      setModalOpen(true);
+      setDrawerOpen(true);
     }
   }, [examParam, exams]);
 
@@ -49,21 +49,17 @@ export function ExamSearch({ exams }: ExamSearchProps) {
 
   return (
     <>
-      <div className="exam-catalog-panel">
-        <div className="exam-catalog-toolbar">
-          <div className="relative flex-1">
-            <Search
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-              aria-hidden
-            />
-            <Input
-              placeholder="Buscar exame..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="exam-catalog-search rounded-lg border-slate-200 bg-white pl-9"
-              aria-label="Buscar exame"
-            />
-          </div>
+      <div className="exam-catalog">
+        <div className="exam-catalog-search-wrap">
+          <Search className="exam-catalog-search-icon" aria-hidden />
+          <Input
+            id="exam-search-input"
+            placeholder="Busque por audiometria, eletrocardiograma, raio-x, toxicológico..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="exam-catalog-search-input"
+            aria-label="Buscar exame"
+          />
         </div>
 
         <div className="exam-catalog-filters" role="group" aria-label="Filtrar exames">
@@ -73,8 +69,8 @@ export function ExamSearch({ exams }: ExamSearchProps) {
               type="button"
               onClick={() => setFilter(option.id)}
               className={cn(
-                "exam-catalog-filter-chip",
-                filter === option.id && "exam-catalog-filter-chip--active"
+                "exam-catalog-filter",
+                filter === option.id && "exam-catalog-filter--active"
               )}
               aria-pressed={filter === option.id}
             >
@@ -84,14 +80,15 @@ export function ExamSearch({ exams }: ExamSearchProps) {
         </div>
 
         <p className="exam-catalog-counter" aria-live="polite">
-          {filtered.length} {filtered.length === 1 ? "exame encontrado" : "exames encontrados"}
+          <span className="exam-catalog-counter-value">{filtered.length}</span>
+          {filtered.length === 1 ? " exame encontrado" : " exames encontrados"}
         </p>
 
         {filtered.length === 0 ? (
           <EmptyState
             icon={Search}
             compact
-            className="border-0 bg-transparent"
+            className="exam-catalog-empty"
             title="Nenhum exame encontrado"
             description="Tente buscar por outro nome ou selecione outra categoria."
             action={{
@@ -106,22 +103,20 @@ export function ExamSearch({ exams }: ExamSearchProps) {
         ) : (
           <div className="exam-catalog-grid">
             {filtered.map((exam) => (
-              <ExamCard key={exam.slug} exam={exam} onViewPreparation={openModal} />
+              <ExamCard key={exam.slug} exam={exam} onViewPreparation={openDrawer} />
             ))}
           </div>
         )}
 
-        <p className="exam-catalog-disclaimer">
-          As orientações podem variar conforme solicitação médica, PCMSO, protocolo da clínica ou
-          tipo de exame. Em caso de dúvida, fale com nossa equipe antes do atendimento.
-        </p>
+        <div className="exam-catalog-disclaimer">
+          <p>
+            As orientações podem variar conforme solicitação médica, PCMSO, protocolo da clínica ou
+            tipo de exame. Em caso de dúvida, fale com nossa equipe antes do atendimento.
+          </p>
+        </div>
       </div>
 
-      <ExamPreparationModal
-        exam={selectedExam}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-      />
+      <ExamPreparationDrawer exam={selectedExam} open={drawerOpen} onOpenChange={setDrawerOpen} />
     </>
   );
 }

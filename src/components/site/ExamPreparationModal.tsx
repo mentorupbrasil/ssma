@@ -1,1 +1,1 @@
-export { ExamPreparationModal } from "@/components/public/ExamPreparationModal";
+export { ExamPreparationDrawer as ExamPreparationModal } from "@/components/public/ExamPreparationDrawer";

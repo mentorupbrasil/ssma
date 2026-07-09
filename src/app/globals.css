@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "../styles/dashboard-premium.css";
 @import "../styles/about-premium.css";
+@import "../styles/exams-premium.css";
 
 @custom-variant dark (&:is(.dark *));
 
