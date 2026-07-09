@@ -3,7 +3,7 @@ import { CTASection } from "@/components/public/CTASection";
 import { ComplianceSection } from "@/components/public/ComplianceSection";
 import { PortalShowcase } from "@/components/public/PortalShowcase";
 import { TestimonialsSection } from "@/components/public/TestimonialsSection";
-import { TopClinicalExams } from "@/components/public/TopClinicalExams";
+import { HomeClinicalExams } from "@/components/public/HomeClinicalExams";
 import { ProcessSection } from "@/components/public/ProcessSection";
 import { DifferentialsSection } from "@/components/public/DifferentialsSection";
 import { LocationSection } from "@/components/public/LocationSection";
@@ -47,7 +47,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <TopClinicalExams />
+      <HomeClinicalExams />
 
       <ProcessSection />
 
