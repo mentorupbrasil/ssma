@@ -17,6 +17,7 @@ export type ComplianceDoc = {
   name: string;
   description: string;
   icon: LucideIcon;
+  tag: string;
 };
 
 export const COMPLIANCE_DOCS: ComplianceDoc[] = [
@@ -25,6 +26,7 @@ export const COMPLIANCE_DOCS: ComplianceDoc[] = [
     name: "Programa de Controle Médico",
     description: "Obrigatório para empresas com riscos ocupacionais conforme a NR-7.",
     icon: Stethoscope,
+    tag: "Programa",
   },
   {
     sigla: "ASO",
@@ -32,24 +34,28 @@ export const COMPLIANCE_DOCS: ComplianceDoc[] = [
     description:
       "Admissional, periódico, demissional, retorno ao trabalho e mudança de função.",
     icon: ClipboardList,
+    tag: "Obrigatório",
   },
   {
     sigla: "PGR",
     name: "Programa de Gerenciamento de Riscos",
     description: "Identificação, avaliação e controle dos riscos no ambiente de trabalho.",
     icon: Shield,
+    tag: "Programa",
   },
   {
     sigla: "LTCAT",
     name: "Laudo Técnico das Condições Ambientais do Trabalho",
     description: "Documento essencial para aposentadoria especial, PPP e enquadramentos.",
     icon: FileText,
+    tag: "Laudo",
   },
   {
     sigla: "eSocial",
     name: "Eventos de SST no eSocial",
     description: "Envio correto das informações ocupacionais exigidas pelo governo.",
     icon: Database,
+    tag: "Evento digital",
   },
 ];
 
@@ -60,6 +66,7 @@ export const EMPRESAS_COMPLIANCE_DOCS: ComplianceDoc[] = [
     description:
       "Programa obrigatório para monitorar a saúde ocupacional dos colaboradores conforme a NR-7.",
     icon: Stethoscope,
+    tag: "Programa",
   },
   {
     sigla: "ASO",
@@ -67,6 +74,7 @@ export const EMPRESAS_COMPLIANCE_DOCS: ComplianceDoc[] = [
     description:
       "Documento emitido nos exames admissionais, periódicos, demissionais, retorno ao trabalho e mudança de função.",
     icon: ClipboardList,
+    tag: "Obrigatório",
   },
   {
     sigla: "PGR",
@@ -74,6 +82,7 @@ export const EMPRESAS_COMPLIANCE_DOCS: ComplianceDoc[] = [
     description:
       "Base da gestão de riscos ocupacionais, com identificação e controle dos riscos no ambiente de trabalho.",
     icon: Shield,
+    tag: "Programa",
   },
   {
     sigla: "LTCAT",
@@ -81,12 +90,14 @@ export const EMPRESAS_COMPLIANCE_DOCS: ComplianceDoc[] = [
     description:
       "Documento essencial para caracterização de exposição, PPP e fins previdenciários.",
     icon: FileText,
+    tag: "Laudo",
   },
   {
     sigla: "eSocial",
     name: "Eventos de SST no eSocial",
     description: "Envio correto das informações ocupacionais exigidas pelo governo.",
     icon: Database,
+    tag: "Evento digital",
   },
 ];
 

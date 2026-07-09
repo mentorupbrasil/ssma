@@ -119,11 +119,8 @@ export function Footer() {
             </div>
 
             <div className="site-footer-actions">
-              <Link href="/contato?tipo=orcamento" className="site-footer-action site-footer-action--primary">
-                Solicitar orçamento
-              </Link>
-              <Link href="/encaminhamento-online" className="site-footer-action">
-                Encaminhamento online
+              <Link href="/contato" className="site-footer-action">
+                Entrar em contato
               </Link>
             </div>
           </div>

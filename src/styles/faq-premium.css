@@ -4,11 +4,11 @@
 
 .faq-section {
   position: relative;
-  padding-block: clamp(2.5rem, 5vw, 3.5rem);
+  padding-block: clamp(2.75rem, 5vw, 3.75rem);
   background: linear-gradient(
     180deg,
-    rgb(248 250 252) 0%,
-    rgb(255 255 255) 45%,
+    rgb(255 255 255) 0%,
+    rgb(248 250 252) 55%,
     rgb(255 255 255) 100%
   );
 }
@@ -51,8 +51,8 @@
 
 @media (min-width: 1024px) {
   .faq-layout {
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
-    gap: 1.75rem;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+    gap: 2rem;
   }
 }
 

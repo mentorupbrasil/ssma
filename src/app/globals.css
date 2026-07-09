@@ -7,6 +7,7 @@
 @import "../styles/footer-premium.css";
 @import "../styles/faq-premium.css";
 @import "../styles/services-premium.css";
+@import "../styles/home-premium.css";
 
 @custom-variant dark (&:is(.dark *));
 
