@@ -16,7 +16,7 @@ export function AboutStatsSection() {
             const Icon = stat.icon;
             return (
               <TimelineContent
-                key={stat.label}
+                key={`${stat.value}-${stat.label}`}
                 animationNum={index}
                 timelineRef={sectionRef}
                 className="about-stats-card"
