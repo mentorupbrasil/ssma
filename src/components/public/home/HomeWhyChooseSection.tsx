@@ -1,29 +1,46 @@
-import { SectionHeader } from "@/components/public/SectionHeader";
+import { CheckCircle2 } from "lucide-react";
 import { HOME_WHY_CHOOSE } from "@/data/home";
+
+const STATS = [
+  { value: "6", label: "documentos e programas cobertos" },
+  { value: "5", label: "etapas claras, do orçamento ao ASO" },
+  { value: "100%", label: "dos encaminhamentos com protocolo digital" },
+] as const;
 
 export function HomeWhyChooseSection() {
   return (
     <section className="home-why scroll-mt-[var(--header-height)]" id="por-que-escolher">
       <div className="container-page">
-        <SectionHeader
-          eyebrow="Diferenciais"
-          title="Por que empresas escolhem a Unimetra"
-          description="Atendimento ocupacional, suporte técnico e organização digital em um fluxo mais claro para empresas e RHs."
-        />
+        <div className="home-why-panel">
+          <div className="home-why-intro">
+            <p className="home-why-eyebrow">Diferenciais</p>
+            <h2 className="home-why-title">Por que empresas escolhem a Unimetra</h2>
+            <p className="home-why-desc">
+              Atendimento ocupacional, suporte técnico e organização digital em um fluxo mais
+              claro para empresas e equipes de RH.
+            </p>
 
-        <div className="home-why-grid">
-          {HOME_WHY_CHOOSE.map((item) => {
-            const Icon = item.icon;
-            return (
-              <article key={item.title} className="home-why-card group">
-                <div className="home-why-card-icon" aria-hidden>
-                  <Icon strokeWidth={1.75} />
+            <dl className="home-why-stats">
+              {STATS.map((stat) => (
+                <div key={stat.label} className="home-why-stat">
+                  <dt className="home-why-stat-value">{stat.value}</dt>
+                  <dd className="home-why-stat-label">{stat.label}</dd>
                 </div>
-                <h3 className="home-why-card-title">{item.title}</h3>
-                <p className="home-why-card-desc">{item.description}</p>
-              </article>
-            );
-          })}
+              ))}
+            </dl>
+          </div>
+
+          <ul className="home-why-checklist">
+            {HOME_WHY_CHOOSE.map((item) => (
+              <li key={item.title} className="home-why-check-item">
+                <CheckCircle2 className="home-why-check-icon" strokeWidth={1.75} aria-hidden />
+                <div>
+                  <p className="home-why-check-title">{item.title}</p>
+                  <p className="home-why-check-desc">{item.description}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

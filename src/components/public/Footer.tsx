@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Mail, MapPin, MessageCircle, Navigation } from "lucide-react";
 import { FacebookIcon, InstagramIcon } from "@/components/public/SocialIcons";
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import { SiteBrandMark } from "@/components/public/SiteBrandMark";
 import { getClinicSiteConfig } from "@/config/clinic";
 import { formatPhone, getClinicInfo, whatsappLink } from "@/lib/helpers";
 
@@ -27,7 +27,7 @@ export function Footer() {
       <div className="container-page site-footer-main">
         <div className="site-footer-grid">
           <div className="site-footer-brand">
-            <BrandLogo height={32} showLink href="/" />
+            <SiteBrandMark height={32} showLink href="/" />
             <p className="site-footer-tagline">
               Medicina e Segurança do Trabalho para empresas em {locationLabel}.
             </p>

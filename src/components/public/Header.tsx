@@ -7,7 +7,7 @@ import { Menu, Phone, ChevronRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import { SiteBrandMark } from "@/components/public/SiteBrandMark";
 
 const NAV_ITEMS = [
   { href: "/", label: "Início" },
@@ -35,7 +35,7 @@ export function Header() {
     <header className="glass-header">
       <div className="container-page flex h-full items-center justify-between">
         <Link href="/" className="group flex items-center" aria-label={`${clinic.name} — página inicial`}>
-          <BrandLogo height={28} priority showLink={false} />
+          <SiteBrandMark height={30} showLink={false} />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegação principal">

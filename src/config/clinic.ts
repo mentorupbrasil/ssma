@@ -199,7 +199,9 @@ export function getClinicSiteConfig(): ClinicSiteConfig {
   });
 
   const openStreetMapEmbedUrl = buildOpenStreetMapEmbedUrl(mapsLat, mapsLng);
-  const mapEmbedUrl = openStreetMapEmbedUrl || googleMapsEmbedUrl;
+  // Google Maps embed tem visual mais premium (sem marca d'água do OSM) e é
+  // consistente com o botão "Abrir no Google Maps" exibido ao lado do mapa.
+  const mapEmbedUrl = googleMapsEmbedUrl || openStreetMapEmbedUrl;
 
   return {
     clinicName,

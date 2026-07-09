@@ -11,7 +11,7 @@ import {
   Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HeroInstitutionalVisual } from "@/components/public/HeroInstitutionalVisual";
+import { HeroPortalMockup } from "@/components/public/HeroPortalMockup";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 const QUICK_CARDS = [
@@ -56,8 +56,9 @@ export function HomeHero() {
             </h1>
 
             <p className="mt-4 max-w-lg text-[0.95rem] leading-relaxed text-slate-300/95 sm:text-base lg:text-[1rem] lg:leading-relaxed">
-              Portal empresarial, entrega digital de documentos, pré-encaminhamentos e gestão
-              operacional para empresas — com PCMSO, ASO e conformidade legal em dia.
+              Da admissão ao desligamento, sua empresa com PCMSO, ASO e toda a documentação
+              ocupacional organizada — acompanhada em tempo real por um portal que o RH realmente
+              usa no dia a dia.
             </p>
 
             <div className="mt-3.5 flex flex-wrap gap-2">
@@ -103,7 +104,26 @@ export function HomeHero() {
           </div>
 
           <div className="animate-fade-up-delay order-1 flex justify-center lg:order-2 lg:justify-end lg:self-center lg:pl-2 xl:pl-6">
-            <HeroInstitutionalVisual className="w-full" />
+            <div className="relative w-full max-w-[26rem]">
+              <div
+                className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-[radial-gradient(ellipse_at_center,rgba(22,160,133,0.16),transparent_65%)] blur-2xl"
+                aria-hidden
+              />
+
+              <span className="hero-float-card absolute -left-6 -top-5 z-10 hidden lg:flex">
+                <BadgeCheck className="mb-1 h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" strokeWidth={1.75} />
+                Protocolo automático a cada encaminhamento
+              </span>
+
+              <span className="hero-float-card absolute -bottom-5 -right-4 z-10 hidden max-w-[10rem] lg:flex">
+                <Lock className="mb-1 h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" strokeWidth={1.75} />
+                Dados de colaboradores protegidos conforme a LGPD
+              </span>
+
+              <div className="home-hero-mockup relative">
+                <HeroPortalMockup variant="hero" demoMode />
+              </div>
+            </div>
           </div>
         </div>
 

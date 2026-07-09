@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { CLINICAL_EXAM_TYPES } from "@/data/marketing";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Button } from "@/components/ui/button";
@@ -15,18 +15,28 @@ export function HomeClinicalExams() {
           description="Essenciais para admissões, acompanhamento periódico, desligamentos e retorno ao trabalho com conformidade legal."
         />
 
-        <div className="home-clinical-grid">
-          {CLINICAL_EXAM_TYPES.map((exam) => (
-            <article key={exam.type} className="home-clinical-card group">
-              <div className="home-clinical-card-badges">
-                <span className="home-clinical-badge">ASO</span>
-                <span className="home-clinical-badge home-clinical-badge--muted">NR-7</span>
+        <ol className="home-clinical-list">
+          {CLINICAL_EXAM_TYPES.map((exam, index) => (
+            <li
+              key={exam.type}
+              className={exam.highlight ? "home-clinical-item home-clinical-item--highlight" : "home-clinical-item"}
+            >
+              <span className="home-clinical-item-num">{String(index + 1).padStart(2, "0")}</span>
+              <div className="home-clinical-item-body">
+                <div className="home-clinical-item-head">
+                  <h3 className="home-clinical-item-title">{exam.label}</h3>
+                  {exam.highlight && (
+                    <span className="home-clinical-item-flag">
+                      <Star className="h-3 w-3" strokeWidth={2} />
+                      Mais comum
+                    </span>
+                  )}
+                </div>
+                <p className="home-clinical-item-desc">{exam.description}</p>
               </div>
-              <h3 className="home-clinical-card-title">{exam.label}</h3>
-              <p className="home-clinical-card-desc">{exam.description}</p>
-            </article>
+            </li>
           ))}
-        </div>
+        </ol>
 
         <div className="home-clinical-cta">
           <Link href="/encaminhamento-online">

@@ -3404,7 +3404,7 @@
   }
 
   .text-gradient-hero {
-    background: linear-gradient(to right, white, white, rgb(209 250 229 / 0.9));
+    background: linear-gradient(100deg, #5eead4 0%, #34d399 45%, #a7f3d0 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -4922,11 +4922,11 @@
   }
 
   .animate-fade-up {
-    animation: fade-up 0.6s ease-out both;
+    animation: fade-up 0.45s ease-out both;
   }
 
   .animate-fade-up-delay {
-    animation: fade-up 0.6s ease-out 0.15s both;
+    animation: fade-up 0.45s ease-out 0.08s both;
   }
 }
 
