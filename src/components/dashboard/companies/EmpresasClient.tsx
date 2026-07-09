@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -28,6 +28,13 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
+import { DetailDrawer } from "@/components/dashboard/DetailDrawer";
+import { MobileListCard } from "@/components/dashboard/MobileListCard";
+import { CompanyDetailDrawerContent } from "./CompanyDetailDrawerContent";
+import { getCompanyDetail } from "@/actions/companies";
+import type { CompanyDetailSerialized } from "@/lib/companies";
+import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
+import { toast } from "sonner";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,6 +100,9 @@ export function EmpresasClient({
   const [dateFrom, setDateFrom] = useState(filters.dateFrom ?? "");
   const [dateTo, setDateTo] = useState(filters.dateTo ?? "");
   const [newDialogOpen, setNewDialogOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerCompany, setDrawerCompany] = useState<CompanyDetailSerialized | null>(null);
 
   const activeStatus = filters.status ?? "ALL";
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
@@ -134,6 +144,52 @@ export function EmpresasClient({
     setDateFrom("");
     setDateTo("");
     startTransition(() => router.push("/dashboard/empresas"));
+  };
+
+  const activeChips = useMemo(
+    () =>
+      buildFilterChips([
+        { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
+        {
+          key: "status",
+          value: filters.status,
+          label: (v) => `Status: ${v}`,
+          skip: (v) => v === "ALL",
+        },
+        { key: "city", value: filters.city, label: (v) => `Cidade: ${v}` },
+        { key: "size", value: filters.size, label: (v) => `Porte: ${v}` },
+        { key: "contractType", value: filters.contractType, label: (v) => `Contrato: ${v}` },
+        { key: "pending", value: filters.pending, label: () => "Com pendência" },
+        { key: "dateFrom", value: filters.dateFrom, label: (v) => `De ${v}` },
+        { key: "dateTo", value: filters.dateTo, label: (v) => `Até ${v}` },
+      ]),
+    [filters]
+  );
+
+  const removeChip = (key: string) => {
+    const next = removeFilterKey(key, filters);
+    if (key === "q") setQ("");
+    if (key === "city") setCity("");
+    if (key === "size") setSize("");
+    if (key === "contractType") setContractType("");
+    if (key === "pending") setPending("");
+    if (key === "dateFrom") setDateFrom("");
+    if (key === "dateTo") setDateTo("");
+    updateFilters(next);
+  };
+
+  const openDetail = async (id: string) => {
+    setDrawerOpen(true);
+    setDrawerLoading(true);
+    setDrawerCompany(null);
+    const result = await getCompanyDetail(id);
+    setDrawerLoading(false);
+    if (!result.success) {
+      toast.error(result.error);
+      setDrawerOpen(false);
+      return;
+    }
+    setDrawerCompany(result.company);
   };
 
   useEffect(() => {
@@ -195,6 +251,9 @@ export function EmpresasClient({
         onSearch={handleSearch}
         onClear={clearFilters}
         isPending={isPending}
+        activeChips={activeChips}
+        onRemoveChip={removeChip}
+        onClearChips={clearFilters}
       >
         <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
@@ -269,6 +328,8 @@ export function EmpresasClient({
             }
           />
         ) : (
+          <>
+          <div className="hidden md:block">
           <DataTable>
             <Table>
               <TableHeader>
@@ -292,7 +353,7 @@ export function EmpresasClient({
                     <TableRow
                       key={c.id}
                       className="cursor-pointer hover:bg-slate-50"
-                      onClick={() => router.push(`/dashboard/empresas/${c.id}`)}
+                      onClick={() => openDetail(c.id)}
                     >
                       <TableCell>
                         <div>
@@ -378,6 +439,22 @@ export function EmpresasClient({
               </TableBody>
             </Table>
           </DataTable>
+          </div>
+
+          <div className="grid gap-3 md:hidden">
+            {initialItems.map((c) => (
+              <MobileListCard
+                key={c.id}
+                icon={Building2}
+                title={c.tradeName ?? c.legalName}
+                subtitle={c.tradeName ? c.legalName : formatCNPJ(c.cnpj)}
+                meta={`${c.employeeCount} colaboradores · ${c.city ?? "—"}`}
+                badge={<StatusBadge status={c.status} type="company" />}
+                onClick={() => openDetail(c.id)}
+              />
+            ))}
+          </div>
+          </>
         )}
 
         {totalPages > 1 && (
@@ -404,6 +481,17 @@ export function EmpresasClient({
           </div>
         )}
       </div>
+
+      <DetailDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        title={drawerCompany?.tradeName ?? drawerCompany?.legalName ?? "Empresa"}
+        description={drawerCompany ? formatCNPJ(drawerCompany.cnpj) : undefined}
+        loading={drawerLoading}
+        size="xl"
+      >
+        {drawerCompany && <CompanyDetailDrawerContent company={drawerCompany} />}
+      </DetailDrawer>
 
       <NewCompanyDialog
         open={newDialogOpen}

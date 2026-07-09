@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -26,6 +26,13 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
+import { DetailDrawer } from "@/components/dashboard/DetailDrawer";
+import { MobileListCard } from "@/components/dashboard/MobileListCard";
+import { CollaboratorDetailDrawerContent } from "./CollaboratorDetailDrawerContent";
+import { getCollaboratorDetail } from "@/actions/collaborators";
+import type { CollaboratorDetailSerialized } from "@/lib/collaborators";
+import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
+import { toast } from "sonner";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +89,9 @@ export function ColaboradoresClient({
   const [periodicDue, setPeriodicDue] = useState(filters.periodicDue ?? "");
   const [docsPending, setDocsPending] = useState(filters.docsPending ?? "");
   const [newDialogOpen, setNewDialogOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerCollaborator, setDrawerCollaborator] = useState<CollaboratorDetailSerialized | null>(null);
 
   const activeStatus = filters.status ?? "ALL";
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
@@ -127,6 +137,40 @@ export function ColaboradoresClient({
     startTransition(() => router.push("/dashboard/colaboradores"));
   };
 
+  const activeChips = useMemo(
+    () =>
+      buildFilterChips([
+        { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
+        { key: "status", value: filters.status, label: (v) => `Status: ${v}`, skip: (v) => v === "ALL" },
+        { key: "companyId", value: filters.companyId, label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}` },
+        { key: "jobTitle", value: filters.jobTitle, label: (v) => `Função: ${v}` },
+        { key: "department", value: filters.department, label: (v) => `Setor: ${v}` },
+        { key: "clinicalExamType", value: filters.clinicalExamType, label: (v) => `Exame: ${v}` },
+        { key: "periodicDue", value: filters.periodicDue, label: () => "Periódico a vencer" },
+        { key: "docsPending", value: filters.docsPending, label: () => "Docs pendentes" },
+      ]),
+    [filters, companies]
+  );
+
+  const removeChip = (key: string) => {
+    const next = removeFilterKey(key, filters);
+    updateFilters(next);
+  };
+
+  const openDetail = async (id: string) => {
+    setDrawerOpen(true);
+    setDrawerLoading(true);
+    setDrawerCollaborator(null);
+    const result = await getCollaboratorDetail(id);
+    setDrawerLoading(false);
+    if (!result.success) {
+      toast.error(result.error);
+      setDrawerOpen(false);
+      return;
+    }
+    setDrawerCollaborator(result.collaborator);
+  };
+
   useEffect(() => {
     if (searchParams.get("new") === "1" && canManage) setNewDialogOpen(true);
   }, [searchParams, canManage]);
@@ -166,6 +210,9 @@ export function ColaboradoresClient({
         onSearch={handleSearch}
         onClear={clearFilters}
         isPending={isPending}
+        activeChips={activeChips}
+        onRemoveChip={removeChip}
+        onClearChips={clearFilters}
       >
         <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
@@ -265,6 +312,8 @@ export function ColaboradoresClient({
             }}
           />
         ) : (
+          <>
+          <div className="hidden md:block">
           <DataTable>
             <Table>
               <TableHeader>
@@ -287,7 +336,7 @@ export function ColaboradoresClient({
                   <TableRow
                     key={c.id}
                     className="cursor-pointer hover:bg-slate-50"
-                    onClick={() => router.push(`/dashboard/colaboradores/${c.id}`)}
+                    onClick={() => openDetail(c.id)}
                   >
                     <TableCell className="font-medium text-[#0F3D4A]">
                       <div className="flex flex-wrap items-center gap-2">
@@ -406,6 +455,32 @@ export function ColaboradoresClient({
               </TableBody>
             </Table>
           </DataTable>
+          </div>
+
+          <div className="grid gap-3 md:hidden">
+            {initialItems.map((c) => {
+              const periodicBadge = getPeriodicExamBadge(c.nextPeriodicDate);
+              return (
+                <MobileListCard
+                  key={c.id}
+                  icon={Users}
+                  title={c.fullName}
+                  subtitle={c.companyName ?? "Sem empresa"}
+                  meta={c.jobTitle ?? undefined}
+                  badge={
+                    <div className="flex flex-col items-end gap-1">
+                      <StatusBadge status={c.status} type="collaborator" />
+                      <Badge variant="outline" className="rounded-full text-[9px] font-normal">
+                        {periodicBadge.label}
+                      </Badge>
+                    </div>
+                  }
+                  onClick={() => openDetail(c.id)}
+                />
+              );
+            })}
+          </div>
+          </>
         )}
 
         {totalPages > 1 && (
@@ -432,6 +507,19 @@ export function ColaboradoresClient({
           </div>
         )}
       </div>
+
+      <DetailDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        title={drawerCollaborator?.fullName ?? "Colaborador"}
+        description={drawerCollaborator?.company?.tradeName ?? drawerCollaborator?.company?.legalName}
+        loading={drawerLoading}
+        size="xl"
+      >
+        {drawerCollaborator && (
+          <CollaboratorDetailDrawerContent collaborator={drawerCollaborator} />
+        )}
+      </DetailDrawer>
 
       <NewCollaboratorDialog
         open={newDialogOpen}

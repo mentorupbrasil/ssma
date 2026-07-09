@@ -16,4 +16,6 @@ export { StatusBadge } from "@/components/dashboard/StatusBadge";
 export { InfoBanner } from "@/components/dashboard/InfoBanner";
 export { QuickActionGrid } from "@/components/dashboard/QuickActionGrid";
 export { TableSkeleton } from "@/components/dashboard/skeletons/TableSkeleton";
-export { MetricCardSkeleton } from "@/components/dashboard/skeletons/MetricCardSkeleton";
+export { DetailDrawer } from "@/components/dashboard/DetailDrawer";
+export { MobileListCard } from "@/components/dashboard/MobileListCard";
+export { ClosingPipeline } from "@/components/dashboard/closings/ClosingPipeline";

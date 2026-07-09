@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  FileText,
 } from "lucide-react";
 import type { ReferralStatus } from "@prisma/client";
 import type { ReferralListItem, ReferralDetailSerialized } from "@/lib/referrals";
@@ -32,6 +33,8 @@ import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
+import { MobileListCard } from "@/components/dashboard/MobileListCard";
+import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -148,6 +151,21 @@ export function EncaminhamentosClient({
     });
   };
 
+  const activeChips = useMemo(
+    () =>
+      buildFilterChips([
+        { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
+        { key: "status", value: filters.status, label: (v) => `Status: ${v}`, skip: (v) => v === "ALL" },
+        { key: "companyId", value: filters.companyId, label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}` },
+        { key: "clinicalExamType", value: filters.clinicalExamType, label: (v) => `Exame: ${CLINICAL_EXAM_LABELS[v as keyof typeof CLINICAL_EXAM_LABELS] ?? v}` },
+        { key: "dateFrom", value: filters.dateFrom, label: (v) => `De ${v}` },
+        { key: "dateTo", value: filters.dateTo, label: (v) => `Até ${v}` },
+      ]),
+    [filters, companies]
+  );
+
+  const removeChip = (key: string) => updateFilters(removeFilterKey(key, filters));
+
   const loadDetail = useCallback(async (id: string) => {
     setDetailLoading(true);
     setDetailError(null);
@@ -246,7 +264,7 @@ export function EncaminhamentosClient({
         ))}
       </div>
 
-      <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
+      <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending} activeChips={activeChips} onRemoveChip={removeChip} onClearChips={clearFilters}>
         <div className="relative col-span-full sm:col-span-2">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
@@ -315,6 +333,8 @@ export function EncaminhamentosClient({
             }}
           />
         ) : (
+          <>
+          <div className="hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -425,6 +445,21 @@ export function EncaminhamentosClient({
               })}
             </TableBody>
           </Table>
+          </div>
+          <div className="grid gap-3 p-3 md:hidden">
+            {initialItems.map((item) => (
+              <MobileListCard
+                key={item.id}
+                icon={FileText}
+                title={item.protocol}
+                subtitle={`${item.employeeName} · ${item.companyName}`}
+                meta={CLINICAL_EXAM_LABELS[item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS] ?? item.clinicalExamType}
+                badge={<StatusBadge status={item.status} type="referral" />}
+                onClick={() => openDetail(item.id)}
+              />
+            ))}
+          </div>
+          </>
         )}
       </DataTable>
 

@@ -1003,4 +1003,156 @@
       width: min(36rem, 100vw);
     }
   }
+
+  /* ── Mobile list cards ───────────────────────────────── */
+  .mobile-list-card {
+    display: block;
+    width: 100%;
+    border-radius: var(--dash-radius-lg);
+    border: 1px solid var(--dash-border);
+    background: white;
+    padding: 0.9rem 1rem;
+    box-shadow: var(--dash-shadow-sm);
+    text-align: left;
+    transition: all var(--dash-transition);
+  }
+
+  .mobile-list-card:hover {
+    border-color: rgb(22 160 133 / 0.22);
+    box-shadow: var(--dash-shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .mobile-list-card-icon {
+    display: flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.7rem;
+    background: var(--brand-green-light);
+    color: var(--brand-green);
+  }
+
+  .detail-drawer-header {
+    background: linear-gradient(180deg, rgb(248 250 252 / 0.95), white);
+  }
+
+  .detail-drawer-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .closing-pipeline {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+  }
+
+  .closing-pipeline-step {
+    display: flex;
+    min-width: 4.5rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1;
+    opacity: 0.55;
+  }
+
+  .closing-pipeline-step-active {
+    opacity: 1;
+  }
+
+  .closing-pipeline-step-done {
+    opacity: 0.85;
+  }
+
+  .closing-pipeline-step-icon {
+    display: flex;
+    height: 2rem;
+    width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid var(--dash-border);
+    background: white;
+    color: var(--dash-text-muted);
+    box-shadow: var(--dash-shadow-xs);
+  }
+
+  .closing-pipeline-step-active .closing-pipeline-step-icon {
+    border-color: rgb(22 160 133 / 0.35);
+    background: var(--brand-green-light);
+    color: var(--brand-green);
+    box-shadow: 0 0 0 3px rgb(22 160 133 / 0.1);
+  }
+
+  .closing-pipeline-step-done .closing-pipeline-step-icon {
+    border-color: rgb(22 160 133 / 0.25);
+    background: rgb(236 253 245);
+    color: var(--brand-green-dark);
+  }
+
+  .closing-pipeline-step-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--dash-text-muted);
+  }
+
+  .closing-pipeline-step-active .closing-pipeline-step-label {
+    color: var(--brand-navy);
+  }
+
+  .agenda-week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .agenda-week-day {
+    border-radius: var(--dash-radius-md);
+    border: 1px solid var(--dash-border);
+    background: white;
+    min-height: 8rem;
+    box-shadow: var(--dash-shadow-xs);
+  }
+
+  .agenda-week-day-header {
+    border-bottom: 1px solid rgb(241 245 249);
+    padding: 0.5rem 0.6rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--dash-text-muted);
+  }
+
+  .agenda-week-day-today {
+    border-color: rgb(22 160 133 / 0.35);
+    box-shadow: 0 0 0 2px rgb(22 160 133 / 0.08);
+  }
+
+  .agenda-week-day-today .agenda-week-day-header {
+    color: var(--brand-green-dark);
+    background: rgb(223 247 240 / 0.5);
+  }
+
+  .financial-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--brand-navy);
+  }
+
+  .financial-value--overdue {
+    color: #dc2626;
+  }
+
+  .financial-value--paid {
+    color: var(--brand-green-dark);
+  }
 }

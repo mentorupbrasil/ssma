@@ -4,12 +4,17 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, Wallet } from "lucide-react";
+import { Plus, Wallet, AlertCircle, Clock, Receipt } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageShell } from "@/components/dashboard/PageShell";
 import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
-import { StatCard } from "@/components/dashboard/StatCard";
+import { MetricCard } from "@/components/dashboard/MetricCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import { DataTable } from "@/components/dashboard/DataTable";
+import { FilterBar } from "@/components/dashboard/FilterBar";
+import { DetailDrawer } from "@/components/dashboard/DetailDrawer";
+import { MobileListCard } from "@/components/dashboard/MobileListCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,13 +26,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -37,7 +35,9 @@ import {
 } from "@/components/ui/table";
 import { createFinancialEntry, updateFinancialEntryStatus } from "@/actions/financial";
 import { formatCurrency } from "@/lib/pricing";
+import { buildFilterChips } from "@/lib/filter-chips-utils";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type Entry = {
   id: string;
@@ -69,6 +69,12 @@ const SOURCE_LABELS: Record<string, string> = {
   MANUAL: "Manual",
 };
 
+const FILTER_LABELS: Record<string, string> = {
+  all: "Todas as contas",
+  receber: "Em aberto",
+  atraso: "Em atraso",
+};
+
 export function FinanceiroClient({
   items,
   summary,
@@ -80,24 +86,36 @@ export function FinanceiroClient({
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "receber" | "atraso">("all");
+  const [selected, setSelected] = useState<Entry | null>(null);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
 
-  const receivables = useMemo(
-    () => items.filter((i) => i.type === "RECEBER"),
-    [items]
-  );
+  const receivables = useMemo(() => items.filter((i) => i.type === "RECEBER"), [items]);
 
   const filtered = useMemo(() => {
     if (filter === "receber") {
       return receivables.filter((i) => i.status !== "PAGO" && i.status !== "CANCELADO");
     }
     if (filter === "atraso") {
-      return receivables.filter((i) => i.status === "ATRASADO" || i.status === "PENDENTE" && i.dueDate < new Date());
+      return receivables.filter(
+        (i) => i.status === "ATRASADO" || (i.status === "PENDENTE" && i.dueDate < new Date())
+      );
     }
     return receivables;
   }, [filter, receivables]);
+
+  const activeChips = useMemo(
+    () =>
+      buildFilterChips([
+        {
+          key: "filter",
+          value: filter === "all" ? undefined : filter,
+          label: (v) => FILTER_LABELS[v] ?? v,
+        },
+      ]),
+    [filter]
+  );
 
   async function handleCreate() {
     const result = await createFinancialEntry({
@@ -111,26 +129,27 @@ export function FinanceiroClient({
       toast.error(result.error);
       return;
     }
-    toast.success("Conta a receber registrada");
+    toast.success("Conta a receber registrada.");
     setOpen(false);
     startTransition(() => router.refresh());
   }
 
   return (
-    <div className="space-y-6">
+    <PageShell width="wide">
       <PageHeader
+        eyebrow="Comercial e financeiro"
         title="Financeiro"
-        description="Central de contas a receber da produção ocupacional — fechamentos, orçamentos e avulsos"
+        description="Central de contas a receber — fechamentos, orçamentos e lançamentos avulsos."
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger render={<Button variant="brand"><Plus className="mr-2 h-4 w-4" />Nova conta a receber</Button>} />
-            <DialogContent>
+            <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle>Registrar conta a receber</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <Input placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
                 <Input type="number" step="0.01" placeholder="Valor" value={amount} onChange={(e) => setAmount(e.target.value)} />
                 <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                <Button onClick={handleCreate} disabled={pending || !description || !amount || !dueDate} className="w-full">
+                <Button onClick={handleCreate} disabled={pending || !description || !amount || !dueDate} className="w-full" variant="brand">
                   Salvar
                 </Button>
               </div>
@@ -141,80 +160,168 @@ export function FinanceiroClient({
 
       <PlatformPositioningBanner compact />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <StatCard title="A receber no mês" value={formatCurrency(summary.receivableMonth)} icon={Wallet} />
-        <StatCard title="Recebido" value={formatCurrency(summary.received)} icon={Wallet} />
-        <StatCard title="Em atraso" value={formatCurrency(summary.overdue)} icon={Wallet} />
-        <StatCard title="Aguardando faturamento" value={summary.awaitingInvoice} icon={Wallet} />
-        <StatCard title="Empresas pendentes" value={summary.pendingCompanies} icon={Wallet} />
-      </div>
+      <section>
+        <h2 className="section-label">Resumo financeiro</h2>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <MetricCard label="A receber no mês" value={formatCurrency(summary.receivableMonth)} icon={Wallet} variant="financial" />
+          <MetricCard label="Recebido" value={formatCurrency(summary.received)} icon={Receipt} variant="positive" />
+          <MetricCard label="Em atraso" value={formatCurrency(summary.overdue)} icon={AlertCircle} variant="critical" badge={summary.overdue > 0 ? "Ação necessária" : undefined} />
+          <MetricCard label="Aguardando faturamento" value={summary.awaitingInvoice} icon={Clock} variant="attention" />
+          <MetricCard label="Empresas pendentes" value={summary.pendingCompanies} icon={Wallet} variant="operational" />
+        </div>
+      </section>
 
-      <div className="w-full sm:w-64">
-        <Label>Filtro</Label>
-        <Select value={filter} onValueChange={(v) => v && setFilter(v as typeof filter)}>
-          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas as contas a receber</SelectItem>
-            <SelectItem value="receber">Em aberto</SelectItem>
-            <SelectItem value="atraso">Em atraso</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <FilterBar
+        activeChips={activeChips}
+        onRemoveChip={() => setFilter("all")}
+        onClearChips={() => setFilter("all")}
+      >
+        <div className="sm:col-span-2">
+          <Label className="text-xs text-[var(--dash-text-muted)]">Exibir</Label>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as typeof filter)}
+            className="form-select mt-1 h-10 w-full"
+          >
+            <option value="all">Todas as contas a receber</option>
+            <option value="receber">Em aberto</option>
+            <option value="atraso">Em atraso</option>
+          </select>
+        </div>
+      </FilterBar>
 
       {filtered.length === 0 ? (
         <EmptyState
           icon={Wallet}
           title="Nenhuma conta a receber"
-          description="Contas são geradas automaticamente ao fechar produção mensal ou aprovar orçamentos. Você também pode registrar avulsos manualmente."
+          description="Contas são geradas ao fechar produção mensal ou aprovar orçamentos. Você também pode registrar avulsos manualmente."
           action={{ label: "Ir para fechamento", href: "/dashboard/fechamento-mensal" }}
           secondaryAction={{ label: "Ver orçamentos", href: "/dashboard/orcamentos", variant: "outline" }}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Origem</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Vencimento</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.company?.tradeName ?? item.company?.legalName ?? "Não informado"}</TableCell>
-                  <TableCell>{SOURCE_LABELS[item.source] ?? item.source}</TableCell>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell>{format(item.dueDate, "dd/MM/yyyy", { locale: ptBR })}</TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(item.amount)}</TableCell>
-                  <TableCell><StatusBadge status={item.status} /></TableCell>
-                  <TableCell>
-                    {item.status !== "PAGO" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={pending}
-                        onClick={() =>
-                          startTransition(async () => {
-                            await updateFinancialEntryStatus(item.id, "PAGO");
-                            router.refresh();
-                          })
-                        }
-                      >
-                        Marcar pago
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <>
+          <div className="hidden md:block">
+            <DataTable>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Origem</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Vencimento</TableHead>
+                    <TableHead className="text-right">Valor</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-28" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((item) => (
+                    <TableRow
+                      key={item.id}
+                      className="cursor-pointer"
+                      onClick={() => setSelected(item)}
+                    >
+                      <TableCell>{item.company?.tradeName ?? item.company?.legalName ?? "Não informado"}</TableCell>
+                      <TableCell>{SOURCE_LABELS[item.source] ?? item.source}</TableCell>
+                      <TableCell>{item.description}</TableCell>
+                      <TableCell>{format(item.dueDate, "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                      <TableCell className={cn("financial-value text-right", item.status === "ATRASADO" && "financial-value--overdue", item.status === "PAGO" && "financial-value--paid")}>
+                        {formatCurrency(item.amount)}
+                      </TableCell>
+                      <TableCell><StatusBadge status={item.status} /></TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        {item.status !== "PAGO" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={pending}
+                            onClick={() =>
+                              startTransition(async () => {
+                                await updateFinancialEntryStatus(item.id, "PAGO");
+                                toast.success("Pagamento registrado.");
+                                router.refresh();
+                              })
+                            }
+                          >
+                            Marcar pago
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </DataTable>
+          </div>
+
+          <div className="grid gap-3 md:hidden">
+            {filtered.map((item) => (
+              <MobileListCard
+                key={item.id}
+                icon={Wallet}
+                title={item.company?.tradeName ?? item.company?.legalName ?? "Não informado"}
+                subtitle={item.description}
+                meta={`${format(item.dueDate, "dd/MM/yyyy", { locale: ptBR })} · ${formatCurrency(item.amount)}`}
+                badge={<StatusBadge status={item.status} />}
+                onClick={() => setSelected(item)}
+              />
+            ))}
+          </div>
+        </>
       )}
-    </div>
+
+      <DetailDrawer
+        open={!!selected}
+        onOpenChange={(o) => !o && setSelected(null)}
+        title={selected?.description ?? "Conta a receber"}
+        description={selected ? formatCurrency(selected.amount) : undefined}
+        size="lg"
+        footer={
+          selected && selected.status !== "PAGO" ? (
+            <Button
+              variant="brand"
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  await updateFinancialEntryStatus(selected.id, "PAGO");
+                  toast.success("Pagamento registrado.");
+                  setSelected(null);
+                  router.refresh();
+                })
+              }
+            >
+              Marcar como pago
+            </Button>
+          ) : undefined
+        }
+      >
+        {selected && (
+          <dl className="space-y-3 text-sm">
+            <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+              <dt className="text-[var(--dash-text-muted)]">Cliente</dt>
+              <dd className="font-medium">{selected.company?.tradeName ?? selected.company?.legalName ?? "—"}</dd>
+            </div>
+            <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+              <dt className="text-[var(--dash-text-muted)]">Origem</dt>
+              <dd>{SOURCE_LABELS[selected.source] ?? selected.source}</dd>
+            </div>
+            <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+              <dt className="text-[var(--dash-text-muted)]">Vencimento</dt>
+              <dd>{format(selected.dueDate, "dd/MM/yyyy", { locale: ptBR })}</dd>
+            </div>
+            <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+              <dt className="text-[var(--dash-text-muted)]">Status</dt>
+              <dd><StatusBadge status={selected.status} /></dd>
+            </div>
+            {selected.invoiceNumber && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-[var(--dash-text-muted)]">NF</dt>
+                <dd>{selected.invoiceNumber}</dd>
+              </div>
+            )}
+          </dl>
+        )}
+      </DetailDrawer>
+    </PageShell>
   );
 }
