@@ -64,8 +64,8 @@ export function Header() {
               className="rounded-lg border-[var(--brand-green)]/30 px-2.5 text-xs text-[var(--brand-navy)] lg:px-3 lg:text-sm"
             >
               <MessageCircle className="mr-1.5 h-4 w-4 shrink-0 text-[var(--brand-green)]" />
-              <span className="hidden sm:inline">Falar no WhatsApp</span>
-              <span className="sm:hidden">WhatsApp</span>
+              <span className="hidden sm:inline">Falar com especialista</span>
+              <span className="sm:hidden">Especialista</span>
             </Button>
           </a>
           <Link href="/contato?tipo=orcamento">
@@ -127,7 +127,7 @@ export function Header() {
               >
                 <Button variant="outline" className="mt-2 w-full rounded-xl">
                   <MessageCircle className="mr-2 h-4 w-4 text-[var(--brand-green)]" />
-                  Falar no WhatsApp
+                  Falar com especialista
                 </Button>
               </a>
               {clinic.phone && (
