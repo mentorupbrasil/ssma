@@ -1,129 +1,45 @@
-import Link from "next/link";
-import {
-  ArrowRight,
-  BookOpen,
-  ClipboardList,
-  FlaskConical,
-  Shield,
-  Stethoscope,
-  type LucideIcon,
-} from "lucide-react";
-import { PageHero } from "@/components/public/PageHero";
-import { SectionTitle } from "@/components/public/SectionTitle";
-import { ServiceCard } from "@/components/public/ServiceCard";
+import { ServicesHero } from "@/components/public/ServicesHero";
 import { ServicesQuickNav } from "@/components/public/ServicesQuickNav";
+import { ServicesCategorySection } from "@/components/public/ServicesCategorySection";
 import { CTASection } from "@/components/public/CTASection";
-import { PageSection } from "@/components/public/PageSection";
-import { Button } from "@/components/ui/button";
 import { SERVICE_CATEGORIES } from "@/data/services";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
-import { cn } from "@/lib/utils";
-
 import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
 
 export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.servicos);
 
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-  "medicina-ocupacional": Stethoscope,
-  "seguranca-trabalho": Shield,
-  "exames-complementares": FlaskConical,
-  documentacao: ClipboardList,
-};
-
-const QUICK_NAV_ITEMS = [
-  { id: "medicina-ocupacional", label: "Medicina Ocupacional" },
-  { id: "seguranca-trabalho", label: "Segurança do Trabalho" },
-  { id: "exames-complementares", label: "Exames Complementares" },
-  { id: "documentacao", label: "Documentação" },
-];
+const QUICK_NAV_ITEMS = SERVICE_CATEGORIES.map((category) => ({
+  id: category.id,
+  label: category.title,
+}));
 
 export default function ServicosPage() {
   const clinic = getClinicInfo();
+  const whatsappHref = whatsappLink(
+    `Olá! Gostaria de falar com um especialista da ${clinic.name} sobre serviços de SST.`
+  );
 
   return (
     <>
-      <PageHero
-        eyebrow="Portfólio completo"
-        title="Soluções em Saúde e Segurança do Trabalho"
-        description="PCMSO, ASO, laudos, exames e documentação ocupacional para empresas que precisam de conformidade, agilidade e organização."
-        layout="stack"
-        className="services-page-hero"
-      >
-        <Link href="/contato?tipo=orcamento">
-          <Button variant="brand" className="rounded-xl">
-            Solicitar orçamento
-          </Button>
-        </Link>
-        <a
-          href={whatsappLink(
-            `Olá! Gostaria de falar com um especialista da ${clinic.name} sobre serviços de SST.`
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Button variant="outline-light" className="rounded-xl">
-            Falar com especialista
-          </Button>
-        </a>
-      </PageHero>
+      <ServicesHero whatsappHref={whatsappHref} />
 
       <ServicesQuickNav items={QUICK_NAV_ITEMS} />
 
-      {SERVICE_CATEGORIES.map((category, index) => {
-        const CategoryIcon = CATEGORY_ICONS[category.id] ?? BookOpen;
-
-        return (
-          <PageSection
-            key={category.id}
-            id={category.id}
-            variant={index % 2 === 0 ? "white" : "default"}
-            className={cn(
-              "services-section services-section--anchor",
-              category.id === "seguranca-trabalho" && "services-section--safety",
-              category.id === "exames-complementares" && "services-section--exams",
-              category.id === "documentacao" && "services-section--docs"
-            )}
-          >
-            <SectionTitle
-              eyebrow="Serviços"
-              title={category.title}
-              description={category.description}
-              align="left"
-              className="services-section-title"
-            />
-            <div className="services-grid">
-              {category.services.map((service) => (
-                <ServiceCard
-                  key={service.name}
-                  {...service}
-                  icon={CategoryIcon}
-                  ctaVariant={category.cardVariant ?? "clinical"}
-                />
-              ))}
-            </div>
-            {category.id === "exames-complementares" && (
-              <div className="services-section-footer">
-                <p className="services-section-footer-text">
-                  Preparo detalhado, prazos e orientações por exame estão no catálogo completo.
-                </p>
-                <Link href="/exames" className="services-section-footer-link">
-                  Ver catálogo de exames e preparos
-                  <ArrowRight className="h-4 w-4" strokeWidth={2} />
-                </Link>
-              </div>
-            )}
-          </PageSection>
-        );
-      })}
+      {SERVICE_CATEGORIES.map((category, index) => (
+        <ServicesCategorySection
+          key={category.id}
+          category={category}
+          index={index}
+          whatsappHref={whatsappHref}
+        />
+      ))}
 
       <CTASection
         className="services-final-cta"
         title="Precisa regularizar exames, laudos ou documentos ocupacionais?"
-        description="Nossa equipe monta uma proposta personalizada conforme o porte da sua empresa, riscos ocupacionais e serviços necessários."
+        description="Nossa equipe monta uma proposta conforme o porte da empresa, riscos ocupacionais e serviços necessários."
         primaryLabel="Solicitar orçamento sem compromisso"
-        secondaryHref={whatsappLink(
-          `Olá! Gostaria de falar com um especialista da ${clinic.name} sobre serviços de SST.`
-        )}
+        secondaryHref={whatsappHref}
         secondaryLabel="Falar com especialista"
       />
     </>
