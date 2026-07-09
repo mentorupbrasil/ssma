@@ -11,7 +11,7 @@ import {
   Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HeroPortalMockup } from "@/components/public/HeroPortalMockup";
+import { HomeHeroPortalMockup } from "@/components/public/HomeHeroPortalMockup";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 const QUICK_CARDS = [
@@ -44,7 +44,7 @@ export function HomeHero() {
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" aria-hidden />
 
       <div className="container-page relative">
-        <div className="hero-main-grid home-hero-main grid items-start gap-6 pb-4 sm:items-center lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.78fr)] lg:items-center lg:gap-8 lg:pb-5 xl:gap-10">
+        <div className="hero-main-grid home-hero-main grid items-start gap-6 pb-4 sm:items-center lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-center lg:gap-7 lg:pb-5 xl:gap-9">
           <div className="animate-fade-up home-hero-copy order-2 lg:order-1 lg:self-center lg:pr-2 xl:pr-6">
             <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
               <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" />
@@ -106,24 +106,8 @@ export function HomeHero() {
 
           <div className="animate-fade-up-delay home-hero-visual order-1 flex justify-center lg:order-2 lg:justify-end lg:self-center">
             <div className="home-hero-visual-frame relative w-full">
-              <div
-                className="pointer-events-none absolute -inset-4 rounded-[1.5rem] bg-[radial-gradient(ellipse_at_center,rgba(22,160,133,0.12),transparent_70%)] blur-xl"
-                aria-hidden
-              />
-
               <div className="home-hero-mockup relative">
-                <HeroPortalMockup variant="hero" demoMode />
-              </div>
-
-              <div className="home-hero-visual-caption">
-                <span>
-                  <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" strokeWidth={1.75} />
-                  Protocolo automático a cada encaminhamento
-                </span>
-                <span>
-                  <Lock className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" strokeWidth={1.75} />
-                  Dados protegidos conforme a LGPD
-                </span>
+                <HomeHeroPortalMockup />
               </div>
             </div>
           </div>

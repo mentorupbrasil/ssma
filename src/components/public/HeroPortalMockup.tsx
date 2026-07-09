@@ -129,7 +129,6 @@ export function HeroPortalMockup({
         className={cn(
           "portal-mockup-shell relative overflow-hidden bg-white",
           demoMode ? "portal-mockup-shell--demo" : "rounded-2xl border border-slate-200/90 shadow-[0_12px_40px_-12px_rgba(15,23,42,0.12)]",
-          variant === "hero" && "portal-mockup-shell--hero-preview",
           !isInline && !demoMode && "shadow-[0_24px_64px_-12px_rgba(0,0,0,0.2)]"
         )}
         aria-hidden={demoMode}
