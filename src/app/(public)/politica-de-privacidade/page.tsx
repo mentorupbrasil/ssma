@@ -2,7 +2,9 @@ import { getClinicInfo } from "@/lib/helpers";
 import { PageHero } from "@/components/public/PageHero";
 import { PageSection } from "@/components/public/PageSection";
 
-export const metadata = { title: "Política de Privacidade" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.privacidade);
 
 export default function PoliticaPage() {
   const clinic = getClinicInfo();

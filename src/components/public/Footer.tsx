@@ -3,23 +3,32 @@ import { Mail, MessageCircle } from "lucide-react";
 import {
   FacebookIcon,
   InstagramIcon,
-  LinkedinIcon,
-  YoutubeIcon,
 } from "@/components/public/SocialIcons";
 import { getClinicSiteConfig } from "@/config/clinic";
 import { formatPhone, getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 
-const SOCIAL_ICONS = [
-  { icon: InstagramIcon, label: "Instagram" },
-  { icon: FacebookIcon, label: "Facebook" },
-  { icon: LinkedinIcon, label: "LinkedIn" },
-  { icon: YoutubeIcon, label: "YouTube" },
+const FOOTER_NAV = [
+  { href: "/", label: "Início" },
+  { href: "/sobre", label: "Sobre" },
+  { href: "/servicos", label: "Serviços" },
+  { href: "/exames", label: "Exames" },
+  { href: "/empresas", label: "Empresas" },
+  { href: "/encaminhamento-online", label: "Encaminhamento online" },
+  { href: "/contato", label: "Contato" },
+  { href: "/atualizacoes", label: "Atualizações" },
+  { href: "/politica-de-privacidade", label: "Política de privacidade" },
+  { href: "/termos-de-uso", label: "Termos de uso" },
 ] as const;
 
 export function Footer() {
   const clinic = getClinicInfo();
   const config = getClinicSiteConfig();
+
+  const socialLinks = [
+    { icon: InstagramIcon, label: "Instagram", href: config.instagram },
+    { icon: FacebookIcon, label: "Facebook", href: config.facebook },
+  ].filter((item) => Boolean(item.href));
 
   return (
     <footer className="site-footer mt-auto border-t border-white/10 bg-[var(--brand-navy)] text-slate-300">
@@ -35,13 +44,9 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="footer-column-title">Links úteis</h4>
+          <h4 className="footer-column-title">Navegação</h4>
           <ul className="space-y-2.5 text-sm">
-            {[
-              ["/atualizacoes", "Atualizações"],
-              ["/politica-de-privacidade", "Política de privacidade"],
-              ["/termos-de-uso", "Termos de uso"],
-            ].map(([href, label]) => (
+            {FOOTER_NAV.map(({ href, label }) => (
               <li key={href}>
                 <Link href={href} className="transition hover:text-white">
                   {label}
@@ -86,18 +91,24 @@ export function Footer() {
           <p className="mb-4 text-sm leading-relaxed text-slate-400">
             Acompanhe novidades e conteúdos sobre saúde ocupacional.
           </p>
-          <div className="footer-social-grid" aria-label="Redes sociais">
-            {SOCIAL_ICONS.map(({ icon: Icon, label }) => (
-              <span
-                key={label}
-                className="footer-social-icon"
-                title={`${label} em breve`}
-                aria-label={`${label} em breve`}
-              >
-                <Icon className="h-[1.1rem] w-[1.1rem]" />
-              </span>
-            ))}
-          </div>
+          {socialLinks.length > 0 ? (
+            <div className="footer-social-grid" aria-label="Redes sociais">
+              {socialLinks.map(({ icon: Icon, label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-social-icon transition hover:bg-white/10 hover:text-white"
+                  aria-label={`${label} da ${clinic.name}`}
+                >
+                  <Icon className="h-[1.1rem] w-[1.1rem]" />
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">Em breve.</p>
+          )}
         </div>
       </div>
 

@@ -6,7 +6,9 @@ import { PRE_REFERRAL_CLINICAL_EXAM_LABELS } from "@/types";
 import { buildPreReferralWhatsAppMessage } from "@/data/pre-referral";
 import { whatsappLink } from "@/lib/helpers";
 
-export const metadata = { title: "Pré-encaminhamento Enviado" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.encaminhamentoSucesso);
 
 export default async function SucessoPage({
   searchParams,

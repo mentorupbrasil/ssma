@@ -12,8 +12,13 @@ export default function PublicLayout({
 }) {
   return (
     <>
+      <a href="#conteudo-principal" className="skip-to-content">
+        Pular para o conteúdo
+      </a>
       <Header />
-      <div className="flex-1">{children}</div>
+      <div id="conteudo-principal" className="flex-1" tabIndex={-1}>
+        {children}
+      </div>
       <Footer />
       <FloatingWhatsApp />
     </>

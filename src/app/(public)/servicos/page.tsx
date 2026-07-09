@@ -19,7 +19,9 @@ import { SERVICE_CATEGORIES } from "@/data/services";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 
-export const metadata = { title: "Serviços" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.servicos);
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "medicina-ocupacional": Stethoscope,

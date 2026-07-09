@@ -22,7 +22,9 @@ import { FeatureCard } from "@/components/public/FeatureCard";
 import { Button } from "@/components/ui/button";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
-export const metadata = { title: "Sobre nós" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.sobre);
 
 const VALUES = [
   {

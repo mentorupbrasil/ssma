@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { getPublicWebsiteExams } from "@/actions/exams";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
-export const metadata = { title: "Exames e Preparos" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.exames);
 
 async function ExamCatalogSection() {
   const exams = await getPublicWebsiteExams();

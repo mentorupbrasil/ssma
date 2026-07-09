@@ -11,7 +11,9 @@ import { resolveContactPrefill, CONTACT_WHATSAPP_MESSAGES } from "@/data/contact
 import { whatsappLink } from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
 
-export const metadata = { title: "Contato" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.contato);
 
 export default async function ContatoPage({
   searchParams,
@@ -52,7 +54,7 @@ export default async function ContatoPage({
       <PageSection variant="muted">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-10">
           <div id="contato-formulario" className="scroll-mt-[calc(var(--header-height)+1rem)]">
-            <h2 className="form-panel-title">Formulário de contato</h2>
+            <h2 id="contato-formulario-titulo" className="form-panel-title">Formulário de contato</h2>
             <p className="form-panel-desc">
               Preencha os dados e retornaremos em breve. Você também pode falar diretamente pelo
               WhatsApp.

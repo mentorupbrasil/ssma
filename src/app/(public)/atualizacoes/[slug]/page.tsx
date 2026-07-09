@@ -8,10 +8,17 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { PageSection } from "@/components/public/PageSection";
 
+import { createPageMetadata } from "@/lib/seo";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await prisma.blogPost.findUnique({ where: { slug } });
-  return { title: post?.title ?? "Post" };
+  if (!post) return { title: "Post" };
+  return createPageMetadata({
+    title: post.title,
+    description: post.excerpt,
+    path: `/atualizacoes/${post.slug}`,
+  });
 }
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {

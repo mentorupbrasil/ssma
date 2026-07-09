@@ -9,6 +9,7 @@ export type ClinicSiteConfig = {
   whatsapp: string;
   email: string;
   instagram: string;
+  facebook: string;
   openingHours: string;
   googleMapsEmbedUrl: string;
   openStreetMapEmbedUrl: string;
@@ -33,7 +34,8 @@ const CLINIC_SITE = {
   phone: "",
   whatsapp: "5599992033813",
   email: "contato@unimetra.com.br",
-  instagram: "",
+  instagram: "https://www.instagram.com/clinica__unimetra/",
+  facebook: "https://www.facebook.com/unimetraclinica/?locale=pt_BR",
   openingHours:
     "Segunda a Sexta-feira: 07:00 – 11:30 · 14:00 – 17:30 | Sábado e Domingo: Fechado",
   googleMapsExternalUrl: "https://maps.app.goo.gl/XDip6f7qFYn7L9JR8",
@@ -179,6 +181,7 @@ export function getClinicSiteConfig(): ClinicSiteConfig {
     whatsapp,
     email,
     instagram,
+    facebook,
     openingHours,
     googleMapsExternalUrl,
     googleMapsEmbedUrl: embedRaw,
@@ -209,6 +212,7 @@ export function getClinicSiteConfig(): ClinicSiteConfig {
     whatsapp,
     email,
     instagram,
+    facebook,
     openingHours,
     googleMapsEmbedUrl,
     openStreetMapEmbedUrl,

@@ -1,7 +1,9 @@
 import { getPublicFormExamOptions } from "@/actions/exams";
 import { EncaminhamentoOnlinePageClient } from "@/components/public/EncaminhamentoOnlinePageClient";
 
-export const metadata = { title: "Encaminhamento Online" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.encaminhamento);
 
 export default async function EncaminhamentoPage() {
   const examOptions = await getPublicFormExamOptions();

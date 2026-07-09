@@ -6,7 +6,9 @@ import { PageHero } from "@/components/public/PageHero";
 import { PageSection } from "@/components/public/PageSection";
 import { Badge } from "@/components/ui/badge";
 
-export const metadata = { title: "Atualizações" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.atualizacoes);
 
 export default async function AtualizacoesPage() {
   const posts = await prisma.blogPost.findMany({

@@ -51,6 +51,7 @@ export function getClinicInfo() {
     whatsapp: config.whatsapp,
     email: config.email,
     instagram: config.instagram,
+    facebook: config.facebook,
     hours: config.openingHours,
     openingHours: config.openingHours,
     mapsEmbed: config.googleMapsEmbedUrl,

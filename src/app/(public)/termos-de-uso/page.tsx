@@ -2,7 +2,9 @@ import { getClinicInfo } from "@/lib/helpers";
 import { PageHero } from "@/components/public/PageHero";
 import { PageSection } from "@/components/public/PageSection";
 
-export const metadata = { title: "Termos de Uso" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.termos);
 
 export default function TermosPage() {
   const clinic = getClinicInfo();

@@ -19,7 +19,9 @@ import { PageSection } from "@/components/public/PageSection";
 import { FeatureCard } from "@/components/public/FeatureCard";
 import { CTASection } from "@/components/public/CTASection";
 
-export const metadata = { title: "Empresas" };
+import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
+
+export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.empresas);
 
 const BENEFITS = [
   {

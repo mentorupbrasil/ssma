@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, Phone, ChevronRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/", label: "Início" },
@@ -21,23 +21,30 @@ const NAV_ITEMS = [
 
 const SPECIALIST_MSG = "Olá! Gostaria de falar com um especialista em SST.";
 
+function isNavActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function Header() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const clinic = getClinicInfo();
 
   return (
     <header className="glass-header">
       <div className="container-page flex h-full items-center justify-between">
-        <Link href="/" className="group flex items-center">
+        <Link href="/" className="group flex items-center" aria-label={`${clinic.name} — página inicial`}>
           <BrandLogo height={28} priority showLink={false} />
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Navegação principal">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-[var(--brand-navy)]"
+              aria-current={isNavActive(pathname, item.href) ? "page" : undefined}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-[var(--brand-navy)] aria-[current=page]:bg-slate-100 aria-[current=page]:text-[var(--brand-navy)]"
             >
               {item.label}
             </Link>
@@ -72,7 +79,12 @@ export function Header() {
           <SheetTrigger
             className="lg:hidden"
             render={
-              <Button variant="outline" size="icon" className="rounded-xl">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-xl"
+                aria-label="Abrir menu de navegação"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             }
@@ -82,19 +94,20 @@ export function Header() {
               <p className="font-bold text-[var(--brand-navy)]">{clinic.name}</p>
               <p className="text-sm text-slate-500">Portal e atendimento empresarial</p>
             </div>
-            <div className="flex flex-col gap-1 p-4">
+            <nav className="flex flex-col gap-1 p-4" aria-label="Navegação mobile">
               {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  aria-current={isNavActive(pathname, item.href) ? "page" : undefined}
+                  className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 aria-[current=page]:bg-emerald-50 aria-[current=page]:text-[var(--brand-navy)]"
                 >
                   {item.label}
                   <ChevronRight className="h-4 w-4 text-slate-400" />
                 </Link>
               ))}
-            </div>
+            </nav>
             <div className="mt-auto space-y-3 border-t border-slate-100 p-4">
               <Link href="/login" onClick={() => setOpen(false)}>
                 <Button variant="outline" className="w-full rounded-xl">

@@ -103,7 +103,7 @@ export function ContactForm({ prefill }: ContactFormProps) {
   }
 
   return (
-    <form id="contato-formulario" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" aria-labelledby="contato-formulario-titulo">
       <FormField label="Nome *" error={showError("name")}>
         <Input className="form-input" autoComplete="name" {...register("name")} />
       </FormField>
@@ -140,8 +140,9 @@ export function ContactForm({ prefill }: ContactFormProps) {
         />
       </FormField>
 
-      <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
+      <label htmlFor="contato-consentimento" className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
         <Checkbox
+          id="contato-consentimento"
           checked={watch("consent") === true}
           onCheckedChange={(c) =>
             setValue("consent", c ? true : (undefined as never), { shouldValidate: false })
