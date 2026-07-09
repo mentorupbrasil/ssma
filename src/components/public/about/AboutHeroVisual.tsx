@@ -1,11 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { FileCheck, LayoutDashboard, Shield, Stethoscope } from "lucide-react";
+import { FileCheck, LayoutDashboard, Shield, ShieldCheck, Stethoscope } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { aboutScaleVariants, TimelineContent } from "@/components/ui/timeline-animation";
-import { ABOUT_FLOATING_TAGS } from "@/data/about";
 import { siteMedia } from "@/config/media";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +63,17 @@ export function AboutHeroVisual({ sectionRef }: AboutHeroVisualProps) {
               priority
             />
           </div>
-        ) : null}
+        ) : (
+          <div className="about-hero-visual-lockup" aria-hidden>
+            <span className="about-hero-visual-lockup-icon">
+              <ShieldCheck strokeWidth={1.5} />
+            </span>
+            <p className="about-hero-visual-lockup-title">Estrutura ocupacional completa</p>
+            <p className="about-hero-visual-lockup-sub">
+              Atendimento clínico, documentos e portal em um só lugar
+            </p>
+          </div>
+        )}
 
         <div className="about-hero-visual-overlay" aria-hidden />
       </TimelineContent>
@@ -86,14 +95,6 @@ export function AboutHeroVisual({ sectionRef }: AboutHeroVisualProps) {
           </motion.div>
         );
       })}
-
-      <div className="about-hero-tag-row" aria-hidden>
-        {ABOUT_FLOATING_TAGS.map((tag) => (
-          <span key={tag} className="about-hero-tag">
-            {tag}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }

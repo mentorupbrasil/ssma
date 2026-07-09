@@ -186,6 +186,52 @@
   pointer-events: none;
 }
 
+.about-hero-visual-lockup {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1.75rem 2rem 2.25rem 1.5rem;
+}
+
+.about-hero-visual-lockup-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 0.35rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  background: rgb(255 255 255 / 0.14);
+  backdrop-filter: blur(6px);
+  color: white;
+}
+
+.about-hero-visual-lockup-icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.about-hero-visual-lockup-title {
+  max-width: 14rem;
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: white;
+}
+
+.about-hero-visual-lockup-sub {
+  max-width: 15rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.8);
+}
+
 .about-hero-float {
   position: absolute;
   z-index: 2;

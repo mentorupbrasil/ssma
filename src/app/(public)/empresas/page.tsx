@@ -1,56 +1,46 @@
 import Link from "next/link";
-import {
-  Building2,
-  CheckCircle2,
-  Clock,
-  FileText,
-  MessageSquare,
-  Users,
-  ArrowRight,
-} from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmpresasHero } from "@/components/public/EmpresasHero";
-import { SectionTitle } from "@/components/public/SectionTitle";
 import { EmpresasStartSection } from "@/components/public/EmpresasStartSection";
 import { PortalShowcase } from "@/components/public/PortalShowcase";
 import { EmpresasComplianceSection } from "@/components/public/EmpresasComplianceSection";
 import { EmpresasPorteSection } from "@/components/public/EmpresasPorteSection";
 import { PageSection } from "@/components/public/PageSection";
-import { FeatureCard } from "@/components/public/FeatureCard";
 import { CTASection } from "@/components/public/CTASection";
 
 import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
 
 export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.empresas);
 
+const BENEFIT_STATS = [
+  { value: "6", label: "benefícios diretos para o dia a dia do RH" },
+  { value: "3", label: "portes de empresa atendidos, do pequeno ao grande" },
+  { value: "100%", label: "do encaminhamento feito online, sem papel" },
+] as const;
+
 const BENEFITS = [
   {
-    icon: FileText,
     title: "Encaminhamento online",
     text: "Envie colaboradores para exame com protocolo automático e informações organizadas.",
   },
   {
-    icon: Clock,
     title: "Status em tempo real",
     text: "Acompanhe cada etapa sem depender de ligações, mensagens soltas ou planilhas.",
   },
   {
-    icon: Users,
     title: "Histórico organizado",
     text: "Consulte atendimentos, exames e documentos por colaborador sempre que precisar.",
   },
   {
-    icon: Building2,
     title: "Documentos centralizados",
     text: "PCMSO, ASO, laudos e registros ocupacionais com mais controle para o RH.",
   },
   {
-    icon: CheckCircle2,
     title: "Menos retrabalho",
     text: "Reduza planilhas, controles manuais e retrabalho operacional no dia a dia.",
   },
   {
-    icon: MessageSquare,
     title: "Comunicação ágil",
     text: "Canal direto com a clínica para demandas, dúvidas e acompanhamento dos atendimentos.",
   },
@@ -62,21 +52,35 @@ export default function EmpresasPage() {
       <EmpresasHero />
 
       <PageSection className="empresas-benefits-section">
-        <SectionTitle
-          title="Benefícios para sua empresa"
-          description="Mais controle para o RH e mais previsibilidade na rotina ocupacional."
-          className="empresas-benefits-title !mb-7 md:!mb-8"
-        />
-        <div className="empresas-benefits-grid">
-          {BENEFITS.map((benefit) => (
-            <FeatureCard
-              key={benefit.title}
-              icon={benefit.icon}
-              title={benefit.title}
-              description={benefit.text}
-              className="empresas-benefit-card"
-            />
-          ))}
+        <div className="home-why-panel">
+          <div className="home-why-header">
+            <p className="home-why-eyebrow">Benefícios</p>
+            <h2 className="home-why-title">Benefícios para sua empresa</h2>
+            <p className="home-why-desc">
+              Mais controle para o RH e mais previsibilidade na rotina ocupacional.
+            </p>
+          </div>
+
+          <dl className="home-why-stats">
+            {BENEFIT_STATS.map((stat) => (
+              <div key={stat.label} className="home-why-stat">
+                <dt className="home-why-stat-value">{stat.value}</dt>
+                <dd className="home-why-stat-label">{stat.label}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <ul className="home-why-checklist">
+            {BENEFITS.map((benefit) => (
+              <li key={benefit.title} className="home-why-check-item">
+                <CheckCircle2 className="home-why-check-icon" strokeWidth={1.75} aria-hidden />
+                <div>
+                  <p className="home-why-check-title">{benefit.title}</p>
+                  <p className="home-why-check-desc">{benefit.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="empresas-benefits-cta">
