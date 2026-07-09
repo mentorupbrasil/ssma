@@ -27,7 +27,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: "Atendem empresas pequenas e MEI?",
         answer:
-          "Atendemos. Não é só indústria grande: comércio, prestadores de serviço, construção e MEI com funcionário também passam por admissional, periódico e documentação SST. O orçamento é montado conforme a sua realidade.",
+          "Atendemos empresas de pequeno, médio e grande porte, incluindo MEI com funcionário. O orçamento é montado conforme a realidade da sua empresa — não é só para indústria grande.",
       },
       {
         question: "Preciso fechar contrato antes do primeiro exame?",
@@ -41,24 +41,24 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     label: "Exames e prazos",
     items: [
       {
-        question: "Em quanto tempo sai o ASO?",
+        question: "Quais exames ocupacionais a Unimetra realiza?",
         answer:
-          "Exame clínico com ASO no mesmo dia costuma sair após a conclusão do atendimento e liberação médica. Se houver exame complementar pendente (audiometria, ECG, laboratorial), o ASO só fecha quando o laudo entra — a recepção avisa o prazo estimado no ato do agendamento.",
+          "Realizamos exames clínicos ocupacionais (admissional, periódico, demissional, retorno e mudança de função) e diversos complementares conforme estrutura do dia: audiometria, acuidade visual, espirometria, eletrocardiograma e outros. Laboratorial e imagem podem ser orientados com parceiros quando necessário.",
       },
       {
-        question: "Quais exames vão no admissional?",
+        question: "O exame admissional precisa ser agendado?",
         answer:
-          "O clínico ocupacional é a base. Complementares dependem da função, dos riscos do ambiente e do que estiver no PCMSO/PGR da empresa — audiometria, espirometria, acuidade visual, eletrocardiograma e laboratoriais são os mais comuns. Na dúvida, mande a função e o setor que orientamos.",
+          "Sim, o ideal é agendar ou encaminhar com antecedência para organizar o fluxo e evitar fila. Pelo encaminhamento online ou WhatsApp você informa o tipo de exame e recebe orientação de horário e documentos necessários.",
       },
       {
-        question: "O que acontece se o colaborador faltar?",
+        question: "Onde consulto o preparo dos exames?",
         answer:
-          "A falta precisa ser comunicada com antecedência quando possível. Reagendamos conforme disponibilidade. Faltas repetidas sem aviso podem gerar cobrança de taxa ou novo encaminhamento, conforme combinado no contrato com a empresa.",
+          "Na página Exames e preparos do site você busca por nome ou categoria e vê orientações de jejum, preparo e prazos. Em caso de dúvida específica, fale com a equipe antes do atendimento.",
       },
       {
-        question: "Fazem exames complementares aí na clínica?",
+        question: "O prazo de resultado é sempre o mesmo?",
         answer:
-          "Vários sim: avaliação clínica, audiometria, acuidade, espirometria e outros conforme estrutura do dia. Laboratorial e imagem podem ser feitos em parceiros — no encaminhamento já deixamos claro o que é na Unimetra e o que é externo.",
+          "Não. Exame clínico com ASO costuma sair no mesmo dia após liberação médica. Quando há complementar pendente (audiometria, ECG, laboratorial), o prazo depende do laudo — a recepção informa a estimativa no agendamento.",
       },
     ],
   },
@@ -67,24 +67,50 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     label: "Documentos e SST",
     items: [
       {
-        question: "Quais documentos a empresa precisa arquivar?",
+        question: "A Unimetra emite ASO?",
         answer:
-          "No mínimo: ASOs, fichas de encaminhamento, programas (PCMSO, PGR quando aplicável), LTCAT se houver agente nocivo, PPP e eventos de SST no eSocial. Prazo de guarda do ASO é de 20 anos após desligamento — organizar desde o admissional evita dor de cabeça em fiscalização.",
+          "Sim. O Atestado de Saúde Ocupacional é emitido após a avaliação clínica e conclusão dos exames necessários, conforme NR-7 e o PCMSO da empresa.",
       },
       {
-        question: "Vocês elaboram PCMSO e PGR?",
+        question: "Vocês auxiliam com PCMSO, PGR e LTCAT?",
         answer:
-          "A clínica atua na parte médica do PCMSO e no apoio aos exames previstos no programa. Elaboração completa de PCMSO, PGR e laudos técnicos costuma ser feita por consultoria em SST ou engenharia de segurança parceira — podemos indicar fluxo ou receber o programa já pronto para executar os exames.",
+          "Atuamos na parte médica do PCMSO e na execução dos exames previstos no programa. Elaboração completa de PCMSO, PGR e LTCAT costuma ser feita por consultoria em SST ou engenharia de segurança — podemos orientar o fluxo ou executar exames com base no programa já pronto.",
       },
       {
-        question: "O RH acompanha status pelo portal?",
+        question: "A empresa consegue acessar documentos online?",
         answer:
-          "Empresas cadastradas no portal conseguem ver encaminhamentos, documentos liberados e pendências sem depender só de e-mail ou telefone. O acesso é liberado após cadastro — se sua empresa ainda não tem login, peça na recepção ou pelo comercial.",
+          "Empresas cadastradas no portal empresarial conseguem acompanhar encaminhamentos, documentos liberados e pendências. O acesso é liberado após cadastro — solicite na recepção ou pelo comercial.",
       },
       {
-        question: "Trabalham com SOC ou outro sistema?",
+        question: "Como funciona a organização de ASO e laudos?",
         answer:
-          "Sim. Muitas empresas da região usam SOC; encaminhamos e recebemos fichas nesse fluxo quando o cliente já opera assim. O importante é os dados do colaborador e do exame chegarem completos — o canal (portal, SOC ou presencial) é o que for mais prático para o RH.",
+          "Os documentos são vinculados ao colaborador e à empresa, com entrega organizada após liberação. O RH pode acompanhar pelo portal quando cadastrado, reduzindo dependência de e-mail e telefone para cada consulta.",
+      },
+    ],
+  },
+  {
+    id: "orcamento",
+    label: "Empresas e orçamento",
+    items: [
+      {
+        question: "Como é calculado o orçamento?",
+        answer:
+          "Com base no porte da empresa, quantidade de colaboradores, tipos de exames, documentos necessários (PCMSO, laudos, eventos SST) e frequência de atendimento. A proposta é personalizada — não há tabela única para todos os casos.",
+      },
+      {
+        question: "Posso solicitar proposta para vários colaboradores?",
+        answer:
+          "Sim. Informe quantos admissionais, periódicos ou demissionais você prevê, ou envie a lista de colaboradores e funções. A equipe comercial monta a proposta conforme a demanda real da empresa.",
+      },
+      {
+        question: "Empresas com contrato têm valores diferentes?",
+        answer:
+          "Empresas com contrato ou volume recorrente costumam ter condições comerciais alinhadas ao fluxo mensal de exames e documentos. Os detalhes são combinados na proposta e no contrato de prestação de serviços.",
+      },
+      {
+        question: "Como falar com a equipe comercial?",
+        answer:
+          "Pelo WhatsApp, formulário de Contato (opção orçamento) ou presencialmente na clínica. Informe CNPJ, porte e o que você precisa — retornamos com proposta sem compromisso.",
       },
     ],
   },

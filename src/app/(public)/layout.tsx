@@ -16,7 +16,7 @@ export default function PublicLayout({
         Pular para o conteúdo
       </a>
       <Header />
-      <div id="conteudo-principal" className="flex-1 pb-24 lg:pb-0" tabIndex={-1}>
+      <div id="conteudo-principal" className="flex-1" tabIndex={-1}>
         {children}
       </div>
       <Footer />
