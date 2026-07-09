@@ -1,50 +1,33 @@
-"use client";
-
 import Link from "next/link";
-import { useRef } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Building2, FileCheck, Monitor, ShieldCheck } from "lucide-react";
 
-import { AboutHeroVisual } from "@/components/public/about/AboutHeroVisual";
 import { Button } from "@/components/ui/button";
-import { TimelineContent } from "@/components/ui/timeline-animation";
-import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 import { ABOUT_HERO_STATS } from "@/data/about";
-import type { ClinicSiteConfig } from "@/config/clinic";
 
 type AboutHeroProps = {
   clinicName: string;
   whatsappHref: string;
 };
 
-export function AboutHero({ clinicName, whatsappHref }: AboutHeroProps) {
-  const sectionRef = useRef<HTMLElement>(null);
+const HIGHLIGHT_ICONS = [Building2, FileCheck, Monitor, ShieldCheck] as const;
 
+export function AboutHero({ clinicName, whatsappHref }: AboutHeroProps) {
   return (
-    <section ref={sectionRef} className="about-hero scroll-mt-[var(--header-height)]">
+    <section className="about-hero scroll-mt-[var(--header-height)]">
       <div className="about-hero-bg" aria-hidden />
       <div className="container-page about-hero-inner">
         <div className="about-hero-grid">
           <div className="about-hero-copy">
-            <TimelineContent animationNum={0} timelineRef={sectionRef}>
-              <p className="about-eyebrow">Institucional</p>
-            </TimelineContent>
-
+            <p className="about-hero-eyebrow">Institucional</p>
             <h1 className="about-hero-title">
-              <VerticalCutReveal delay={0.05} staggerDuration={0.035}>
-                Saúde ocupacional com estrutura, tecnologia e confiança para empresas
-              </VerticalCutReveal>
+              Saúde ocupacional com estrutura, tecnologia e confiança para empresas
             </h1>
-
-            <TimelineContent animationNum={1} timelineRef={sectionRef} className="about-hero-desc">
+            <p className="about-hero-desc">
               A {clinicName} apoia empresas na organização de exames, documentos ocupacionais e
               rotinas de SST com atendimento presencial e recursos digitais para o RH.
-            </TimelineContent>
+            </p>
 
-            <TimelineContent
-              animationNum={2}
-              timelineRef={sectionRef}
-              className="about-hero-actions"
-            >
+            <div className="about-hero-actions">
               <Link href="/contato?tipo=orcamento">
                 <Button variant="brand" size="lg" className="rounded-xl">
                   Solicitar orçamento
@@ -52,23 +35,43 @@ export function AboutHero({ clinicName, whatsappHref }: AboutHeroProps) {
                 </Button>
               </Link>
               <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="lg" className="rounded-xl border-slate-200 bg-white/80">
+                <Button variant="outline-light" size="lg" className="rounded-xl">
                   Falar com especialista
                 </Button>
               </a>
-            </TimelineContent>
+            </div>
 
-            <TimelineContent animationNum={3} timelineRef={sectionRef} className="about-hero-stats">
+            <dl className="about-hero-stats">
               {ABOUT_HERO_STATS.map((stat) => (
                 <div key={stat.label} className="about-hero-stat">
-                  <span className="about-hero-stat-value">{stat.value}</span>
-                  <span className="about-hero-stat-label">{stat.label}</span>
+                  <dt className="about-hero-stat-value">{stat.value}</dt>
+                  <dd className="about-hero-stat-label">{stat.label}</dd>
                 </div>
               ))}
-            </TimelineContent>
+            </dl>
           </div>
 
-          <AboutHeroVisual sectionRef={sectionRef} />
+          <aside className="about-hero-aside" aria-label="Destaques institucionais">
+            <div className="hero-aside-panel">
+              <p className="hero-aside-panel-kicker">Por que empresas confiam</p>
+              <ul className="hero-aside-panel-list">
+                {ABOUT_HERO_STATS.map((stat, index) => {
+                  const Icon = HIGHLIGHT_ICONS[index] ?? Building2;
+                  return (
+                    <li key={stat.label} className="hero-aside-panel-item">
+                      <span className="hero-aside-panel-icon" aria-hidden>
+                        <Icon strokeWidth={1.75} />
+                      </span>
+                      <span>
+                        <strong>{stat.value}</strong>
+                        <span>{stat.label}</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </aside>
         </div>
       </div>
     </section>

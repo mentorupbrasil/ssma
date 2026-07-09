@@ -46,7 +46,33 @@
 
 .exams-hero-inner {
   position: relative;
+}
+
+.exams-hero-layout {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .exams-hero-layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 2.5rem;
+  }
+}
+
+.exams-hero-copy {
   max-width: 42rem;
+}
+
+.exams-hero-aside {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .exams-hero-aside {
+    display: block;
+  }
 }
 
 .exams-hero-eyebrow {

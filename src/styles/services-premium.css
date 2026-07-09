@@ -20,7 +20,33 @@
 
 .services-hero-inner {
   position: relative;
+}
+
+.services-hero-layout {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .services-hero-layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 2.5rem;
+  }
+}
+
+.services-hero-copy {
   max-width: 44rem;
+}
+
+.services-hero-aside {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .services-hero-aside {
+    display: block;
+  }
 }
 
 .services-hero-eyebrow {

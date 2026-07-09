@@ -5093,6 +5093,112 @@
   color: var(--brand-navy);
 }
 
+/* Hero aside panel — shared across public page heroes */
+.hero-aside-panel {
+  padding: 1.35rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.06);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.18);
+}
+
+@media (min-width: 1024px) {
+  .hero-aside-panel {
+    padding: 1.6rem;
+  }
+}
+
+.hero-aside-panel-kicker {
+  margin-bottom: 1rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(167 243 208 / 0.9);
+}
+
+.hero-aside-panel-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.hero-aside-panel-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.hero-aside-panel-stat-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1;
+  color: white;
+}
+
+.hero-aside-panel-stat-label {
+  font-size: 0.625rem;
+  line-height: 1.35;
+  color: rgb(203 213 225 / 0.85);
+}
+
+.hero-aside-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-aside-panel-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.hero-aside-panel-item > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.hero-aside-panel-item strong {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: white;
+}
+
+.hero-aside-panel-item > span:last-child > span {
+  font-size: 0.75rem;
+  color: rgb(203 213 225 / 0.8);
+}
+
+.hero-aside-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
+  background: rgb(22 160 133 / 0.18);
+  color: rgb(167 243 208);
+}
+
+.hero-aside-panel-foot {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: rgb(203 213 225 / 0.85);
+}
+
 /* Contato — atalhos e mapa */
 .contact-quick-grid {
   display: grid;

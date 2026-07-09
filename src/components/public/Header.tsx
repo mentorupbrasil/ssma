@@ -44,7 +44,7 @@ export function Header() {
               key={item.href}
               href={item.href}
               aria-current={isNavActive(pathname, item.href) ? "page" : undefined}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-[var(--brand-navy)] aria-[current=page]:bg-slate-100 aria-[current=page]:text-[var(--brand-navy)]"
+              className="relative rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-[var(--brand-navy)] aria-[current=page]:bg-emerald-50 aria-[current=page]:font-semibold aria-[current=page]:text-[var(--brand-navy)] aria-[current=page]:after:absolute aria-[current=page]:after:bottom-0.5 aria-[current=page]:after:left-3 aria-[current=page]:after:right-3 aria-[current=page]:after:h-0.5 aria-[current=page]:after:rounded-full aria-[current=page]:after:bg-[var(--brand-green)]"
             >
               {item.label}
             </Link>

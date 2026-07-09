@@ -65,8 +65,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 10% 0%, rgb(22 160 133 / 0.12), transparent 55%),
-    linear-gradient(165deg, #f8fafc 0%, #eef8f5 42%, #f1f5f9 100%);
+    radial-gradient(ellipse 70% 55% at 85% 0%, rgb(22 160 133 / 0.14), transparent 55%),
+    linear-gradient(155deg, var(--brand-navy) 0%, #124a5a 52%, #0f3d4a 100%);
 }
 
 .about-hero-inner {
@@ -86,14 +86,23 @@
   }
 }
 
+.about-hero-eyebrow {
+  margin-bottom: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(167 243 208 / 0.95);
+}
+
 .about-hero-title {
-  max-width: 16ch;
+  max-width: 18ch;
   font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
   font-size: clamp(2rem, 4.5vw, 3.15rem);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.03em;
-  color: var(--brand-navy);
+  color: white;
 }
 
 .about-hero-desc {
@@ -101,7 +110,7 @@
   margin-top: 1.1rem;
   font-size: 1.05rem;
   line-height: 1.7;
-  color: rgb(71 85 105);
+  color: rgb(226 232 240 / 0.9);
 }
 
 .about-hero-actions {
@@ -117,7 +126,7 @@
   gap: 0.65rem;
   margin-top: 2rem;
   padding-top: 1.35rem;
-  border-top: 1px solid rgb(226 232 240 / 0.9);
+  border-top: 1px solid rgb(255 255 255 / 0.12);
 }
 
 @media (min-width: 640px) {
@@ -136,13 +145,23 @@
   font-size: 0.9375rem;
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: var(--brand-green);
+  color: rgb(167 243 208);
 }
 
 .about-hero-stat-label {
   font-size: 0.75rem;
   line-height: 1.35;
-  color: rgb(100 116 139);
+  color: rgb(203 213 225 / 0.85);
+}
+
+.about-hero-aside {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .about-hero-aside {
+    display: block;
+  }
 }
 
 .about-hero-visual {
@@ -596,7 +615,7 @@
 
 .about-diff {
   padding-block: clamp(3rem, 6vw, 5rem);
-  background: white;
+  background: linear-gradient(180deg, rgb(248 250 252) 0%, white 100%);
 }
 
 .about-diff-header {

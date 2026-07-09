@@ -1,9 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { CLINICAL_EXAM_TYPES } from "@/data/marketing";
-import { CLINICAL_EXAM_ICONS } from "@/data/exams-page";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export function TopClinicalExams() {
   return (
@@ -18,31 +16,30 @@ export function TopClinicalExams() {
           </p>
         </div>
 
-        <div className="exams-clinical-grid">
-          {CLINICAL_EXAM_TYPES.map((exam) => {
-            const Icon = CLINICAL_EXAM_ICONS[exam.type] ?? ShieldCheck;
-            return (
-              <article
-                key={exam.type}
-                className={cn("exams-clinical-card", exam.highlight && "exams-clinical-card--featured")}
-              >
-                {exam.highlight && <span className="exams-clinical-top-badge">Mais solicitado</span>}
-                <div className="exams-clinical-card-head">
-                  <div className="exams-clinical-icon" aria-hidden>
-                    <Icon strokeWidth={1.75} />
-                  </div>
-                  <div className="exams-clinical-badges">
-                    <span className="exams-clinical-badge">{exam.badge}</span>
-                    <span className="exams-clinical-badge exams-clinical-badge--muted">ASO</span>
-                  </div>
+        <ol className="home-clinical-list">
+          {CLINICAL_EXAM_TYPES.map((exam, index) => (
+            <li
+              key={exam.type}
+              className={
+                exam.highlight ? "home-clinical-item home-clinical-item--highlight" : "home-clinical-item"
+              }
+            >
+              <span className="home-clinical-item-num">{String(index + 1).padStart(2, "0")}</span>
+              <div className="home-clinical-item-body">
+                <div className="home-clinical-item-head">
+                  <h3 className="home-clinical-item-title">{exam.label}</h3>
+                  {exam.highlight && (
+                    <span className="home-clinical-item-flag">
+                      <Star className="h-3 w-3" strokeWidth={2} />
+                      Mais comum
+                    </span>
+                  )}
                 </div>
-                <h3 className="exams-clinical-card-title">{exam.label}</h3>
-                <p className="exams-clinical-card-desc">{exam.description}</p>
-                <p className="exams-clinical-nr">Conforme NR-7 / PCMSO</p>
-              </article>
-            );
-          })}
-        </div>
+                <p className="home-clinical-item-desc">{exam.description}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
 
         <div className="exams-clinical-cta">
           <Link href="/encaminhamento-online">

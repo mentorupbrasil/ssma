@@ -28,9 +28,10 @@ export default async function ContatoPage({
   return (
     <>
       <PageHero
-        eyebrow="FALE CONOSCO"
-        title="Entre em contato"
+        eyebrow="Fale conosco"
+        title="Entre em contato com a Unimetra"
         description="Nossa equipe comercial responde com agilidade. Para demandas urgentes, fale diretamente pelo WhatsApp."
+        supportingText="Orçamentos, encaminhamentos, dúvidas sobre exames e suporte ao RH — escolha o canal mais conveniente."
         layout="stack"
       >
         {clinic.hasWhatsApp && (
