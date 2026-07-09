@@ -144,8 +144,8 @@ export function HeroPortalMockup({
             </p>
           </div>
           {!demoMode && (
-            <span className="hidden rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[0.6rem] font-semibold text-slate-500 sm:inline">
-              Sua empresa
+            <span className="rounded-full border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[0.6rem] font-semibold text-emerald-800 sm:text-[0.65rem]">
+              Área do RH
             </span>
           )}
         </div>
