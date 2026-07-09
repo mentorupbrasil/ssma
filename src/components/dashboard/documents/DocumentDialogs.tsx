@@ -228,7 +228,7 @@ export function DocumentFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {attachOnly ? "Anexar arquivo" : isEdit ? "Editar documento" : "Novo documento"}
@@ -245,7 +245,7 @@ export function DocumentFormDialog({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Dados principais
             </p>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Label>Título do documento</Label>
                 <Input
@@ -298,20 +298,24 @@ export function DocumentFormDialog({
                   onChange={(e) => set("validUntil", e.target.value)}
                 />
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={form.sensitive}
-                  onCheckedChange={(c) => set("sensitive", c === true)}
-                />
-                Documento sensível
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={form.availableOnPortal}
-                  onCheckedChange={(c) => set("availableOnPortal", c === true)}
-                />
-                Disponibilizar no portal empresarial
-              </label>
+              <div className="flex flex-col gap-3 sm:col-span-2">
+                <label className="flex items-start gap-2 text-sm">
+                  <Checkbox
+                    className="mt-0.5"
+                    checked={form.sensitive}
+                    onCheckedChange={(c) => set("sensitive", c === true)}
+                  />
+                  <span>Documento sensível</span>
+                </label>
+                <label className="flex items-start gap-2 text-sm">
+                  <Checkbox
+                    className="mt-0.5"
+                    checked={form.availableOnPortal}
+                    onCheckedChange={(c) => set("availableOnPortal", c === true)}
+                  />
+                  <span>Disponibilizar no portal empresarial</span>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -320,7 +324,7 @@ export function DocumentFormDialog({
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Dados do ASO
               </p>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid min-w-0 gap-4 sm:grid-cols-2">
                 <div>
                   <Label>Tipo de ASO</Label>
                   <select
@@ -357,7 +361,7 @@ export function DocumentFormDialog({
 
           <div className="space-y-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Vínculos</p>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2">
               <div>
                 <Label>Empresa</Label>
                 <select

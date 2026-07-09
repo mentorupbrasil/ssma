@@ -85,7 +85,7 @@ export function NewCollaboratorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Novo colaborador</DialogTitle>
           <DialogDescription>
@@ -258,7 +258,7 @@ export function EditCollaboratorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Editar colaborador</DialogTitle>
           <DialogDescription>Atualize os dados cadastrais e ocupacionais.</DialogDescription>
