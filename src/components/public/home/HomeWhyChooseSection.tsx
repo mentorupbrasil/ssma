@@ -12,23 +12,23 @@ export function HomeWhyChooseSection() {
     <section className="home-why scroll-mt-[var(--header-height)]" id="por-que-escolher">
       <div className="container-page">
         <div className="home-why-panel">
-          <div className="home-why-intro">
+          <div className="home-why-header">
             <p className="home-why-eyebrow">Diferenciais</p>
             <h2 className="home-why-title">Por que empresas escolhem a Unimetra</h2>
             <p className="home-why-desc">
               Atendimento ocupacional, suporte técnico e organização digital em um fluxo mais
               claro para empresas e equipes de RH.
             </p>
-
-            <dl className="home-why-stats">
-              {STATS.map((stat) => (
-                <div key={stat.label} className="home-why-stat">
-                  <dt className="home-why-stat-value">{stat.value}</dt>
-                  <dd className="home-why-stat-label">{stat.label}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
+
+          <dl className="home-why-stats">
+            {STATS.map((stat) => (
+              <div key={stat.label} className="home-why-stat">
+                <dt className="home-why-stat-value">{stat.value}</dt>
+                <dd className="home-why-stat-label">{stat.label}</dd>
+              </div>
+            ))}
+          </dl>
 
           <ul className="home-why-checklist">
             {HOME_WHY_CHOOSE.map((item) => (
