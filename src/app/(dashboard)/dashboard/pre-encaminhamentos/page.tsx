@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { requirePagePermission } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
 import { loadPreReferralsPageData } from "@/actions/pre-referrals";
+import type { PreReferralListFilters } from "@/lib/pre-referrals";
 import { PreEncaminhamentosClient } from "@/components/dashboard/pre-referrals/PreEncaminhamentosClient";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -19,7 +20,9 @@ async function PreEncaminhamentosData({ searchParams }: { searchParams: SearchPa
   if (isEmpresaUser(session)) notFound();
 
   const params = await searchParams;
-  const filters = {
+  const sortByRaw = getParam(params, "sortBy");
+  const sortDirRaw = getParam(params, "sortDir");
+  const filters: PreReferralListFilters = {
     q: getParam(params, "q") || undefined,
     status: getParam(params, "status") || undefined,
     queue: getParam(params, "queue") || undefined,
@@ -27,6 +30,11 @@ async function PreEncaminhamentosData({ searchParams }: { searchParams: SearchPa
     dateTo: getParam(params, "dateTo") || undefined,
     clinicalExamType: getParam(params, "clinicalExamType") || undefined,
     source: getParam(params, "source") || undefined,
+    sortBy:
+      sortByRaw === "createdAt" || sortByRaw === "status" || sortByRaw === "company"
+        ? sortByRaw
+        : undefined,
+    sortDir: sortDirRaw === "asc" || sortDirRaw === "desc" ? sortDirRaw : undefined,
     page: Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1),
   };
 
@@ -54,6 +62,7 @@ async function PreEncaminhamentosData({ searchParams }: { searchParams: SearchPa
       page={result.page}
       pageSize={result.pageSize}
       statusCounts={result.statusCounts}
+      queueCount={result.queueCount}
       dbReady={result.dbReady}
       filters={filters}
     />

@@ -27,6 +27,7 @@ import {
   DOCUMENT_STAT_CARDS,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_STATUS_LABELS,
+  LGPD_DEFAULT_NOTICE,
   buildDocumentWhatsAppMessage,
   normalizeDocumentStatus,
 } from "@/lib/documents";
@@ -35,6 +36,8 @@ import {
   updateDocumentStatus,
   removeDocumentFile,
   deleteDocument,
+  batchArchiveDocuments,
+  batchMarkDocumentsAvailable,
 } from "@/actions/documents";
 import type { DocumentFormOptions } from "@/lib/documents";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -153,6 +156,8 @@ export function DocumentosClient({
   const [detailLoading, setDetailLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DocumentListItem | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchLoading, setBatchLoading] = useState(false);
 
   const activeCard = filters.card ?? "ALL";
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
@@ -284,7 +289,50 @@ export function DocumentosClient({
       patientName: item.patientName,
       protocol: item.protocol,
     });
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+    const phone = item.contactPhone?.replace(/\D/g, "");
+    const url = phone
+      ? `https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === initialItems.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(initialItems.map((i) => i.id)));
+    }
+  };
+
+  const runBatch = async (action: "archive" | "available") => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    setBatchLoading(true);
+    const result =
+      action === "archive"
+        ? await batchArchiveDocuments(ids)
+        : await batchMarkDocumentsAvailable(ids);
+    setBatchLoading(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(
+      action === "archive"
+        ? `${"updated" in result ? result.updated : ids.length} documento(s) arquivado(s).`
+        : `${"updated" in result ? result.updated : ids.length} documento(s) marcado(s) como disponível.`
+    );
+    setSelectedIds(new Set());
+    router.refresh();
   };
 
   const openForm = (attach = false) => {
@@ -335,6 +383,11 @@ export function DocumentosClient({
           </div>
         )}
       </PageHeader>
+
+      <div className="mb-4 flex items-start gap-3 rounded-lg border border-violet-100 bg-violet-50/60 px-4 py-3 text-sm text-violet-900">
+        <Shield className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" aria-hidden />
+        <p>{LGPD_DEFAULT_NOTICE}</p>
+      </div>
 
       <div className="referral-stat-grid referral-stat-grid-3 lg:grid-cols-6">
         {DOCUMENT_STAT_CARDS.map((card) => {
@@ -501,10 +554,36 @@ export function DocumentosClient({
         />
       ) : (
         <div className="relative mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+          {canManage && selectedIds.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2">
+              <span className="text-sm font-medium text-slate-600">
+                {selectedIds.size} selecionado(s)
+              </span>
+              <Button size="sm" variant="outline" disabled={batchLoading} onClick={() => runBatch("available")}>
+                Marcar disponível
+              </Button>
+              <Button size="sm" variant="outline" disabled={batchLoading} onClick={() => runBatch("archive")}>
+                Arquivar
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+                Limpar seleção
+              </Button>
+            </div>
+          )}
           {isPending && <LoadingState overlay label="Atualizando documentos..." />}
           <Table>
             <TableHeader>
               <TableRow>
+                {canManage && (
+                  <TableHead className="w-10">
+                    <input
+                      type="checkbox"
+                      aria-label="Selecionar todos"
+                      checked={initialItems.length > 0 && selectedIds.size === initialItems.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </TableHead>
+                )}
                 <TableHead>Documento</TableHead>
                 <TableHead className="hidden md:table-cell">Tipo</TableHead>
                 <TableHead className="hidden lg:table-cell">Vínculo</TableHead>
@@ -520,7 +599,7 @@ export function DocumentosClient({
             <TableBody>
               {initialItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="py-10 text-center text-slate-500">
+                  <TableCell colSpan={canManage ? 11 : 10} className="py-10 text-center text-slate-500">
                     Nenhum documento encontrado com os filtros aplicados.
                   </TableCell>
                 </TableRow>
@@ -528,9 +607,22 @@ export function DocumentosClient({
                 initialItems.map((item) => (
                   <TableRow
                     key={item.id}
-                    className="cursor-pointer hover:bg-slate-50/80"
+                    className={cn(
+                      "cursor-pointer hover:bg-slate-50/80",
+                      selectedIds.has(item.id) && "bg-emerald-50/40"
+                    )}
                     onClick={() => openDetail(item.id)}
                   >
+                    {canManage && (
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          aria-label={`Selecionar ${item.title}`}
+                          checked={selectedIds.has(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>
                       <div className="flex items-start gap-2">
                         <div className="min-w-0 flex-1">
@@ -752,6 +844,7 @@ export function DocumentosClient({
                               type: detailDoc.type,
                               companyName: detailDoc.companyName,
                               patientName: detailDoc.patientName,
+                              contactPhone: detailDoc.contactPhone,
                               protocol: detailDoc.protocol,
                               fileName: detailDoc.fileName,
                               linkLabel: detailDoc.linkLabel,

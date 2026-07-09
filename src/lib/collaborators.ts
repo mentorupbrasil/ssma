@@ -270,6 +270,75 @@ export type CollaboratorDetailSerialized = {
   }[];
 };
 
+export function getPeriodicExamBadge(nextPeriodicDate: string | null): {
+  label: string;
+  tone: "ok" | "warning" | "danger" | "neutral";
+} {
+  if (!nextPeriodicDate) {
+    return { label: "Periodicidade não definida", tone: "neutral" };
+  }
+  const due = new Date(nextPeriodicDate);
+  const now = new Date();
+  const diffDays = Math.ceil((due.getTime() - now.getTime()) / 86400000);
+  if (diffDays < 0) return { label: "Periódico vencido", tone: "danger" };
+  if (diffDays <= 30) return { label: `Periódico em ${diffDays}d`, tone: "warning" };
+  return { label: "Periódico em dia", tone: "ok" };
+}
+
+export function buildCollaboratorTimeline(collaborator: {
+  history: { id: string; action: string; notes: string | null; performedByName: string | null; createdAt: string }[];
+  referrals: { id: string; protocol: string; clinicalExamType: string; createdAt: string; status: string }[];
+  appointments: { id: string; scheduledAt: string; clinicalExamType: string | null; status: string }[];
+  documents: { id: string; title: string; type: string; createdAt: string }[];
+}): Array<{
+  id: string;
+  kind: string;
+  title: string;
+  subtitle?: string;
+  createdAt: string;
+}> {
+  const events: Array<{ id: string; kind: string; title: string; subtitle?: string; createdAt: string }> = [];
+
+  for (const h of collaborator.history) {
+    events.push({
+      id: `h-${h.id}`,
+      kind: "history",
+      title: PATIENT_HISTORY_ACTION_LABELS[h.action as keyof typeof PATIENT_HISTORY_ACTION_LABELS] ?? h.action,
+      subtitle: h.performedByName ? `Por ${h.performedByName}` : h.notes ?? undefined,
+      createdAt: h.createdAt,
+    });
+  }
+  for (const r of collaborator.referrals) {
+    events.push({
+      id: `r-${r.id}`,
+      kind: "referral",
+      title: `Encaminhamento ${r.protocol}`,
+      subtitle: r.status,
+      createdAt: r.createdAt,
+    });
+  }
+  for (const a of collaborator.appointments) {
+    events.push({
+      id: `a-${a.id}`,
+      kind: "appointment",
+      title: "Agendamento",
+      subtitle: a.clinicalExamType ?? a.status,
+      createdAt: a.scheduledAt,
+    });
+  }
+  for (const d of collaborator.documents) {
+    events.push({
+      id: `d-${d.id}`,
+      kind: "document",
+      title: d.title,
+      subtitle: d.type,
+      createdAt: d.createdAt,
+    });
+  }
+
+  return events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20);
+}
+
 export function canManageCollaborators(role: string): boolean {
   return ["ADMIN", "CLINIC_ADMIN", "RECEPCAO", "RECEPTION", "EMPRESA", "COMPANY_HR"].includes(role);
 }

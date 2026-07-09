@@ -111,6 +111,12 @@ export type DocumentListFilters = {
   page?: number;
 };
 
+export const LGPD_DEFAULT_NOTICE =
+  "Documento confidencial — uso restrito conforme a LGPD (Lei 13.709/2018). O acesso, download e compartilhamento devem ocorrer apenas para finalidades legítimas de Medicina e Segurança do Trabalho.";
+
+export const LGPD_DOWNLOAD_FOOTER =
+  "Ao baixar este documento, você declara ciência de que os dados são protegidos pela LGPD e não devem ser compartilhados sem autorização.";
+
 export type DocumentListItem = {
   id: string;
   title: string;
@@ -119,6 +125,7 @@ export type DocumentListItem = {
   linkLabel: string;
   companyName: string | null;
   patientName: string | null;
+  contactPhone: string | null;
   protocol: string | null;
   createdAt: string;
   validUntil: string | null;
@@ -285,7 +292,7 @@ export function buildDocumentOrderBy(sort?: string): Prisma.DocumentOrderByWithR
 }
 
 type DocWithRelations = Document & {
-  company?: { legalName: string; tradeName: string | null } | null;
+  company?: { legalName: string; tradeName: string | null; whatsapp?: string | null; phone?: string | null } | null;
   patient?: { fullName: string } | null;
   referral?: { protocol: string } | null;
 };
@@ -299,6 +306,7 @@ export function serializeDocumentListItem(doc: DocWithRelations): DocumentListIt
     linkLabel: getLinkLabel(doc),
     companyName: doc.company?.tradeName ?? doc.company?.legalName ?? null,
     patientName: doc.patient?.fullName ?? null,
+    contactPhone: doc.company?.whatsapp ?? doc.company?.phone ?? null,
     protocol: doc.referral?.protocol ?? null,
     createdAt: doc.createdAt.toISOString(),
     validUntil: doc.validUntil?.toISOString() ?? null,
@@ -350,7 +358,9 @@ export function buildDocumentWhatsAppMessage(doc: {
 
 ${doc.protocol ? `Protocolo: ${doc.protocol}\n` : ""}Documento: ${doc.title}
 
-Em caso de dúvidas, seguimos à disposição.`;
+Em caso de dúvidas, seguimos à disposição.
+
+${LGPD_DOWNLOAD_FOOTER}`;
 }
 
 export function formatFileSize(bytes: number | null | undefined): string {

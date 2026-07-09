@@ -9,7 +9,9 @@ import { resolveClinicId, scopedWhere, withClinicId } from "@/lib/scoped-db";
 import { effectivePrice } from "@/lib/pricing";
 import { lookupPriceInternal } from "@/lib/pricing-server";
 
-type Result = { success: true; id?: string } | { success: false; error: string };
+type Result<T extends Record<string, unknown> = {}> =
+  | ({ success: true } & T)
+  | { success: false; error: string };
 
 export type PriceListItemInput = {
   name: string;

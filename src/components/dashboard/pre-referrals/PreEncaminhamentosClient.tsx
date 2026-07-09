@@ -28,6 +28,7 @@ import {
   PRE_REFERRAL_SOURCE_LABELS,
   buildPreReferralWhatsAppMessage,
   getMissingPreReferralFields,
+  isStalePreReferral,
 } from "@/lib/pre-referrals";
 import { PRE_REFERRAL_CLINICAL_EXAM_LABELS } from "@/types";
 import {
@@ -79,6 +80,7 @@ type Props = {
   page: number;
   pageSize: number;
   statusCounts: Partial<Record<PreReferralStatus, number>>;
+  queueCount?: number;
   dbReady: boolean;
   loadError?: string;
   filters: {
@@ -89,6 +91,8 @@ type Props = {
     dateTo?: string;
     clinicalExamType?: string;
     source?: string;
+    sortBy?: string;
+    sortDir?: string;
   };
 };
 
@@ -99,6 +103,7 @@ export function PreEncaminhamentosClient(props: Props) {
     page,
     pageSize,
     statusCounts,
+    queueCount = 0,
     dbReady,
     loadError,
     filters,
@@ -115,8 +120,11 @@ export function PreEncaminhamentosClient(props: Props) {
   const [dateTo, setDateTo] = useState(filters.dateTo ?? "");
   const [clinicalExamType, setClinicalExamType] = useState(filters.clinicalExamType ?? "");
   const [source, setSource] = useState(filters.source ?? "");
+  const [sortBy, setSortBy] = useState(filters.sortBy ?? "createdAt");
+  const [sortDir, setSortDir] = useState(filters.sortDir ?? "desc");
 
   const activeTab = filters.queue === "active" ? "QUEUE" : filters.status ?? "ALL";
+  const staleItems = items.filter((i) => isStalePreReferral(i));
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<PreReferralDetailSerialized | null>(null);
@@ -152,6 +160,8 @@ export function PreEncaminhamentosClient(props: Props) {
       dateTo,
       clinicalExamType,
       source,
+      sortBy,
+      sortDir,
     });
   };
 
@@ -162,6 +172,8 @@ export function PreEncaminhamentosClient(props: Props) {
     setDateTo("");
     setClinicalExamType("");
     setSource("");
+    setSortBy("createdAt");
+    setSortDir("desc");
     startTransition(() => router.push("/dashboard/pre-encaminhamentos"));
   };
 
@@ -249,7 +261,18 @@ export function PreEncaminhamentosClient(props: Props) {
 
       {dbReady && !loadError && (
         <>
-          <div className="referral-stat-grid referral-stat-grid-5">
+          <div className="referral-stat-grid referral-stat-grid-6">
+            <button
+              type="button"
+              className={cn(
+                "referral-stat-card",
+                filters.queue === "active" && "referral-stat-card-active"
+              )}
+              onClick={() => updateFilters({ queue: "active", status: undefined })}
+            >
+              <span className="referral-stat-count">{queueCount}</span>
+              <span className="referral-stat-label">Fila ativa</span>
+            </button>
             {PRE_REFERRAL_STAT_CARDS.map((card) => (
               <button
                 key={card.status}
@@ -265,6 +288,16 @@ export function PreEncaminhamentosClient(props: Props) {
               </button>
             ))}
           </div>
+
+          {staleItems.length > 0 && (
+            <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>
+                <strong>{staleItems.length}</strong> solicitação(ões) parada(s) há mais de 24h na fila.
+                Priorize contato ou conversão.
+              </p>
+            </div>
+          )}
 
           <div className="referral-tabs">
             {PRE_REFERRAL_STATUS_TABS.map((tab) => (
@@ -341,6 +374,31 @@ export function PreEncaminhamentosClient(props: Props) {
               </div>
 
               <div className="space-y-1">
+                <Label className="text-xs text-slate-500">Ordenar por</Label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="referral-select w-full"
+                >
+                  <option value="createdAt">Data de entrada</option>
+                  <option value="company">Empresa</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-500">Direção</Label>
+                <select
+                  value={sortDir}
+                  onChange={(e) => setSortDir(e.target.value)}
+                  className="referral-select w-full"
+                >
+                  <option value="desc">Mais recentes primeiro</option>
+                  <option value="asc">Mais antigos primeiro</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
                 <Label className="text-xs text-slate-500">Data inicial</Label>
                 <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="referral-date-input w-full" />
               </div>
@@ -394,7 +452,10 @@ export function PreEncaminhamentosClient(props: Props) {
                   {items.map((item) => (
                     <TableRow
                       key={item.id}
-                      className="referral-table-row cursor-pointer"
+                      className={cn(
+                        "referral-table-row cursor-pointer",
+                        isStalePreReferral(item) && "bg-amber-50/60"
+                      )}
                       onClick={() => openDetail(item.id)}
                     >
                       <TableCell className="font-semibold text-[var(--brand-green)]">{item.protocol}</TableCell>

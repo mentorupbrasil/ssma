@@ -16,6 +16,7 @@ import {
   buildPreReferralWhere,
   serializePreReferralDetail,
   PRE_REFERRAL_STAT_CARDS,
+  PRE_REFERRAL_QUEUE_STATUSES,
   type PreReferralListFilters,
   type PreReferralListItem,
 } from "@/lib/pre-referrals";
@@ -72,7 +73,7 @@ export async function loadPreReferralsPageData(filters: PreReferralListFilters =
   try {
     const statStatuses = PRE_REFERRAL_STAT_CARDS.map((c) => c.status);
 
-    const [total, requests, countResults] = await Promise.all([
+    const [total, requests, countResults, queueCount] = await Promise.all([
       prisma.publicReferralRequest.count({ where }),
       prisma.publicReferralRequest.findMany({
         where,
@@ -86,6 +87,9 @@ export async function loadPreReferralsPageData(filters: PreReferralListFilters =
           count: await prisma.publicReferralRequest.count({ where: { status } }),
         }))
       ),
+      prisma.publicReferralRequest.count({
+        where: { status: { in: PRE_REFERRAL_QUEUE_STATUSES } },
+      }),
     ]);
 
     const items: PreReferralListItem[] = requests.map((r) => ({
@@ -116,6 +120,7 @@ export async function loadPreReferralsPageData(filters: PreReferralListFilters =
       pageSize,
       totalPages: Math.ceil(total / pageSize),
       statusCounts,
+      queueCount,
     };
   } catch (error) {
     if (isPrismaSchemaError(error)) {
@@ -128,6 +133,7 @@ export async function loadPreReferralsPageData(filters: PreReferralListFilters =
         pageSize,
         totalPages: 0,
         statusCounts: {} as Partial<Record<PreReferralStatus, number>>,
+        queueCount: 0,
       };
     }
     console.error("loadPreReferralsPageData error:", error);

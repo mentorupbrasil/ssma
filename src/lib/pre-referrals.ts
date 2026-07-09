@@ -108,6 +108,15 @@ export type PreReferralDetailSerialized = {
   }[];
 };
 
+export function getStalePreReferralHours(createdAt: string): number {
+  return Math.floor((Date.now() - new Date(createdAt).getTime()) / 3600000);
+}
+
+export function isStalePreReferral(item: { status: string; createdAt: string }, thresholdHours = 24): boolean {
+  if (!["NOVO", "EM_ANALISE", "AGUARDANDO_RETORNO"].includes(item.status)) return false;
+  return getStalePreReferralHours(item.createdAt) >= thresholdHours;
+}
+
 export function buildPreReferralWhere(filters: PreReferralListFilters) {
   const where: {
     status?: PreReferralStatus | { in: PreReferralStatus[] };

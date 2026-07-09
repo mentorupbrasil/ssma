@@ -19,6 +19,8 @@ import type { CollaboratorDetailSerialized } from "@/lib/collaborators";
 import {
   PATIENT_HISTORY_ACTION_LABELS,
   PATIENT_STATUS_LABELS,
+  getPeriodicExamBadge,
+  buildCollaboratorTimeline,
 } from "@/lib/collaborators";
 import {
   DOCUMENT_TYPE_LABELS,
@@ -40,6 +42,8 @@ import {
 import { formatCPF, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { EditCollaboratorDialog } from "./CollaboratorDialogs";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
 
 const TABS = [
   { id: "overview", label: "Visão geral", icon: LayoutDashboard },
@@ -85,6 +89,9 @@ export function ColaboradorDetailClient({
   const resolvedTab =
     !canClinical && activeTab === "exams" ? "overview" : activeTab;
 
+  const periodicBadge = getPeriodicExamBadge(collaborator.nextPeriodicDate);
+  const timeline = buildCollaboratorTimeline(collaborator);
+
   return (
     <div className="referrals-module">
       <PageHeader
@@ -93,6 +100,17 @@ export function ColaboradorDetailClient({
       >
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={collaborator.status} type="collaborator" />
+          <span
+            className={cn(
+              "rounded-full px-2.5 py-0.5 text-xs font-medium",
+              periodicBadge.tone === "danger" && "bg-red-100 text-red-700",
+              periodicBadge.tone === "warning" && "bg-amber-100 text-amber-800",
+              periodicBadge.tone === "ok" && "bg-emerald-100 text-emerald-800",
+              periodicBadge.tone === "neutral" && "bg-slate-100 text-slate-600"
+            )}
+          >
+            {periodicBadge.label}
+          </span>
           {canManage && (
             <>
               <Link
@@ -155,16 +173,20 @@ export function ColaboradorDetailClient({
       </div>
 
       {resolvedTab === "overview" && (
-        <OverviewTab collaborator={collaborator} onNavigate={setTab} />
+        <OverviewTab collaborator={collaborator} timeline={timeline} onNavigate={setTab} />
       )}
       {resolvedTab === "referrals" && (
         <ReferralsTab collaborator={collaborator} canManage={canManage} />
       )}
-      {resolvedTab === "agenda" && <AgendaTab collaborator={collaborator} />}
+      {resolvedTab === "agenda" && (
+        <AgendaTab collaborator={collaborator} canManage={canManage} companyId={companyId} />
+      )}
       {resolvedTab === "exams" && canClinical && (
         <ExamsTab collaborator={collaborator} />
       )}
-      {resolvedTab === "documents" && <DocumentsTab collaborator={collaborator} />}
+      {resolvedTab === "documents" && (
+        <DocumentsTab collaborator={collaborator} canManage={canManage} />
+      )}
       {resolvedTab === "history" && <HistoryTab collaborator={collaborator} />}
 
       {canManage && (
@@ -195,9 +217,11 @@ export function ColaboradorDetailClient({
 
 function OverviewTab({
   collaborator,
+  timeline,
   onNavigate,
 }: {
   collaborator: CollaboratorDetailSerialized;
+  timeline: ReturnType<typeof buildCollaboratorTimeline>;
   onNavigate: (tab: TabId) => void;
 }) {
   const stats = [
@@ -306,6 +330,29 @@ function OverviewTab({
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="mb-4 font-semibold text-[#0F3D4A]">Linha do tempo</h3>
+          {timeline.length === 0 ? (
+            <InlineEmptyNote>Nenhum evento registrado ainda.</InlineEmptyNote>
+          ) : (
+            <ul className="referral-history-list">
+              {timeline.map((ev) => (
+                <li key={ev.id} className="referral-history-item">
+                  <div className="flex justify-between gap-2">
+                    <span className="font-medium text-sm">{ev.title}</span>
+                    <span className="shrink-0 text-xs text-slate-400">
+                      {format(new Date(ev.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                    </span>
+                  </div>
+                  {ev.subtitle && <p className="mt-1 text-xs text-slate-500">{ev.subtitle}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -339,7 +386,19 @@ function ReferralsTab({
         </div>
       )}
       {collaborator.referrals.length === 0 ? (
-        <p className="text-sm text-slate-500">Nenhum encaminhamento registrado.</p>
+        <EmptyState
+          compact
+          title="Nenhum encaminhamento"
+          description="Este colaborador ainda não possui encaminhamentos."
+          action={
+            canManage
+              ? {
+                  label: "Novo encaminhamento",
+                  href: `/dashboard/encaminhamentos/novo?patientId=${collaborator.id}&companyId=${collaborator.company?.id ?? ""}`,
+                }
+              : undefined
+          }
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -388,10 +447,30 @@ function ReferralsTab({
   );
 }
 
-function AgendaTab({ collaborator }: { collaborator: CollaboratorDetailSerialized }) {
-  return collaborator.appointments.length === 0 ? (
-    <p className="text-sm text-slate-500">Nenhum agendamento vinculado.</p>
-  ) : (
+function AgendaTab({
+  collaborator,
+  canManage,
+  companyId,
+}: {
+  collaborator: CollaboratorDetailSerialized;
+  canManage: boolean;
+  companyId: string;
+}) {
+  if (collaborator.appointments.length === 0) {
+    return (
+      <EmptyState
+        compact
+        title="Nenhum agendamento"
+        description="Não há exames agendados para este colaborador."
+        action={
+          canManage
+            ? { label: "Agendar exame", href: `/dashboard/agenda?new=1&patientId=${collaborator.id}&companyId=${companyId}` }
+            : undefined
+        }
+      />
+    );
+  }
+  return (
     <Table>
       <TableHeader>
         <TableRow>
@@ -440,7 +519,7 @@ function ExamsTab({ collaborator }: { collaborator: CollaboratorDetailSerialized
       <section>
         <h3 className="mb-3 font-semibold text-[#0F3D4A]">Exames clínicos</h3>
         {collaborator.clinicalExams.length === 0 ? (
-          <p className="text-sm text-slate-500">Nenhum exame clínico registrado.</p>
+          <InlineEmptyNote>Nenhum exame clínico registrado.</InlineEmptyNote>
         ) : (
           <Table>
             <TableHeader>
@@ -472,7 +551,7 @@ function ExamsTab({ collaborator }: { collaborator: CollaboratorDetailSerialized
       <section>
         <h3 className="mb-3 font-semibold text-[#0F3D4A]">Exames complementares</h3>
         {collaborator.complementaryExams.length === 0 ? (
-          <p className="text-sm text-slate-500">Nenhum exame complementar registrado.</p>
+          <InlineEmptyNote>Nenhum exame complementar registrado.</InlineEmptyNote>
         ) : (
           <Table>
             <TableHeader>
@@ -504,18 +583,28 @@ function ExamsTab({ collaborator }: { collaborator: CollaboratorDetailSerialized
   );
 }
 
-function DocumentsTab({ collaborator }: { collaborator: CollaboratorDetailSerialized }) {
-  return collaborator.documents.length === 0 ? (
-    <div className="space-y-4">
-      <p className="text-sm text-slate-500">Nenhum documento vinculado.</p>
-      <Link
-        href={`/dashboard/documentos?patientId=${collaborator.id}`}
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-      >
-        <Plus className="mr-2 h-4 w-4" /> Anexar documento
-      </Link>
-    </div>
-  ) : (
+function DocumentsTab({
+  collaborator,
+  canManage,
+}: {
+  collaborator: CollaboratorDetailSerialized;
+  canManage: boolean;
+}) {
+  if (collaborator.documents.length === 0) {
+    return (
+      <EmptyState
+        compact
+        title="Nenhum documento"
+        description="Documentos deste colaborador aparecerão aqui."
+        action={
+          canManage
+            ? { label: "Anexar documento", href: `/dashboard/documentos?patientId=${collaborator.id}&new=1` }
+            : undefined
+        }
+      />
+    );
+  }
+  return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <Link

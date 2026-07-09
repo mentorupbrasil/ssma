@@ -7,6 +7,8 @@ import {
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_HISTORY_LABELS,
   ASO_CLINICAL_TYPE_LABELS,
+  LGPD_DEFAULT_NOTICE,
+  LGPD_DOWNLOAD_FOOTER,
   formatFileSize,
   normalizeDocumentStatus,
 } from "@/lib/documents";
@@ -91,6 +93,19 @@ export function DocumentDetailContent({ document: doc, compact }: DocumentDetail
           <p className="mt-1 text-sm text-slate-500">{doc.fileName}</p>
         )}
       </div>
+
+      {(doc.sensitive || doc.type === "ASO" || doc.type === "RESULTADO_EXAME") && (
+        <div className="rounded-xl border border-violet-200 bg-violet-50/80 p-4 text-sm text-violet-900">
+          <div className="flex items-start gap-2">
+            <Shield className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="space-y-2">
+              <p className="font-medium">Aviso LGPD</p>
+              <p>{LGPD_DEFAULT_NOTICE}</p>
+              <p className="text-xs text-violet-800">{LGPD_DOWNLOAD_FOOTER}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Section title="Resumo">
         <Row label="Título" value={doc.title} />

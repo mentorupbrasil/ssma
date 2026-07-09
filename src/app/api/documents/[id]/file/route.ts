@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canViewDocument } from "@/lib/documents";
+import { canViewDocument, LGPD_DOWNLOAD_FOOTER } from "@/lib/documents";
 import { readDocumentFile } from "@/lib/document-storage";
 
 export async function GET(
@@ -71,6 +71,12 @@ export async function GET(
         ? `attachment; filename="${doc.fileName ?? "documento"}"`
         : `inline; filename="${doc.fileName ?? "documento"}"`
     );
+    if (action === "DOWNLOAD") {
+      headers.set("X-LGPD-Notice", LGPD_DOWNLOAD_FOOTER);
+    }
+    if (doc.sensitive) {
+      headers.set("X-Document-Sensitive", "true");
+    }
 
     return new NextResponse(new Uint8Array(buffer), { headers });
   } catch {

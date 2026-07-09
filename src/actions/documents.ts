@@ -25,7 +25,7 @@ import {
 } from "@/lib/documents";
 import { deleteDocumentFile } from "@/lib/document-storage";
 
-type ActionResult<T extends Record<string, unknown> = Record<string, unknown>> =
+type ActionResult<T extends Record<string, unknown> = {}> =
   | ({ success: true } & T)
   | { success: false; error: string };
 
@@ -118,7 +118,7 @@ export async function listDocumentsForDashboard(
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          company: { select: { legalName: true, tradeName: true } },
+          company: { select: { legalName: true, tradeName: true, whatsapp: true, phone: true } },
           patient: { select: { fullName: true } },
           referral: { select: { protocol: true } },
         },
@@ -548,4 +548,39 @@ export async function deleteDocument(documentId: string): Promise<ActionResult> 
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : "Erro ao remover documento." };
   }
+}
+
+export async function batchUpdateDocumentStatus(
+  documentIds: string[],
+  status: DocumentStatus
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const session = await requirePermission("documents.manage");
+    if (!documentIds.length) return { success: false, error: "Nenhum documento selecionado." };
+
+    let updated = 0;
+    for (const id of documentIds) {
+      const existing = await prisma.document.findUnique({ where: { id } });
+      if (!existing) continue;
+      await prisma.document.update({ where: { id }, data: { status } });
+      await recordDocHistory(id, status === "ARQUIVADO" ? "ARCHIVED" : "STATUS_CHANGED", session.user.id, `${existing.status} → ${status}`);
+      if (existing.type === "ASO" && status === "DISPONIVEL") {
+        await maybeUpdateReferralOnAso(existing.referralId, session.user.id);
+      }
+      updated += 1;
+    }
+
+    revalidateDocumentPaths();
+    return { success: true, updated };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro na ação em lote." };
+  }
+}
+
+export async function batchArchiveDocuments(documentIds: string[]) {
+  return batchUpdateDocumentStatus(documentIds, "ARQUIVADO");
+}
+
+export async function batchMarkDocumentsAvailable(documentIds: string[]) {
+  return batchUpdateDocumentStatus(documentIds, "DISPONIVEL");
 }

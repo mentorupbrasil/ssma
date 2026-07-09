@@ -20,7 +20,7 @@ import {
   Users,
 } from "lucide-react";
 import type { CollaboratorListItem } from "@/lib/collaborators";
-import { COLLABORATOR_STAT_CARDS } from "@/lib/collaborators";
+import { COLLABORATOR_STAT_CARDS, getPeriodicExamBadge } from "@/lib/collaborators";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NewCollaboratorDialog } from "./CollaboratorDialogs";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type ColaboradoresClientProps = {
@@ -280,13 +281,24 @@ export function ColaboradoresClient({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {initialItems.map((c) => (
+                {initialItems.map((c) => {
+                  const periodicBadge = getPeriodicExamBadge(c.nextPeriodicDate);
+                  return (
                   <TableRow
                     key={c.id}
                     className="cursor-pointer hover:bg-slate-50"
                     onClick={() => router.push(`/dashboard/colaboradores/${c.id}`)}
                   >
-                    <TableCell className="font-medium text-[#0F3D4A]">{c.fullName}</TableCell>
+                    <TableCell className="font-medium text-[#0F3D4A]">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span>{c.fullName}</span>
+                        {c.hasPendingDocs && (
+                          <Badge variant="outline" className="rounded-full border-amber-200 bg-amber-50 text-amber-800 text-[10px] font-normal">
+                            Docs pendentes
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-sm">{c.cpfMasked}</TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       {c.companyId ? (
@@ -317,9 +329,25 @@ export function ColaboradoresClient({
                       )}
                     </TableCell>
                     <TableCell className="hidden text-sm md:table-cell">
-                      {c.nextPeriodicDate
-                        ? format(new Date(c.nextPeriodicDate), "dd/MM/yyyy", { locale: ptBR })
-                        : "Não definido"}
+                      <div className="flex flex-col gap-1">
+                        <span>
+                          {c.nextPeriodicDate
+                            ? format(new Date(c.nextPeriodicDate), "dd/MM/yyyy", { locale: ptBR })
+                            : "Não definido"}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "w-fit rounded-full text-[10px] font-normal",
+                            periodicBadge.tone === "danger" && "border-red-200 bg-red-50 text-red-800",
+                            periodicBadge.tone === "warning" && "border-amber-200 bg-amber-50 text-amber-800",
+                            periodicBadge.tone === "ok" && "border-emerald-200 bg-emerald-50 text-emerald-800",
+                            periodicBadge.tone === "neutral" && "border-slate-200 bg-slate-50 text-slate-600"
+                          )}
+                        >
+                          {periodicBadge.label}
+                        </Badge>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={c.status} type="collaborator" />
@@ -373,7 +401,8 @@ export function ColaboradoresClient({
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </DataTable>

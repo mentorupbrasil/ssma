@@ -16,6 +16,7 @@ import {
 import { createAuditLog, generateProtocol } from "@/lib/server";
 import { resolvePublicClinicId } from "@/lib/scoped-db";
 import { isQuoteRequestSubject } from "@/lib/commercial";
+import { getRequestRateLimitKey, enforcePublicFormRateLimit } from "@/lib/rate-limit";
 import { ExamCategory } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import {
@@ -68,6 +69,11 @@ export async function submitReferral(
   }
 
   try {
+    if (options?.source === "online" || referralSource === "SITE") {
+      const rateKey = await getRequestRateLimitKey("referral");
+      enforcePublicFormRateLimit(rateKey);
+    }
+
     const protocol = await generateProtocol();
 
     let company = await prisma.company.findFirst({
@@ -184,6 +190,9 @@ export async function submitReferral(
     return { success: true, protocol };
   } catch (error) {
     console.error("submitReferral error:", error);
+    if (error instanceof Error && error.message.includes("Muitas tentativas")) {
+      return { success: false, error: error.message };
+    }
     if (isPrismaUniqueError(error)) {
       return { success: false, error: "CPF ou CNPJ já cadastrado com dados conflitantes." };
     }
@@ -219,6 +228,9 @@ export async function submitPreReferral(
   };
 
   try {
+    const rateKey = await getRequestRateLimitKey("pre-referral");
+    enforcePublicFormRateLimit(rateKey);
+
     const protocol = await generateProtocol();
     const clinicId = await resolvePublicClinicId();
 
@@ -277,6 +289,9 @@ export async function submitPreReferral(
     };
   } catch (error) {
     console.error("submitPreReferral error:", error);
+    if (error instanceof Error && error.message.includes("Muitas tentativas")) {
+      return { success: false, error: error.message };
+    }
     return { success: false, error: "Erro ao enviar pré-encaminhamento. Tente novamente." };
   }
 }
@@ -302,6 +317,16 @@ export async function submitContactMessage(data: unknown): Promise<ActionResult>
 
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { success: false, error: "E-mail inválido." };
+  }
+
+  try {
+    const rateKey = await getRequestRateLimitKey("contact");
+    enforcePublicFormRateLimit(rateKey);
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Limite de envios excedido.",
+    };
   }
 
   try {
