@@ -85,8 +85,10 @@ export function LoginDotMap() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const maybeCtx = canvas.getContext("2d");
+    if (maybeCtx === null) return;
+
+    const ctx: CanvasRenderingContext2D = maybeCtx;
 
     const dots = generateDots(dimensions.width, dimensions.height);
     let animationFrameId: number;
