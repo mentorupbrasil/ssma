@@ -8,14 +8,8 @@ import { getClinicSiteConfig } from "@/config/clinic";
 import { formatPhone, getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 
-const FOOTER_NAV = [
-  { href: "/", label: "Início" },
-  { href: "/sobre", label: "Sobre" },
-  { href: "/servicos", label: "Serviços" },
-  { href: "/exames", label: "Exames" },
-  { href: "/empresas", label: "Empresas" },
-  { href: "/encaminhamento-online", label: "Encaminhamento online" },
-  { href: "/contato", label: "Contato" },
+/** Links que não aparecem no menu principal do header */
+const FOOTER_EXTRA_LINKS = [
   { href: "/atualizacoes", label: "Atualizações" },
   { href: "/politica-de-privacidade", label: "Política de privacidade" },
   { href: "/termos-de-uso", label: "Termos de uso" },
@@ -44,9 +38,9 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="footer-column-title">Navegação</h4>
+          <h4 className="footer-column-title">Informações</h4>
           <ul className="space-y-2.5 text-sm">
-            {FOOTER_NAV.map(({ href, label }) => (
+            {FOOTER_EXTRA_LINKS.map(({ href, label }) => (
               <li key={href}>
                 <Link href={href} className="transition hover:text-white">
                   {label}

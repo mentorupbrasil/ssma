@@ -30,8 +30,11 @@ export const metadata: Metadata = {
   description: homeSeo.description,
   alternates: { canonical: siteUrl },
   icons: {
-    icon: "/brand/unimetra-logo.png",
-    apple: "/brand/unimetra-logo.png",
+    icon: [
+      { url: "/brand/unimetra-icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/brand/unimetra-icon.png",
+    shortcut: "/brand/unimetra-icon.png",
   },
   openGraph: {
     type: "website",
