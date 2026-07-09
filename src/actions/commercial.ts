@@ -13,6 +13,7 @@ import type {
 } from "@prisma/client";
 import { requirePermission } from "@/lib/authz";
 import { createAuditLog } from "@/lib/server";
+import { createAutoTask, getSettingBool } from "@/lib/auto-tasks";
 import {
   buildLeadWhere,
   buildQuoteWhere,
@@ -601,7 +602,10 @@ export async function updateQuoteStatusCommercial(
 ): Promise<ActionResult> {
   try {
     const session = await requirePermission("leads.manage");
-    const existing = await prisma.quote.findUnique({ where: { id: quoteId } });
+    const existing = await prisma.quote.findUnique({
+      where: { id: quoteId },
+      include: { items: true },
+    });
     if (!existing) return { success: false, error: "Orçamento não encontrado." };
 
     const action: CommercialHistoryAction =
@@ -628,7 +632,50 @@ export async function updateQuoteStatusCommercial(
       notes: opts?.notes,
     });
 
+    if (status === "APROVADO" && existing.status !== "APROVADO") {
+      const clinicId = session.user.clinicId ?? null;
+      const autoReceivable = await getSettingBool(clinicId, "fin.auto_receivable_on_quote", true);
+      const total =
+        existing.totalAmount ??
+        existing.items.reduce((sum, i) => sum + (i.totalPrice ?? (i.unitPrice ?? 0) * i.quantity), 0);
+
+      if (autoReceivable && total > 0) {
+        const existingEntry = await prisma.financialEntry.findFirst({
+          where: { quoteId, type: "RECEBER" },
+        });
+        if (!existingEntry) {
+          const dueDate = new Date();
+          dueDate.setDate(dueDate.getDate() + 30);
+          await prisma.financialEntry.create({
+            data: {
+              clinicId,
+              type: "RECEBER",
+              source: "ORCAMENTO",
+              description: `Orçamento ${existing.quoteNumber} — ${existing.companyName}`,
+              amount: total,
+              dueDate,
+              companyId: existing.companyId,
+              quoteId,
+              status: "AGUARDANDO_FATURAMENTO",
+            },
+          });
+        }
+      }
+
+      await createAutoTask({
+        clinicId,
+        createdByUserId: session.user.id,
+        title: `Formalizar contrato — ${existing.companyName}`,
+        description: `Orçamento ${existing.quoteNumber} aprovado. Verificar contrato e condições comerciais.`,
+        priority: "ALTA",
+        dueDate: new Date(Date.now() + 3 * 86400000),
+        companyId: existing.companyId ?? undefined,
+      });
+    }
+
     revalidatePath("/dashboard/orcamentos");
+    revalidatePath("/dashboard/financeiro");
+    revalidatePath("/dashboard/tarefas");
     return { success: true };
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : "Erro ao alterar status." };

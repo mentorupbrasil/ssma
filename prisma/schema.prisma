@@ -75,6 +75,8 @@ model Clinic {
   monthlyClosings MonthlyClosing[]
   blogPosts       BlogPost[]
   settings        Setting[]
+  priceListItems  PriceListItem[]
+  productionImports ProductionImport[]
 }
 
 enum CompanyStatus {
@@ -433,7 +435,10 @@ model User {
   createdTasks   Task[]              @relation("CreatedTasks")
   createdTickets Ticket[]            @relation("TicketCreatedBy")
   assignedTickets Ticket[]           @relation("TicketAssignedTo")
+  ticketComments  TicketComment[]    @relation("TicketComments")
   createdClosings MonthlyClosing[]   @relation("ClosingCreatedBy")
+  productionImports ProductionImport[] @relation("ProductionImportCreatedBy")
+  priceListHistory  PriceListHistory[] @relation("PriceListChangedBy")
 }
 
 model Company {
@@ -474,6 +479,9 @@ model Company {
   tickets           Ticket[]
   financialEntries  FinancialEntry[]
   monthlyClosings   MonthlyClosing[]
+  priceListItems    PriceListItem[]
+  productionImportRows ProductionImportRow[]
+  closingLineItems  ClosingLineItem[]
 }
 
 model CompanyContact {
@@ -567,6 +575,7 @@ model Exam {
   appointmentExams           AppointmentExam[]
   history                    ExamHistory[]
   documents                  Document[]
+  priceListItems             PriceListItem[]
 }
 
 model ExamHistory {
@@ -770,6 +779,7 @@ model Quote {
   createdBy         User        @relation("QuoteCreatedBy", fields: [createdByUserId], references: [id])
   items             QuoteItem[]
   documents         Document[]
+  financialEntries  FinancialEntry[]
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 }
@@ -937,6 +947,7 @@ enum FinancialEntryType {
 
 enum FinancialEntryStatus {
   PENDENTE
+  AGUARDANDO_FATURAMENTO
   PARCIAL
   PAGO
   ATRASADO
@@ -946,8 +957,22 @@ enum FinancialEntryStatus {
 enum MonthlyClosingStatus {
   RASCUNHO
   EM_REVISAO
+  EM_CONFERENCIA
+  COM_DIVERGENCIA
+  AGUARDANDO_APROVACAO
   FECHADO
   FATURADO
+  PAGO
+  EM_ATRASO
+  CANCELADO
+}
+
+enum FinancialEntrySource {
+  FECHAMENTO
+  ORCAMENTO
+  AVULSO
+  CONTRATO
+  MANUAL
 }
 
 model Task {
@@ -978,14 +1003,26 @@ model Ticket {
   description       String
   status            TicketStatus   @default(ABERTO)
   priority          TicketPriority @default(MEDIA)
+  category          String?
   createdByUserId   String
   createdBy         User           @relation("TicketCreatedBy", fields: [createdByUserId], references: [id])
   assignedToUserId  String?
   assignedTo        User?          @relation("TicketAssignedTo", fields: [assignedToUserId], references: [id])
   companyId         String?
   company           Company?       @relation(fields: [companyId], references: [id])
+  comments          TicketComment[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+}
+
+model TicketComment {
+  id              String   @id @default(cuid())
+  ticketId        String
+  ticket          Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  content         String
+  createdByUserId String
+  createdBy       User     @relation("TicketComments", fields: [createdByUserId], references: [id])
+  createdAt       DateTime @default(now())
 }
 
 model MonthlyClosing {
@@ -998,11 +1035,18 @@ model MonthlyClosing {
   notes           String?
   companyId       String?
   company         Company?             @relation(fields: [companyId], references: [id])
+  importId        String?
+  productionImport ProductionImport?   @relation(fields: [importId], references: [id], onDelete: SetNull)
+  importedCount   Int                  @default(0)
+  withoutPriceCount Int                @default(0)
+  divergenceCount Int                  @default(0)
   createdByUserId String
   createdBy       User                 @relation("ClosingCreatedBy", fields: [createdByUserId], references: [id])
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
   entries         FinancialEntry[]
+  lineItems       ClosingLineItem[]
+  importRows      ProductionImportRow[]
 }
 
 model FinancialEntry {
@@ -1010,6 +1054,7 @@ model FinancialEntry {
   clinicId        String?
   clinic          Clinic?              @relation(fields: [clinicId], references: [id])
   type            FinancialEntryType
+  source          FinancialEntrySource @default(MANUAL)
   description     String
   amount          Float
   dueDate         DateTime
@@ -1020,6 +1065,11 @@ model FinancialEntry {
   company         Company?             @relation(fields: [companyId], references: [id])
   closingId       String?
   closing         MonthlyClosing?      @relation(fields: [closingId], references: [id])
+  quoteId         String?
+  quote           Quote?               @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  referenceMonth  DateTime?
+  paymentMethod   String?
+  invoiceNumber   String?
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 }
@@ -1109,4 +1159,152 @@ model ContactMessage {
   status          ContactMessageStatus  @default(NOVO)
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
+}
+
+enum PriceItemCategory {
+  EXAME
+  ASO
+  SERVICO
+  PACOTE
+  LAUDO
+  OUTRO
+}
+
+enum PriceChargeType {
+  AVULSA
+  MENSAL
+  PACOTE
+  CONTRATO
+  CONVENIO
+}
+
+enum PriceListStatus {
+  ATIVA
+  INATIVA
+  VENCIDA
+}
+
+enum ProductionImportStatus {
+  RASCUNHO
+  EM_CONFERENCIA
+  COM_DIVERGENCIA
+  CONFERIDO
+  FECHADO
+  CANCELADO
+}
+
+enum ProductionImportRowStatus {
+  PENDENTE
+  RECONHECIDO
+  SEM_EMPRESA
+  SEM_PRECO
+  DUPLICADO
+  DIVERGENCIA
+  PRONTO
+}
+
+model PriceListItem {
+  id              String            @id @default(cuid())
+  clinicId        String?
+  clinic          Clinic?           @relation(fields: [clinicId], references: [id])
+  name            String
+  code            String?
+  category        PriceItemCategory @default(EXAME)
+  examId          String?
+  exam            Exam?             @relation(fields: [examId], references: [id], onDelete: SetNull)
+  defaultPrice    Float
+  companyId       String?
+  company         Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  negotiatedPrice Float?
+  chargeType      PriceChargeType   @default(AVULSA)
+  validFrom       DateTime?
+  validUntil      DateTime?
+  status          PriceListStatus   @default(ATIVA)
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  history         PriceListHistory[]
+  importRows      ProductionImportRow[]
+
+  @@index([clinicId, companyId])
+  @@index([name])
+}
+
+model PriceListHistory {
+  id              String        @id @default(cuid())
+  priceListItemId String
+  priceListItem   PriceListItem @relation(fields: [priceListItemId], references: [id], onDelete: Cascade)
+  oldPrice        Float?
+  newPrice        Float?
+  changedByUserId String?
+  changedBy       User?         @relation("PriceListChangedBy", fields: [changedByUserId], references: [id])
+  notes           String?
+  createdAt       DateTime      @default(now())
+}
+
+model ProductionImport {
+  id               String                 @id @default(cuid())
+  clinicId         String?
+  clinic           Clinic?                @relation(fields: [clinicId], references: [id])
+  referenceMonth   DateTime
+  fileName         String?
+  status           ProductionImportStatus @default(RASCUNHO)
+  totalRows        Int                    @default(0)
+  recognizedRows   Int                    @default(0)
+  withoutCompany   Int                    @default(0)
+  withoutPrice     Int                    @default(0)
+  duplicates       Int                    @default(0)
+  divergences      Int                    @default(0)
+  importedByUserId String
+  importedBy       User                   @relation("ProductionImportCreatedBy", fields: [importedByUserId], references: [id])
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  rows             ProductionImportRow[]
+  closings         MonthlyClosing[]
+}
+
+model ProductionImportRow {
+  id                 String                    @id @default(cuid())
+  importId           String
+  import             ProductionImport          @relation(fields: [importId], references: [id], onDelete: Cascade)
+  rowNumber          Int
+  companyName        String?
+  companyCnpj        String?
+  patientName        String?
+  patientCpf         String?
+  serviceDate        DateTime?
+  examType           String?
+  complementaryExams String?
+  protocol           String?
+  importedValue      Float?
+  matchedPrice       Float?
+  status             ProductionImportRowStatus @default(PENDENTE)
+  companyId          String?
+  company            Company?                  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  priceListItemId    String?
+  priceListItem      PriceListItem?            @relation(fields: [priceListItemId], references: [id], onDelete: SetNull)
+  closingId          String?
+  closing            MonthlyClosing?           @relation(fields: [closingId], references: [id], onDelete: SetNull)
+  notes              String?
+  createdAt          DateTime                  @default(now())
+
+  @@index([importId, status])
+}
+
+model ClosingLineItem {
+  id          String          @id @default(cuid())
+  closingId   String
+  closing     MonthlyClosing  @relation(fields: [closingId], references: [id], onDelete: Cascade)
+  companyId   String?
+  company     Company?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  serviceName String
+  patientName String?
+  patientCpf  String?
+  serviceDate DateTime?
+  examType    String?
+  quantity    Int             @default(1)
+  unitPrice   Float
+  totalPrice  Float
+  notes       String?
+  createdAt   DateTime        @default(now())
 }

@@ -32,6 +32,7 @@ export type Permission =
   | "documents.manage"
   | "closings.manage"
   | "financial.manage"
+  | "pricing.manage"
   | "tasks.manage"
   | "tickets.manage"
   | "sst_assistant.manage"
@@ -54,6 +55,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "documents.manage",
     "closings.manage",
     "financial.manage",
+    "pricing.manage",
     "tasks.manage",
     "tickets.manage",
     "sst_assistant.manage",
@@ -77,6 +79,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "dashboard.view",
     "companies.manage",
     "leads.manage",
+    "pricing.manage",
     "exams.view",
     "documents.manage",
     "tasks.manage",
@@ -90,6 +93,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "documents.manage",
     "closings.manage",
     "financial.manage",
+    "pricing.manage",
     "tasks.manage",
     "tickets.manage",
   ],
@@ -155,6 +159,7 @@ export function canAccessRoute(role: UserRole, pathname: string): boolean {
     { prefix: "/dashboard/documentos", permission: "documents.manage" },
     { prefix: "/dashboard/fechamento-mensal", permission: "closings.manage" },
     { prefix: "/dashboard/financeiro", permission: "financial.manage" },
+    { prefix: "/dashboard/tabela-precos", permission: "pricing.manage" },
     { prefix: "/dashboard/orcamentos", permission: "leads.manage" },
     { prefix: "/dashboard/tarefas", permission: "tasks.manage" },
     { prefix: "/dashboard/chamados", permission: "tickets.manage" },
@@ -180,13 +185,14 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard/encaminhamentos", label: "Encaminhamentos", icon: "FileText", permission: "referrals.manage" as Permission },
   { href: "/dashboard/agenda", label: "Agenda", icon: "CalendarDays", permission: "appointments.manage" as Permission },
   { href: "/dashboard/documentos", label: "Documentos", icon: "FolderOpen", permission: "documents.manage" as Permission },
+  { href: "/dashboard/exames", label: "Exames e preparos", icon: "Stethoscope", permission: "exams.view" as Permission },
+  { href: "/dashboard/orcamentos", label: "Orçamentos", icon: "DollarSign", permission: "leads.manage" as Permission },
+  { href: "/dashboard/tabela-precos", label: "Tabela de preços", icon: "Tags", permission: "pricing.manage" as Permission },
   { href: "/dashboard/fechamento-mensal", label: "Fechamento mensal", icon: "Calculator", permission: "closings.manage" as Permission },
   { href: "/dashboard/financeiro", label: "Financeiro", icon: "Wallet", permission: "financial.manage" as Permission },
-  { href: "/dashboard/orcamentos", label: "Orçamentos", icon: "DollarSign", permission: "leads.manage" as Permission },
   { href: "/dashboard/tarefas", label: "Tarefas", icon: "CheckSquare", permission: "tasks.manage" as Permission },
   { href: "/dashboard/chamados", label: "Chamados", icon: "LifeBuoy", permission: "tickets.manage" as Permission },
   { href: "/dashboard/assistente-sst", label: "Assistente SST", icon: "Sparkles", permission: "sst_assistant.manage" as Permission },
-  { href: "/dashboard/exames", label: "Exames e preparos", icon: "Stethoscope", permission: "exams.view" as Permission },
   { href: "/dashboard/usuarios", label: "Usuários", icon: "UserCog", permission: "users.manage" as Permission },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: "Settings", permission: "settings.manage" as Permission },
   { href: "/dashboard/conteudo", label: "Conteúdo", icon: "Newspaper", permission: "settings.manage" as Permission },

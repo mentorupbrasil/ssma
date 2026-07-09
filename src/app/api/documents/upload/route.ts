@@ -36,7 +36,12 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     if (documentId) {
-      const { relativePath, size } = await saveDocumentFile(documentId, file.name, buffer);
+      const { relativePath, size } = await saveDocumentFile(
+        documentId,
+        file.name,
+        buffer,
+        file.type
+      );
       const result = await attachFileToDocument(
         documentId,
         {
@@ -70,7 +75,7 @@ export async function POST(request: NextRequest) {
     }
 
     const newId = createResult.documentId;
-    const { relativePath, size } = await saveDocumentFile(newId, file.name, buffer);
+    const { relativePath, size } = await saveDocumentFile(newId, file.name, buffer, file.type);
     await attachFileToDocument(
       newId,
       {

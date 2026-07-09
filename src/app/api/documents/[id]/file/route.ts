@@ -61,15 +61,19 @@ export async function GET(
     }),
   ]);
 
-  const buffer = await readDocumentFile(doc.fileUrl);
-  const headers = new Headers();
-  headers.set("Content-Type", doc.fileMimeType ?? "application/octet-stream");
-  headers.set(
-    "Content-Disposition",
-    action === "DOWNLOAD"
-      ? `attachment; filename="${doc.fileName ?? "documento"}"`
-      : `inline; filename="${doc.fileName ?? "documento"}"`
-  );
+  try {
+    const buffer = await readDocumentFile(doc.fileUrl);
+    const headers = new Headers();
+    headers.set("Content-Type", doc.fileMimeType ?? "application/octet-stream");
+    headers.set(
+      "Content-Disposition",
+      action === "DOWNLOAD"
+        ? `attachment; filename="${doc.fileName ?? "documento"}"`
+        : `inline; filename="${doc.fileName ?? "documento"}"`
+    );
 
-  return new NextResponse(new Uint8Array(buffer), { headers });
+    return new NextResponse(new Uint8Array(buffer), { headers });
+  } catch {
+    return NextResponse.json({ error: "Arquivo indisponível no storage." }, { status: 404 });
+  }
 }

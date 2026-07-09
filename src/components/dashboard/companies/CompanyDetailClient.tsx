@@ -18,6 +18,7 @@ import {
   Globe,
   Phone,
   Plus,
+  Tags,
 } from "lucide-react";
 import type { CompanyDetailSerialized } from "@/lib/companies";
 import {
@@ -48,6 +49,8 @@ import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { toggleCompanyPortal } from "@/actions/companies";
 import { EditCompanyDialog, CompanyContactDialog } from "./CompanyDialogs";
+import { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { toast } from "sonner";
 
 const TABS = [
@@ -57,6 +60,7 @@ const TABS = [
   { id: "agenda", label: "Agenda", icon: Calendar },
   { id: "documents", label: "Documentos", icon: FolderOpen },
   { id: "quotes", label: "Orçamentos", icon: DollarSign },
+  { id: "contract", label: "Contrato e preços", icon: Tags },
   { id: "contacts", label: "Contatos", icon: Phone },
   { id: "portal", label: "Portal", icon: Globe },
   { id: "history", label: "Histórico", icon: History },
@@ -175,9 +179,10 @@ export function CompanyDetailClient({
       {activeTab === "referrals" && (
         <ReferralsTab company={company} canManage={canManage} waUrl={waUrl} />
       )}
-      {activeTab === "agenda" && <AgendaTab company={company} />}
+      {activeTab === "agenda" && <AgendaTab company={company} canManage={canManage} />}
       {activeTab === "documents" && <DocumentsTab company={company} />}
-      {activeTab === "quotes" && <QuotesTab company={company} />}
+      {activeTab === "quotes" && <QuotesTab company={company} canCommercial={canCommercial} />}
+      {activeTab === "contract" && <ContractTab company={company} canCommercial={canCommercial} />}
       {activeTab === "contacts" && (
         <ContactsTab
           company={company}
@@ -364,15 +369,26 @@ function EmployeesTab({
 function ReferralsTab({
   company,
   canManage,
-  waUrl,
 }: {
   company: CompanyDetailSerialized;
   canManage: boolean;
-  waUrl: string | null;
+  waUrl?: string | null;
 }) {
-  return company.referrals.length === 0 ? (
-    <p className="text-sm text-slate-500">Nenhum encaminhamento registrado.</p>
-  ) : (
+  if (company.referrals.length === 0) {
+    return (
+      <EmptyState
+        compact
+        title="Nenhum encaminhamento"
+        description="Esta empresa ainda não possui encaminhamentos registrados."
+        action={
+          canManage
+            ? { label: "Novo encaminhamento", href: `/dashboard/encaminhamentos/novo?companyId=${company.id}` }
+            : undefined
+        }
+      />
+    );
+  }
+  return (
     <Table>
       <TableHeader>
         <TableRow>
@@ -413,10 +429,22 @@ function ReferralsTab({
   );
 }
 
-function AgendaTab({ company }: { company: CompanyDetailSerialized }) {
-  return company.appointments.length === 0 ? (
-    <p className="text-sm text-slate-500">Nenhum agendamento vinculado.</p>
-  ) : (
+function AgendaTab({ company, canManage }: { company: CompanyDetailSerialized; canManage: boolean }) {
+  if (company.appointments.length === 0) {
+    return (
+      <EmptyState
+        compact
+        title="Nenhum agendamento"
+        description="Não há agendamentos vinculados a esta empresa."
+        action={
+          canManage
+            ? { label: "Agendar atendimento", href: `/dashboard/agenda?companyId=${company.id}` }
+            : undefined
+        }
+      />
+    );
+  }
+  return (
     <Table>
       <TableHeader>
         <TableRow>
@@ -529,10 +557,28 @@ function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
   );
 }
 
-function QuotesTab({ company }: { company: CompanyDetailSerialized }) {
-  return company.quotes.length === 0 ? (
-    <p className="text-sm text-slate-500">Nenhum orçamento vinculado.</p>
-  ) : (
+function QuotesTab({
+  company,
+  canCommercial,
+}: {
+  company: CompanyDetailSerialized;
+  canCommercial: boolean;
+}) {
+  if (company.quotes.length === 0) {
+    return (
+      <EmptyState
+        compact
+        title="Nenhum orçamento"
+        description="Orçamentos vinculados a esta empresa aparecerão aqui."
+        action={
+          canCommercial
+            ? { label: "Novo orçamento", href: `/dashboard/orcamentos?companyId=${company.id}` }
+            : undefined
+        }
+      />
+    );
+  }
+  return (
     <Table>
       <TableHeader>
         <TableRow>
@@ -547,7 +593,11 @@ function QuotesTab({ company }: { company: CompanyDetailSerialized }) {
       <TableBody>
         {company.quotes.map((q) => (
           <TableRow key={q.id}>
-            <TableCell>{q.quoteNumber ?? q.id.slice(-6).toUpperCase()}</TableCell>
+            <TableCell>
+              <Link href={`/dashboard/orcamentos?id=${q.id}`} className="text-[#16A085] hover:underline">
+                {q.quoteNumber ?? q.id.slice(-6).toUpperCase()}
+              </Link>
+            </TableCell>
             <TableCell>{q.serviceTitle ?? "—"}</TableCell>
             <TableCell>
               {q.estimatedValue != null
@@ -569,6 +619,70 @@ function QuotesTab({ company }: { company: CompanyDetailSerialized }) {
         ))}
       </TableBody>
     </Table>
+  );
+}
+
+function ContractTab({
+  company,
+  canCommercial,
+}: {
+  company: CompanyDetailSerialized;
+  canCommercial: boolean;
+}) {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="grid gap-3 pt-6 sm:grid-cols-2">
+          <InfoRow
+            label="Tipo de contrato"
+            value={company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "Não definido"}
+          />
+          <InfoRow label="Status comercial" value={company.status} />
+          <InfoRow label="Portal empresarial" value={company.portalEnabled ? "Ativo" : "Inativo"} />
+        </CardContent>
+      </Card>
+
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-[#0F3D4A]">Preços negociados</h3>
+        {canCommercial && (
+          <Link
+            href={`/dashboard/tabela-precos?companyId=${company.id}`}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            Gerenciar na tabela de preços
+          </Link>
+        )}
+      </div>
+
+      {company.priceListItems.length === 0 ? (
+        <InlineEmptyNote>
+          Nenhum preço específico para esta empresa. Os valores padrão da clínica serão aplicados.
+        </InlineEmptyNote>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Serviço</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead>Cobrança</TableHead>
+              <TableHead>Preço</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {company.priceListItems.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="font-medium">{item.name}</TableCell>
+                <TableCell>{item.category}</TableCell>
+                <TableCell>{item.chargeType}</TableCell>
+                <TableCell>
+                  {item.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </div>
   );
 }
 

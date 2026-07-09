@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addDays, addMonths, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Plus,
@@ -170,12 +170,19 @@ export function AgendaClient({
     updateFilters({ date: today, view: activeView, status: activeStatus });
   };
 
-  const shiftDate = (days: number) => {
+  const shiftDate = (direction: number) => {
     const current = parseISO(anchorDate);
-    current.setDate(current.getDate() + days);
-    const next = format(current, "yyyy-MM-dd");
-    setAnchorDate(next);
-    updateFilters({ date: next, view: activeView, status: activeStatus });
+    let next: Date;
+    if (activeView === "month") {
+      next = addMonths(current, direction);
+    } else if (activeView === "week") {
+      next = addDays(current, direction * 7);
+    } else {
+      next = addDays(current, direction);
+    }
+    const nextStr = format(next, "yyyy-MM-dd");
+    setAnchorDate(nextStr);
+    updateFilters({ date: nextStr, view: activeView, status: activeStatus });
   };
 
   const loadDetail = useCallback(async (id: string) => {
@@ -420,7 +427,7 @@ export function AgendaClient({
 
       {(activeView === "day" || activeView === "week" || activeView === "month") && (
         <div className="mt-4 flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => shiftDate(activeView === "day" ? -1 : -7)}>
+          <Button variant="ghost" size="sm" onClick={() => shiftDate(-1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <p className="text-sm font-semibold text-[#0F3D4A]">
@@ -430,7 +437,7 @@ export function AgendaClient({
                 ? `Semana de ${format(parseISO(anchorDate), "d MMM", { locale: ptBR })}`
                 : format(parseISO(anchorDate), "MMMM yyyy", { locale: ptBR })}
           </p>
-          <Button variant="ghost" size="sm" onClick={() => shiftDate(activeView === "day" ? 1 : 7)}>
+          <Button variant="ghost" size="sm" onClick={() => shiftDate(1)}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -450,6 +457,24 @@ export function AgendaClient({
                 : undefined
             }
           />
+        ) : activeView === "week" ? (
+          <div className="space-y-6">
+            <WeekCalendarGrid
+              anchorDate={anchorDate}
+              items={initialItems}
+              onOpen={openDetail}
+            />
+            {Object.entries(groupedByDate)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([date, items]) => (
+                <div key={date}>
+                  <h3 className="mb-3 font-semibold text-[#0F3D4A]">
+                    {format(parseISO(date), "EEEE, d 'de' MMMM", { locale: ptBR })}
+                  </h3>
+                  <AppointmentCardGrid items={items} onOpen={openDetail} />
+                </div>
+              ))}
+          </div>
         ) : showDateGroups ? (
           <div className="space-y-6">
             {Object.entries(groupedByDate)
@@ -548,6 +573,58 @@ export function AgendaClient({
           />
         </>
       )}
+    </div>
+  );
+}
+
+function WeekCalendarGrid({
+  anchorDate,
+  items,
+  onOpen,
+}: {
+  anchorDate: string;
+  items: AppointmentListItem[];
+  onOpen: (id: string) => void;
+}) {
+  const start = startOfWeek(parseISO(anchorDate), { weekStartsOn: 1 });
+  const end = endOfWeek(parseISO(anchorDate), { weekStartsOn: 1 });
+  const days = eachDayOfInterval({ start, end });
+
+  return (
+    <div className="grid grid-cols-7 gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+      {days.map((day) => {
+        const key = format(day, "yyyy-MM-dd");
+        const dayItems = items.filter((i) => isSameDay(parseISO(i.scheduledAt), day));
+        const isToday = isSameDay(day, new Date());
+        return (
+          <div
+            key={key}
+            className={cn(
+              "min-h-[100px] rounded-lg border p-2",
+              isToday ? "border-[#16A085] bg-emerald-50/40" : "border-slate-100"
+            )}
+          >
+            <p className={cn("mb-2 text-xs font-semibold", isToday ? "text-[#16A085]" : "text-slate-500")}>
+              {format(day, "EEE d", { locale: ptBR })}
+            </p>
+            <div className="space-y-1">
+              {dayItems.slice(0, 4).map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onOpen(item.id)}
+                  className="block w-full truncate rounded bg-slate-50 px-1.5 py-1 text-left text-[10px] hover:bg-slate-100"
+                >
+                  {format(parseISO(item.scheduledAt), "HH:mm")} {item.employeeName ?? item.companyName}
+                </button>
+              ))}
+              {dayItems.length > 4 && (
+                <p className="text-[10px] text-slate-400">+{dayItems.length - 4} mais</p>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

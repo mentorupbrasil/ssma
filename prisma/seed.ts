@@ -405,6 +405,28 @@ async function main() {
     });
   }
 
+  const defaultPrices = [
+    { name: "ASO Admissional", category: "ASO" as const, defaultPrice: 85 },
+    { name: "ASO Periódico", category: "ASO" as const, defaultPrice: 75 },
+    { name: "ASO Demissional", category: "ASO" as const, defaultPrice: 75 },
+    { name: "Audiometria", category: "EXAME" as const, defaultPrice: 45 },
+    { name: "Acuidade Visual", category: "EXAME" as const, defaultPrice: 35 },
+    { name: "Espirometria", category: "EXAME" as const, defaultPrice: 55 },
+    { name: "PCMSO", category: "SERVICO" as const, defaultPrice: 1200 },
+    { name: "PGR", category: "SERVICO" as const, defaultPrice: 980 },
+  ];
+
+  for (const price of defaultPrices) {
+    const existing = await prisma.priceListItem.findFirst({
+      where: { clinicId: clinic.id, companyId: null, name: price.name },
+    });
+    if (!existing) {
+      await prisma.priceListItem.create({
+        data: { ...price, clinicId: clinic.id, chargeType: "AVULSA", status: "ATIVA" },
+      });
+    }
+  }
+
   await prisma.auditLog.create({
     data: {
       userId: admin.id,

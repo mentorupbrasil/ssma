@@ -23,6 +23,7 @@ import {
   Sparkles,
   CalendarDays,
   Newspaper,
+  Tags,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/types/roles";
@@ -52,6 +53,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Sparkles,
   CalendarDays,
   Newspaper,
+  Tags,
 };
 
 const NAV_SECTIONS = [
@@ -72,11 +74,17 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Gestão",
+    label: "Comercial e financeiro",
     hrefs: [
+      "/dashboard/orcamentos",
+      "/dashboard/tabela-precos",
       "/dashboard/fechamento-mensal",
       "/dashboard/financeiro",
-      "/dashboard/orcamentos",
+    ],
+  },
+  {
+    label: "Gestão interna",
+    hrefs: [
       "/dashboard/tarefas",
       "/dashboard/chamados",
       "/dashboard/assistente-sst",

@@ -25,10 +25,14 @@ export const REFERRAL_STATUS_TABS: { value: ReferralStatus | "ALL"; label: strin
 export const REFERRAL_STAT_CARDS: { status: ReferralStatus; label: string }[] = [
   { status: "NOVO", label: "Novos" },
   { status: "EM_ANALISE", label: "Em análise" },
+  { status: "AGUARDANDO_AGENDAMENTO", label: "Aguardando agendamento" },
   { status: "AGENDADO", label: "Agendados" },
   { status: "EM_ATENDIMENTO", label: "Em atendimento" },
+  { status: "AGUARDANDO_RESULTADO", label: "Aguardando resultado" },
   { status: "AGUARDANDO_DOCUMENTO", label: "Aguardando documento" },
+  { status: "ASO_DISPONIVEL", label: "ASO disponível" },
   { status: "CONCLUIDO", label: "Concluídos" },
+  { status: "CANCELADO", label: "Cancelados" },
 ];
 
 export const REFERRAL_SOURCE_LABELS: Record<ReferralSource, string> = {

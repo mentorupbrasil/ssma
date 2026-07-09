@@ -6,8 +6,13 @@ import { UsuariosClient } from "@/components/dashboard/users/UsuariosClient";
 
 export const metadata = { title: "Usuários" };
 
-export default async function UsuariosPage() {
+export default async function UsuariosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ companyId?: string; q?: string; status?: string }>;
+}) {
   await requirePagePermission("users.manage");
+  const params = await searchParams;
   const session = await auth();
   const where = session?.user ? scopedWhere({ user: session.user as never }) : {};
   const [users, companies] = await Promise.all([
@@ -26,6 +31,7 @@ export default async function UsuariosPage() {
     <UsuariosClient
       users={users}
       companies={companies.map((c) => ({ id: c.id, name: c.tradeName ?? c.legalName }))}
+      defaultCompanyId={params.companyId}
     />
   );
 }

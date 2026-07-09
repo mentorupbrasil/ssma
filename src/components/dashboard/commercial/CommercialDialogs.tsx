@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { createQuote, updateQuote } from "@/actions/commercial";
+import { listPricesForQuote } from "@/actions/pricing";
 import type { QuoteDetailSerialized } from "@/lib/commercial";
 import { SUGGESTED_QUOTE_SERVICES } from "@/lib/commercial";
 import {
@@ -88,6 +89,12 @@ export function QuoteFormDialog({
   const [internalNotes, setInternalNotes] = useState("");
   const [clientNotes, setClientNotes] = useState("");
   const [items, setItems] = useState<QuoteItemForm[]>([emptyItem()]);
+  const [priceCatalog, setPriceCatalog] = useState<{ name: string; price: number; category: string | null }[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    listPricesForQuote(companyId || null).then(setPriceCatalog).catch(() => setPriceCatalog([]));
+  }, [open, companyId]);
 
   useEffect(() => {
     if (!open) return;
@@ -143,6 +150,37 @@ export function QuoteFormDialog({
     setCnpj(c.cnpj);
     setCity(c.city ?? "");
     setState(c.state ?? "");
+  };
+
+  const applyPriceToItem = (idx: number, serviceName: string) => {
+    const match = priceCatalog.find(
+      (p) => p.name.toLowerCase() === serviceName.toLowerCase()
+    ) ?? priceCatalog.find((p) =>
+      p.name.toLowerCase().includes(serviceName.toLowerCase()) ||
+      serviceName.toLowerCase().includes(p.name.toLowerCase())
+    );
+    if (!match) return;
+    const next = [...items];
+    next[idx] = {
+      ...next[idx],
+      serviceName: match.name,
+      unitPrice: String(match.price),
+      category: match.category ?? next[idx].category,
+    };
+    setItems(next);
+  };
+
+  const addFromCatalog = (name: string, price: number, category: string | null) => {
+    setItems((prev) => [
+      ...prev.filter((i) => i.serviceName.trim()),
+      {
+        serviceName: name,
+        category: category ?? "",
+        quantity: "1",
+        unitPrice: String(price),
+        notes: "",
+      },
+    ]);
   };
 
   const buildPayload = (sendOnSave: boolean) => ({
@@ -250,9 +288,29 @@ export function QuoteFormDialog({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label>Itens do orçamento</Label>
-              <Button type="button" variant="outline" size="sm" onClick={() => setItems((p) => [...p, emptyItem()])}>
-                <Plus className="mr-1 h-4 w-4" /> Item
-              </Button>
+              <div className="flex gap-2">
+                {priceCatalog.length > 0 && (
+                  <select
+                    className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+                    defaultValue=""
+                    onChange={(e) => {
+                      const opt = priceCatalog.find((p) => p.name === e.target.value);
+                      if (opt) addFromCatalog(opt.name, opt.price, opt.category);
+                      e.target.value = "";
+                    }}
+                  >
+                    <option value="">+ Da tabela de preços</option>
+                    {priceCatalog.map((p) => (
+                      <option key={p.name} value={p.name}>
+                        {p.name} — R$ {p.price.toFixed(2)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <Button type="button" variant="outline" size="sm" onClick={() => setItems((p) => [...p, emptyItem()])}>
+                  <Plus className="mr-1 h-4 w-4" /> Item
+                </Button>
+              </div>
             </div>
             {items.map((item, idx) => (
               <div key={idx} className="rounded-xl border border-slate-200 p-3 space-y-2">
@@ -266,6 +324,7 @@ export function QuoteFormDialog({
                       next[idx] = { ...item, serviceName: e.target.value };
                       setItems(next);
                     }}
+                    onBlur={(e) => applyPriceToItem(idx, e.target.value)}
                     className="flex-1"
                   />
                   {items.length > 1 && (
@@ -280,6 +339,9 @@ export function QuoteFormDialog({
                   )}
                 </div>
                 <datalist id="quote-services">
+                  {priceCatalog.map((p) => (
+                    <option key={p.name} value={p.name} />
+                  ))}
                   {SUGGESTED_QUOTE_SERVICES.map((s) => (
                     <option key={s} value={s} />
                   ))}

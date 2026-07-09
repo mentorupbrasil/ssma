@@ -11,12 +11,18 @@ type Result = { success: true; id: string } | { success: false; error: string };
 
 export async function createFinancialEntry(input: {
   type: FinancialEntryType;
+  source?: import("@prisma/client").FinancialEntrySource;
   description: string;
   amount: number;
   dueDate: string;
   category?: string;
   companyId?: string;
   closingId?: string;
+  quoteId?: string;
+  referenceMonth?: string;
+  paymentMethod?: string;
+  invoiceNumber?: string;
+  status?: FinancialEntryStatus;
 }): Promise<Result> {
   try {
     const session = await requirePermission("financial.manage");
@@ -25,13 +31,18 @@ export async function createFinancialEntry(input: {
       data: withClinicId(
         {
           type: input.type,
+          source: input.source ?? "MANUAL",
           description: input.description.trim(),
           amount: input.amount,
           dueDate: new Date(input.dueDate),
           category: input.category?.trim() || null,
           companyId: input.companyId || null,
           closingId: input.closingId || null,
-          status: "PENDENTE",
+          quoteId: input.quoteId || null,
+          referenceMonth: input.referenceMonth ? new Date(input.referenceMonth) : null,
+          paymentMethod: input.paymentMethod?.trim() || null,
+          invoiceNumber: input.invoiceNumber?.trim() || null,
+          status: input.status ?? "PENDENTE",
         },
         clinicId
       ),

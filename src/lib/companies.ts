@@ -341,6 +341,13 @@ export type CompanyDetailSerialized = {
     status: string;
     createdAt: string;
   }[];
+  priceListItems: {
+    id: string;
+    name: string;
+    price: number;
+    chargeType: string;
+    category: string;
+  }[];
 };
 
 export function buildCompanyWhatsAppMessage(

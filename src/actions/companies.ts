@@ -141,6 +141,19 @@ export async function getCompanyDetail(
       include: { patient: { select: { fullName: true } } },
     });
 
+    const priceListItems = await prisma.priceListItem.findMany({
+      where: { companyId: id, status: "ATIVA" },
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        defaultPrice: true,
+        negotiatedPrice: true,
+        chargeType: true,
+        category: true,
+      },
+    });
+
     const serialized: CompanyDetailSerialized = {
       id: company.id,
       legalName: company.legalName,
@@ -244,6 +257,13 @@ export async function getCompanyDetail(
         subject: m.subject,
         status: m.status,
         createdAt: m.createdAt.toISOString(),
+      })),
+      priceListItems: priceListItems.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.negotiatedPrice ?? i.defaultPrice,
+        chargeType: i.chargeType,
+        category: i.category,
       })),
     };
 
