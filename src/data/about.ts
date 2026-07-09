@@ -37,11 +37,44 @@ export const ABOUT_INSTITUTIONAL_STATS = [
   { icon: ClipboardCheck, value: "Exames", label: "e preparos" },
 ] as const;
 
+export const ABOUT_DELIVERABLES = [
+  {
+    title: "Medicina do Trabalho",
+    text: "Exames clínicos ocupacionais, ASO e programas médicos para acompanhar a saúde dos colaboradores.",
+  },
+  {
+    title: "Segurança do Trabalho",
+    text: "Documentação técnica, laudos e suporte para gestão dos riscos ocupacionais.",
+  },
+  {
+    title: "Documentação ocupacional",
+    text: "ASO, PCMSO, PGR, LTCAT, PPP e eventos de SST organizados com rigor técnico.",
+  },
+  {
+    title: "Suporte ao RH e portal empresarial",
+    text: "Encaminhamento online, acompanhamento de status e centralização documental em um só lugar.",
+  },
+] as const;
+
+export const ABOUT_TRUST_CHECKLIST = [
+  "Atendimento empresarial",
+  "Documentação ocupacional organizada",
+  "Conformidade SST",
+  "Controle de informações sensíveis",
+  "Apoio ao RH",
+] as const;
+
+export const ABOUT_WHO_CHIPS = [
+  "Medicina do Trabalho",
+  "Segurança do Trabalho",
+  "Atendimento empresarial",
+] as const;
+
 export const ABOUT_WORKFLOW_STEPS = [
   {
     step: 1,
     icon: Building2,
-    title: "Entendimento da necessidade",
+    title: "Entendimento da empresa",
     text: "Mapeamos porte, riscos, prazos admissionais e demandas legais da empresa para orientar o fluxo ocupacional.",
   },
   {
@@ -59,7 +92,7 @@ export const ABOUT_WORKFLOW_STEPS = [
   {
     step: 4,
     icon: ClipboardCheck,
-    title: "Liberação documental e suporte",
+    title: "Entrega documental e suporte",
     text: "Entrega organizada de documentos e suporte contínuo ao RH na gestão da saúde ocupacional.",
   },
 ] as const;

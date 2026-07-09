@@ -1,38 +1,40 @@
+"use client";
+
+import { useRef } from "react";
+
+import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_VALUES } from "@/data/about";
-import { cn } from "@/lib/utils";
 
 export function AboutMissionVision() {
+  const sectionRef = useRef<HTMLElement>(null);
+
   return (
     <section
       id="missao-visao"
-      className="about-values scroll-mt-[var(--header-height)]"
+      ref={sectionRef}
+      className="about-ed-mission scroll-mt-[var(--header-height)]"
     >
-      <div className="about-values-bg" aria-hidden />
-      <div className="container-page relative">
-        <div className="about-values-header">
-          <p className="about-eyebrow">Missão, visão e propósito</p>
-          <h2 className="about-section-heading about-section-heading--center about-section-heading--light">
-            Compromisso com empresas e com a saúde ocupacional
-          </h2>
-        </div>
+      <div className="container-page">
+        <TimelineContent animationNum={0} timelineRef={sectionRef} className="about-ed-mission-header">
+          <p className="about-ed-label">Missão, visão e propósito</p>
+        </TimelineContent>
 
-        <div className="about-values-grid">
-          {ABOUT_VALUES.map((value) => {
+        <div className="about-ed-mission-grid">
+          {ABOUT_VALUES.map((value, index) => {
             const Icon = value.icon;
             return (
-              <article
+              <TimelineContent
                 key={value.title}
-                className={cn(
-                  "about-values-card",
-                  value.variant === "featured" && "about-values-card--featured"
-                )}
+                animationNum={index + 1}
+                timelineRef={sectionRef}
+                className="about-ed-mission-card"
               >
-                <div className="about-values-card-icon">
+                <div className="about-ed-mission-icon" aria-hidden>
                   <Icon strokeWidth={1.75} />
                 </div>
-                <h3 className="about-values-card-title">{value.title}</h3>
-                <p className="about-values-card-text">{value.text}</p>
-              </article>
+                <h3>{value.title}</h3>
+                <p>{value.text}</p>
+              </TimelineContent>
             );
           })}
         </div>

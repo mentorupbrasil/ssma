@@ -1,27 +1,34 @@
-import Link from "next/link";
-import { Clock, MapPin, MessageCircle, Navigation, Phone } from "lucide-react";
+"use client";
 
-import { Button } from "@/components/ui/button";
-import { formatPhone } from "@/lib/helpers";
-import type { ClinicSiteConfig } from "@/config/clinic";
+import { useRef } from "react";
+
+import { AboutInstitutionalVisual } from "@/components/public/about/AboutInstitutionalVisual";
+import { TimelineContent } from "@/components/ui/timeline-animation";
+import { ABOUT_WHO_CHIPS } from "@/data/about";
 
 type AboutIntroSectionProps = {
-  config: ClinicSiteConfig;
   clinicName: string;
-  whatsappHref: string;
 };
 
-export function AboutIntroSection({ config, clinicName, whatsappHref }: AboutIntroSectionProps) {
+export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
+  const sectionRef = useRef<HTMLElement>(null);
+
   return (
-    <section id="quem-somos" className="about-intro scroll-mt-[var(--header-height)]">
+    <section id="quem-somos" ref={sectionRef} className="about-ed-who scroll-mt-[var(--header-height)]">
       <div className="container-page">
-        <div className="about-intro-grid">
-          <div>
-            <p className="about-eyebrow about-eyebrow--muted">Quem somos</p>
-            <h2 className="about-section-heading">
-              Uma clínica preparada para simplificar a rotina ocupacional das empresas
-            </h2>
-            <div className="about-intro-prose">
+        <div className="about-ed-who-grid">
+          <div className="about-ed-who-copy">
+            <TimelineContent animationNum={0} timelineRef={sectionRef}>
+              <p className="about-ed-label">Quem somos</p>
+            </TimelineContent>
+
+            <TimelineContent animationNum={1} timelineRef={sectionRef}>
+              <h2 className="about-ed-heading">
+                Uma clínica preparada para simplificar a rotina ocupacional das empresas
+              </h2>
+            </TimelineContent>
+
+            <TimelineContent animationNum={2} timelineRef={sectionRef} className="about-ed-prose">
               <p>
                 A {clinicName} atua em Medicina e Segurança do Trabalho, apoiando empresas de
                 pequeno, médio e grande porte na organização de exames, ASOs, programas, laudos e
@@ -32,59 +39,22 @@ export function AboutIntroSection({ config, clinicName, whatsappHref }: AboutInt
                 empresarial para encaminhamento online, acompanhamento de status e centralização
                 documental — menos retrabalho para o RH, mais previsibilidade para a empresa.
               </p>
-            </div>
+            </TimelineContent>
           </div>
 
-          <div className="about-intro-card">
-            <div className="about-intro-card-header">
-              <p className="about-intro-card-kicker">Atendimento empresarial</p>
-              <h3 className="about-intro-card-title">{clinicName}</h3>
-              <p className="about-intro-card-sub">
-                {config.city} · {config.state}
-              </p>
+          <TimelineContent animationNum={3} timelineRef={sectionRef} className="about-ed-who-aside">
+            <div className="about-ed-who-visual">
+              <AboutInstitutionalVisual />
             </div>
-            <ul className="about-intro-card-list">
-              {config.hasAddress && (
-                <li>
-                  <MapPin className="about-intro-card-icon" strokeWidth={1.75} />
-                  <span>{config.fullAddress}</span>
-                </li>
-              )}
-              <li>
-                <Clock className="about-intro-card-icon" strokeWidth={1.75} />
-                <span>{config.openingHours}</span>
-              </li>
-              {config.hasWhatsApp && (
-                <li>
-                  <Phone className="about-intro-card-icon" strokeWidth={1.75} />
-                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                    WhatsApp: {formatPhone(config.whatsapp)}
-                  </a>
-                </li>
-              )}
+            <ul className="about-ed-who-chips" aria-label="Especialidades">
+              {ABOUT_WHO_CHIPS.map((chip) => (
+                <li key={chip}>{chip}</li>
+              ))}
             </ul>
-            <div className="about-intro-card-actions">
-              {config.hasMapLink && (
-                <a
-                  href={config.googleMapsExternalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  <Button variant="brand" className="w-full rounded-xl">
-                    <Navigation className="mr-2 h-4 w-4" />
-                    Ver localização
-                  </Button>
-                </a>
-              )}
-              <Link href="/contato">
-                <Button variant="outline" className="w-full rounded-xl">
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Falar com a clínica
-                </Button>
-              </Link>
-            </div>
-          </div>
+            <p className="about-ed-who-signature">
+              Estrutura clínica, organização documental e tecnologia a serviço do RH.
+            </p>
+          </TimelineContent>
         </div>
       </div>
     </section>

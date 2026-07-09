@@ -59,6 +59,7 @@ type TimelineContentProps<T extends ElementType> = {
   animationNum?: number;
   timelineRef?: React.RefObject<HTMLElement | null>;
   customVariants?: Variants;
+  eager?: boolean;
 } & Omit<HTMLMotionProps<"div">, "children">;
 
 export function TimelineContent<T extends ElementType = "div">({
@@ -68,12 +69,17 @@ export function TimelineContent<T extends ElementType = "div">({
   animationNum = 0,
   timelineRef,
   customVariants = aboutRevealVariants,
+  eager = false,
   ...props
 }: TimelineContentProps<T>) {
   const localRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(timelineRef ?? localRef, { once: true, margin: "-10% 0px" });
+  const isInView = useInView(timelineRef ?? localRef, {
+    once: true,
+    margin: eager ? "0px" : "-10% 0px",
+  });
   const reducedMotion = usePrefersReducedMotion();
   const MotionComponent = motion.create((as ?? "div") as "div");
+  const shouldShow = eager || isInView;
 
   if (reducedMotion) {
     const Component = (as ?? "div") as ElementType;
@@ -88,7 +94,7 @@ export function TimelineContent<T extends ElementType = "div">({
     <MotionComponent
       ref={localRef}
       initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
+      animate={shouldShow ? "visible" : "hidden"}
       custom={animationNum}
       variants={customVariants}
       className={cn(className)}

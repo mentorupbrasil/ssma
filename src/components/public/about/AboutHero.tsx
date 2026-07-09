@@ -1,77 +1,63 @@
-import Link from "next/link";
-import { ArrowRight, Building2, FileCheck, Monitor, ShieldCheck } from "lucide-react";
+"use client";
 
-import { Button } from "@/components/ui/button";
-import { ABOUT_HERO_STATS } from "@/data/about";
+import { useRef } from "react";
+
+import { AboutInstitutionalVisual } from "@/components/public/about/AboutInstitutionalVisual";
+import { TimelineContent } from "@/components/ui/timeline-animation";
+import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
+import { ABOUT_FLOATING_TAGS } from "@/data/about";
 
 type AboutHeroProps = {
   clinicName: string;
-  whatsappHref: string;
 };
 
-const HIGHLIGHT_ICONS = [Building2, FileCheck, Monitor, ShieldCheck] as const;
+export function AboutHero({ clinicName }: AboutHeroProps) {
+  const sectionRef = useRef<HTMLElement>(null);
 
-export function AboutHero({ clinicName, whatsappHref }: AboutHeroProps) {
+  const leadA = `A ${clinicName} apoia empresas na organização de exames, documentos ocupacionais e rotinas de SST`;
+  const leadB = "com atendimento presencial e recursos digitais para o RH.";
+
   return (
-    <section className="about-hero scroll-mt-[var(--header-height)]">
-      <div className="about-hero-bg" aria-hidden />
-      <div className="container-page about-hero-inner">
-        <div className="about-hero-grid">
-          <div className="about-hero-copy">
-            <p className="about-hero-eyebrow">Institucional</p>
-            <h1 className="about-hero-title">
-              Saúde ocupacional com estrutura, tecnologia e confiança para empresas
-            </h1>
-            <p className="about-hero-desc">
-              A {clinicName} apoia empresas na organização de exames, documentos ocupacionais e
-              rotinas de SST com atendimento presencial e recursos digitais para o RH.
-            </p>
-
-            <div className="about-hero-actions">
-              <Link href="/contato?tipo=orcamento">
-                <Button variant="brand" size="lg" className="rounded-xl">
-                  Solicitar orçamento
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline-light" size="lg" className="rounded-xl">
-                  Falar com especialista
-                </Button>
-              </a>
-            </div>
-
-            <dl className="about-hero-stats">
-              {ABOUT_HERO_STATS.map((stat) => (
-                <div key={stat.label} className="about-hero-stat">
-                  <dt className="about-hero-stat-value">{stat.value}</dt>
-                  <dd className="about-hero-stat-label">{stat.label}</dd>
-                </div>
+    <section ref={sectionRef} className="about-ed-hero scroll-mt-[var(--header-height)]">
+      <div className="container-page">
+        <div className="about-ed-hero-stage">
+          <TimelineContent animationNum={0} timelineRef={sectionRef} eager className="about-ed-hero-meta">
+            <p className="about-ed-hero-eyebrow">Institucional</p>
+            <ul className="about-ed-hero-tags" aria-label="Áreas de atuação">
+              {ABOUT_FLOATING_TAGS.map((tag) => (
+                <li key={tag}>{tag}</li>
               ))}
-            </dl>
-          </div>
+            </ul>
+          </TimelineContent>
 
-          <aside className="about-hero-aside" aria-label="Destaques institucionais">
-            <div className="hero-aside-panel">
-              <p className="hero-aside-panel-kicker">Por que empresas confiam</p>
-              <ul className="hero-aside-panel-list">
-                {ABOUT_HERO_STATS.map((stat, index) => {
-                  const Icon = HIGHLIGHT_ICONS[index] ?? Building2;
-                  return (
-                    <li key={stat.label} className="hero-aside-panel-item">
-                      <span className="hero-aside-panel-icon" aria-hidden>
-                        <Icon strokeWidth={1.75} />
-                      </span>
-                      <span>
-                        <strong>{stat.value}</strong>
-                        <span>{stat.label}</span>
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
+          <TimelineContent
+            animationNum={1}
+            timelineRef={sectionRef}
+            eager
+            as="figure"
+            className="about-ed-hero-visual-wrap"
+          >
+            <AboutInstitutionalVisual />
+          </TimelineContent>
+        </div>
+
+        <div className="about-ed-hero-content">
+          <div className="about-ed-hero-copy">
+            <h1 className="about-ed-hero-title">
+              <VerticalCutReveal delay={0.04} staggerDuration={0.03}>
+                Saúde ocupacional com estrutura, tecnologia e confiança para empresas
+              </VerticalCutReveal>
+            </h1>
+
+            <div className="about-ed-hero-lead-grid">
+              <TimelineContent animationNum={2} timelineRef={sectionRef} eager>
+                <p>{leadA}</p>
+              </TimelineContent>
+              <TimelineContent animationNum={3} timelineRef={sectionRef} eager>
+                <p>{leadB}</p>
+              </TimelineContent>
             </div>
-          </aside>
+          </div>
         </div>
       </div>
     </section>

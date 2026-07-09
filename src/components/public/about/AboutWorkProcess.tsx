@@ -1,45 +1,52 @@
+"use client";
+
+import { useRef } from "react";
+
+import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_WORKFLOW_STEPS } from "@/data/about";
 
 export function AboutWorkProcess() {
+  const sectionRef = useRef<HTMLElement>(null);
+
   return (
     <section
       id="forma-de-trabalhar"
-      className="about-process scroll-mt-[var(--header-height)]"
+      ref={sectionRef}
+      className="about-ed-process scroll-mt-[var(--header-height)]"
     >
       <div className="container-page">
-        <div className="about-process-header">
-          <p className="about-eyebrow about-eyebrow--muted">Como trabalhamos</p>
-          <h2 className="about-section-heading about-section-heading--center">
-            Nossa forma de trabalhar com empresas
-          </h2>
-          <p className="about-section-lead">
+        <div className="about-ed-process-header">
+          <TimelineContent animationNum={0} timelineRef={sectionRef}>
+            <p className="about-ed-label">Como trabalhamos</p>
+          </TimelineContent>
+          <TimelineContent animationNum={1} timelineRef={sectionRef}>
+            <h2 className="about-ed-heading">Nossa forma de trabalhar</h2>
+          </TimelineContent>
+          <TimelineContent animationNum={2} timelineRef={sectionRef} className="about-ed-process-lead">
             Um fluxo claro do diagnóstico da necessidade até a entrega documental, com suporte ao RH
             em cada etapa.
-          </p>
+          </TimelineContent>
         </div>
 
-        <div className="about-process-track">
-          {ABOUT_WORKFLOW_STEPS.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <article key={step.step} className="about-process-step">
-                <div className="about-process-step-rail" aria-hidden>
-                  <span className="about-process-step-num">{step.step}</span>
-                  {index < ABOUT_WORKFLOW_STEPS.length - 1 && (
-                    <span className="about-process-step-line" />
-                  )}
-                </div>
-                <div className="about-process-step-body">
-                  <div className="about-process-step-icon">
-                    <Icon strokeWidth={1.75} />
-                  </div>
-                  <h3 className="about-process-step-title">{step.title}</h3>
-                  <p className="about-process-step-text">{step.text}</p>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        <ol className="about-ed-timeline">
+          {ABOUT_WORKFLOW_STEPS.map((step, index) => (
+            <TimelineContent
+              key={step.step}
+              animationNum={index + 3}
+              timelineRef={sectionRef}
+              as="li"
+              className="about-ed-timeline-step"
+            >
+              <span className="about-ed-timeline-num" aria-hidden>
+                {String(step.step).padStart(2, "0")}
+              </span>
+              <div className="about-ed-timeline-body">
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </div>
+            </TimelineContent>
+          ))}
+        </ol>
       </div>
     </section>
   );
