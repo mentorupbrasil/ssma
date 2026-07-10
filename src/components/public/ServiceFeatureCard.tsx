@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getServiceIcon } from "@/lib/service-icons";
@@ -14,21 +12,11 @@ export function ServiceFeatureCard({
   name,
   description,
   badge,
-  preparoSlug,
   highlights,
-  showDetailsLink,
   icon,
   className,
 }: ServiceFeatureCardProps) {
   const Icon = icon ?? getServiceIcon(name);
-  const preparoHref = preparoSlug
-    ? `/exames?exame=${encodeURIComponent(preparoSlug)}`
-    : null;
-  const detailsHref = showDetailsLink
-    ? `/contato?servico=${encodeURIComponent(name)}`
-    : null;
-  const discreetHref = preparoHref ?? detailsHref;
-  const discreetLabel = preparoHref ? "Ver preparo do exame" : "Ver detalhes";
 
   return (
     <article className={cn("service-feature-card group", className)}>
@@ -51,13 +39,6 @@ export function ServiceFeatureCard({
             <li key={item}>{item}</li>
           ))}
         </ul>
-      )}
-
-      {discreetHref && (
-        <Link href={discreetHref} className="service-feature-card-link">
-          {discreetLabel}
-          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-        </Link>
       )}
     </article>
   );

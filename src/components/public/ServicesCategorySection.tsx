@@ -17,7 +17,6 @@ export function ServicesCategorySection({
   whatsappHref,
 }: ServicesCategorySectionProps) {
   const isAlt = index % 2 === 1;
-  const count = category.services.length;
 
   return (
     <section
@@ -42,11 +41,7 @@ export function ServicesCategorySection({
           )}
         </header>
 
-        <div
-          className="service-features-grid"
-          data-rem-lg={count % 3}
-          data-rem-md={count % 2}
-        >
+        <div className="service-features-grid">
           {category.services.map((service) => (
             <ServiceFeatureCard key={service.name} {...service} />
           ))}

@@ -264,41 +264,17 @@
   box-shadow: 0 1px 2px rgb(14 20 43 / 0.03);
 }
 
-/* Tablet: base de 6 colunas — cards ocupam 3 (2 por linha) */
+/* Tablet: 2 colunas */
 @media (min-width: 640px) {
   .service-features-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .service-feature-card {
-    grid-column: span 3;
-  }
-
-  /* Sobra de 1 no layout de 2 colunas: último card preenche a linha */
-  .service-features-grid[data-rem-md="1"] .service-feature-card:last-child {
-    grid-column: span 6;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Desktop: cards ocupam 2 (3 por linha) */
+/* Desktop: 4 colunas */
 @media (min-width: 1024px) {
-  .service-feature-card {
-    grid-column: span 2;
-  }
-
-  /* Reset da regra de tablet quando a contagem é múltipla de 3 */
-  .service-features-grid[data-rem-md="1"] .service-feature-card:last-child {
-    grid-column: span 2;
-  }
-
-  /* Sobra de 1: os últimos 4 cards viram 2 linhas de 2 (evita card solitário) */
-  .service-features-grid[data-rem-lg="1"] .service-feature-card:nth-last-child(-n + 4) {
-    grid-column: span 3;
-  }
-
-  /* Sobra de 2: os dois últimos dividem a linha meio a meio */
-  .service-features-grid[data-rem-lg="2"] .service-feature-card:nth-last-child(-n + 2) {
-    grid-column: span 3;
+  .service-features-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -461,26 +437,6 @@
   border-radius: 999px;
   background: rgb(46 103 255 / 0.55);
   transform: translateY(-1px);
-}
-
-.service-feature-card-link {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.85rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--brand-green);
-  transition:
-    color 0.2s ease,
-    gap 0.2s ease;
-}
-
-.service-feature-card-link:hover {
-  color: rgb(4 100 70);
-  gap: 0.5rem;
 }
 
 /* Category CTA ----------------------------------------------------- */

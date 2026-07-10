@@ -82,6 +82,13 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
         highlights: ["Retorno seguro", "Laudo de aptidão"],
       },
       {
+        name: "Consulta Ocupacional",
+        badge: "Clínica",
+        description:
+          "Consulta médica ocupacional para avaliação clínica do colaborador conforme função e riscos.",
+        highlights: ["Avaliação clínica", "Orientação ocupacional"],
+      },
+      {
         name: "PCMSO",
         badge: "Programa",
         description:
@@ -262,6 +269,13 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
         description:
           "Exame de imagem complementar realizado conforme solicitação e indicação clínica.",
         highlights: ["Indicação médica", "Imagem avançada"],
+      },
+      {
+        name: "Endoscopia",
+        badge: "Imagem",
+        description:
+          "Exame endoscópico complementar realizado conforme solicitação e indicação clínica.",
+        highlights: ["Indicação médica", "Preparo orientado"],
       },
       {
         name: "Exames Laboratoriais",
