@@ -7,8 +7,6 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_STRUCTURE, ABOUT_STRUCTURE_ITEMS } from "@/data/about";
 
-const ACCENTS = ["a", "b", "c", "d"] as const;
-
 export function AboutStructure() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -36,17 +34,22 @@ export function AboutStructure() {
                 key={item.title}
                 animationNum={index + 1}
                 timelineRef={sectionRef}
-                className="about-ed-structure-card"
+                className="about-ed-structure-item"
               >
-                <AboutMediaFallback
-                  icon={Icon}
-                  image={item.image}
-                  alt={item.title}
-                  variant="structure"
-                  accent={ACCENTS[index % ACCENTS.length]}
-                  className="about-ed-structure-card-media"
-                />
-                <div className="about-ed-structure-card-body">
+                {item.image ? (
+                  <AboutMediaFallback
+                    icon={Icon}
+                    image={item.image}
+                    alt={item.title}
+                    variant="structure"
+                    className="about-ed-structure-item-photo"
+                  />
+                ) : (
+                  <span className="about-ed-structure-item-icon" aria-hidden>
+                    <Icon strokeWidth={1.75} />
+                  </span>
+                )}
+                <div className="about-ed-structure-item-body">
                   <h3>{item.title}</h3>
                   <p>{item.description}</p>
                 </div>

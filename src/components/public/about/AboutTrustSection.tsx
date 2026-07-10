@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Check } from "lucide-react";
 
+import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_TRUST, ABOUT_TRUST_CHECKLIST } from "@/data/about";
 
@@ -16,15 +17,15 @@ export function AboutTrustSection() {
       className="about-ed-trust scroll-mt-[var(--header-height)]"
     >
       <div className="container-page about-ed-page">
-        <div className="about-ed-trust-panel">
-          <div className="about-ed-trust-glow" aria-hidden />
-          <div className="about-ed-trust-copy">
-            <TimelineContent animationNum={0} timelineRef={sectionRef}>
-              <p className="about-ed-trust-eyebrow">{ABOUT_TRUST.eyebrow}</p>
-              <h2 className="about-ed-trust-title">{ABOUT_TRUST.title}</h2>
-              <p className="about-ed-trust-desc">{ABOUT_TRUST.description}</p>
-            </TimelineContent>
-          </div>
+        <div className="about-ed-trust-layout">
+          <TimelineContent animationNum={0} timelineRef={sectionRef}>
+            <SectionHeader
+              eyebrow={ABOUT_TRUST.eyebrow}
+              title={ABOUT_TRUST.title}
+              description={ABOUT_TRUST.description}
+              className="about-ed-section-header"
+            />
+          </TimelineContent>
 
           <TimelineContent animationNum={1} timelineRef={sectionRef}>
             <ul className="about-ed-trust-list" aria-label="Compromissos institucionais">

@@ -7,8 +7,6 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_TEAM, ABOUT_TEAM_MEMBERS } from "@/data/about";
 
-const ACCENTS = ["a", "b", "c", "d"] as const;
-
 export function AboutTeam() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -28,7 +26,7 @@ export function AboutTeam() {
           />
         </TimelineContent>
 
-        <div className="about-ed-team-grid">
+        <ul className="about-ed-team-list">
           {ABOUT_TEAM_MEMBERS.map((member, index) => {
             const Icon = member.icon;
             const photoAlt = member.name
@@ -40,34 +38,40 @@ export function AboutTeam() {
                 key={member.role}
                 animationNum={index + 1}
                 timelineRef={sectionRef}
-                className="about-ed-team-card"
+                as="li"
+                className="about-ed-team-item"
               >
-                <AboutMediaFallback
-                  icon={Icon}
-                  image={member.photo}
-                  alt={photoAlt}
-                  variant="team"
-                  accent={ACCENTS[index % ACCENTS.length]}
-                  className="about-ed-team-card-media"
-                />
-                <div className="about-ed-team-card-body">
+                {member.photo ? (
+                  <AboutMediaFallback
+                    icon={Icon}
+                    image={member.photo}
+                    alt={photoAlt}
+                    variant="team"
+                    className="about-ed-team-item-photo"
+                  />
+                ) : (
+                  <span className="about-ed-team-item-avatar" aria-hidden>
+                    <Icon strokeWidth={1.75} />
+                  </span>
+                )}
+                <div className="about-ed-team-item-body">
                   {member.name ? (
                     <>
-                      <p className="about-ed-team-card-role">{member.role}</p>
-                      <h3 className="about-ed-team-card-name">{member.name}</h3>
+                      <p className="about-ed-team-item-role">{member.role}</p>
+                      <h3>{member.name}</h3>
                     </>
                   ) : (
-                    <h3 className="about-ed-team-card-name">{member.role}</h3>
+                    <h3>{member.role}</h3>
                   )}
                   {member.registration ? (
-                    <p className="about-ed-team-card-registration">{member.registration}</p>
+                    <p className="about-ed-team-item-registration">{member.registration}</p>
                   ) : null}
-                  <p className="about-ed-team-card-desc">{member.description}</p>
+                  <p className="about-ed-team-item-desc">{member.description}</p>
                 </div>
               </TimelineContent>
             );
           })}
-        </div>
+        </ul>
       </div>
     </section>
   );

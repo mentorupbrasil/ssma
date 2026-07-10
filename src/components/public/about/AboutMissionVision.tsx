@@ -25,7 +25,7 @@ export function AboutMissionVision() {
           />
         </TimelineContent>
 
-        <div className="about-ed-mission-grid">
+        <div className="about-ed-mission-columns">
           {ABOUT_VALUES.map((value, index) => {
             const Icon = value.icon;
             return (
@@ -33,18 +33,13 @@ export function AboutMissionVision() {
                 key={value.title}
                 animationNum={index + 1}
                 timelineRef={sectionRef}
-                className="about-ed-mission-card"
+                className="about-ed-mission-column"
               >
-                <span className="about-ed-mission-card-num" aria-hidden>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="about-ed-mission-card-icon" aria-hidden>
+                <span className="about-ed-mission-column-icon" aria-hidden>
                   <Icon strokeWidth={1.75} />
                 </span>
-                <div className="about-ed-mission-card-body">
-                  <h3>{value.title}</h3>
-                  <p>{value.text}</p>
-                </div>
+                <h3>{value.title}</h3>
+                <p>{value.text}</p>
               </TimelineContent>
             );
           })}

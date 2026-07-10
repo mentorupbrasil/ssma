@@ -6,7 +6,7 @@ import { ArrowRight, Phone } from "lucide-react";
 import { AboutCtaLink } from "@/components/public/about/AboutCtaLink";
 import { AboutHeroPanel } from "@/components/public/about/AboutHeroPanel";
 import { TimelineContent } from "@/components/ui/timeline-animation";
-import { ABOUT_HERO } from "@/data/about";
+import { ABOUT_HERO, ABOUT_PILLARS } from "@/data/about";
 import { whatsappLink } from "@/lib/helpers";
 
 type AboutHeroProps = {
@@ -63,6 +63,18 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
             <AboutHeroPanel />
           </TimelineContent>
         </div>
+
+        <ul className="about-ed-hero-pillars" aria-label="Pilares institucionais">
+          {ABOUT_PILLARS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.label}>
+                <Icon className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+                <span>{item.label}</span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </section>
   );
