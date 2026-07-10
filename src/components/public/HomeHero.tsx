@@ -6,8 +6,6 @@ import {
   HardHat,
   FlaskConical,
   BadgeCheck,
-  Zap,
-  Lock,
   Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,17 +19,7 @@ const QUICK_CARDS = [
   { icon: HardHat, title: "SST", desc: "PGR, LTCAT, laudos e segurança do trabalho" },
 ] as const;
 
-const CHIPS = [
-  "Pequeno, médio e grande porte",
-  "Profissionais habilitados",
-  "Portal empresarial",
-] as const;
-
-const TRUST_ITEMS = [
-  { icon: Lock, label: "LGPD" },
-  { icon: Zap, label: "Encaminhamento digital" },
-  { icon: Shield, label: "Conformidade NR-7" },
-] as const;
+const TRUST_LINE = "Profissionais habilitados · Conformidade NR-7 · Encaminhamento digital";
 
 export function HomeHero() {
   const clinic = getClinicInfo();
@@ -48,30 +36,18 @@ export function HomeHero() {
           <div className="animate-fade-up home-hero-copy order-2 lg:order-1 lg:self-center lg:pr-2 xl:pr-6">
             <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
               <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" />
-              Saúde e Segurança do Trabalho · Atendimento empresarial
+              {clinic.name} · Medicina e Segurança do Trabalho
             </p>
 
             <h1 className="max-w-xl text-[1.85rem] font-bold leading-[1.12] tracking-tight text-white sm:text-4xl lg:text-[2.35rem] lg:leading-[1.12] xl:text-[2.5rem]">
-              Regularize sua empresa e evite{" "}
-              <span className="text-gradient-hero">multas na fiscalização</span>
+              Saúde ocupacional e SST com{" "}
+              <span className="text-gradient-hero">organização para o RH</span>
             </h1>
 
             <p className="mt-3 max-w-lg text-[0.95rem] leading-relaxed text-slate-300/95 sm:text-base lg:text-[1rem] lg:leading-relaxed">
-              Da admissão ao desligamento, sua empresa com PCMSO, ASO e toda a documentação
-              ocupacional organizada — acompanhada em tempo real por um portal que o RH realmente
-              usa no dia a dia.
+              Exames, PCMSO, ASO e documentação ocupacional em fluxo claro — com portal
+              empresarial para empresas de todos os portes.
             </p>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {CHIPS.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-white/12 bg-white/[0.04] px-3 py-1 text-[0.7rem] font-medium text-slate-300 sm:text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <a
@@ -94,14 +70,10 @@ export function HomeHero() {
               </Link>
             </div>
 
-            <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.08] pt-3.5">
-              {TRUST_ITEMS.map((item) => (
-                <li key={item.label} className="inline-flex items-center gap-2 text-xs text-slate-400 sm:text-sm">
-                  <item.icon className="h-3.5 w-3.5 text-[var(--brand-green)]/80" strokeWidth={1.5} />
-                  <span>{item.label}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="mt-4 flex items-center gap-2 border-t border-white/[0.08] pt-3.5 text-xs text-slate-400 sm:text-sm">
+              <Shield className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]/80" strokeWidth={1.5} aria-hidden />
+              <span>{TRUST_LINE}</span>
+            </p>
           </div>
 
           <div className="animate-fade-up-delay home-hero-visual order-1 flex justify-center lg:order-2 lg:justify-end lg:self-center">
