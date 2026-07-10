@@ -1,10 +1,11 @@
-import { CheckCircle2 } from "lucide-react";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { HOME_WHY_CHOOSE } from "@/data/home";
 
 const STATS = [
-  { value: "6", label: "documentos e programas cobertos" },
-  { value: "5", label: "etapas claras, do orçamento ao ASO" },
-  { value: "100%", label: "dos encaminhamentos com protocolo digital" },
+  { value: "6", label: "documentos e programas cobertos", variant: "number" },
+  { value: "5", label: "etapas claras, do orçamento ao ASO", variant: "number" },
+  { value: "Protocolo digital", label: "em cada encaminhamento", variant: "text" },
 ] as const;
 
 export function HomeWhyChooseSection() {
@@ -24,7 +25,14 @@ export function HomeWhyChooseSection() {
           <dl className="home-why-stats">
             {STATS.map((stat) => (
               <div key={stat.label} className="home-why-stat">
-                <dt className="home-why-stat-value">{stat.value}</dt>
+                <dt
+                  className={cn(
+                    "home-why-stat-value",
+                    stat.variant === "text" && "home-why-stat-value--text"
+                  )}
+                >
+                  {stat.value}
+                </dt>
                 <dd className="home-why-stat-label">{stat.label}</dd>
               </div>
             ))}
@@ -33,7 +41,9 @@ export function HomeWhyChooseSection() {
           <ul className="home-why-checklist">
             {HOME_WHY_CHOOSE.map((item) => (
               <li key={item.title} className="home-why-check-item">
-                <CheckCircle2 className="home-why-check-icon" strokeWidth={1.75} aria-hidden />
+                <span className="home-why-check-mark" aria-hidden>
+                  <Check strokeWidth={2.5} />
+                </span>
                 <div>
                   <p className="home-why-check-title">{item.title}</p>
                   <p className="home-why-check-desc">{item.description}</p>
