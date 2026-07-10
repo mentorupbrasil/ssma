@@ -5,6 +5,8 @@
 .home-hero-slideshow {
   position: relative;
   width: 100%;
+  max-width: 30rem;
+  margin-inline: auto;
   aspect-ratio: 3 / 2;
   border-radius: 1.25rem;
   overflow: hidden;
@@ -12,6 +14,13 @@
   box-shadow: 0 24px 60px -22px rgb(0 0 0 / 0.6);
   background: #0e142b;
   isolation: isolate;
+}
+
+@media (min-width: 1024px) {
+  .home-hero-slideshow {
+    margin-right: 0;
+    margin-left: auto;
+  }
 }
 
 .home-hero-slideshow__slide {
