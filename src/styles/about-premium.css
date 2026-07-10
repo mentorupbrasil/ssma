@@ -1336,6 +1336,7 @@
 }
 
 .about-process-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1346,11 +1347,26 @@
   border-radius: 1rem;
   border: 1px solid rgb(226 232 240 / 0.9);
   background: white;
+  overflow: hidden;
   text-align: center;
   transition:
     border-color 0.25s ease,
     box-shadow 0.25s ease,
     transform 0.25s ease;
+}
+
+.about-process-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-green) 0%, rgb(22 160 133 / 0.2) 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.about-process-step:hover .about-process-card::before {
+  opacity: 1;
 }
 
 @media (max-width: 959px) {
@@ -1556,6 +1572,7 @@
   border-radius: 1.1rem;
   border: 1px solid rgb(226 232 240 / 0.9);
   background: white;
+  overflow: hidden;
   box-shadow: 0 1px 2px rgb(15 61 74 / 0.03);
   transition:
     border-color 0.24s ease,
@@ -1563,10 +1580,24 @@
     transform 0.24s ease;
 }
 
+.about-values-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-green) 0%, rgb(22 160 133 / 0.2) 100%);
+  opacity: 0;
+  transition: opacity 0.24s ease;
+}
+
 .about-values-card:hover {
   border-color: rgb(22 160 133 / 0.28);
   box-shadow: 0 12px 30px rgb(15 61 74 / 0.07);
   transform: translateY(-2px);
+}
+
+.about-values-card:hover::before {
+  opacity: 1;
 }
 
 .about-values-card-top {
