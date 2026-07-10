@@ -1208,57 +1208,189 @@
 /* Portal ----------------------------------------------------------- */
 
 .home-portal {
-  padding-block: clamp(2.5rem, 4.5vw, 3.25rem);
-  background: linear-gradient(180deg, rgb(248 250 252) 0%, white 100%);
+  position: relative;
+  padding-block: clamp(2.25rem, 4vw, 3rem);
+  background: linear-gradient(180deg, rgb(248 250 252) 0%, white 55%, white 100%);
   overflow: hidden;
+}
+
+.home-portal-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 40% at 88% 22%, rgb(22 160 133 / 0.06), transparent 62%),
+    radial-gradient(ellipse 40% 30% at 12% 80%, rgb(15 61 74 / 0.03), transparent 55%);
+  pointer-events: none;
 }
 
 .home-portal-grid {
   display: grid;
-  gap: 2rem;
+  gap: 1.75rem;
   align-items: center;
 }
 
 @media (min-width: 1024px) {
   .home-portal-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 2.5rem;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: 2rem;
+    align-items: center;
   }
+}
+
+.home-portal .home-portal-header {
+  margin-bottom: 1.15rem;
 }
 
 .home-portal-benefits {
   display: grid;
-  gap: 0.55rem;
-  margin-top: 1.1rem;
+  gap: 0.5rem;
+  margin-top: 0;
+}
+
+@media (min-width: 640px) {
+  .home-portal-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 0.75rem;
+  }
 }
 
 .home-portal-benefit {
   display: flex;
   align-items: flex-start;
-  gap: 0.55rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(226 232 240 / 0.75);
+  background: rgb(255 255 255 / 0.85);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
   color: rgb(51 65 85);
+  box-shadow: 0 1px 2px rgb(15 61 74 / 0.03);
 }
 
-.home-portal-benefit svg {
-  margin-top: 0.15rem;
+.home-portal-benefit-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-top: 0.05rem;
+  border-radius: 999px;
+  background: rgb(236 253 245);
   color: var(--brand-green);
+}
+
+.home-portal-benefit-icon svg {
+  width: 0.8rem;
+  height: 0.8rem;
 }
 
 .home-portal-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-top: 1.35rem;
+  gap: 0.6rem;
+  margin-top: 1.15rem;
 }
 
-.home-portal-visual .portal-mockup-shell {
-  border-radius: 1.15rem;
-  box-shadow:
-    0 1px 0 rgb(255 255 255) inset,
-    0 20px 48px rgb(15 61 74 / 0.1);
+.home-portal-visual {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .home-portal-visual {
+    justify-self: end;
+    max-width: 100%;
+  }
+}
+
+.home-portal-mockup.portal-hero-wrap {
+  width: 100%;
+}
+
+.home-portal-mockup .portal-hero-glow {
+  inset: -6% -5%;
+  opacity: 0.85;
+}
+
+/* Stats row — seção portal */
+.portal-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252 / 0.5);
+}
+
+.portal-hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.6rem 0.7rem;
+  border-right: 1px solid rgb(241 245 249);
+}
+
+.portal-hero-stat:last-child {
+  border-right: none;
+}
+
+.portal-hero-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.45rem;
+  background: rgb(236 253 245);
+  color: var(--brand-green);
+}
+
+.portal-hero-stat-icon svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.portal-hero-stat-value {
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+
+.portal-hero-stat-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: rgb(100 116 139);
+}
+
+@media (max-width: 639px) {
+  .home-portal-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .home-portal-benefit {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.78rem;
+  }
+
+  .portal-hero-stat {
+    align-items: center;
+    padding: 0.5rem 0.35rem;
+    text-align: center;
+  }
+
+  .portal-hero-stat-value {
+    font-size: 0.95rem;
+  }
+
+  .portal-hero-stat-label {
+    font-size: 0.52rem;
+  }
 }
 
 /* Clinical exams --------------------------------------------------- */
