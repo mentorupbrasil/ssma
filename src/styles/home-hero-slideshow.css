@@ -1,0 +1,46 @@
+/* ================================================================== */
+/* Home hero — slideshow de imagens (crossfade suave, sem controles)   */
+/* ================================================================== */
+
+.home-hero-slideshow {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: 0 24px 60px -22px rgb(0 0 0 / 0.6);
+  background: #0e142b;
+  isolation: isolate;
+}
+
+.home-hero-slideshow__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  z-index: 0;
+  transition: opacity 1.4s ease-in-out;
+  will-change: opacity;
+}
+
+/* O slide anterior permanece visível atrás do novo,
+   que entra por cima — evita qualquer "piscada" no crossfade. */
+.home-hero-slideshow__slide.is-prev {
+  opacity: 1;
+  z-index: 1;
+}
+
+.home-hero-slideshow__slide.is-active {
+  opacity: 1;
+  z-index: 2;
+}
+
+.home-hero-slideshow__img {
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-slideshow__slide {
+    transition: none;
+  }
+}

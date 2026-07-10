@@ -10,7 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HomeHeroHighlights } from "@/components/public/home/HomeHeroHighlights";
+import { HomeHeroSlideshow } from "@/components/public/home/HomeHeroSlideshow";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 const QUICK_CARDS = [
@@ -80,7 +80,7 @@ export function HomeHero() {
 
           <div className="animate-fade-up-delay home-hero-visual order-2 flex justify-center lg:order-2 lg:justify-end lg:self-center">
             <div className="home-hero-visual-frame relative w-full">
-              <HomeHeroHighlights />
+              <HomeHeroSlideshow />
             </div>
           </div>
         </div>
