@@ -1018,15 +1018,204 @@
   color: rgb(100 116 139);
 }
 
-/* Process — 4 steps override ----------------------------------------- */
+/* Process — refined timeline ----------------------------------------- */
 
-.about-process.home-process {
+.about-process {
+  padding-block: clamp(2.5rem, 4.5vw, 3.25rem);
   background: white;
 }
 
-@media (min-width: 1024px) {
-  .about-process-timeline {
+.about-process .home-section-header {
+  margin-bottom: 1.5rem;
+}
+
+.about-process-rail {
+  position: relative;
+  padding: 1.35rem 1rem 1.15rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgb(226 232 240 / 0.85);
+  background: linear-gradient(180deg, rgb(248 250 252 / 0.9) 0%, white 100%);
+  box-shadow: 0 10px 30px rgb(15 61 74 / 0.04);
+}
+
+@media (min-width: 768px) {
+  .about-process-rail {
+    padding: 1.65rem 1.35rem 1.35rem;
+  }
+}
+
+.about-process-track {
+  display: none;
+}
+
+.about-process-steps {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 960px) {
+  .about-process-steps {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .about-process-track {
+    display: block;
+    position: absolute;
+    top: calc(1.65rem + 1.2rem);
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      rgb(22 160 133 / 0.08) 0%,
+      rgb(22 160 133 / 0.38) 50%,
+      rgb(22 160 133 / 0.08) 100%
+    );
+    z-index: 0;
+  }
+}
+
+.about-process-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 959px) {
+  .about-process-step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 0.85rem;
+    row-gap: 0.45rem;
+    align-items: start;
+    text-align: left;
+  }
+
+  .about-process-step::before {
+    content: "";
+    position: absolute;
+    left: 1.05rem;
+    top: 2.6rem;
+    bottom: -0.85rem;
+    width: 1px;
+    background: linear-gradient(180deg, rgb(22 160 133 / 0.35), rgb(22 160 133 / 0.08));
+  }
+
+  .about-process-step:last-child::before {
+    display: none;
+  }
+}
+
+.about-process-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  background: white;
+  border: 2px solid rgb(22 160 133 / 0.55);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--brand-green);
+  box-shadow:
+    0 0 0 4px rgb(248 250 252),
+    0 4px 14px rgb(22 160 133 / 0.12);
+}
+
+@media (max-width: 959px) {
+  .about-process-node {
+    grid-row: 1 / span 2;
+    align-self: start;
+    margin-top: 0.15rem;
+  }
+}
+
+.about-process-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 9.5rem;
+  padding: 1rem 0.9rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: white;
+  text-align: center;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+@media (max-width: 959px) {
+  .about-process-card {
+    grid-column: 2;
+    min-height: 0;
+    align-items: flex-start;
+    text-align: left;
+    padding: 0.95rem 1rem;
+  }
+}
+
+.about-process-step:hover .about-process-card {
+  border-color: rgb(22 160 133 / 0.28);
+  box-shadow: 0 10px 26px rgb(15 61 74 / 0.06);
+  transform: translateY(-1px);
+}
+
+.about-process-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.65rem;
+  background: rgb(236 253 245);
+  color: var(--brand-green);
+  box-shadow: inset 0 0 0 1px rgb(167 243 208 / 0.45);
+}
+
+.about-process-card-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.about-process-card-title {
+  margin: 0;
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--brand-navy);
+}
+
+.about-process-card-desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.62;
+  color: rgb(100 116 139);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-process-card {
+    transition: none;
+  }
+
+  .about-process-step:hover .about-process-card {
+    transform: none;
   }
 }
 

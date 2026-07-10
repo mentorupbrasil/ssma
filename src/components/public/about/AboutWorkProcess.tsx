@@ -13,7 +13,7 @@ const STEP_ICONS: LucideIcon[] = [MessageSquare, ClipboardList, Route, FileOutpu
 
 export function AboutWorkProcess() {
   return (
-    <section id="como-trabalhamos" className="home-process about-process scroll-mt-[var(--header-height)]">
+    <section id="como-trabalhamos" className="about-process scroll-mt-[var(--header-height)]">
       <div className="container-page">
         <SectionHeader
           eyebrow={ABOUT_WORKFLOW.eyebrow}
@@ -22,24 +22,30 @@ export function AboutWorkProcess() {
           align="center"
         />
 
-        <div className="home-process-timeline about-process-timeline">
-          {ABOUT_WORKFLOW_STEPS.map((step, index) => {
-            const Icon = STEP_ICONS[index] ?? ClipboardList;
-            return (
-              <article key={step.step} className="home-process-step">
-                <div className="home-process-step-head">
-                  <span className="home-process-step-num" aria-hidden>
-                    {step.step}
-                  </span>
-                  <span className="home-process-step-icon" aria-hidden>
-                    <Icon strokeWidth={1.75} />
-                  </span>
-                </div>
-                <h3 className="home-process-step-title">{step.title}</h3>
-                <p className="home-process-step-desc">{step.text}</p>
-              </article>
-            );
-          })}
+        <div className="about-process-rail">
+          <div className="about-process-track" aria-hidden />
+
+          <ol className="about-process-steps">
+            {ABOUT_WORKFLOW_STEPS.map((step, index) => {
+              const Icon = STEP_ICONS[index] ?? ClipboardList;
+
+              return (
+                <li key={step.step} className="about-process-step">
+                  <div className="about-process-node" aria-hidden>
+                    <span>{String(step.step).padStart(2, "0")}</span>
+                  </div>
+
+                  <article className="about-process-card">
+                    <span className="about-process-card-icon" aria-hidden>
+                      <Icon strokeWidth={1.75} />
+                    </span>
+                    <h3 className="about-process-card-title">{step.title}</h3>
+                    <p className="about-process-card-desc">{step.text}</p>
+                  </article>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </div>
     </section>
