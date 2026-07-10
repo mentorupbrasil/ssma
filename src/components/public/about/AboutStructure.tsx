@@ -1,15 +1,18 @@
-import { AboutBrandFrame } from "@/components/public/about/AboutBrandFrame";
+import { Armchair, ListChecks, ShieldCheck, type LucideIcon } from "lucide-react";
+
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { ABOUT_STRUCTURE, ABOUT_STRUCTURE_GALLERY } from "@/data/about";
+import { cn } from "@/lib/utils";
 
-const GALLERY_VARIANTS = {
-  primary: "gallery-primary",
-  "secondary-a": "gallery-a",
-  "secondary-b": "gallery-b",
-} as const;
+const STRUCTURE_ICONS: Record<string, LucideIcon> = {
+  primary: Armchair,
+  "secondary-a": ListChecks,
+  "secondary-b": ShieldCheck,
+};
 
 export function AboutStructure() {
   const [primary, ...secondary] = ABOUT_STRUCTURE_GALLERY;
+  const PrimaryIcon = STRUCTURE_ICONS[primary.variant] ?? Armchair;
 
   return (
     <section id="nossa-estrutura" className="about-structure scroll-mt-[var(--header-height)]">
@@ -20,35 +23,58 @@ export function AboutStructure() {
           description={ABOUT_STRUCTURE.description}
         />
 
-        <div className="about-gallery">
-          <div className="about-gallery-feature">
-            <div className="about-gallery-frame">
-              <AboutBrandFrame
-                image={primary.image}
-                alt={primary.alt}
-                variant={GALLERY_VARIANTS[primary.variant]}
-              />
-              <div className="about-gallery-overlay">
-                <h3>{primary.title}</h3>
-                <p>{primary.description}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="about-gallery-stack">
-            {secondary.map((frame) => (
-              <div key={frame.title} className="about-gallery-frame">
-                <AboutBrandFrame
-                  image={frame.image}
-                  alt={frame.alt}
-                  variant={GALLERY_VARIANTS[frame.variant]}
+        <div className="about-structure-grid">
+          <article className="about-structure-card about-structure-card--featured">
+            <span className="about-structure-pulse" aria-hidden>
+              <svg viewBox="0 0 320 60" fill="none" preserveAspectRatio="none">
+                <path
+                  d="M0 34H70L92 12L116 52L142 24L166 34H210L230 20L252 44L276 30H320"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-                <div className="about-gallery-overlay">
-                  <h3>{frame.title}</h3>
-                  <p>{frame.description}</p>
-                </div>
-              </div>
-            ))}
+              </svg>
+            </span>
+
+            <div className="about-structure-card-top">
+              <span className="about-structure-card-icon" aria-hidden>
+                <PrimaryIcon strokeWidth={1.75} />
+              </span>
+              <span className="about-structure-card-index" aria-hidden>
+                01
+              </span>
+            </div>
+
+            <div className="about-structure-card-body">
+              <h3 className="about-structure-card-title">{primary.title}</h3>
+              <p className="about-structure-card-desc">{primary.description}</p>
+            </div>
+          </article>
+
+          <div className="about-structure-stack">
+            {secondary.map((frame, index) => {
+              const Icon = STRUCTURE_ICONS[frame.variant] ?? ListChecks;
+              return (
+                <article
+                  key={frame.title}
+                  className={cn("about-structure-card", "about-structure-card--light")}
+                >
+                  <span className="about-structure-card-icon" aria-hidden>
+                    <Icon strokeWidth={1.75} />
+                  </span>
+                  <div className="about-structure-card-body">
+                    <div className="about-structure-card-head">
+                      <h3 className="about-structure-card-title">{frame.title}</h3>
+                      <span className="about-structure-card-index" aria-hidden>
+                        {String(index + 2).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <p className="about-structure-card-desc">{frame.description}</p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
 
