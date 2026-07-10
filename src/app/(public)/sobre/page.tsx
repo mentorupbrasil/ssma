@@ -5,7 +5,6 @@ import { AboutHighlights } from "@/components/public/about/AboutHighlights";
 import { AboutHistory } from "@/components/public/about/AboutHistory";
 import { AboutMissionVision } from "@/components/public/about/AboutMissionVision";
 import { AboutMotionRoot } from "@/components/public/about/AboutMotionRoot";
-import { AboutStructure } from "@/components/public/about/AboutStructure";
 import { AboutTeam } from "@/components/public/about/AboutTeam";
 import { AboutTrustSection } from "@/components/public/about/AboutTrustSection";
 import { AboutWorkProcess } from "@/components/public/about/AboutWorkProcess";
@@ -60,7 +59,6 @@ export default function SobrePage() {
       <AboutHighlights />
       <AboutHistory />
       <AboutDeliverables />
-      <AboutStructure />
       <AboutTeam />
       <AboutWorkProcess />
       <AboutTrustSection />

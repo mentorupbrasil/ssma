@@ -15,12 +15,12 @@ export function AboutHistory() {
       <div className="container-page about-history-container">
         <div className="about-history-grid">
           <header className="about-history-intro">
-            <p className="home-section-eyebrow">{ABOUT_HISTORY.eyebrow}</p>
+            <p className="about-history-eyebrow">{ABOUT_HISTORY.eyebrow}</p>
             <h2 className="about-history-title">{ABOUT_HISTORY.title}</h2>
-            <div className="about-history-intro-foot" aria-hidden>
-              <span className="about-history-intro-line" />
-              <span className="about-history-intro-tag">Imperatriz — MA</span>
-            </div>
+            <p className="about-history-intro-location">
+              <MapPin className="size-3.5" strokeWidth={2} aria-hidden />
+              Imperatriz — MA
+            </p>
           </header>
 
           <div className="about-history-main">

@@ -1,4 +1,5 @@
 import {
+  Check,
   FileCheck,
   HardHat,
   Monitor,
@@ -6,7 +7,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 import type { AboutDeliverableItem } from "@/data/about";
 
@@ -21,30 +21,48 @@ const SCOPE_LAYOUT: Record<
   string,
   {
     status: string;
-    tags: string[];
+    points: string[];
     colSpan: 1 | 2;
     featured?: boolean;
   }
 > = {
   "Medicina do Trabalho": {
     status: "Clínica",
-    tags: ["ASO", "Exames", "PCMSO"],
+    points: [
+      "Exames admissionais, periódicos e demissionais",
+      "ASO — Atestado de Saúde Ocupacional",
+      "PCMSO e programas médicos",
+      "Avaliações clínicas ocupacionais",
+    ],
     colSpan: 2,
     featured: true,
   },
   "Segurança do Trabalho": {
     status: "Técnico",
-    tags: ["PGR", "Laudos", "SST"],
+    points: [
+      "PGR — Gerenciamento de Riscos",
+      "LTCAT e laudos técnicos",
+      "Insalubridade e periculosidade",
+    ],
     colSpan: 1,
   },
   "Documentação ocupacional": {
     status: "Conformidade",
-    tags: ["PCMSO", "PPP", "Eventos"],
+    points: [
+      "PCMSO, PGR, LTCAT e PPP",
+      "Eventos de SST no eSocial",
+      "Conformidade e organização documental",
+    ],
     colSpan: 1,
   },
   "Portal e suporte ao RH": {
     status: "Digital",
-    tags: ["Encaminhamentos", "Status", "RH"],
+    points: [
+      "Encaminhamento digital de exames",
+      "Acompanhamento de status em tempo real",
+      "Central de documentos e histórico",
+      "Suporte próximo ao RH",
+    ],
     colSpan: 2,
   },
 };
@@ -60,7 +78,7 @@ export function AboutScopeBento({ items }: AboutScopeBentoProps) {
         const Icon = SCOPE_ICONS[item.title] ?? Stethoscope;
         const layout = SCOPE_LAYOUT[item.title] ?? {
           status: "Atuação",
-          tags: [],
+          points: [],
           colSpan: 1 as const,
         };
         const featured = layout.featured ?? false;
@@ -74,44 +92,36 @@ export function AboutScopeBento({ items }: AboutScopeBentoProps) {
               featured && "about-scope-card--featured"
             )}
           >
-            <div className="about-scope-card-pattern" aria-hidden />
-            {featured ? (
-              <GlowingEffect
-                spread={38}
-                glow
-                disabled={false}
-                proximity={72}
-                inactiveZone={0.01}
-                borderWidth={2}
-              />
-            ) : (
-              <div className="about-scope-card-glow" aria-hidden />
-            )}
-
             <div className="about-scope-card-top">
               <span className="about-scope-card-icon" aria-hidden>
                 <Icon strokeWidth={1.75} />
               </span>
               <span className="about-scope-card-status">{layout.status}</span>
+              <span className="about-scope-card-num" aria-hidden>
+                {String(index + 1).padStart(2, "0")}
+              </span>
             </div>
 
-            <div className="about-scope-card-body">
-              <div className="about-scope-card-head">
+            <div className="about-scope-card-main">
+              <div className="about-scope-card-body">
                 <h3 className="about-scope-card-title">{item.title}</h3>
-                <span className="about-scope-card-num" aria-hidden>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
+                <p className="about-scope-card-desc">{item.text}</p>
               </div>
-              <p className="about-scope-card-desc">{item.text}</p>
-            </div>
 
-            {layout.tags.length > 0 && (
-              <ul className="about-scope-card-tags" aria-label={`Áreas de ${item.title}`}>
-                {layout.tags.map((tag) => (
-                  <li key={tag}>{tag}</li>
-                ))}
-              </ul>
-            )}
+              {layout.points.length > 0 && (
+                <ul
+                  className="about-scope-card-list"
+                  aria-label={`Entregáveis de ${item.title}`}
+                >
+                  {layout.points.map((point) => (
+                    <li key={point}>
+                      <Check className="size-3.5" strokeWidth={2.5} aria-hidden />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </li>
         );
       })}

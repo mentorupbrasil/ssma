@@ -107,112 +107,56 @@ export const ABOUT_DELIVERABLES: AboutDeliverableItem[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Nossa estrutura — galeria                                           */
-/* ------------------------------------------------------------------ */
-
-export type AboutGalleryFrame = {
-  title: string;
-  description: string;
-  alt: string;
-  image: string | null;
-  variant: "primary" | "secondary-a" | "secondary-b";
-};
-
-export const ABOUT_STRUCTURE = {
-  eyebrow: "Nossa estrutura",
-  title: "Estrutura pensada para atender com conforto, qualidade e segurança",
-  description:
-    "Ambiente presencial, processos organizados e suporte digital em uma experiência pensada para empresas e colaboradores.",
-  editorial: {
-    title: "Organização presencial e digital",
-    description:
-      "Atendimento na clínica aliado a ferramentas digitais que facilitam encaminhamentos, status e consulta de documentos.",
-  },
-} as const;
-
-export const ABOUT_STRUCTURE_GALLERY: AboutGalleryFrame[] = [
-  {
-    variant: "primary",
-    title: "Conforto no atendimento",
-    description:
-      "Ambiente preparado para receber colaboradores e empresas com organização, privacidade e fluidez no atendimento clínico.",
-    alt: "Conforto no atendimento — Unimetra",
-    image: null,
-  },
-  {
-    variant: "secondary-a",
-    title: "Qualidade e organização",
-    description:
-      "Rotinas definidas para exames, documentos e encaminhamentos, com atenção à clareza em cada etapa.",
-    alt: "Qualidade e organização — Unimetra",
-    image: null,
-  },
-  {
-    variant: "secondary-b",
-    title: "Segurança e responsabilidade",
-    description:
-      "Cuidado com informações sensíveis, controle documental e postura responsável no tratamento de dados ocupacionais.",
-    alt: "Segurança e responsabilidade — Unimetra",
-    image: null,
-  },
-];
-
-/* ------------------------------------------------------------------ */
 /* Nossa equipe                                                        */
 /* ------------------------------------------------------------------ */
 
-export type AboutTeamMember = {
-  name: string | null;
-  role: string;
+export type AboutTeamGroup = {
+  area: string;
   description: string;
-  photo: string | null;
-  registration: string | null;
-  variant: "medicina" | "examinador" | "sst" | "rh";
+  variant: "medicina" | "sst" | "apoio";
+  roles: string[];
 };
 
 export const ABOUT_TEAM = {
   eyebrow: "Nossa equipe",
-  title: "Profissionais preparados para cuidar da saúde e da segurança no trabalho",
+  title: "Uma equipe multidisciplinar em saúde e segurança do trabalho",
   description:
-    "A atuação da Unimetra é apoiada por profissionais de diferentes áreas, preparados para oferecer atendimento clínico, suporte técnico e orientação às empresas.",
+    "A atuação da Unimetra reúne profissionais de diferentes especialidades, organizados por área para oferecer atendimento clínico, suporte técnico e apoio às empresas.",
 } as const;
 
-export const ABOUT_TEAM_MEMBERS: AboutTeamMember[] = [
+export const ABOUT_TEAM_GROUPS: AboutTeamGroup[] = [
   {
-    name: null,
-    role: "Médico do Trabalho",
+    area: "Saúde Ocupacional",
     description:
-      "Responsável por conduzir a medicina ocupacional, programas médicos e acompanhamento clínico alinhado às necessidades das empresas.",
-    photo: null,
-    registration: null,
+      "Equipe clínica multidisciplinar para exames, programas e acompanhamento da saúde dos colaboradores.",
     variant: "medicina",
+    roles: [
+      "Médico do Trabalho",
+      "Médico Examinador",
+      "Enfermeira do Trabalho",
+      "Técnica de Enfermagem",
+      "Fonoaudiólogo",
+      "Psicólogo",
+      "Bioquímico",
+      "Técnico em Radiologia",
+    ],
   },
   {
-    name: null,
-    role: "Médico Examinador",
+    area: "Segurança do Trabalho",
     description:
-      "Realiza exames clínicos ocupacionais e emite ASO com atenção à conformidade legal e à comunicação clara com gestores e colaboradores.",
-    photo: null,
-    registration: null,
-    variant: "examinador",
-  },
-  {
-    name: null,
-    role: "Segurança do Trabalho",
-    description:
-      "Apoia empresas na documentação técnica, laudos e orientações de SST, contribuindo para ambientes mais seguros e organizados.",
-    photo: null,
-    registration: null,
+      "Profissionais técnicos responsáveis por laudos, programas e gestão dos riscos ocupacionais.",
     variant: "sst",
+    roles: [
+      "Engenheiro de Segurança do Trabalho",
+      "Técnico de Segurança do Trabalho",
+    ],
   },
   {
-    name: null,
-    role: "Atendimento e suporte ao RH",
+    area: "Atendimento e apoio",
     description:
-      "Acompanha encaminhamentos, prazos e demandas das empresas, facilitando a rotina de quem gerencia a saúde ocupacional.",
-    photo: null,
-    registration: null,
-    variant: "rh",
+      "Time que organiza encaminhamentos, prazos e a rotina documental das empresas.",
+    variant: "apoio",
+    roles: ["Analista técnico", "Recepcionista"],
   },
 ];
 
