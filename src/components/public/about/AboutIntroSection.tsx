@@ -45,6 +45,10 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
                   <li key={chip}>{chip}</li>
                 ))}
               </ul>
+
+              <p className="about-ed-who-note">
+                Estrutura clínica, organização documental e tecnologia a serviço do RH.
+              </p>
             </TimelineContent>
           </div>
 

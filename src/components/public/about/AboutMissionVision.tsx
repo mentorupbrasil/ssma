@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 
+import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_VALUES } from "@/data/about";
 
@@ -15,11 +16,13 @@ export function AboutMissionVision() {
       className="about-ed-mission scroll-mt-[var(--header-height)]"
     >
       <div className="container-page about-ed-page">
-        <TimelineContent animationNum={0} timelineRef={sectionRef} className="about-ed-mission-intro">
-          <p className="about-ed-label">Missão, visão e propósito</p>
-          <p className="about-ed-mission-intro-text">
-            Diretrizes que orientam o atendimento e a organização da Unimetra
-          </p>
+        <TimelineContent animationNum={0} timelineRef={sectionRef}>
+          <SectionHeader
+            eyebrow="Missão, visão e propósito"
+            title="O que nos orienta"
+            description="Diretrizes que orientam o atendimento e a organização da Unimetra."
+            className="about-ed-section-header"
+          />
         </TimelineContent>
 
         <div className="about-ed-mission-cards">

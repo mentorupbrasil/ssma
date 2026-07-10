@@ -50,6 +50,7 @@ export function AboutDeliverables() {
           <SectionHeader
             eyebrow="O que entregamos"
             title="O que a Unimetra entrega para empresas"
+            description="Quatro pilares de atuação para apoiar o RH na rotina de saúde e segurança do trabalho."
             className="about-ed-section-header"
           />
         </TimelineContent>

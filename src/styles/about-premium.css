@@ -3,7 +3,7 @@
 /* ================================================================== */
 
 .about-ed-page {
-  max-width: 68rem;
+  max-width: 64rem;
 }
 
 .about-ed-section-header {
@@ -11,13 +11,21 @@
 }
 
 .about-ed-section-header .home-section-title {
-  max-width: 22ch;
-  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  max-width: 20ch;
+  font-size: clamp(1.3rem, 2vw, 1.65rem);
   line-height: 1.22;
 }
 
 .about-ed-section-header .home-section-eyebrow {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.about-ed-section-header .home-section-lead {
+  margin-top: 0.55rem;
+  max-width: 34rem;
+  font-size: 0.8125rem;
+  line-height: 1.58;
+  color: rgb(100 116 139);
 }
 
 .about-ed-label {
@@ -56,25 +64,15 @@
 /* Institutional strip (static) ---------------------------------------- */
 
 .about-ed-strip {
-  border-block: 1px solid rgb(226 232 240 / 0.9);
-  background: rgb(252 253 254);
-  padding-block: 1rem;
-}
-
-.about-ed-strip-label {
-  margin-bottom: 0.55rem;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(148 163 184);
+  border-block: 1px solid rgb(241 245 249);
+  background: white;
+  padding-block: 0.85rem;
 }
 
 .about-ed-strip-list {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem 0.65rem;
+  gap: 0.4rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -84,28 +82,24 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.8125rem;
+  padding: 0.32rem 0.62rem;
+  border-radius: 999px;
+  border: 1px solid rgb(241 245 249);
+  background: rgb(252 253 254);
+  font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1.35;
   color: rgb(71 85 105);
 }
 
 .about-ed-strip-item:not(:last-child)::after {
-  content: "·";
-  margin-left: 0.65rem;
-  font-weight: 400;
-  color: rgb(203 213 225);
+  content: none;
 }
 
 @media (max-width: 767px) {
   .about-ed-strip-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem 0.75rem;
-  }
-
-  .about-ed-strip-item:not(:last-child)::after {
-    content: none;
+    display: flex;
+    flex-wrap: wrap;
   }
 }
 
@@ -130,10 +124,20 @@
 .about-ed-hero-panel {
   position: relative;
   overflow: hidden;
-  border-radius: 1.15rem;
+  border-radius: 0.95rem;
   border: 1px solid rgb(226 232 240 / 0.9);
   background: white;
-  box-shadow: 0 10px 30px rgb(15 61 74 / 0.05);
+  box-shadow: 0 8px 24px rgb(15 61 74 / 0.04);
+}
+
+.about-ed-hero-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-green), rgb(22 160 133 / 0.35));
 }
 
 .about-ed-hero-panel-pattern {
@@ -391,6 +395,24 @@
   margin-top: 1rem;
 }
 
+.about-ed-hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.85rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(241 245 249);
+  max-width: 30rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: rgb(100 116 139);
+}
+
+.about-ed-hero-trust svg {
+  color: var(--brand-green);
+}
+
 /* Quem somos ---------------------------------------------------------- */
 
 .about-ed-who {
@@ -434,6 +456,17 @@
   font-size: 0.6875rem;
   font-weight: 600;
   color: rgb(71 85 105);
+}
+
+.about-ed-who-note {
+  margin: 0.65rem 0 0;
+  padding-left: 0.75rem;
+  max-width: 28rem;
+  border-left: 2px solid rgb(22 160 133 / 0.28);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  font-weight: 500;
+  color: rgb(100 116 139);
 }
 
 /* Quem somos — feedback ticker ---------------------------------------- */
@@ -565,13 +598,13 @@
 
 .about-ed-deliver {
   padding-block: 1.75rem 2rem;
-  background: rgb(250 251 252);
+  background: white;
 }
 
 .about-ed-deliver-features {
   display: grid;
   grid-template-columns: 1fr;
-  margin-top: 1.1rem;
+  margin-top: 0.95rem;
   overflow: hidden;
   border: 1px solid rgb(226 232 240 / 0.95);
   border-radius: 0.9rem;
@@ -652,9 +685,9 @@
 .about-ed-deliver-feature-accent {
   position: absolute;
   top: 0.15rem;
-  left: -1.5rem;
-  width: 0.2rem;
-  height: 1.35rem;
+  left: -1.2rem;
+  width: 0.18rem;
+  height: 1.2rem;
   border-radius: 0 999px 999px 0;
   background: rgb(203 213 225);
   transition:
@@ -709,89 +742,53 @@
 
 .about-ed-process {
   padding-block: 1.75rem 2rem;
-  background: white;
+  background: rgb(250 251 252);
 }
 
 .about-ed-timeline {
   display: grid;
   gap: 0.55rem;
-  margin: 1.1rem 0 0;
+  margin: 1rem 0 0;
   padding: 0;
   list-style: none;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .about-ed-timeline {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0;
-    position: relative;
-    padding-top: 1.25rem;
-  }
-
-  .about-ed-timeline::before {
-    content: "";
-    position: absolute;
-    top: 0.45rem;
-    right: 10%;
-    left: 10%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgb(22 160 133 / 0.28), transparent);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
   }
 }
 
 .about-ed-timeline-step {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  padding: 0.95rem 1rem;
-  border-radius: 0.95rem;
-  border: 1px solid rgb(226 232 240 / 0.95);
-  background: rgb(248 250 252 / 0.55);
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-@media (min-width: 1024px) {
-  .about-ed-timeline-step {
-    margin-inline: 0.25rem;
-    padding: 1.35rem 0.7rem 0.8rem;
-    border-color: transparent;
-    background: transparent;
-    text-align: center;
-  }
-
-  .about-ed-timeline-step:hover {
-    border-color: rgb(226 232 240 / 0.9);
-    background: white;
-    box-shadow: 0 8px 22px rgb(15 61 74 / 0.05);
-  }
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.9rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgb(241 245 249);
+  background: white;
 }
 
 .about-ed-timeline-head {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-}
-
-@media (min-width: 1024px) {
-  .about-ed-timeline-head {
-    justify-content: center;
-  }
+  gap: 0.35rem;
 }
 
 .about-ed-timeline-num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.55rem;
+  height: 1.55rem;
   border-radius: 999px;
-  border: 1px solid rgb(22 160 133 / 0.22);
-  background: white;
-  font-size: 0.625rem;
+  border: 1px solid rgb(22 160 133 / 0.2);
+  background: rgb(248 250 252);
+  font-size: 0.5625rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   color: var(--brand-green);
@@ -801,29 +798,29 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 0.5rem;
-  background: rgb(22 160 133 / 0.09);
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 0.45rem;
+  background: rgb(22 160 133 / 0.08);
   color: var(--brand-green);
 }
 
 .about-ed-timeline-icon svg {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.8rem;
+  height: 0.8rem;
 }
 
 .about-ed-timeline-body h3 {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1.35;
   color: var(--brand-navy);
 }
 
 .about-ed-timeline-body p {
-  margin-top: 0.3rem;
+  margin-top: 0.25rem;
   font-size: 0.75rem;
-  line-height: 1.55;
+  line-height: 1.52;
   color: rgb(100 116 139);
 }
 
@@ -835,17 +832,19 @@
 }
 
 .about-ed-trust-shell {
-  max-width: 52rem;
+  max-width: 48rem;
   margin-inline: auto;
 }
 
 .about-ed-trust-panel {
   display: grid;
-  gap: 1.15rem;
-  padding: 1.25rem 1.35rem;
-  border-radius: 0.9rem;
-  border: 1px solid rgb(226 232 240 / 0.95);
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgb(241 245 249);
+  border-left: 3px solid var(--brand-navy);
   background: white;
+  box-shadow: 0 4px 18px rgb(15 61 74 / 0.03);
 }
 
 @media (min-width: 768px) {
@@ -926,24 +925,14 @@
 /* Mission — compact cards --------------------------------------------- */
 
 .about-ed-mission {
-  padding-block: 1.75rem 2.25rem;
+  padding-block: 1.75rem 2.5rem;
   background: white;
-}
-
-.about-ed-mission-intro {
-  margin-bottom: 0.9rem;
-}
-
-.about-ed-mission-intro-text {
-  max-width: 30rem;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: rgb(100 116 139);
 }
 
 .about-ed-mission-cards {
   display: grid;
   gap: 0.55rem;
+  margin-top: 1rem;
 }
 
 @media (min-width: 768px) {
@@ -957,10 +946,16 @@
   display: flex;
   gap: 0.75rem;
   align-items: flex-start;
-  padding: 0.95rem 1rem;
-  border-radius: 0.85rem;
+  padding: 0.9rem 0.95rem;
+  border-radius: 0.8rem;
   border: 1px solid rgb(241 245 249);
   background: rgb(252 253 254);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.about-ed-mission-card:hover {
+  border-color: rgb(226 232 240);
+  box-shadow: 0 4px 14px rgb(15 61 74 / 0.03);
 }
 
 .about-ed-mission-card-icon {
@@ -1006,10 +1001,6 @@
   .group\/feature:hover .about-ed-deliver-feature-title,
   .group\/feature:focus-within .about-ed-deliver-feature-title {
     transform: none;
-  }
-
-  .about-ed-timeline-step:hover {
-    box-shadow: none;
   }
 }
 

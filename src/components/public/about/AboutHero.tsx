@@ -6,6 +6,8 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Phone } from "lucide-react";
 
 import { AboutHeroPanel } from "@/components/public/about/AboutHeroPanel";
+import { Shield } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_HERO_ROTATING_WORDS } from "@/data/about";
@@ -100,6 +102,11 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
                   </Button>
                 </Link>
               </div>
+
+              <p className="about-ed-hero-trust">
+                <Shield className="size-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+                Medicina do Trabalho · Segurança do Trabalho · Portal empresarial
+              </p>
             </TimelineContent>
           </div>
 
