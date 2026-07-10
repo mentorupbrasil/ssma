@@ -1,7 +1,7 @@
 import { AboutCTA } from "@/components/public/about/AboutCTA";
 import { AboutDeliverables } from "@/components/public/about/AboutDeliverables";
 import { AboutHero } from "@/components/public/about/AboutHero";
-import { AboutMarqueeStrip } from "@/components/public/about/AboutMarqueeStrip";
+import { AboutInstitutionalStrip } from "@/components/public/about/AboutInstitutionalStrip";
 import { AboutIntroSection } from "@/components/public/about/AboutIntroSection";
 import { AboutMissionVision } from "@/components/public/about/AboutMissionVision";
 import { AboutTrustSection } from "@/components/public/about/AboutTrustSection";
@@ -20,7 +20,7 @@ export default function SobrePage() {
   return (
     <>
       <AboutHero clinicName={clinic.name} />
-      <AboutMarqueeStrip />
+      <AboutInstitutionalStrip />
       <AboutIntroSection clinicName={clinic.name} />
       <AboutDeliverables />
       <AboutWorkProcess />

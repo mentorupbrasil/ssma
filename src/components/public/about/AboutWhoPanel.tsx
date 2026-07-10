@@ -1,8 +1,6 @@
 import { BadgeCheck, Check } from "lucide-react";
 import { ABOUT_WHO_CHECKLIST, ABOUT_WHO_CHIPS } from "@/data/about";
 
-import { AboutGridPattern } from "@/components/public/about/AboutGridPattern";
-
 type AboutWhoPanelProps = {
   clinicName: string;
 };
@@ -11,10 +9,6 @@ export function AboutWhoPanel({ clinicName }: AboutWhoPanelProps) {
   return (
     <aside className="about-ed-who-panel">
       <div className="about-ed-who-panel-card">
-        <div className="about-ed-who-panel-pattern" aria-hidden>
-          <AboutGridPattern squares={[[4, 1], [5, 3], [6, 2]]} />
-        </div>
-
         <div className="about-ed-who-panel-top">
           <span className="about-ed-who-panel-mark" aria-hidden>
             <BadgeCheck strokeWidth={1.75} />

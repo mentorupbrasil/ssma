@@ -41,6 +41,15 @@ export const ABOUT_WHO_CHECKLIST = [
   "Conformidade em SST",
 ] as const;
 
+export const ABOUT_INSTITUTIONAL_STRIP = [
+  { icon: Building2, label: "Empresas" },
+  { icon: Stethoscope, label: "Medicina do Trabalho" },
+  { icon: Shield, label: "Segurança do Trabalho" },
+  { icon: Monitor, label: "Portal empresarial" },
+  { icon: FileText, label: "Documentos ocupacionais" },
+  { icon: ClipboardCheck, label: "Exames e preparos" },
+] as const;
+
 export const ABOUT_INSTITUTIONAL_STATS = [
   { icon: Building2, value: "Empresas", label: "Atendimento corporativo" },
   { icon: Stethoscope, value: "Medicina", label: "do Trabalho" },

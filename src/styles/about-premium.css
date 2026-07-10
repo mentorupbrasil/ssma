@@ -10,6 +10,15 @@
   max-width: 24ch;
 }
 
+.about-ed-label {
+  margin-bottom: 0.65rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-green);
+}
+
 .about-ed-prose {
   display: flex;
   flex-direction: column;
@@ -31,55 +40,66 @@
 }
 
 .about-ed-grid-pattern-squares {
-  opacity: 0.35;
+  opacity: 0.2;
 }
 
-/* Marquee strip ------------------------------------------------------- */
+/* Institutional strip (static) ---------------------------------------- */
 
-.about-ed-marquee {
+.about-ed-strip {
   border-block: 1px solid rgb(226 232 240 / 0.9);
-  background: white;
-  padding-block: 0.85rem;
+  background: rgb(250 251 252);
+  padding-block: 0.9rem;
 }
 
-.about-ed-marquee-item {
+.about-ed-strip-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-ed-strip-item {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.45rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid rgb(226 232 240 / 0.95);
-  background: rgb(248 250 252 / 0.8);
-  white-space: nowrap;
+  gap: 0.4rem;
+  padding-inline: 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgb(71 85 105);
 }
 
-.about-ed-marquee-icon {
+.about-ed-strip-item:not(:last-child) {
+  border-right: 1px solid rgb(226 232 240 / 0.95);
+}
+
+@media (max-width: 639px) {
+  .about-ed-strip-list {
+    gap: 0.5rem 0;
+    justify-content: flex-start;
+  }
+
+  .about-ed-strip-item {
+    width: calc(50% - 0.25rem);
+    padding-inline: 0;
+    border-right: none;
+  }
+}
+
+.about-ed-strip-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 0.45rem;
-  background: rgb(22 160 133 / 0.1);
   color: var(--brand-green);
 }
 
-.about-ed-marquee-icon svg {
-  width: 0.8rem;
-  height: 0.8rem;
-}
-
-.about-ed-marquee-value {
-  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--brand-navy);
-}
-
-.about-ed-marquee-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: rgb(100 116 139);
+.about-ed-strip-icon svg {
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 /* Institutional panels — hero & quem somos ----------------------------- */
@@ -90,36 +110,24 @@
 
 .about-ed-hero-panel {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
   overflow: hidden;
-  border-radius: 1.2rem;
-  border: 1px solid rgb(226 232 240 / 0.95);
-  background: linear-gradient(165deg, white 0%, rgb(248 250 252) 100%);
-  box-shadow:
-    0 1px 2px rgb(15 23 42 / 0.03),
-    0 18px 42px rgb(15 61 74 / 0.07);
+  border-radius: 1.15rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: white;
+  box-shadow: 0 10px 30px rgb(15 61 74 / 0.05);
 }
 
 .about-ed-hero-panel-pattern {
   position: absolute;
   inset: 0;
-  opacity: 0.45;
+  opacity: 0.22;
   pointer-events: none;
-  mask-image: linear-gradient(180deg, white 20%, transparent 85%);
-}
-
-.about-ed-hero-panel-glow {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 100% 0%, rgb(22 160 133 / 0.07), transparent 65%);
-  pointer-events: none;
+  mask-image: linear-gradient(180deg, white 15%, transparent 80%);
 }
 
 .about-ed-hero-panel-main {
   position: relative;
-  padding: 1.35rem 1.4rem 0.25rem;
+  padding: 1.4rem 1.45rem 1.35rem;
 }
 
 .about-ed-hero-panel-head {
@@ -195,68 +203,25 @@
 }
 
 .about-ed-hero-panel-foot {
-  margin-top: 0.75rem;
+  margin-top: 0.8rem;
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.5;
   color: rgb(100 116 139);
 }
 
-.about-ed-hero-panel-stats {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem;
-  padding: 0 0.65rem 0.65rem;
-}
-
-.about-ed-hero-panel-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  padding: 0.65rem 0.75rem;
-  border-radius: 0.8rem;
-  border: 1px solid rgb(226 232 240 / 0.85);
-  background: rgb(255 255 255 / 0.88);
-}
-
-.about-ed-hero-panel-stat-value {
-  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  font-size: 0.9375rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--brand-green);
-}
-
-.about-ed-hero-panel-stat-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  line-height: 1.35;
-  color: rgb(100 116 139);
+.about-ed-who-panel-card {
+  padding: 1.2rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: white;
+  box-shadow: 0 4px 16px rgb(15 61 74 / 0.03);
 }
 
 .about-ed-who-panel {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-}
-
-.about-ed-who-panel-card {
-  position: relative;
-  overflow: hidden;
-  padding: 1.25rem 1.3rem;
-  border-radius: 1.1rem;
-  border: 1px solid rgb(226 232 240 / 0.95);
-  background: rgb(248 250 252 / 0.65);
-  box-shadow: 0 8px 24px rgb(15 61 74 / 0.04);
-}
-
-.about-ed-who-panel-pattern {
-  position: absolute;
-  inset: 0;
-  opacity: 0.35;
-  pointer-events: none;
-  mask-image: radial-gradient(ellipse 80% 70% at 100% 0%, white, transparent 70%);
+  gap: 0.75rem;
 }
 
 .about-ed-who-panel-top {
@@ -270,11 +235,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.15rem;
-  height: 2.15rem;
-  border-radius: 0.65rem;
-  background: var(--brand-navy);
-  color: rgb(167 243 208);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: rgb(248 250 252);
+  color: var(--brand-navy);
 }
 
 .about-ed-who-panel-mark svg {
@@ -311,15 +277,11 @@
 }
 
 .about-ed-who-checklist {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  margin: 0.85rem 0 0;
-  padding: 0.8rem 0.85rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgb(226 232 240 / 0.8);
-  background: white;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
   list-style: none;
 }
 
@@ -328,9 +290,9 @@
   align-items: center;
   gap: 0.45rem;
   font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: rgb(51 65 85);
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgb(71 85 105);
 }
 
 .about-ed-who-checklist li svg {
@@ -349,9 +311,7 @@
 .about-ed-hero-bg {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 50% 40% at 85% 15%, rgb(22 160 133 / 0.06), transparent 65%),
-    radial-gradient(ellipse 40% 35% at 10% 80%, rgb(15 61 74 / 0.04), transparent 60%);
+  background: radial-gradient(ellipse 45% 35% at 90% 10%, rgb(22 160 133 / 0.04), transparent 65%);
   pointer-events: none;
 }
 
@@ -456,13 +416,13 @@
 }
 
 .about-ed-who-chips li {
-  padding: 0.35rem 0.7rem;
+  padding: 0.3rem 0.65rem;
   border-radius: 999px;
-  border: 1px solid rgb(167 243 208 / 0.55);
-  background: rgb(236 253 245 / 0.65);
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: rgb(248 250 252);
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--brand-navy);
+  color: rgb(71 85 105);
 }
 
 .about-ed-who-signature {
@@ -473,81 +433,54 @@
   color: rgb(100 116 139);
 }
 
-/* Deliverables — bento grid ------------------------------------------- */
+/* Deliverables -------------------------------------------------------- */
 
 .about-ed-deliver {
   padding-block: clamp(2.25rem, 4vw, 3.5rem);
   background: linear-gradient(180deg, rgb(248 250 252) 0%, white 100%);
 }
 
-.about-ed-deliver-bento {
+.about-ed-deliver-grid {
   display: grid;
-  gap: 0;
+  gap: 0.85rem;
   margin-top: 1.65rem;
-  border: 1px dashed rgb(203 213 225 / 0.85);
-  border-radius: 1.1rem;
-  overflow: hidden;
-  background: white;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
 }
 
 @media (min-width: 640px) {
-  .about-ed-deliver-bento {
+  .about-ed-deliver-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 .about-ed-deliver-card {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  min-height: 10.25rem;
-  padding: 1.25rem 1.3rem 1.3rem;
-  border-bottom: 1px dashed rgb(226 232 240 / 0.95);
+  gap: 0.5rem;
+  min-height: 9.75rem;
+  padding: 1.2rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
   background: white;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
   transition:
-    background 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-@media (min-width: 640px) {
-  .about-ed-deliver-card:nth-child(odd) {
-    border-right: 1px dashed rgb(226 232 240 / 0.95);
-  }
-
-  .about-ed-deliver-card:nth-child(n + 3) {
-    border-bottom: none;
-  }
-}
-
-.about-ed-deliver-card:last-child {
-  border-bottom: none;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .about-ed-deliver-card:hover {
-  background: rgb(248 250 252 / 0.65);
-  box-shadow: inset 0 0 0 1px rgb(22 160 133 / 0.08);
-}
-
-.about-ed-deliver-pattern {
-  position: absolute;
-  inset: 0;
-  opacity: 0.4;
-  pointer-events: none;
-  mask-image: linear-gradient(180deg, white 10%, transparent 75%);
+  border-color: rgb(22 160 133 / 0.18);
+  box-shadow: 0 6px 18px rgb(15 61 74 / 0.04);
 }
 
 .about-ed-deliver-icon {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 2rem;
   height: 2rem;
   border-radius: 0.55rem;
-  border: 1px solid rgb(22 160 133 / 0.14);
-  background: rgb(236 253 245 / 0.55);
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: rgb(248 250 252);
   color: var(--brand-green);
 }
 
@@ -557,7 +490,6 @@
 }
 
 .about-ed-deliver-card h3 {
-  position: relative;
   font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.3;
@@ -565,7 +497,6 @@
 }
 
 .about-ed-deliver-card p {
-  position: relative;
   flex: 1;
   font-size: 0.8125rem;
   line-height: 1.6;
@@ -792,94 +723,62 @@
 /* Mission ------------------------------------------------------------- */
 
 .about-ed-mission {
-  padding-block: clamp(1.75rem, 3.5vw, 2.5rem);
+  padding-block: clamp(1.5rem, 3vw, 2rem);
   background: white;
 }
 
 .about-ed-mission-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
 }
 
 .about-ed-mission-grid {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 @media (min-width: 768px) {
   .about-ed-mission-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.85rem;
+    gap: 0.75rem;
   }
 }
 
 .about-ed-mission-card {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  overflow: hidden;
-  padding: 1rem 1.05rem;
-  border-radius: 0.9rem;
-  border: 1px solid rgb(226 232 240 / 0.9);
-  background: rgb(248 250 252 / 0.35);
-}
-
-.about-ed-mission-card--featured {
-  border-color: rgb(255 255 255 / 0.1);
-  background: linear-gradient(155deg, var(--brand-navy) 0%, #124a5a 100%);
-  box-shadow: 0 10px 28px rgb(15 61 74 / 0.1);
-}
-
-.about-ed-mission-pattern {
-  position: absolute;
-  inset: 0;
-  opacity: 0.25;
-  pointer-events: none;
-  color: white;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgb(241 245 249);
+  background: white;
 }
 
 .about-ed-mission-icon {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 0.5rem;
-  background: rgb(22 160 133 / 0.09);
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.45rem;
+  background: rgb(248 250 252);
   color: var(--brand-green);
 }
 
-.about-ed-mission-card--featured .about-ed-mission-icon {
-  background: rgb(255 255 255 / 0.1);
-  color: rgb(167 243 208);
-}
-
 .about-ed-mission-icon svg {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 .about-ed-mission-card h3 {
-  position: relative;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--brand-navy);
 }
 
-.about-ed-mission-card--featured h3 {
-  color: white;
-}
-
 .about-ed-mission-card p {
-  position: relative;
-  font-size: 0.8125rem;
-  line-height: 1.58;
-  color: rgb(71 85 105);
-}
-
-.about-ed-mission-card--featured p {
-  color: rgb(203 213 225 / 0.92);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: rgb(100 116 139);
 }
 
 /* CTA ----------------------------------------------------------------- */

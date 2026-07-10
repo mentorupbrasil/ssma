@@ -1,5 +1,5 @@
 import { Building2, Check } from "lucide-react";
-import { ABOUT_HERO_PILLARS, ABOUT_HERO_STATS } from "@/data/about";
+import { ABOUT_HERO_PILLARS } from "@/data/about";
 
 import { AboutGridPattern } from "@/components/public/about/AboutGridPattern";
 
@@ -13,7 +13,6 @@ export function AboutHeroPanel({ clinicName }: AboutHeroPanelProps) {
       <div className="about-ed-hero-panel-pattern">
         <AboutGridPattern squares={[[6, 1], [7, 3], [8, 2], [9, 5]]} />
       </div>
-      <div className="about-ed-hero-panel-glow" />
 
       <div className="about-ed-hero-panel-main">
         <div className="about-ed-hero-panel-head">
@@ -54,15 +53,6 @@ export function AboutHeroPanel({ clinicName }: AboutHeroPanelProps) {
         <p className="about-ed-hero-panel-foot">
           Atendimento presencial com apoio digital para o RH
         </p>
-      </div>
-
-      <div className="about-ed-hero-panel-stats">
-        {ABOUT_HERO_STATS.map((stat) => (
-          <div key={stat.label} className="about-ed-hero-panel-stat">
-            <span className="about-ed-hero-panel-stat-value">{stat.value}</span>
-            <span className="about-ed-hero-panel-stat-label">{stat.label}</span>
-          </div>
-        ))}
       </div>
     </div>
   );
