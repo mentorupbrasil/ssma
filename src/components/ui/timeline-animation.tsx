@@ -3,6 +3,7 @@
 import {
   motion,
   useInView,
+  useReducedMotion,
   type HTMLMotionProps,
   type Variants,
 } from "framer-motion";
@@ -10,43 +11,28 @@ import { useEffect, useRef, useState, type ElementType, type ReactNode } from "r
 
 import { cn } from "@/lib/utils";
 
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-
-  return reduced;
-}
-
 export const aboutRevealVariants: Variants = {
-  hidden: { opacity: 0, y: 20, filter: "blur(8px)" },
+  hidden: { opacity: 1, y: 14 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: {
-      delay: i * 0.07,
-      duration: 0.45,
+      delay: i * 0.06,
+      duration: 0.4,
       ease: [0.22, 1, 0.36, 1],
     },
   }),
 };
 
 export const aboutScaleVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.97, filter: "blur(6px)" },
+  hidden: { opacity: 1, scale: 0.99, y: 8 },
   visible: (i: number) => ({
     opacity: 1,
     scale: 1,
-    filter: "blur(0px)",
+    y: 0,
     transition: {
-      delay: i * 0.07,
-      duration: 0.5,
+      delay: i * 0.06,
+      duration: 0.42,
       ease: [0.22, 1, 0.36, 1],
     },
   }),
@@ -73,16 +59,33 @@ export function TimelineContent<T extends ElementType = "div">({
   ...props
 }: TimelineContentProps<T>) {
   const localRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  const [forceVisible, setForceVisible] = useState(false);
   const isInView = useInView(timelineRef ?? localRef, {
     once: true,
-    margin: eager ? "0px" : "-10% 0px",
+    margin: eager ? "0px" : "-8% 0px",
+    amount: 0.12,
   });
-  const reducedMotion = usePrefersReducedMotion();
   const MotionComponent = motion.create((as ?? "div") as "div");
-  const shouldShow = eager || isInView;
+  const Component = (as ?? "div") as ElementType;
+  const shouldShow = eager || isInView || forceVisible;
 
-  if (reducedMotion) {
-    const Component = (as ?? "div") as ElementType;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (eager || isInView) {
+      setForceVisible(true);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setForceVisible(true), 2200);
+    return () => window.clearTimeout(timeoutId);
+  }, [eager, isInView]);
+
+  if (!mounted || reducedMotion) {
     return (
       <Component className={className} ref={localRef as never} {...(props as object)}>
         {children}
@@ -93,7 +96,8 @@ export function TimelineContent<T extends ElementType = "div">({
   return (
     <MotionComponent
       ref={localRef}
-      initial="hidden"
+      data-about-reveal
+      initial={eager ? "visible" : "hidden"}
       animate={shouldShow ? "visible" : "hidden"}
       custom={animationNum}
       variants={customVariants}

@@ -11,11 +11,12 @@ type FeedbackItemProps = {
   quote: string;
   topic: string;
   icon: LucideIcon;
+  hidden?: boolean;
 };
 
-function FeedbackItem({ quote, topic, icon: Icon }: FeedbackItemProps) {
+function FeedbackItem({ quote, topic, icon: Icon, hidden = false }: FeedbackItemProps) {
   return (
-    <article className="about-ed-who-feedback-item">
+    <li className="about-ed-who-feedback-item" aria-hidden={hidden || undefined}>
       <span className="about-ed-who-feedback-icon" aria-hidden>
         <Icon strokeWidth={1.75} />
       </span>
@@ -23,15 +24,17 @@ function FeedbackItem({ quote, topic, icon: Icon }: FeedbackItemProps) {
         <p className="about-ed-who-feedback-topic">{topic}</p>
         <p className="about-ed-who-feedback-quote">{quote}</p>
       </div>
-    </article>
+    </li>
   );
 }
 
 function useStaticTicker() {
   const reduceMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
+    setMounted(true);
     const media = window.matchMedia("(max-width: 767px)");
     const update = () => setIsMobile(media.matches);
 
@@ -40,7 +43,7 @@ function useStaticTicker() {
     return () => media.removeEventListener("change", update);
   }, []);
 
-  return reduceMotion || isMobile;
+  return !mounted || reduceMotion || isMobile;
 }
 
 export function AboutWhoFeedbackTicker() {
@@ -52,7 +55,9 @@ export function AboutWhoFeedbackTicker() {
     <aside className="about-ed-who-ticker" aria-label="O que o RH valoriza">
       <div className="about-ed-who-ticker-card">
         <div className="about-ed-who-ticker-head">
-          <p className="about-ed-who-ticker-eyebrow">O que o RH valoriza</p>
+          <p className="about-ed-who-ticker-eyebrow" id="about-who-ticker-label">
+            O que o RH valoriza
+          </p>
         </div>
 
         <div
@@ -61,19 +66,18 @@ export function AboutWhoFeedbackTicker() {
             showStatic && "about-ed-who-ticker-viewport--static"
           )}
         >
-          {showStatic ? (
-            <div className="about-ed-who-feedback-static">
-              {highlights.map((item) => (
-                <FeedbackItem key={item.topic} {...item} />
-              ))}
-            </div>
-          ) : (
-            <div className="about-ed-who-feedback-track" aria-hidden>
-              {loopItems.map((item, index) => (
-                <FeedbackItem key={`${item.topic}-${index}`} {...item} />
-              ))}
-            </div>
-          )}
+          <ul
+            className={showStatic ? "about-ed-who-feedback-static" : "about-ed-who-feedback-track"}
+            aria-labelledby="about-who-ticker-label"
+          >
+            {(showStatic ? highlights : loopItems).map((item, index) => (
+              <FeedbackItem
+                key={`${item.topic}-${index}`}
+                {...item}
+                hidden={!showStatic && index >= highlights.length}
+              />
+            ))}
+          </ul>
 
           {!showStatic && (
             <>

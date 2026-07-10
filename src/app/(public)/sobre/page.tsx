@@ -3,6 +3,7 @@ import { AboutHero } from "@/components/public/about/AboutHero";
 import { AboutInstitutionalStrip } from "@/components/public/about/AboutInstitutionalStrip";
 import { AboutIntroSection } from "@/components/public/about/AboutIntroSection";
 import { AboutMissionVision } from "@/components/public/about/AboutMissionVision";
+import { AboutMotionRoot } from "@/components/public/about/AboutMotionRoot";
 import { AboutTrustSection } from "@/components/public/about/AboutTrustSection";
 import { AboutWorkProcess } from "@/components/public/about/AboutWorkProcess";
 import { getClinicInfo } from "@/lib/helpers";
@@ -14,7 +15,7 @@ export default function SobrePage() {
   const clinic = getClinicInfo();
 
   return (
-    <>
+    <AboutMotionRoot>
       <AboutHero clinicName={clinic.name} />
       <AboutInstitutionalStrip />
       <AboutIntroSection clinicName={clinic.name} />
@@ -22,6 +23,6 @@ export default function SobrePage() {
       <AboutWorkProcess />
       <AboutTrustSection />
       <AboutMissionVision />
-    </>
+    </AboutMotionRoot>
   );
 }
