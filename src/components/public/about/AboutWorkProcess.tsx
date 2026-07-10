@@ -11,7 +11,7 @@ export function AboutWorkProcess() {
   return (
     <section id="como-trabalhamos" ref={sectionRef} className="about-v2-process scroll-mt-[var(--header-height)]">
       <div className="container-page about-v2-container">
-        <TimelineContent animationNum={0} timelineRef={sectionRef} className="about-v2-section-intro">
+        <TimelineContent animationNum={0} timelineRef={sectionRef} className="about-v2-section-intro about-v2-section-intro--center">
           <p className="about-v2-eyebrow about-v2-eyebrow--dark">{ABOUT_WORKFLOW.eyebrow}</p>
           <h2 className="about-v2-section-title">{ABOUT_WORKFLOW.title}</h2>
           <p className="about-v2-section-lead">{ABOUT_WORKFLOW.description}</p>
