@@ -2,9 +2,10 @@
 
 import { useRef } from "react";
 
-import { AboutWhoPanel } from "@/components/public/about/AboutWhoPanel";
+import { AboutWhoFeedbackTicker } from "@/components/public/about/AboutWhoFeedbackTicker";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
+import { ABOUT_WHO_CHIPS } from "@/data/about";
 
 type AboutIntroSectionProps = {
   clinicName: string;
@@ -38,10 +39,22 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
                 documental — menos retrabalho para o RH, mais previsibilidade para a empresa.
               </p>
             </TimelineContent>
+
+            <TimelineContent animationNum={2} timelineRef={sectionRef}>
+              <ul className="about-ed-who-chips" aria-label="Especialidades">
+                {ABOUT_WHO_CHIPS.map((chip) => (
+                  <li key={chip}>{chip}</li>
+                ))}
+              </ul>
+
+              <blockquote className="about-ed-who-signature">
+                Estrutura clínica, organização documental e tecnologia a serviço do RH.
+              </blockquote>
+            </TimelineContent>
           </div>
 
-          <TimelineContent animationNum={2} timelineRef={sectionRef}>
-            <AboutWhoPanel clinicName={clinicName} />
+          <TimelineContent animationNum={3} timelineRef={sectionRef}>
+            <AboutWhoFeedbackTicker />
           </TimelineContent>
         </div>
       </div>

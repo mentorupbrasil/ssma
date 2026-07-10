@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Building2,
   ClipboardCheck,
+  ClipboardList,
   Eye,
   FileCheck,
   FileText,
@@ -33,6 +34,14 @@ export const ABOUT_HERO_PILLARS = [
   "Segurança do Trabalho",
   "Atendimento empresarial",
   "Documentação ocupacional",
+] as const;
+
+export const ABOUT_HERO_ROTATING_WORDS = [
+  "estrutura",
+  "tecnologia",
+  "confiança",
+  "organização",
+  "conformidade",
 ] as const;
 
 export const ABOUT_WHO_CHECKLIST = [
@@ -95,6 +104,46 @@ export const ABOUT_WHO_CHIPS = [
   "Segurança do Trabalho",
   "Atendimento empresarial",
 ] as const;
+
+export type AboutWhoFeedback = {
+  quote: string;
+  topic: string;
+  icon: LucideIcon;
+};
+
+/** Destaques institucionais exibidos no ticker da seção Quem somos (não são depoimentos com nomes). */
+export const ABOUT_WHO_FEEDBACK: AboutWhoFeedback[] = [
+  {
+    quote: "Encaminhamentos online e status claros deixam o RH mais tranquilo no dia a dia.",
+    topic: "Portal empresarial",
+    icon: Monitor,
+  },
+  {
+    quote: "Exames admissionais, periódicos e demissionais com fluxo organizado e previsível.",
+    topic: "Medicina do Trabalho",
+    icon: Stethoscope,
+  },
+  {
+    quote: "PCMSO, PGR, ASO e laudos com organização que reduz surpresas na rotina.",
+    topic: "Conformidade SST",
+    icon: FileCheck,
+  },
+  {
+    quote: "Menos ligações, menos planilhas e mais controle sobre prazos ocupacionais.",
+    topic: "Gestão do RH",
+    icon: ClipboardList,
+  },
+  {
+    quote: "Atendimento objetivo para empresas de diferentes portes e segmentos.",
+    topic: "Atendimento empresarial",
+    icon: Building2,
+  },
+  {
+    quote: "Documentação ocupacional centralizada para consulta e acompanhamento.",
+    topic: "Organização documental",
+    icon: FolderOpen,
+  },
+];
 
 export const ABOUT_WORKFLOW_STEPS = [
   {
@@ -169,23 +218,28 @@ export const ABOUT_DIFFERENTIALS: AboutDifferential[] = [
   },
 ];
 
+export type MissionVisual = "purpose" | "mission" | "vision";
+
 export const ABOUT_VALUES = [
   {
     icon: Heart,
     title: "Propósito",
     text: "Ajudar empresas a proteger pessoas, reduzir riscos e manter suas obrigações ocupacionais em dia com mais clareza, segurança e confiança.",
+    visual: "purpose" as MissionVisual,
     variant: "featured" as const,
   },
   {
     icon: Target,
     title: "Missão",
     text: "Simplificar a gestão de Saúde e Segurança do Trabalho para empresas, unindo atendimento ocupacional, documentação legal e acompanhamento digital.",
+    visual: "mission" as MissionVisual,
     variant: "compact" as const,
   },
   {
     icon: Eye,
     title: "Visão",
     text: "Ser referência regional em Medicina e Segurança do Trabalho pela qualidade do atendimento, organização dos processos e uso inteligente da tecnologia.",
+    visual: "vision" as MissionVisual,
     variant: "compact" as const,
   },
 ];
