@@ -12,6 +12,7 @@ export type NewsSlide = {
   tabLabel: string;
   eyebrow: string;
   title: string;
+  titleAccent?: string;
   description: string;
   benefits: [string, string];
   action: NewsSlideAction;
@@ -24,7 +25,8 @@ export const HOME_HERO_NEWS_SLIDES: NewsSlide[] = [
     id: "toxicologico",
     tabLabel: "Exame Toxicológico",
     eyebrow: "Serviço em destaque",
-    title: "Exame Toxicológico",
+    title: "Exame",
+    titleAccent: "Toxicológico",
     description:
       "Coleta orientada e laudo para CNH, funções regulamentadas e exigências ocupacionais.",
     benefits: ["Atendimento ágil", "Resultado confiável"],

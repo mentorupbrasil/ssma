@@ -26,9 +26,10 @@ const JULHO_CAMPAIGNS = [
 function ToxicologicoVisual() {
   return (
     <div className="home-hero-news-visual home-hero-news-visual--emerald">
+      <div className="home-hero-news-visual-glow" aria-hidden />
       <div className="home-hero-news-visual-card">
         <span className="home-hero-news-visual-icon" aria-hidden>
-          <FlaskConical strokeWidth={1.75} />
+          <FlaskConical strokeWidth={1.65} />
         </span>
         <div className="home-hero-news-visual-card-copy">
           <p className="home-hero-news-visual-card-title">Coleta disponível</p>
@@ -36,7 +37,7 @@ function ToxicologicoVisual() {
         </div>
       </div>
       <p className="home-hero-news-visual-seal">
-        <BadgeCheck className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+        <BadgeCheck className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
         <span>Conforme exigências legais</span>
       </p>
     </div>
@@ -46,6 +47,7 @@ function ToxicologicoVisual() {
 function ConcursoVisual() {
   return (
     <div className="home-hero-news-visual home-hero-news-visual--amber">
+      <div className="home-hero-news-visual-glow" aria-hidden />
       <ol className="home-hero-news-visual-flow">
         {CONCURSO_STEPS.map((step, index) => (
           <li key={step.title} className="home-hero-news-visual-flow-step">
@@ -66,6 +68,7 @@ function ConcursoVisual() {
 function JulhoVisual() {
   return (
     <div className="home-hero-news-visual home-hero-news-visual--campaign">
+      <div className="home-hero-news-visual-glow" aria-hidden />
       {JULHO_CAMPAIGNS.map((campaign) => (
         <div
           key={campaign.label}

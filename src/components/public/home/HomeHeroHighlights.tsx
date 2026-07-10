@@ -10,6 +10,7 @@ import {
 } from "@/data/home-hero-news-slides";
 import { NewsSlideVisual } from "@/components/public/home/hero-news/NewsSlideVisual";
 import { cn } from "@/lib/utils";
+import "@/styles/home-hero-news.css";
 
 const AUTOPLAY_MS = 7000;
 const SWIPE_THRESHOLD_PX = 48;
@@ -27,6 +28,9 @@ const TAB_ACCENT_CLASS: Record<NewsSlideAccent, string> = {
   campaign: "home-hero-highlights-tab--campaign",
 };
 
+const getSlideDisplayTitle = (slide: NewsSlide) =>
+  slide.titleAccent ? `${slide.title} ${slide.titleAccent}` : slide.title;
+
 function NewsSlidePanel({ slide, isActive }: { slide: NewsSlide; isActive: boolean }) {
   return (
     <article
@@ -39,7 +43,16 @@ function NewsSlidePanel({ slide, isActive }: { slide: NewsSlide; isActive: boole
       <div className="home-hero-news-slide__layout">
         <div className="home-hero-news-slide__copy">
           <p className="home-hero-news-slide__eyebrow">{slide.eyebrow}</p>
-          <h2 className="home-hero-news-slide__title">{slide.title}</h2>
+          <h2 className="home-hero-news-slide__title">
+            {slide.titleAccent ? (
+              <>
+                <span className="home-hero-news-slide__title-lead">{slide.title}</span>
+                <span className="home-hero-news-slide__title-accent">{slide.titleAccent}</span>
+              </>
+            ) : (
+              slide.title
+            )}
+          </h2>
           <p className="home-hero-news-slide__desc">{slide.description}</p>
 
           <ul className="home-hero-news-slide__benefits">
@@ -70,7 +83,9 @@ export function HomeHeroHighlights() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [announcedTitle, setAnnouncedTitle] = useState(HOME_HERO_NEWS_SLIDES[0].title);
+  const [announcedTitle, setAnnouncedTitle] = useState(
+    getSlideDisplayTitle(HOME_HERO_NEWS_SLIDES[0])
+  );
   const resumeTimerRef = useRef<number | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -108,7 +123,7 @@ export function HomeHeroHighlights() {
     (index: number) => {
       pauseAutoplay();
       goToSlide(index);
-      setAnnouncedTitle(HOME_HERO_NEWS_SLIDES[index].title);
+      setAnnouncedTitle(getSlideDisplayTitle(HOME_HERO_NEWS_SLIDES[index]));
       scheduleAutoplayResume();
     },
     [goToSlide, pauseAutoplay, scheduleAutoplayResume]
