@@ -102,14 +102,30 @@
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1279px) {
+@media (min-width: 1024px) and (max-width: 1366px) {
   .home-hero-mockup,
   .home-hero-visual-frame {
-    max-width: 38.5rem;
+    max-width: 36.5rem;
+  }
+
+  .home-hero-visual {
+    padding-top: 0.55rem;
+  }
+
+  .home-hero-copy h1 {
+    font-size: 2.15rem;
+  }
+
+  .portal-hero-colab-name {
+    font-size: 0.76rem;
+  }
+
+  .portal-hero-history-card {
+    min-height: 5.75rem;
   }
 }
 
-@media (min-width: 1280px) and (max-width: 1535px) {
+@media (min-width: 1367px) and (max-width: 1535px) {
   .home-hero-mockup,
   .home-hero-visual-frame {
     max-width: 40rem;
@@ -345,27 +361,28 @@
 .portal-hero-colab-card {
   display: flex;
   align-items: flex-start;
-  gap: 0.48rem;
-  padding: 0.45rem 0.5rem;
+  gap: 0.55rem;
+  padding: 0.5rem 0.55rem;
   border-radius: 0.75rem;
   border: 1px solid rgb(241 245 249);
   background: white;
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.03);
 }
 
-.portal-hero-colab-num {
+.portal-hero-colab-avatar {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 1.65rem;
-  height: 1.65rem;
-  border-radius: 0.45rem;
-  background: rgb(15 61 74 / 0.06);
-  font-size: 0.6rem;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgb(236 253 245) 0%, rgb(209 250 229) 100%);
+  box-shadow: inset 0 0 0 1px rgb(167 243 208 / 0.45);
+  font-size: 0.58rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
-  color: var(--brand-navy);
+  letter-spacing: 0.04em;
+  color: rgb(6 78 59);
 }
 
 .portal-hero-colab-body {
@@ -375,40 +392,51 @@
 
 .portal-hero-colab-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .portal-hero-colab-name {
-  font-size: 0.78rem;
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: 0.82rem;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   color: var(--brand-navy);
 }
 
 .portal-hero-colab-exam {
-  margin-top: 0.1rem;
-  font-size: 0.68rem;
+  margin-top: 0.14rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  line-height: 1.25;
-  color: var(--brand-green);
+  line-height: 1.2;
+  color: rgb(13 148 136);
+}
+
+.portal-hero-colab-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin-top: 0.18rem;
 }
 
 .portal-hero-colab-detail {
-  margin-top: 0.08rem;
-  font-size: 0.62rem;
+  margin-top: 0;
+  font-size: 0.63rem;
   line-height: 1.35;
-  color: rgb(71 85 105);
+  color: rgb(100 116 139);
 }
 
 .portal-hero-status {
   flex-shrink: 0;
-  padding: 0.14rem 0.46rem;
+  padding: 0.16rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.56rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
 }
 
 .portal-hero-status--amber {
@@ -433,12 +461,12 @@
   display: inline-flex;
   align-items: center;
   gap: 0.32rem;
-  margin-top: 0.3rem;
-  padding: 0.24rem 0.5rem;
+  margin-top: 0;
+  padding: 0.22rem 0.48rem;
   border-radius: 0.5rem;
   border: 1px solid rgb(110 231 183 / 0.55);
   background: rgb(236 253 245);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 600;
   color: rgb(6 78 59);
   box-shadow: 0 1px 2px rgb(16 185 129 / 0.08);
@@ -490,14 +518,14 @@
 }
 
 .portal-hero-history-title {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
   line-height: 1.3;
   color: var(--brand-navy);
 }
 
 .portal-hero-history-desc {
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   line-height: 1.45;
   color: rgb(100 116 139);
 }

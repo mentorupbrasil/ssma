@@ -20,8 +20,8 @@ const HERO_SHORTCUTS = [
 const HERO_COLLABORATORS = [
   {
     id: "1",
-    num: "01",
-    name: "Colaborador 01",
+    initials: "MS",
+    name: "Maria Silva",
     exam: "ASO Admissional",
     detail: "Encaminhamento registrado",
     status: "Em análise",
@@ -30,8 +30,8 @@ const HERO_COLLABORATORS = [
   },
   {
     id: "2",
-    num: "02",
-    name: "Colaborador 02",
+    initials: "JO",
+    name: "João Oliveira",
     exam: "ASO Periódico",
     detail: "Agendamento confirmado",
     status: "Agendado",
@@ -40,8 +40,8 @@ const HERO_COLLABORATORS = [
   },
   {
     id: "3",
-    num: "03",
-    name: "Colaborador 03",
+    initials: "AC",
+    name: "Ana Costa",
     exam: "ASO Demissional",
     detail: "Exame concluído",
     status: "Concluído",
@@ -70,7 +70,7 @@ export function HomeHeroPortalMockup() {
               </span>
               <div className="portal-hero-brand-text">
                 <p className="portal-hero-brand-title">Portal Empresarial</p>
-                <p className="portal-hero-brand-sub">Área do RH · Empresa cliente</p>
+                <p className="portal-hero-brand-sub">Área do RH · Alfa Indústria Ltda.</p>
               </div>
             </div>
             <span className="portal-hero-demo-badge">Demonstração</span>
@@ -97,21 +97,25 @@ export function HomeHeroPortalMockup() {
               <ul className="portal-hero-colab-list">
                 {HERO_COLLABORATORS.map((person) => (
                   <li key={person.id} className="portal-hero-colab-card">
-                    <span className="portal-hero-colab-num">{person.num}</span>
+                    <span className="portal-hero-colab-avatar" aria-hidden>
+                      {person.initials}
+                    </span>
                     <div className="portal-hero-colab-body">
                       <div className="portal-hero-colab-top">
                         <p className="portal-hero-colab-name">{person.name}</p>
                         <span className={STATUS_CLASS[person.statusTone]}>{person.status}</span>
                       </div>
                       <p className="portal-hero-colab-exam">{person.exam}</p>
-                      <p className="portal-hero-colab-detail">{person.detail}</p>
-                      {person.pdfLabel && (
-                        <span className="portal-hero-pdf-pill">
-                          <FileText strokeWidth={1.75} />
-                          <span>{person.pdfLabel}</span>
-                          <Download strokeWidth={2} />
-                        </span>
-                      )}
+                      <div className="portal-hero-colab-meta">
+                        <p className="portal-hero-colab-detail">{person.detail}</p>
+                        {person.pdfLabel && (
+                          <span className="portal-hero-pdf-pill">
+                            <FileText strokeWidth={1.75} />
+                            <span>{person.pdfLabel}</span>
+                            <Download strokeWidth={2} />
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </li>
                 ))}
