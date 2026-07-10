@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 
-import { AboutInstitutionalVisual } from "@/components/public/about/AboutInstitutionalVisual";
+import { AboutHeroPanel } from "@/components/public/about/AboutHeroPanel";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { VerticalCutReveal } from "@/components/ui/vertical-cut-reveal";
 import { ABOUT_FLOATING_TAGS } from "@/data/about";
@@ -20,29 +20,17 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
   return (
     <section ref={sectionRef} className="about-ed-hero scroll-mt-[var(--header-height)]">
       <div className="container-page">
-        <div className="about-ed-hero-stage">
-          <TimelineContent animationNum={0} timelineRef={sectionRef} eager className="about-ed-hero-meta">
-            <p className="about-ed-hero-eyebrow">Institucional</p>
-            <ul className="about-ed-hero-tags" aria-label="Áreas de atuação">
-              {ABOUT_FLOATING_TAGS.map((tag) => (
-                <li key={tag}>{tag}</li>
-              ))}
-            </ul>
-          </TimelineContent>
-
-          <TimelineContent
-            animationNum={1}
-            timelineRef={sectionRef}
-            eager
-            as="figure"
-            className="about-ed-hero-visual-wrap"
-          >
-            <AboutInstitutionalVisual />
-          </TimelineContent>
-        </div>
-
-        <div className="about-ed-hero-content">
+        <div className="about-ed-hero-grid">
           <div className="about-ed-hero-copy">
+            <TimelineContent animationNum={0} timelineRef={sectionRef} eager className="about-ed-hero-meta">
+              <p className="about-ed-hero-eyebrow">Institucional</p>
+              <ul className="about-ed-hero-tags" aria-label="Áreas de atuação">
+                {ABOUT_FLOATING_TAGS.map((tag) => (
+                  <li key={tag}>{tag}</li>
+                ))}
+              </ul>
+            </TimelineContent>
+
             <h1 className="about-ed-hero-title">
               <VerticalCutReveal delay={0.04} staggerDuration={0.03}>
                 Saúde ocupacional com estrutura, tecnologia e confiança para empresas
@@ -50,14 +38,24 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
             </h1>
 
             <div className="about-ed-hero-lead-grid">
-              <TimelineContent animationNum={2} timelineRef={sectionRef} eager>
+              <TimelineContent animationNum={1} timelineRef={sectionRef} eager>
                 <p>{leadA}</p>
               </TimelineContent>
-              <TimelineContent animationNum={3} timelineRef={sectionRef} eager>
+              <TimelineContent animationNum={2} timelineRef={sectionRef} eager>
                 <p>{leadB}</p>
               </TimelineContent>
             </div>
           </div>
+
+          <TimelineContent
+            animationNum={3}
+            timelineRef={sectionRef}
+            eager
+            as="figure"
+            className="about-ed-hero-panel-wrap"
+          >
+            <AboutHeroPanel clinicName={clinicName} />
+          </TimelineContent>
         </div>
       </div>
     </section>

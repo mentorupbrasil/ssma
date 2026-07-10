@@ -21,17 +21,23 @@ export function AboutDeliverables() {
         </div>
 
         <div className="about-ed-deliver-grid">
-          {ABOUT_DELIVERABLES.map((item, index) => (
-            <TimelineContent
-              key={item.title}
-              animationNum={index + 2}
-              timelineRef={sectionRef}
-              className="about-ed-deliver-card"
-            >
-              <h3>{item.title}</h3>
-              <p>{item.text}</p>
-            </TimelineContent>
-          ))}
+          {ABOUT_DELIVERABLES.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <TimelineContent
+                key={item.title}
+                animationNum={index + 2}
+                timelineRef={sectionRef}
+                className="about-ed-deliver-card"
+              >
+                <div className="about-ed-deliver-icon" aria-hidden>
+                  <Icon strokeWidth={1.75} />
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </TimelineContent>
+            );
+          })}
         </div>
       </div>
     </section>

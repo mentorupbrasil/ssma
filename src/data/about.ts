@@ -28,6 +28,19 @@ export const ABOUT_HERO_STATS = [
 
 export const ABOUT_FLOATING_TAGS = ["ASO", "PCMSO", "PGR", "Portal"] as const;
 
+export const ABOUT_HERO_PILLARS = [
+  "Medicina do Trabalho",
+  "Segurança do Trabalho",
+  "Atendimento empresarial",
+  "Documentação ocupacional",
+] as const;
+
+export const ABOUT_WHO_CHECKLIST = [
+  "Estrutura clínica preparada",
+  "Portal empresarial para o RH",
+  "Conformidade em SST",
+] as const;
+
 export const ABOUT_INSTITUTIONAL_STATS = [
   { icon: Building2, value: "Empresas", label: "Atendimento corporativo" },
   { icon: Stethoscope, value: "Medicina", label: "do Trabalho" },
@@ -39,18 +52,22 @@ export const ABOUT_INSTITUTIONAL_STATS = [
 
 export const ABOUT_DELIVERABLES = [
   {
+    icon: Stethoscope,
     title: "Medicina do Trabalho",
     text: "Exames clínicos ocupacionais, ASO e programas médicos para acompanhar a saúde dos colaboradores.",
   },
   {
+    icon: Shield,
     title: "Segurança do Trabalho",
     text: "Documentação técnica, laudos e suporte para gestão dos riscos ocupacionais.",
   },
   {
+    icon: FileCheck,
     title: "Documentação ocupacional",
     text: "ASO, PCMSO, PGR, LTCAT, PPP e eventos de SST organizados com rigor técnico.",
   },
   {
+    icon: LayoutDashboard,
     title: "Suporte ao RH e portal empresarial",
     text: "Encaminhamento online, acompanhamento de status e centralização documental em um só lugar.",
   },
