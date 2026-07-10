@@ -1,5 +1,6 @@
 import { MapPin, Monitor, Users } from "lucide-react";
 
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { ABOUT_HISTORY } from "@/data/about";
 
 const HIGHLIGHT_ICONS = [MapPin, Users, Monitor] as const;
@@ -32,6 +33,14 @@ export function AboutHistory() {
             </div>
 
             <figure className="about-history-pull">
+              <GlowingEffect
+                spread={34}
+                glow
+                disabled={false}
+                proximity={64}
+                inactiveZone={0.01}
+                borderWidth={2}
+              />
               <span className="about-history-pull-mark" aria-hidden>
                 “
               </span>

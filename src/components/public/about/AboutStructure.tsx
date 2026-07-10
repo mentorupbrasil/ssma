@@ -1,6 +1,7 @@
 import { Armchair, ListChecks, ShieldCheck, type LucideIcon } from "lucide-react";
 
 import { SectionHeader } from "@/components/public/SectionHeader";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { ABOUT_STRUCTURE, ABOUT_STRUCTURE_GALLERY } from "@/data/about";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,14 @@ export function AboutStructure() {
 
         <div className="about-structure-grid">
           <article className="about-structure-card about-structure-card--featured">
+            <GlowingEffect
+              spread={40}
+              glow
+              disabled={false}
+              proximity={72}
+              inactiveZone={0.01}
+              borderWidth={2}
+            />
             <span className="about-structure-pulse" aria-hidden>
               <svg viewBox="0 0 320 60" fill="none" preserveAspectRatio="none">
                 <path

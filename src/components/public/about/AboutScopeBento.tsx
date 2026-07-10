@@ -6,6 +6,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 import type { AboutDeliverableItem } from "@/data/about";
 
@@ -74,7 +75,18 @@ export function AboutScopeBento({ items }: AboutScopeBentoProps) {
             )}
           >
             <div className="about-scope-card-pattern" aria-hidden />
-            <div className="about-scope-card-glow" aria-hidden />
+            {featured ? (
+              <GlowingEffect
+                spread={38}
+                glow
+                disabled={false}
+                proximity={72}
+                inactiveZone={0.01}
+                borderWidth={2}
+              />
+            ) : (
+              <div className="about-scope-card-glow" aria-hidden />
+            )}
 
             <div className="about-scope-card-top">
               <span className="about-scope-card-icon" aria-hidden>
