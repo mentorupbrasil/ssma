@@ -1,42 +1,36 @@
 "use client";
 
 import { useRef } from "react";
-import { Check } from "lucide-react";
 
-import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
-import { ABOUT_TRUST, ABOUT_TRUST_CHECKLIST } from "@/data/about";
+import { ABOUT_TRUST, ABOUT_TRUST_PILLARS } from "@/data/about";
 
 export function AboutTrustSection() {
   const sectionRef = useRef<HTMLElement>(null);
 
   return (
-    <section
-      id="confianca"
-      ref={sectionRef}
-      className="about-ed-trust scroll-mt-[var(--header-height)]"
-    >
-      <div className="container-page about-ed-page">
-        <div className="about-ed-trust-layout">
-          <TimelineContent animationNum={0} timelineRef={sectionRef}>
-            <SectionHeader
-              eyebrow={ABOUT_TRUST.eyebrow}
-              title={ABOUT_TRUST.title}
-              description={ABOUT_TRUST.description}
-              className="about-ed-section-header"
-            />
+    <section id="confianca" ref={sectionRef} className="about-v2-trust scroll-mt-[var(--header-height)]">
+      <div className="container-page about-v2-container">
+        <div className="about-v2-trust-panel">
+          <TimelineContent animationNum={0} timelineRef={sectionRef} className="about-v2-trust-header">
+            <p className="about-v2-eyebrow">{ABOUT_TRUST.eyebrow}</p>
+            <h2 className="about-v2-trust-title">{ABOUT_TRUST.title}</h2>
+            <p className="about-v2-trust-lead">{ABOUT_TRUST.description}</p>
           </TimelineContent>
 
-          <TimelineContent animationNum={1} timelineRef={sectionRef}>
-            <ul className="about-ed-trust-list" aria-label="Compromissos institucionais">
-              {ABOUT_TRUST_CHECKLIST.map((item) => (
-                <li key={item}>
-                  <Check className="about-ed-trust-check" strokeWidth={2.25} aria-hidden />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </TimelineContent>
+          <div className="about-v2-trust-pillars">
+            {ABOUT_TRUST_PILLARS.map((pillar, index) => (
+              <TimelineContent
+                key={pillar.title}
+                animationNum={index + 1}
+                timelineRef={sectionRef}
+                className="about-v2-trust-pillar"
+              >
+                <h3>{pillar.title}</h3>
+                <p>{pillar.text}</p>
+              </TimelineContent>
+            ))}
+          </div>
         </div>
       </div>
     </section>
