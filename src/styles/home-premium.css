@@ -1113,7 +1113,7 @@
   width: 2px;
   background: linear-gradient(
     180deg,
-    rgb(251 191 36 / 0.32) 0%,
+    rgb(110 231 183 / 0.45) 0%,
     rgb(226 232 240 / 0.45) 55%,
     rgb(226 232 240 / 0.25) 100%
   );
@@ -2272,5 +2272,299 @@
 
   .home-process-step:hover {
     transform: none;
+  }
+
+  .infinite-slider-track {
+    animation: none !important;
+  }
+}
+
+/* Infinite slider -------------------------------------------------- */
+
+@keyframes infinite-slider-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.infinite-slider-track {
+  animation: infinite-slider-scroll var(--infinite-slider-duration, 80s) linear infinite;
+}
+
+.infinite-slider-track--reverse {
+  animation-direction: reverse;
+}
+
+/* Hero highlights (novidades) -------------------------------------- */
+
+.home-hero-highlights {
+  width: 100%;
+  max-width: 100%;
+}
+
+.home-hero-highlights-frame {
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: linear-gradient(155deg, rgb(255 255 255 / 0.08) 0%, rgb(255 255 255 / 0.03) 100%);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.18);
+  backdrop-filter: blur(8px);
+}
+
+@media (min-width: 1024px) {
+  .home-hero-highlights-frame {
+    padding: 1.15rem 1.2rem 1rem;
+  }
+}
+
+.home-hero-highlights-kicker {
+  margin: 0 0 0.75rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(167 243 208 / 0.85);
+}
+
+.home-hero-highlights-stage {
+  position: relative;
+  min-height: 13.5rem;
+}
+
+@media (min-width: 640px) {
+  .home-hero-highlights-stage {
+    min-height: 12.75rem;
+  }
+}
+
+.home-hero-highlight-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: rgb(255 255 255 / 0.04);
+  opacity: 0;
+  transform: translateY(0.45rem);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+  pointer-events: none;
+}
+
+.home-hero-highlight-card--active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.home-hero-highlight-card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 1rem 1rem 0 0;
+}
+
+.home-hero-highlight-card--emerald .home-hero-highlight-card-accent {
+  background: linear-gradient(90deg, rgb(52 211 153), rgb(16 185 129 / 0.35));
+}
+
+.home-hero-highlight-card--sky .home-hero-highlight-card-accent {
+  background: linear-gradient(90deg, rgb(56 189 248), rgb(14 165 233 / 0.35));
+}
+
+.home-hero-highlight-card--amber .home-hero-highlight-card-accent {
+  background: linear-gradient(90deg, rgb(251 191 36), rgb(245 158 11 / 0.35));
+}
+
+.home-hero-highlight-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.home-hero-highlight-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(167 243 208);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+.home-hero-highlight-card-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.home-hero-highlight-card--sky .home-hero-highlight-card-icon {
+  color: rgb(125 211 252);
+}
+
+.home-hero-highlight-card--amber .home-hero-highlight-card-icon {
+  color: rgb(253 230 138);
+}
+
+.home-hero-highlight-card-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(203 213 225 / 0.9);
+}
+
+.home-hero-highlight-card-title {
+  margin: 0;
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: white;
+}
+
+.home-hero-highlight-card-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgb(203 213 225 / 0.92);
+}
+
+.home-hero-highlight-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: auto;
+  padding-top: 0.15rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: rgb(167 243 208);
+}
+
+.home-hero-highlight-card-link:hover {
+  color: rgb(209 250 229);
+}
+
+.home-hero-highlights-dots {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+}
+
+.home-hero-highlights-dot {
+  width: 1.35rem;
+  height: 0.22rem;
+  border: none;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.18);
+  cursor: pointer;
+  transition: background 0.2s ease, width 0.2s ease;
+}
+
+.home-hero-highlights-dot--active {
+  width: 1.85rem;
+  background: rgb(110 231 183 / 0.85);
+}
+
+.home-hero-highlights-mini {
+  display: none;
+  gap: 0.45rem 0.75rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 1024px) {
+  .home-hero-highlights-mini {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+.home-hero-highlights-mini li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  color: rgb(148 163 184 / 0.9);
+}
+
+@media (min-width: 1024px) and (max-width: 1366px) {
+  .home-hero-highlights,
+  .home-hero-visual-frame {
+    max-width: 36.5rem;
+  }
+}
+
+@media (min-width: 1367px) and (max-width: 1535px) {
+  .home-hero-highlights,
+  .home-hero-visual-frame {
+    max-width: 40rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .home-hero-highlights,
+  .home-hero-visual-frame {
+    max-width: 42.5rem;
+  }
+}
+
+/* Client logos ----------------------------------------------------- */
+
+.home-clients {
+  padding-block: 1.35rem 1.5rem;
+  background: white;
+  border-top: 1px solid rgb(241 245 249);
+  border-bottom: 1px solid rgb(241 245 249);
+}
+
+.home-clients-inner {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.home-clients-eyebrow {
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(13 148 136);
+}
+
+.home-clients-title {
+  margin: 0;
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgb(71 85 105);
+}
+
+.home-clients-logos {
+  margin-top: 0.15rem;
+}
+
+.home-clients-logos img {
+  height: 1.1rem;
+  opacity: 0.65;
+}
+
+@media (min-width: 768px) {
+  .home-clients-logos img {
+    height: 1.25rem;
   }
 }

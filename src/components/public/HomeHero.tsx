@@ -7,9 +7,10 @@ import {
   FlaskConical,
   BadgeCheck,
   Phone,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HomeHeroPortalMockup } from "@/components/public/HomeHeroPortalMockup";
+import { HomeHeroHighlights } from "@/components/public/home/HomeHeroHighlights";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 
 const QUICK_CARDS = [
@@ -29,11 +30,11 @@ export function HomeHero() {
       <div className="home-hero-refined-bg absolute inset-0" aria-hidden />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_18%_0%,rgba(22,160,133,0.08),transparent_42%)]" aria-hidden />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_92%_18%,rgba(22,160,133,0.11),transparent_48%)]" aria-hidden />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" aria-hidden />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30" aria-hidden />
 
       <div className="container-page relative">
         <div className="hero-main-grid home-hero-main grid items-start gap-5 pb-3 sm:items-center lg:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] lg:items-center lg:gap-6 lg:pb-4 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:gap-8">
-          <div className="animate-fade-up home-hero-copy order-2 lg:order-1 lg:self-center lg:pr-2 xl:pr-6">
+          <div className="animate-fade-up home-hero-copy order-1 lg:order-1 lg:self-center lg:pr-2 xl:pr-6">
             <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3.5 py-1.5 text-xs font-medium text-emerald-100/90 sm:text-sm">
               <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" />
               {clinic.name} · Medicina e Segurança do Trabalho
@@ -63,9 +64,10 @@ export function HomeHero() {
                   Falar com especialista
                 </Button>
               </a>
-              <Link href="/contato?tipo=orcamento" className="sm:flex-1 sm:flex-none">
-                <Button variant="outline-light" size="lg" className="w-full rounded-xl sm:w-auto sm:min-w-[200px]">
-                  Solicitar orçamento
+              <Link href="/encaminhamento-online" className="sm:flex-1 sm:flex-none">
+                <Button variant="outline-light" size="lg" className="w-full rounded-xl sm:w-auto sm:min-w-[200px] group">
+                  Encaminhamento online
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Button>
               </Link>
             </div>
@@ -76,11 +78,9 @@ export function HomeHero() {
             </p>
           </div>
 
-          <div className="animate-fade-up-delay home-hero-visual order-1 flex justify-center lg:order-2 lg:justify-end lg:self-center">
+          <div className="animate-fade-up-delay home-hero-visual order-2 flex justify-center lg:order-2 lg:justify-end lg:self-center">
             <div className="home-hero-visual-frame relative w-full">
-              <div className="home-hero-mockup relative">
-                <HomeHeroPortalMockup />
-              </div>
+              <HomeHeroHighlights />
             </div>
           </div>
         </div>

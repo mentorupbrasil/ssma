@@ -1,15 +1,15 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Info } from "lucide-react";
+import { ArrowRight, ClipboardCheck, Info } from "lucide-react";
 import { COMPLIANCE_DOCS } from "@/data/marketing";
 import { COMPLIANCE_DOC_TAGS } from "@/data/home";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Button } from "@/components/ui/button";
 
-const RISK_CONSEQUENCES = [
-  "Multas por não conformidade com o Ministério do Trabalho",
-  "Inconsistências no eSocial que travam admissões e desligamentos",
-  "Interdição de setores em caso de fiscalização de riscos",
-  "Passivos trabalhistas em ações e perícias futuras",
+const ORGANIZATION_BENEFITS = [
+  "Admissões e desligamentos sem travar no RH",
+  "Informações ocupacionais alinhadas ao eSocial",
+  "PCMSO, laudos e programas atualizados conforme a atividade",
+  "Mais previsibilidade em auditorias e fiscalizações",
 ] as const;
 
 export function HomeComplianceSection() {
@@ -19,7 +19,7 @@ export function HomeComplianceSection() {
         <SectionHeader
           eyebrow="Obrigatoriedade legal"
           title="Documentos e programas essenciais para empresas"
-          description="PCMSO, ASO, PGR, LTCAT e eventos de SST exigidos conforme a legislação trabalhista — cada um com sua função específica na regularização da empresa."
+          description="PCMSO, ASO, PGR, LTCAT e eventos de SST exigidos conforme a legislação trabalhista — cada um com função específica na conformidade da empresa."
         />
 
         <div className="home-compliance-layout">
@@ -53,19 +53,19 @@ export function HomeComplianceSection() {
           <aside className="home-compliance-risk">
             <div className="home-compliance-risk-head">
               <div className="home-compliance-risk-icon" aria-hidden>
-                <AlertTriangle strokeWidth={1.75} />
+                <ClipboardCheck strokeWidth={1.75} />
               </div>
               <div className="home-compliance-risk-intro">
                 <h3 className="home-compliance-risk-title">
-                  Documentação fora do prazo custa mais do que parece
+                  Documentação organizada facilita a rotina do RH
                 </h3>
                 <p className="home-compliance-risk-desc">
-                  Sem esses documentos organizados, sua empresa fica exposta a:
+                  Manter programas e laudos em dia ajuda sua empresa a:
                 </p>
               </div>
             </div>
             <ul className="home-compliance-risk-list">
-              {RISK_CONSEQUENCES.map((item) => (
+              {ORGANIZATION_BENEFITS.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>

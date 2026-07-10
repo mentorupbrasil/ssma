@@ -143,9 +143,9 @@ export function FAQSection() {
                     Falar no WhatsApp
                   </Button>
                 </a>
-                <Link href="/contato?tipo=orcamento">
+                <Link href="/contato">
                   <Button variant="outline" className="w-full rounded-xl">
-                    Solicitar orçamento
+                    Falar com a equipe
                   </Button>
                 </Link>
               </div>
