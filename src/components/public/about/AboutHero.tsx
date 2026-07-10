@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Phone } from "lucide-react";
 
 import { AboutCtaLink } from "@/components/public/about/AboutCtaLink";
-import { ABOUT_HERO, ABOUT_HERO_STRIP } from "@/data/about";
+import { ABOUT_HERO } from "@/data/about";
 import { whatsappLink } from "@/lib/helpers";
 
 type AboutHeroProps = {
@@ -38,28 +38,26 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
           <p className="about-v2-hero-lead">{ABOUT_HERO.description}</p>
 
           <div className="about-v2-hero-actions">
-            <div className="about-v2-hero-cta-ring">
-              <AboutCtaLink href={whatsappHref} variant="brand" size="lg" external>
-                {ABOUT_HERO.primaryCta}
-                <Phone className="size-4" aria-hidden />
-              </AboutCtaLink>
-            </div>
+            <AboutCtaLink
+              href={whatsappHref}
+              variant="brand"
+              size="default"
+              external
+              className="about-v2-hero-cta about-v2-hero-cta-primary group"
+            >
+              <Phone className="size-4" aria-hidden />
+              {ABOUT_HERO.primaryCta}
+            </AboutCtaLink>
             <AboutCtaLink
               href="/servicos"
               variant="outline"
-              size="lg"
-              className="about-v2-hero-cta-secondary"
+              size="default"
+              className="about-v2-hero-cta about-v2-hero-cta-secondary group"
             >
               {ABOUT_HERO.secondaryCta}
-              <ArrowRight className="size-4" aria-hidden />
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
             </AboutCtaLink>
           </div>
-
-          <ul className="about-v2-hero-strip" aria-label="Áreas de atuação">
-            {ABOUT_HERO_STRIP.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
         </div>
       </div>
     </section>
