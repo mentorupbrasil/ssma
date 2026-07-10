@@ -70,7 +70,7 @@ export function HomeComplianceSection() {
               ))}
             </ul>
             <Link href="/servicos" className="home-compliance-risk-cta">
-              <Button variant="brand" className="w-full rounded-xl group">
+              <Button variant="brand" className="home-compliance-risk-btn w-full rounded-xl group">
                 Ver serviços de SST
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
