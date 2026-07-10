@@ -500,53 +500,55 @@
 
 /* Final CTA overrides ---------------------------------------------- */
 
+/* CTA final — mesmo padrão da página Sobre (about-final-cta) */
 .services-final-cta.final-cta-section {
-  padding-block: clamp(2.5rem, 5vw, 3.75rem);
+  padding: 3rem 0;
+}
+
+@media (min-width: 768px) {
+  .services-final-cta.final-cta-section {
+    padding: 3.5rem 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .services-final-cta.final-cta-section {
+    padding: 3.75rem 0;
+  }
 }
 
 .services-final-cta .final-cta-section-inner {
-  max-width: 46rem;
+  max-width: 44rem;
 }
 
 .services-final-cta .final-cta-section-title {
-  max-width: 40rem;
+  max-width: 38rem;
   margin-inline: auto;
-  font-size: clamp(1.65rem, 3vw, 2.15rem);
-  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
 .services-final-cta .final-cta-section-desc {
-  max-width: 42rem;
+  max-width: 36rem;
   margin-top: 1.1rem;
-  font-size: 0.9375rem;
-  line-height: 1.65;
-}
-
-.services-final-cta .final-cta-section-actions {
-  width: 100%;
-  max-width: 24rem;
-  margin-inline: auto;
-  margin-top: 1.85rem;
 }
 
 @media (min-width: 640px) {
   .services-final-cta .final-cta-section-desc {
     margin-top: 1.2rem;
   }
+}
 
+.services-final-cta .final-cta-section-actions {
+  width: 100%;
+  max-width: 22rem;
+  margin-inline: auto;
+  margin-top: 1.85rem;
+}
+
+@media (min-width: 640px) {
   .services-final-cta .final-cta-section-actions {
     max-width: none;
     margin-top: 2.1rem;
-  }
-
-  .services-final-cta .final-cta-section-actions > a {
-    width: auto;
-  }
-
-  .services-final-cta .final-cta-btn-primary,
-  .services-final-cta .final-cta-btn-secondary {
-    width: auto;
   }
 }
 
@@ -554,9 +556,34 @@
   width: 100%;
 }
 
+@media (min-width: 640px) {
+  .services-final-cta .final-cta-section-actions > a {
+    width: auto;
+  }
+}
+
 .services-final-cta .final-cta-btn-primary,
 .services-final-cta .final-cta-btn-secondary {
   width: 100%;
+}
+
+@media (min-width: 640px) {
+  .services-final-cta .final-cta-btn-primary,
+  .services-final-cta .final-cta-btn-secondary {
+    width: auto;
+  }
+}
+
+.services-final-cta .final-cta-btn-secondary {
+  border-color: rgb(255 255 255 / 0.55);
+  background: rgb(255 255 255 / 0.06);
+  color: rgb(255 255 255);
+}
+
+.services-final-cta .final-cta-btn-secondary:hover {
+  border-color: rgb(255 255 255 / 0.8);
+  background: rgb(255 255 255 / 0.16);
+  color: rgb(255 255 255);
 }
 
 @media (prefers-reduced-motion: reduce) {
