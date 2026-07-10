@@ -3,6 +3,7 @@
 import { useRef } from "react";
 
 import { AboutWhoPanel } from "@/components/public/about/AboutWhoPanel";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 
 type AboutIntroSectionProps = {
@@ -18,16 +19,14 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
         <div className="about-ed-who-grid">
           <div className="about-ed-who-copy">
             <TimelineContent animationNum={0} timelineRef={sectionRef}>
-              <p className="about-ed-label">Quem somos</p>
+              <SectionHeader
+                eyebrow="Quem somos"
+                title="Uma clínica preparada para simplificar a rotina ocupacional das empresas"
+                className="about-ed-section-header"
+              />
             </TimelineContent>
 
-            <TimelineContent animationNum={1} timelineRef={sectionRef}>
-              <h2 className="about-ed-heading about-ed-who-heading">
-                Uma clínica preparada para simplificar a rotina ocupacional das empresas
-              </h2>
-            </TimelineContent>
-
-            <TimelineContent animationNum={2} timelineRef={sectionRef} className="about-ed-prose">
+            <TimelineContent animationNum={1} timelineRef={sectionRef} className="about-ed-prose">
               <p>
                 A {clinicName} atua em Medicina e Segurança do Trabalho, apoiando empresas de
                 pequeno, médio e grande porte na organização de exames, ASOs, programas, laudos e
@@ -41,7 +40,7 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
             </TimelineContent>
           </div>
 
-          <TimelineContent animationNum={3} timelineRef={sectionRef}>
+          <TimelineContent animationNum={2} timelineRef={sectionRef}>
             <AboutWhoPanel clinicName={clinicName} />
           </TimelineContent>
         </div>

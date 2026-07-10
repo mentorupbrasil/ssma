@@ -14,11 +14,11 @@ type AboutHeroProps = {
 export function AboutHero({ clinicName }: AboutHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
 
-  const leadA = `A ${clinicName} apoia empresas na organização de exames, documentos ocupacionais e rotinas de SST`;
-  const leadB = "com atendimento presencial e recursos digitais para o RH.";
+  const lead = `A ${clinicName} apoia empresas na organização de exames, documentos ocupacionais e rotinas de SST com atendimento presencial e recursos digitais para o RH.`;
 
   return (
     <section ref={sectionRef} className="about-ed-hero scroll-mt-[var(--header-height)]">
+      <div className="about-ed-hero-bg" aria-hidden />
       <div className="container-page">
         <div className="about-ed-hero-grid">
           <div className="about-ed-hero-copy">
@@ -37,18 +37,13 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
               </VerticalCutReveal>
             </h1>
 
-            <div className="about-ed-hero-lead-grid">
-              <TimelineContent animationNum={1} timelineRef={sectionRef} eager>
-                <p>{leadA}</p>
-              </TimelineContent>
-              <TimelineContent animationNum={2} timelineRef={sectionRef} eager>
-                <p>{leadB}</p>
-              </TimelineContent>
-            </div>
+            <TimelineContent animationNum={1} timelineRef={sectionRef} eager className="about-ed-hero-lead">
+              <p>{lead}</p>
+            </TimelineContent>
           </div>
 
           <TimelineContent
-            animationNum={3}
+            animationNum={2}
             timelineRef={sectionRef}
             eager
             as="figure"
