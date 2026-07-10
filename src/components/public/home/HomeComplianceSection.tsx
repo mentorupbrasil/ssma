@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, CircleAlert } from "lucide-react";
+import { AlertTriangle, ArrowRight, Info } from "lucide-react";
 import { COMPLIANCE_DOCS } from "@/data/marketing";
 import { COMPLIANCE_DOC_TAGS } from "@/data/home";
 import { SectionHeader } from "@/components/public/SectionHeader";
@@ -51,21 +51,22 @@ export function HomeComplianceSection() {
           </ol>
 
           <aside className="home-compliance-risk">
-            <div className="home-compliance-risk-icon" aria-hidden>
-              <AlertTriangle strokeWidth={1.75} />
+            <div className="home-compliance-risk-head">
+              <div className="home-compliance-risk-icon" aria-hidden>
+                <AlertTriangle strokeWidth={1.75} />
+              </div>
+              <div className="home-compliance-risk-intro">
+                <h3 className="home-compliance-risk-title">
+                  Documentação fora do prazo custa mais do que parece
+                </h3>
+                <p className="home-compliance-risk-desc">
+                  Sem esses documentos organizados, sua empresa fica exposta a:
+                </p>
+              </div>
             </div>
-            <h3 className="home-compliance-risk-title">
-              Documentação fora do prazo custa mais do que parece
-            </h3>
-            <p className="home-compliance-risk-desc">
-              Sem esses documentos organizados, sua empresa fica exposta a:
-            </p>
             <ul className="home-compliance-risk-list">
               {RISK_CONSEQUENCES.map((item) => (
-                <li key={item}>
-                  <CircleAlert className="h-3.5 w-3.5 shrink-0" strokeWidth={2} aria-hidden />
-                  <span>{item}</span>
-                </li>
+                <li key={item}>{item}</li>
               ))}
             </ul>
             <Link href="/servicos" className="home-compliance-risk-cta">
@@ -77,10 +78,13 @@ export function HomeComplianceSection() {
           </aside>
         </div>
 
-        <p className="home-compliance-footnote">
-          Cada empresa pode ter exigências diferentes conforme atividade, grau de risco, função e
-          PCMSO.
-        </p>
+        <div className="home-compliance-notice" role="note">
+          <Info strokeWidth={1.75} aria-hidden />
+          <p>
+            Cada empresa pode ter exigências diferentes conforme atividade, grau de risco, função e
+            PCMSO.
+          </p>
+        </div>
       </div>
     </section>
   );
