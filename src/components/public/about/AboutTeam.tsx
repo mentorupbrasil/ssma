@@ -13,16 +13,28 @@ const TEAM_VARIANTS = {
   rh: "team-rh",
 } as const;
 
+const TEAM_LABELS: Record<keyof typeof TEAM_VARIANTS, string> = {
+  medicina: "Clínica",
+  examinador: "Exames",
+  sst: "Técnico",
+  rh: "Suporte",
+};
+
 export function AboutTeam() {
   const sectionRef = useRef<HTMLElement>(null);
 
   return (
     <section id="nossa-equipe" ref={sectionRef} className="about-v2-team scroll-mt-[var(--header-height)]">
       <div className="container-page about-v2-container">
-        <TimelineContent animationNum={0} timelineRef={sectionRef} className="about-v2-section-intro about-v2-section-intro--center">
-          <p className="about-v2-eyebrow about-v2-eyebrow--dark">{ABOUT_TEAM.eyebrow}</p>
-          <h2 className="about-v2-section-title">{ABOUT_TEAM.title}</h2>
-          <p className="about-v2-section-lead">{ABOUT_TEAM.description}</p>
+        <TimelineContent animationNum={0} timelineRef={sectionRef} className="about-v2-sec-head about-v2-sec-head--center">
+          <span className="about-v2-sec-index" aria-hidden>
+            04
+          </span>
+          <div className="about-v2-sec-head-copy">
+            <p className="about-v2-eyebrow about-v2-eyebrow--dark">{ABOUT_TEAM.eyebrow}</p>
+            <h2 className="about-v2-section-title">{ABOUT_TEAM.title}</h2>
+            <p className="about-v2-section-lead about-v2-section-lead--inline">{ABOUT_TEAM.description}</p>
+          </div>
         </TimelineContent>
 
         <div className="about-v2-team-grid">
@@ -34,15 +46,18 @@ export function AboutTeam() {
                 key={member.role}
                 animationNum={index + 1}
                 timelineRef={sectionRef}
-                className="about-v2-team-card"
+                className="about-v2-team-profile"
               >
-                <AboutBrandFrame
-                  image={member.photo}
-                  alt={photoAlt}
-                  variant={TEAM_VARIANTS[member.variant]}
-                  className="about-v2-team-card-media"
-                />
-                <div className="about-v2-team-card-body">
+                <div className="about-v2-team-photo">
+                  <AboutBrandFrame
+                    image={member.photo}
+                    alt={photoAlt}
+                    variant={TEAM_VARIANTS[member.variant]}
+                    className="about-v2-team-card-media"
+                  />
+                  <span className="about-v2-team-badge">{TEAM_LABELS[member.variant]}</span>
+                </div>
+                <div className="about-v2-team-info">
                   {member.name ? (
                     <>
                       <p className="about-v2-team-role">{member.role}</p>
