@@ -702,82 +702,170 @@
   color: rgb(52 211 153);
 }
 
-/* Mission ------------------------------------------------------------- */
+/* Mission — institutional table card ---------------------------------- */
 
 .about-ed-mission {
-  padding-block: clamp(1.5rem, 3vw, 2rem);
+  padding-block: clamp(1.5rem, 3vw, 2.25rem);
   background: white;
 }
 
-.about-ed-mission-header {
+.about-ed-mission-table-card {
+  overflow: hidden;
+  border-radius: 1.15rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: white;
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.03),
+    0 10px 28px rgb(15 61 74 / 0.05);
+}
+
+.about-ed-mission-table-head {
+  padding: 1.25rem 1.35rem 1.1rem;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+
+.about-ed-mission-table-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   margin-bottom: 0.85rem;
 }
 
-.about-ed-mission-grid {
-  display: grid;
-  gap: 0;
-  border: 1px solid rgb(241 245 249);
-  border-radius: 1rem;
-  overflow: hidden;
-  background: white;
+.about-ed-mission-table-dots span {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
 }
 
-@media (min-width: 768px) {
-  .about-ed-mission-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.about-ed-mission-table-head .about-ed-label {
+  margin-bottom: 0.35rem;
 }
 
-.about-ed-mission-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  padding: 1rem 1.1rem;
+.about-ed-mission-table-sub {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgb(100 116 139);
+}
+
+.about-ed-mission-table-wrap {
+  overflow-x: auto;
+}
+
+.about-ed-mission-table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.about-ed-mission-table thead {
+  background: rgb(248 250 252 / 0.9);
+}
+
+.about-ed-mission-table th {
+  padding: 0.7rem 1rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  color: rgb(100 116 139);
+}
+
+.about-ed-mission-table-col-num {
+  width: 3rem;
+}
+
+.about-ed-mission-table-col-pilar {
+  width: 11rem;
+}
+
+.about-ed-mission-table tbody tr {
   border-bottom: 1px solid rgb(241 245 249);
-  background: white;
+  transition: background 0.2s ease;
 }
 
-@media (min-width: 768px) {
-  .about-ed-mission-card {
-    border-bottom: none;
-    border-right: 1px solid rgb(241 245 249);
-  }
-
-  .about-ed-mission-card:last-child {
-    border-right: none;
-  }
-}
-
-.about-ed-mission-card:last-child {
+.about-ed-mission-table tbody tr:last-child {
   border-bottom: none;
 }
 
-.about-ed-mission-icon {
+.about-ed-mission-table tbody tr:hover {
+  background: rgb(248 250 252 / 0.65);
+}
+
+.about-ed-mission-table td {
+  padding: 0.85rem 1rem;
+  vertical-align: top;
+}
+
+.about-ed-mission-table-num {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgb(203 213 225);
+}
+
+.about-ed-mission-table-pilar {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.about-ed-mission-table-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.65rem;
-  height: 1.65rem;
-  border-radius: 0.45rem;
-  background: rgb(248 250 252);
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240 / 0.95);
+  background: white;
   color: var(--brand-green);
 }
 
-.about-ed-mission-icon svg {
+.about-ed-mission-table-icon svg {
   width: 0.85rem;
   height: 0.85rem;
 }
 
-.about-ed-mission-card h3 {
-  font-size: 0.875rem;
+.about-ed-mission-table-title {
   font-weight: 700;
   color: var(--brand-navy);
+  white-space: nowrap;
 }
 
-.about-ed-mission-card p {
-  font-size: 0.8125rem;
+.about-ed-mission-table-text {
   line-height: 1.58;
+  color: rgb(71 85 105);
+}
+
+.about-ed-mission-table-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.35rem;
+  border-top: 1px solid rgb(241 245 249);
+  font-size: 0.75rem;
+  color: rgb(148 163 184);
+}
+
+.about-ed-mission-table-foot strong {
+  font-weight: 700;
   color: rgb(100 116 139);
+}
+
+@media (max-width: 639px) {
+  .about-ed-mission-table {
+    min-width: 32rem;
+  }
+
+  .about-ed-mission-table th,
+  .about-ed-mission-table td {
+    padding-inline: 0.85rem;
+  }
 }
 
 /* CTA ----------------------------------------------------------------- */
