@@ -12,22 +12,22 @@ const ROUTES: { start: RoutePoint; end: RoutePoint; color: string }[] = [
   {
     start: { xPct: 0.18, yPct: 0.42, delay: 0 },
     end: { xPct: 0.38, yPct: 0.22, delay: 2 },
-    color: "#16a085",
+    color: "#2e67ff",
   },
   {
     start: { xPct: 0.38, yPct: 0.22, delay: 2 },
     end: { xPct: 0.5, yPct: 0.32, delay: 4 },
-    color: "#16a085",
+    color: "#2e67ff",
   },
   {
     start: { xPct: 0.1, yPct: 0.14, delay: 1 },
     end: { xPct: 0.28, yPct: 0.48, delay: 3 },
-    color: "#0f3d4a",
+    color: "#0e142b",
   },
   {
     start: { xPct: 0.54, yPct: 0.18, delay: 0.5 },
     end: { xPct: 0.34, yPct: 0.48, delay: 2.5 },
-    color: "#16a085",
+    color: "#2e67ff",
   },
 ];
 
@@ -137,7 +137,7 @@ export function LoginDotMap() {
 
         ctx.beginPath();
         ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fillStyle = "#16a085";
+        ctx.fillStyle = "#2e67ff";
         ctx.fill();
 
         ctx.beginPath();

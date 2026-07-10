@@ -2,11 +2,11 @@
 
 :root {
   --dash-bg: #eef2f6;
-  --dash-bg-accent: #e8f4f1;
+  --dash-bg-accent: #eef3ff;
   --dash-surface: #ffffff;
   --dash-surface-elevated: #ffffff;
-  --dash-border: rgb(15 61 74 / 0.08);
-  --dash-border-strong: rgb(15 61 74 / 0.12);
+  --dash-border: rgb(14 20 43 / 0.08);
+  --dash-border-strong: rgb(14 20 43 / 0.12);
   --dash-text: var(--brand-text);
   --dash-text-muted: var(--brand-text-muted);
   --dash-text-subtle: #94a3b8;
@@ -14,9 +14,9 @@
   --dash-radius-md: 0.875rem;
   --dash-radius-lg: 1rem;
   --dash-radius-xl: 1.25rem;
-  --dash-shadow-xs: 0 1px 2px rgb(15 61 74 / 0.04);
-  --dash-shadow-sm: 0 1px 2px rgb(15 61 74 / 0.04), 0 4px 16px rgb(15 61 74 / 0.05);
-  --dash-shadow-md: 0 2px 4px rgb(15 61 74 / 0.04), 0 12px 32px rgb(15 61 74 / 0.07);
+  --dash-shadow-xs: 0 1px 2px rgb(14 20 43 / 0.04);
+  --dash-shadow-sm: 0 1px 2px rgb(14 20 43 / 0.04), 0 4px 16px rgb(14 20 43 / 0.05);
+  --dash-shadow-md: 0 2px 4px rgb(14 20 43 / 0.04), 0 12px 32px rgb(14 20 43 / 0.07);
   --dash-shadow-inset: inset 0 1px 0 rgb(255 255 255 / 0.85);
   --dash-transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   --dash-input-h: 2.625rem;
@@ -27,8 +27,8 @@
   /* ── App shell ───────────────────────────────────────── */
   .app-shell {
     background:
-      radial-gradient(ellipse 80% 50% at 100% -10%, rgb(22 160 133 / 0.07), transparent 50%),
-      radial-gradient(ellipse 60% 40% at 0% 100%, rgb(15 61 74 / 0.04), transparent 45%),
+      radial-gradient(ellipse 80% 50% at 100% -10%, rgb(46 103 255 / 0.07), transparent 50%),
+      radial-gradient(ellipse 60% 40% at 0% 100%, rgb(14 20 43 / 0.04), transparent 45%),
       var(--dash-bg);
   }
 
@@ -108,7 +108,7 @@
   }
 
   .app-shell-nav-link-active {
-    border-color: rgb(22 160 133 / 0.22);
+    border-color: rgb(46 103 255 / 0.22);
     background: linear-gradient(
       135deg,
       rgb(223 247 240 / 0.95) 0%,
@@ -236,9 +236,9 @@
   }
 
   .topbar-search-input:focus {
-    border-color: rgb(22 160 133 / 0.35);
+    border-color: rgb(46 103 255 / 0.35);
     background: white;
-    box-shadow: 0 0 0 3px rgb(22 160 133 / 0.1);
+    box-shadow: 0 0 0 3px rgb(46 103 255 / 0.1);
   }
 
   .topbar-search-results {
@@ -282,7 +282,7 @@
   }
 
   .topbar-user-chip:hover {
-    border-color: rgb(22 160 133 / 0.2);
+    border-color: rgb(46 103 255 / 0.2);
     box-shadow: var(--dash-shadow-sm);
   }
 
@@ -392,7 +392,7 @@
     gap: 0.35rem;
     margin-bottom: 0.5rem;
     border-radius: 9999px;
-    border: 1px solid rgb(22 160 133 / 0.18);
+    border: 1px solid rgb(46 103 255 / 0.18);
     background: rgb(223 247 240 / 0.6);
     padding: 0.25rem 0.7rem;
     font-size: 0.75rem;
@@ -445,7 +445,7 @@
   }
 
   .premium-card:hover {
-    border-color: rgb(22 160 133 / 0.15);
+    border-color: rgb(46 103 255 / 0.15);
     box-shadow: var(--dash-shadow-md);
   }
 
@@ -471,14 +471,14 @@
   }
 
   .metric-card:hover {
-    border-color: rgb(22 160 133 / 0.2);
+    border-color: rgb(46 103 255 / 0.2);
     box-shadow: var(--dash-shadow-md);
     transform: translateY(-1px);
   }
 
   .metric-card-active {
-    border-color: rgb(22 160 133 / 0.35);
-    box-shadow: 0 0 0 3px rgb(22 160 133 / 0.1), var(--dash-shadow-sm);
+    border-color: rgb(46 103 255 / 0.35);
+    box-shadow: 0 0 0 3px rgb(46 103 255 / 0.1), var(--dash-shadow-sm);
   }
 
   .metric-card-icon {
@@ -525,8 +525,8 @@
   }
 
   .metric-card--positive {
-    --metric-accent: #16a085;
-    --metric-icon-bg: #dff7f0;
+    --metric-accent: #2e67ff;
+    --metric-icon-bg: #e6edff;
   }
 
   .metric-card--attention {
@@ -540,8 +540,8 @@
   }
 
   .metric-card--financial {
-    --metric-accent: #0f3d4a;
-    --metric-icon-bg: #e8f0f2;
+    --metric-accent: #0e142b;
+    --metric-icon-bg: #eef3ff;
   }
 
   .metric-card--operational {
@@ -564,7 +564,7 @@
   }
 
   .stat-card-shell:hover {
-    border-color: rgb(22 160 133 / 0.2);
+    border-color: rgb(46 103 255 / 0.2);
     box-shadow: var(--dash-shadow-md);
     transform: translateY(-1px);
   }
@@ -599,7 +599,7 @@
   }
 
   .referral-stat-card:hover {
-    border-color: rgb(22 160 133 / 0.22);
+    border-color: rgb(46 103 255 / 0.22);
     box-shadow: var(--dash-shadow-md);
     transform: translateY(-1px);
   }
@@ -610,8 +610,8 @@
   }
 
   .referral-stat-card-active {
-    border-color: rgb(22 160 133 / 0.35);
-    box-shadow: 0 0 0 3px rgb(22 160 133 / 0.08), var(--dash-shadow-sm);
+    border-color: rgb(46 103 255 / 0.35);
+    box-shadow: 0 0 0 3px rgb(46 103 255 / 0.08), var(--dash-shadow-sm);
   }
 
   .referral-stat-count {
@@ -656,7 +656,7 @@
   }
 
   .dash-module-tab-active {
-    border: 1px solid rgb(22 160 133 / 0.18);
+    border: 1px solid rgb(46 103 255 / 0.18);
     background: white;
     color: var(--brand-navy);
     font-weight: 600;
@@ -696,7 +696,7 @@
     align-items: center;
     gap: 0.35rem;
     border-radius: 9999px;
-    border: 1px solid rgb(22 160 133 / 0.2);
+    border: 1px solid rgb(46 103 255 / 0.2);
     background: rgb(223 247 240 / 0.5);
     padding: 0.25rem 0.55rem 0.25rem 0.65rem;
     font-size: 0.6875rem;
@@ -716,7 +716,7 @@
   }
 
   .filter-chip-remove:hover {
-    background: rgb(22 160 133 / 0.15);
+    background: rgb(46 103 255 / 0.15);
     color: var(--brand-navy);
   }
 
@@ -794,12 +794,12 @@
   }
 
   .status-badge-premium[data-tone="success"] {
-    border-color: rgb(167 243 208);
-    background: rgb(236 253 245);
-    color: rgb(6 95 70);
+    border-color: rgb(191 219 254);
+    background: rgb(239 246 255);
+    color: rgb(30 64 175);
   }
   .status-badge-premium[data-tone="success"] .status-badge-premium-dot {
-    background: rgb(16 185 129);
+    background: rgb(59 130 246);
   }
 
   .status-badge-premium[data-tone="warning"] {
@@ -841,7 +841,7 @@
   /* ── Empty states ────────────────────────────────────── */
   .empty-state-premium {
     border-radius: var(--dash-radius-xl);
-    border: 1px dashed rgb(15 61 74 / 0.12);
+    border: 1px dashed rgb(14 20 43 / 0.12);
     background:
       radial-gradient(ellipse 70% 60% at 50% 0%, rgb(223 247 240 / 0.35), transparent 70%),
       rgb(248 250 252 / 0.6);
@@ -876,7 +876,7 @@
 
   .inline-empty-note {
     border-radius: var(--dash-radius-md);
-    border: 1px dashed rgb(15 61 74 / 0.1);
+    border: 1px dashed rgb(14 20 43 / 0.1);
     background: rgb(248 250 252 / 0.7);
     padding: 1.25rem 1rem;
     font-size: 0.8125rem;
@@ -920,7 +920,7 @@
   }
 
   .dashboard-list-item:hover {
-    border-color: rgb(22 160 133 / 0.2);
+    border-color: rgb(46 103 255 / 0.2);
     background: rgb(248 250 252);
     transform: translateX(2px);
   }
@@ -939,7 +939,7 @@
   }
 
   .quick-action-card:hover {
-    border-color: rgb(22 160 133 / 0.25);
+    border-color: rgb(46 103 255 / 0.25);
     box-shadow: var(--dash-shadow-md);
     transform: translateY(-2px);
   }
@@ -960,7 +960,7 @@
   .quick-action-card:hover .quick-action-card-icon {
     background: var(--brand-green);
     color: white;
-    box-shadow: 0 4px 12px rgb(22 160 133 / 0.25);
+    box-shadow: 0 4px 12px rgb(46 103 255 / 0.25);
   }
 
   /* ── Info banner ─────────────────────────────────────── */
@@ -968,7 +968,7 @@
     display: flex;
     gap: 0.85rem;
     border-radius: var(--dash-radius-lg);
-    border: 1px solid rgb(22 160 133 / 0.15);
+    border: 1px solid rgb(46 103 255 / 0.15);
     background: linear-gradient(135deg, rgb(223 247 240 / 0.7), rgb(255 255 255 / 0.95));
     padding: 0.95rem 1.1rem;
     box-shadow: var(--dash-shadow-xs);
@@ -1010,7 +1010,7 @@
 
   .referral-tab-active {
     background: white;
-    border-color: rgb(22 160 133 / 0.22);
+    border-color: rgb(46 103 255 / 0.22);
     box-shadow: var(--dash-shadow-xs);
     color: var(--brand-navy);
   }
@@ -1073,7 +1073,7 @@
   }
 
   .mobile-list-card:hover {
-    border-color: rgb(22 160 133 / 0.22);
+    border-color: rgb(46 103 255 / 0.22);
     box-shadow: var(--dash-shadow-md);
     transform: translateY(-1px);
   }
@@ -1140,15 +1140,15 @@
   }
 
   .closing-pipeline-step-active .closing-pipeline-step-icon {
-    border-color: rgb(22 160 133 / 0.35);
+    border-color: rgb(46 103 255 / 0.35);
     background: var(--brand-green-light);
     color: var(--brand-green);
-    box-shadow: 0 0 0 3px rgb(22 160 133 / 0.1);
+    box-shadow: 0 0 0 3px rgb(46 103 255 / 0.1);
   }
 
   .closing-pipeline-step-done .closing-pipeline-step-icon {
-    border-color: rgb(22 160 133 / 0.25);
-    background: rgb(236 253 245);
+    border-color: rgb(46 103 255 / 0.25);
+    background: rgb(239 246 255);
     color: var(--brand-green-dark);
   }
 
@@ -1188,8 +1188,8 @@
   }
 
   .agenda-week-day-today {
-    border-color: rgb(22 160 133 / 0.35);
-    box-shadow: 0 0 0 2px rgb(22 160 133 / 0.08);
+    border-color: rgb(46 103 255 / 0.35);
+    box-shadow: 0 0 0 2px rgb(46 103 255 / 0.08);
   }
 
   .agenda-week-day-today .agenda-week-day-header {

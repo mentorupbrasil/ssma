@@ -34,7 +34,7 @@ export function HeroInstitutionalVisual({ className }: { className?: string }) {
             priority
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a5568] via-[#0f3d4a] to-[#0a2f3a]">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#16204a] via-[#0e142b] to-[#080d1c]">
             {/* Layered abstract composition */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_25%_30%,rgba(22,160,133,0.2),transparent_50%)]" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_75%,rgba(22,160,133,0.08),transparent_45%)]" />

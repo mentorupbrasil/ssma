@@ -87,19 +87,19 @@
 }
 
 .faq-tab:hover {
-  border-color: rgb(22 160 133 / 0.28);
+  border-color: rgb(46 103 255 / 0.28);
   color: var(--brand-navy);
 }
 
 .faq-tab-active {
-  border-color: rgb(22 160 133 / 0.45);
+  border-color: rgb(46 103 255 / 0.45);
   background: var(--brand-green);
   color: white;
-  box-shadow: 0 4px 14px rgb(22 160 133 / 0.22);
+  box-shadow: 0 4px 14px rgb(46 103 255 / 0.22);
 }
 
 .faq-tab-active .faq-tab-icon {
-  color: rgb(236 253 245);
+  color: rgb(239 246 255);
 }
 
 .faq-tab-icon {
@@ -120,19 +120,19 @@
   border-radius: 1rem;
   border: 1px solid rgb(226 232 240 / 0.95);
   background: white;
-  box-shadow: 0 1px 2px rgb(15 61 74 / 0.03);
+  box-shadow: 0 1px 2px rgb(14 20 43 / 0.03);
   transition:
     border-color 0.22s ease,
     box-shadow 0.22s ease;
 }
 
 .faq-item:hover {
-  border-color: rgb(22 160 133 / 0.16);
+  border-color: rgb(46 103 255 / 0.16);
 }
 
 .faq-item-open {
-  border-color: rgb(22 160 133 / 0.26);
-  box-shadow: 0 8px 22px rgb(15 61 74 / 0.05);
+  border-color: rgb(46 103 255 / 0.26);
+  box-shadow: 0 8px 22px rgb(14 20 43 / 0.05);
 }
 
 .faq-item-trigger {
@@ -178,7 +178,7 @@
 .faq-item-chevron-open {
   transform: rotate(180deg);
   color: var(--brand-green);
-  background: rgb(236 253 245);
+  background: rgb(239 246 255);
 }
 
 .faq-item-panel-wrap {
@@ -215,7 +215,7 @@
   padding: 1.25rem;
   box-shadow:
     0 1px 0 rgb(255 255 255) inset,
-    0 12px 32px rgb(15 61 74 / 0.06);
+    0 12px 32px rgb(14 20 43 / 0.06);
 }
 
 .faq-help-card-accent {
@@ -224,7 +224,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--brand-green), rgb(52 211 153));
+  background: linear-gradient(90deg, var(--brand-green), rgb(96 165 250));
 }
 
 .faq-help-card-icon {
@@ -235,7 +235,7 @@
   height: 2.25rem;
   margin-bottom: 0.75rem;
   border-radius: 0.7rem;
-  background: rgb(236 253 245);
+  background: rgb(239 246 255);
   color: var(--brand-green);
 }
 

@@ -24,7 +24,7 @@ export function PageHero({
   return (
     <section
       className={cn(
-        "page-hero-offset scroll-mt-[var(--header-height)] relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#124a5a] to-[#0f3d4a]",
+        "page-hero-offset scroll-mt-[var(--header-height)] relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#16204a] to-[#0e142b]",
         className
       )}
     >

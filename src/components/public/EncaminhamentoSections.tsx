@@ -26,7 +26,7 @@ type EncaminhamentoPathCardsProps = {
 
 export function EncaminhamentoHero() {
   return (
-    <section className="page-hero-offset scroll-mt-[var(--header-height)] relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#124a5a] to-[#0f3d4a]">
+    <section className="page-hero-offset scroll-mt-[var(--header-height)] relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#16204a] to-[#0e142b]">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(22,160,133,0.18),transparent_55%)]" />
       <div className="container-page relative pb-10 pt-1 md:pb-12 lg:pb-14">
         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300/90">

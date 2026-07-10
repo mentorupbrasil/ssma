@@ -58,8 +58,8 @@ const TONE_STYLES: Record<
   },
   finance: {
     shell: "border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-100/60",
-    icon: "bg-slate-100 text-[var(--brand-navy,#0f3d4a)]",
-    badge: "bg-slate-100 text-[var(--brand-navy,#0f3d4a)]",
+    icon: "bg-slate-100 text-[var(--brand-navy,#0e142b)]",
+    badge: "bg-slate-100 text-[var(--brand-navy,#0e142b)]",
     active: "border-slate-300 ring-2 ring-slate-500/12",
   },
 };
