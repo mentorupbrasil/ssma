@@ -38,9 +38,9 @@ export default function ServicosPage() {
         className="services-final-cta"
         title="Precisa regularizar exames, laudos ou documentos ocupacionais?"
         description="Nossa equipe monta uma proposta conforme o porte da empresa, riscos ocupacionais e serviços necessários."
-        primaryLabel="Solicitar orçamento sem compromisso"
+        primaryLabel="Solicitar orçamento"
         secondaryHref={whatsappHref}
-        secondaryLabel="Falar com especialista"
+        secondaryLabel="Falar no WhatsApp"
       />
     </>
   );
