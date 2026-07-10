@@ -1123,39 +1123,78 @@
 }
 
 .about-team-card {
+  position: relative;
   display: flex;
   flex-direction: column;
+  gap: 0.85rem;
   min-height: 100%;
-  border-radius: 1rem;
-  border: 1px solid rgb(226 232 240 / 0.8);
+  padding: 1.15rem 1.15rem 1.2rem;
+  border-radius: 1.1rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
   background: white;
   overflow: hidden;
   box-shadow: 0 1px 2px rgb(15 61 74 / 0.03);
   transition:
-    border-color 0.22s ease,
-    box-shadow 0.22s ease,
-    transform 0.22s ease;
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    transform 0.24s ease;
+}
+
+.about-team-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brand-green) 0%, rgb(22 160 133 / 0.2) 100%);
+  opacity: 0;
+  transition: opacity 0.24s ease;
 }
 
 .about-team-card:hover {
-  border-color: rgb(22 160 133 / 0.22);
-  box-shadow: 0 8px 24px rgb(15 61 74 / 0.06);
+  border-color: rgb(22 160 133 / 0.28);
+  box-shadow: 0 12px 30px rgb(15 61 74 / 0.08);
   transform: translateY(-2px);
+}
+
+.about-team-card:hover::before {
+  opacity: 1;
+}
+
+.about-team-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(150deg, rgb(236 253 245) 0%, rgb(209 250 229 / 0.55) 100%);
+  color: var(--brand-green);
+  box-shadow: inset 0 0 0 1px rgb(167 243 208 / 0.5);
+  transition: transform 0.24s ease;
+}
+
+.about-team-avatar svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.about-team-card:hover .about-team-avatar {
+  transform: scale(1.05);
 }
 
 .about-team-card-body {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.9rem 0.95rem 1rem;
+  gap: 0.3rem;
 }
 
 .about-team-card-body h3 {
   margin: 0;
   font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.3;
+  letter-spacing: -0.015em;
   color: var(--brand-navy);
 }
 
@@ -1176,10 +1215,21 @@
 }
 
 .about-team-desc {
-  margin: 0.35rem 0 0;
+  margin: 0.15rem 0 0;
   font-size: 0.8125rem;
-  line-height: 1.6;
+  line-height: 1.62;
   color: rgb(100 116 139);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-team-card,
+  .about-team-avatar {
+    transition: none;
+  }
+
+  .about-team-card:hover {
+    transform: none;
+  }
 }
 
 /* Process — refined timeline ----------------------------------------- */
@@ -1455,35 +1505,67 @@
 }
 
 .about-values-card {
-  padding: 1rem 1.05rem;
-  border-radius: 1rem;
-  border: 1px solid rgb(226 232 240 / 0.8);
+  position: relative;
+  padding: 1.15rem 1.2rem 1.25rem;
+  border-radius: 1.1rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
   background: white;
   box-shadow: 0 1px 2px rgb(15 61 74 / 0.03);
   transition:
-    border-color 0.22s ease,
-    box-shadow 0.22s ease;
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    transform 0.24s ease;
 }
 
 .about-values-card:hover {
-  border-color: rgb(22 160 133 / 0.22);
-  box-shadow: 0 6px 20px rgb(15 61 74 / 0.05);
+  border-color: rgb(22 160 133 / 0.28);
+  box-shadow: 0 12px 30px rgb(15 61 74 / 0.07);
+  transform: translateY(-2px);
+}
+
+.about-values-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.about-values-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(150deg, rgb(236 253 245) 0%, rgb(209 250 229 / 0.55) 100%);
+  color: var(--brand-green);
+  box-shadow: inset 0 0 0 1px rgb(167 243 208 / 0.5);
+  transition: transform 0.24s ease;
+}
+
+.about-values-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.about-values-card:hover .about-values-icon {
+  transform: scale(1.05);
 }
 
 .about-values-num {
-  display: block;
-  margin-bottom: 0.55rem;
-  font-size: 0.6875rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--brand-green);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: rgb(226 232 240);
 }
 
 .about-values-card h3 {
   margin: 0 0 0.4rem;
   font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--brand-navy);
 }
 
@@ -1492,6 +1574,17 @@
   font-size: 0.8125rem;
   line-height: 1.65;
   color: rgb(100 116 139);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-values-card,
+  .about-values-icon {
+    transition: none;
+  }
+
+  .about-values-card:hover {
+    transform: none;
+  }
 }
 
 /* Brand frames (gallery + team fallbacks) ---------------------------- */

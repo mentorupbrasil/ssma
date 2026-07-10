@@ -1,13 +1,20 @@
-import { AboutBrandFrame } from "@/components/public/about/AboutBrandFrame";
+import {
+  ClipboardPlus,
+  Headset,
+  HardHat,
+  Stethoscope,
+  type LucideIcon,
+} from "lucide-react";
+
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { ABOUT_TEAM, ABOUT_TEAM_MEMBERS } from "@/data/about";
 
-const TEAM_VARIANTS = {
-  medicina: "team-medicina",
-  examinador: "team-examinador",
-  sst: "team-sst",
-  rh: "team-rh",
-} as const;
+const TEAM_ICONS: Record<string, LucideIcon> = {
+  medicina: Stethoscope,
+  examinador: ClipboardPlus,
+  sst: HardHat,
+  rh: Headset,
+};
 
 export function AboutTeam() {
   return (
@@ -22,16 +29,14 @@ export function AboutTeam() {
 
         <div className="about-team-grid">
           {ABOUT_TEAM_MEMBERS.map((member) => {
-            const photoAlt = member.name ? `${member.name}, ${member.role}` : `${member.role} — Unimetra`;
+            const Icon = TEAM_ICONS[member.variant] ?? Stethoscope;
 
             return (
               <article key={member.role} className="about-team-card">
-                <AboutBrandFrame
-                  image={member.photo}
-                  alt={photoAlt}
-                  variant={TEAM_VARIANTS[member.variant]}
-                  className="about-team-card-media"
-                />
+                <span className="about-team-avatar" aria-hidden>
+                  <Icon strokeWidth={1.6} />
+                </span>
+
                 <div className="about-team-card-body">
                   {member.name ? (
                     <>
