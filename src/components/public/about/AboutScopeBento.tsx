@@ -5,6 +5,7 @@ import {
   Stethoscope,
   type LucideIcon,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import type { AboutDeliverableItem } from "@/data/about";
 
@@ -15,37 +16,90 @@ const SCOPE_ICONS: Record<string, LucideIcon> = {
   "Portal e suporte ao RH": Monitor,
 };
 
+const SCOPE_LAYOUT: Record<
+  string,
+  {
+    status: string;
+    tags: string[];
+    colSpan: 1 | 2;
+    featured?: boolean;
+  }
+> = {
+  "Medicina do Trabalho": {
+    status: "Clínica",
+    tags: ["ASO", "Exames", "PCMSO"],
+    colSpan: 2,
+    featured: true,
+  },
+  "Segurança do Trabalho": {
+    status: "Técnico",
+    tags: ["PGR", "Laudos", "SST"],
+    colSpan: 1,
+  },
+  "Documentação ocupacional": {
+    status: "Conformidade",
+    tags: ["PCMSO", "PPP", "Eventos"],
+    colSpan: 1,
+  },
+  "Portal e suporte ao RH": {
+    status: "Digital",
+    tags: ["Encaminhamentos", "Status", "RH"],
+    colSpan: 2,
+  },
+};
+
 type AboutScopeBentoProps = {
   items: AboutDeliverableItem[];
 };
 
 export function AboutScopeBento({ items }: AboutScopeBentoProps) {
   return (
-    <ol className="home-clinical-bento about-scope-bento">
+    <ol className="about-scope-bento">
       {items.map((item, index) => {
         const Icon = SCOPE_ICONS[item.title] ?? Stethoscope;
-        const featured = item.layout === "featured";
+        const layout = SCOPE_LAYOUT[item.title] ?? {
+          status: "Atuação",
+          tags: [],
+          colSpan: 1 as const,
+        };
+        const featured = layout.featured ?? false;
 
         return (
           <li
             key={item.title}
             className={cn(
-              "home-clinical-bento-card",
-              featured && "home-clinical-bento-card--featured"
+              "about-scope-card group",
+              layout.colSpan === 2 && "about-scope-card--wide",
+              featured && "about-scope-card--featured"
             )}
           >
-            <div className="home-clinical-bento-card-header">
-              <span className="home-clinical-bento-card-icon" aria-hidden>
+            <div className="about-scope-card-pattern" aria-hidden />
+            <div className="about-scope-card-glow" aria-hidden />
+
+            <div className="about-scope-card-top">
+              <span className="about-scope-card-icon" aria-hidden>
                 <Icon strokeWidth={1.75} />
               </span>
-              <div className="home-clinical-bento-card-head">
-                <h3 className="home-clinical-bento-card-title">{item.title}</h3>
-              </div>
-              <span className="home-clinical-bento-card-num" aria-hidden>
-                {String(index + 1).padStart(2, "0")}
-              </span>
+              <span className="about-scope-card-status">{layout.status}</span>
             </div>
-            <p className="home-clinical-bento-card-desc">{item.text}</p>
+
+            <div className="about-scope-card-body">
+              <div className="about-scope-card-head">
+                <h3 className="about-scope-card-title">{item.title}</h3>
+                <span className="about-scope-card-num" aria-hidden>
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+              </div>
+              <p className="about-scope-card-desc">{item.text}</p>
+            </div>
+
+            {layout.tags.length > 0 && (
+              <ul className="about-scope-card-tags" aria-label={`Áreas de ${item.title}`}>
+                {layout.tags.map((tag) => (
+                  <li key={tag}>{tag}</li>
+                ))}
+              </ul>
+            )}
           </li>
         );
       })}

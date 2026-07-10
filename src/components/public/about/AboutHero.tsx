@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Phone } from "lucide-react";
+
+import { AboutCtaLink } from "@/components/public/about/AboutCtaLink";
 import { ABOUT_HERO, ABOUT_HERO_STRIP } from "@/data/about";
 import { whatsappLink } from "@/lib/helpers";
 
@@ -14,51 +15,47 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
   );
 
   return (
-    <section className="about-hero hero-section home-hero-refined relative overflow-hidden scroll-mt-[var(--header-height)] bg-[var(--brand-navy)]">
-      <div className="home-hero-refined-bg absolute inset-0" aria-hidden />
-      <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(22,160,133,0.14),transparent_50%)]"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(22,160,133,0.1),transparent_45%)]"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"
-        aria-hidden
-      />
+    <section className="about-v2-hero scroll-mt-[var(--header-height)]">
+      <div className="about-v2-hero-glows" aria-hidden>
+        <div className="about-v2-hero-glow about-v2-hero-glow--a" />
+        <div className="about-v2-hero-glow about-v2-hero-glow--b" />
+        <div className="about-v2-hero-glow about-v2-hero-glow--c" />
+      </div>
+      <div className="about-v2-hero-fade" aria-hidden />
 
-      <div className="container-page relative">
-        <div className="about-hero-center animate-fade-up">
-          <p className="about-hero-eyebrow">
-            <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[var(--brand-green)]" aria-hidden />
-            {ABOUT_HERO.eyebrow}
-          </p>
+      <div className="container-page about-v2-container">
+        <div className="about-v2-hero-inner animate-fade-up">
+          <Link href="#nossa-historia" className="about-v2-hero-pill">
+            <span>{ABOUT_HERO.eyebrow}</span>
+            <span className="about-v2-hero-pill-divider" aria-hidden />
+            <span className="about-v2-hero-pill-icon" aria-hidden>
+              <ArrowRight className="size-3" />
+            </span>
+          </Link>
 
-          <h1 className="about-hero-title">
-            Saúde ocupacional com cuidado,{" "}
-            <span className="text-gradient-hero">precisão e confiança</span>
-          </h1>
+          <h1 className="about-v2-hero-title">{ABOUT_HERO.title}</h1>
 
-          <p className="about-hero-desc">{ABOUT_HERO.description}</p>
+          <p className="about-v2-hero-lead">{ABOUT_HERO.description}</p>
 
-          <div className="about-hero-actions">
-            <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-              <Button variant="brand" size="lg" className="w-full rounded-xl sm:w-auto sm:min-w-[210px]">
-                <Phone className="mr-2 h-4 w-4" />
+          <div className="about-v2-hero-actions">
+            <div className="about-v2-hero-cta-ring">
+              <AboutCtaLink href={whatsappHref} variant="brand" size="lg" external>
                 {ABOUT_HERO.primaryCta}
-              </Button>
-            </a>
-            <Link href="/servicos">
-              <Button variant="outline-light" size="lg" className="group w-full rounded-xl sm:w-auto sm:min-w-[210px]">
-                {ABOUT_HERO.secondaryCta}
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </Button>
-            </Link>
+                <Phone className="size-4" aria-hidden />
+              </AboutCtaLink>
+            </div>
+            <AboutCtaLink
+              href="/servicos"
+              variant="outline"
+              size="lg"
+              className="about-v2-hero-cta-secondary"
+            >
+              {ABOUT_HERO.secondaryCta}
+              <ArrowRight className="size-4" aria-hidden />
+            </AboutCtaLink>
           </div>
 
-          <ul className="about-hero-meta" aria-label="Áreas de atuação">
+          <ul className="about-v2-hero-strip" aria-label="Áreas de atuação">
             {ABOUT_HERO_STRIP.map((item) => (
               <li key={item}>{item}</li>
             ))}

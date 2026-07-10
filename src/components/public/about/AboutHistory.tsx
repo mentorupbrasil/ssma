@@ -1,6 +1,5 @@
 import { MapPin, Monitor, Users } from "lucide-react";
 
-import { SectionHeader } from "@/components/public/SectionHeader";
 import { ABOUT_HISTORY } from "@/data/about";
 
 const HIGHLIGHT_ICONS = [MapPin, Users, Monitor] as const;
@@ -8,38 +7,53 @@ const HIGHLIGHT_ICONS = [MapPin, Users, Monitor] as const;
 export function AboutHistory() {
   return (
     <section id="nossa-historia" className="about-history scroll-mt-[var(--header-height)]">
-      <div className="container-page">
-        <SectionHeader
-          eyebrow={ABOUT_HISTORY.eyebrow}
-          title={ABOUT_HISTORY.title}
-        />
+      <div className="about-history-bg" aria-hidden>
+        <div className="about-history-bg-glow" />
+      </div>
 
-        <div className="about-history-body">
-          {ABOUT_HISTORY.paragraphs.map((paragraph) => (
-            <p key={paragraph.slice(0, 40)} className="about-history-text">
-              {paragraph}
-            </p>
-          ))}
-        </div>
+      <div className="container-page about-history-container">
+        <div className="about-history-grid">
+          <header className="about-history-intro">
+            <p className="home-section-eyebrow">{ABOUT_HISTORY.eyebrow}</p>
+            <h2 className="about-history-title">{ABOUT_HISTORY.title}</h2>
+            <div className="about-history-intro-foot" aria-hidden>
+              <span className="about-history-intro-line" />
+              <span className="about-history-intro-tag">Imperatriz — MA</span>
+            </div>
+          </header>
 
-        <figure className="about-history-quote">
-          <blockquote>
-            <p>{ABOUT_HISTORY.highlightQuote}</p>
-          </blockquote>
-        </figure>
+          <div className="about-history-main">
+            <div className="about-history-prose">
+              {ABOUT_HISTORY.paragraphs.map((paragraph) => (
+                <p key={paragraph.slice(0, 40)} className="about-history-text">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
 
-        <div className="about-history-strip" role="list" aria-label="Destaques institucionais">
-          {ABOUT_HISTORY.highlights.map((item, index) => {
-            const Icon = HIGHLIGHT_ICONS[index] ?? MapPin;
-            return (
-              <div key={item} className="about-history-strip-card" role="listitem">
-                <span className="about-history-strip-icon" aria-hidden>
-                  <Icon strokeWidth={2} />
-                </span>
-                <h3>{item}</h3>
-              </div>
-            );
-          })}
+            <figure className="about-history-pull">
+              <span className="about-history-pull-mark" aria-hidden>
+                “
+              </span>
+              <blockquote>
+                <p>{ABOUT_HISTORY.highlightQuote}</p>
+              </blockquote>
+            </figure>
+
+            <ul className="about-history-facts" aria-label="Destaques institucionais">
+              {ABOUT_HISTORY.highlights.map((item, index) => {
+                const Icon = HIGHLIGHT_ICONS[index] ?? MapPin;
+                return (
+                  <li key={item} className="about-history-fact">
+                    <span className="about-history-fact-icon" aria-hidden>
+                      <Icon strokeWidth={1.85} />
+                    </span>
+                    <span className="about-history-fact-label">{item}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
       </div>
     </section>

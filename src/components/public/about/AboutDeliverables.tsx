@@ -4,7 +4,7 @@ import { ABOUT_DELIVERABLES, ABOUT_SCOPE } from "@/data/about";
 
 export function AboutDeliverables() {
   return (
-    <section id="nossa-atuacao" className="about-scope home-clinical scroll-mt-[var(--header-height)]">
+    <section id="nossa-atuacao" className="about-scope scroll-mt-[var(--header-height)]">
       <div className="container-page">
         <SectionHeader
           eyebrow={ABOUT_SCOPE.eyebrow}
