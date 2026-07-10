@@ -34,7 +34,6 @@ export function HomeClinicalExams() {
         />
 
         <HomeClinicalBento items={HOME_CLINICAL_ITEMS} />
-
         <div className="home-clinical-cta">
           <Link href="/encaminhamento-online">
             <Button variant="brand" size="lg" className="rounded-xl group">
