@@ -3,11 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Phone } from "lucide-react";
+import { ArrowRight, Phone, Shield } from "lucide-react";
 
 import { AboutHeroPanel } from "@/components/public/about/AboutHeroPanel";
-import { Shield } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_HERO_ROTATING_WORDS } from "@/data/about";
@@ -49,7 +47,7 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
             </TimelineContent>
 
             <h1 className="about-ed-hero-title">
-              Saúde ocupacional com{" "}
+              <span className="about-ed-hero-title-static">Saúde ocupacional com</span>{" "}
               <span className="about-ed-hero-title-rotator" aria-live="polite">
                 {reduceMotion ? (
                   <span className="about-ed-hero-title-word about-ed-hero-title-word--static">
@@ -60,13 +58,13 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
                     <motion.span
                       key={word}
                       className="about-ed-hero-title-word"
-                      initial={{ opacity: 0, y: "-100%" }}
+                      initial={false}
                       transition={{ type: "spring", stiffness: 55, damping: 14 }}
                       animate={
                         wordIndex === index
-                          ? { y: 0, opacity: 1 }
+                          ? { y: "0%", opacity: 1 }
                           : {
-                              y: wordIndex > index ? "-120%" : "120%",
+                              y: wordIndex > index ? "-100%" : "100%",
                               opacity: 0,
                             }
                       }
@@ -76,7 +74,7 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
                   ))
                 )}
               </span>{" "}
-              para empresas
+              <span className="about-ed-hero-title-static">para empresas</span>
             </h1>
 
             <TimelineContent animationNum={1} timelineRef={sectionRef} eager>

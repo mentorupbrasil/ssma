@@ -145,6 +145,18 @@ export const ABOUT_WHO_FEEDBACK: AboutWhoFeedback[] = [
   },
 ];
 
+const ABOUT_WHO_FEEDBACK_HIGHLIGHT_TOPICS = [
+  "Portal empresarial",
+  "Medicina do Trabalho",
+  "Conformidade SST",
+  "Organização documental",
+] as const;
+
+/** Quatro destaques principais do bloco "O que o RH valoriza" na seção Quem somos. */
+export const ABOUT_WHO_FEEDBACK_HIGHLIGHTS = ABOUT_WHO_FEEDBACK_HIGHLIGHT_TOPICS.map(
+  (topic) => ABOUT_WHO_FEEDBACK.find((item) => item.topic === topic)!
+);
+
 export const ABOUT_WORKFLOW_STEPS = [
   {
     step: 1,

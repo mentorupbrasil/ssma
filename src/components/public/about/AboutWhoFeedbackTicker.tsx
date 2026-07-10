@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
 
-import { ABOUT_WHO_FEEDBACK } from "@/data/about";
-import { motion, useReducedMotion } from "framer-motion";
+import { ABOUT_WHO_FEEDBACK_HIGHLIGHTS } from "@/data/about";
+import { cn } from "@/lib/utils";
 
 type FeedbackItemProps = {
   quote: string;
@@ -26,43 +27,60 @@ function FeedbackItem({ quote, topic, icon: Icon }: FeedbackItemProps) {
   );
 }
 
-export function AboutWhoFeedbackTicker() {
+function useStaticTicker() {
   const reduceMotion = useReducedMotion();
-  const items = [...ABOUT_WHO_FEEDBACK, ...ABOUT_WHO_FEEDBACK];
+  const [isMobile, setIsMobile] = useState(true);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(media.matches);
+
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  return reduceMotion || isMobile;
+}
+
+export function AboutWhoFeedbackTicker() {
+  const showStatic = useStaticTicker();
+  const highlights = ABOUT_WHO_FEEDBACK_HIGHLIGHTS;
+  const loopItems = [...highlights, ...highlights];
 
   return (
-    <aside className="about-ed-who-ticker" aria-label="Destaques para empresas">
+    <aside className="about-ed-who-ticker" aria-label="O que o RH valoriza">
       <div className="about-ed-who-ticker-card">
         <div className="about-ed-who-ticker-head">
           <p className="about-ed-who-ticker-eyebrow">O que o RH valoriza</p>
         </div>
 
-        <div className="about-ed-who-ticker-viewport">
-          {reduceMotion ? (
+        <div
+          className={cn(
+            "about-ed-who-ticker-viewport",
+            showStatic && "about-ed-who-ticker-viewport--static"
+          )}
+        >
+          {showStatic ? (
             <div className="about-ed-who-feedback-static">
-              {ABOUT_WHO_FEEDBACK.map((item) => (
+              {highlights.map((item) => (
                 <FeedbackItem key={item.topic} {...item} />
               ))}
             </div>
           ) : (
-            <motion.div
-              className="about-ed-who-feedback-track"
-              animate={{ y: ["0%", "-50%"] }}
-              transition={{
-                repeat: Infinity,
-                repeatType: "loop",
-                duration: 20,
-                ease: "linear",
-              }}
-            >
-              {items.map((item, index) => (
+            <div className="about-ed-who-feedback-track" aria-hidden>
+              {loopItems.map((item, index) => (
                 <FeedbackItem key={`${item.topic}-${index}`} {...item} />
               ))}
-            </motion.div>
+            </div>
           )}
 
-          <div className="about-ed-who-ticker-fade about-ed-who-ticker-fade--top" aria-hidden />
-          <div className="about-ed-who-ticker-fade about-ed-who-ticker-fade--bottom" aria-hidden />
+          {!showStatic && (
+            <>
+              <div className="about-ed-who-ticker-fade about-ed-who-ticker-fade--top" aria-hidden />
+              <div className="about-ed-who-ticker-fade about-ed-who-ticker-fade--bottom" aria-hidden />
+            </>
+          )}
         </div>
       </div>
     </aside>

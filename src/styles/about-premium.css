@@ -3,7 +3,9 @@
 /* ================================================================== */
 
 .about-ed-page {
-  max-width: 64rem;
+  width: 100%;
+  max-width: 56rem;
+  margin-inline: auto;
 }
 
 .about-ed-section-header {
@@ -349,35 +351,43 @@
 }
 
 .about-ed-hero-title {
-  max-width: 15ch;
+  max-width: 20ch;
   margin: 0;
   font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
   font-size: clamp(1.65rem, 3.2vw, 2.25rem);
   font-weight: 700;
-  line-height: 1.14;
+  line-height: 1.18;
   letter-spacing: -0.025em;
+  color: var(--brand-navy);
+}
+
+.about-ed-hero-title-static {
   color: var(--brand-navy);
 }
 
 .about-ed-hero-title-rotator {
   position: relative;
-  display: inline-flex;
+  display: inline-block;
   overflow: hidden;
   vertical-align: bottom;
-  min-width: 11.5ch;
-  height: 1.15em;
+  width: 12ch;
+  height: 1.2em;
   color: var(--brand-green);
 }
 
 .about-ed-hero-title-word {
   position: absolute;
   inset-inline-start: 0;
+  top: 0;
+  display: block;
   white-space: nowrap;
   font-weight: 700;
+  color: var(--brand-green);
 }
 
 .about-ed-hero-title-word--static {
   position: static;
+  display: inline;
 }
 
 .about-ed-hero-lead {
@@ -499,8 +509,13 @@
 
 .about-ed-who-ticker-viewport {
   position: relative;
-  height: 14.5rem;
+  height: 12.5rem;
   overflow: hidden;
+}
+
+.about-ed-who-ticker-viewport--static {
+  height: auto;
+  overflow: visible;
 }
 
 .about-ed-who-feedback-track,
@@ -515,12 +530,26 @@
   inset-inline: 0;
   top: 0;
   width: 100%;
+  animation: about-ed-who-ticker-scroll 64s linear infinite;
+  will-change: transform;
+}
+
+.about-ed-who-ticker-viewport:hover .about-ed-who-feedback-track {
+  animation-play-state: paused;
+}
+
+@keyframes about-ed-who-ticker-scroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
 }
 
 .about-ed-who-feedback-static {
-  height: 100%;
-  overflow-y: auto;
-  padding-bottom: 0.5rem;
+  overflow: visible;
+  padding-bottom: 0;
 }
 
 .about-ed-who-feedback-item {
@@ -529,6 +558,10 @@
   gap: 0.65rem;
   padding: 0.7rem 0.9rem;
   border-bottom: 1px solid rgb(241 245 249);
+}
+
+.about-ed-who-feedback-item:last-child {
+  border-bottom: none;
 }
 
 .about-ed-who-feedback-icon {
@@ -574,23 +607,25 @@
   pointer-events: none;
   position: absolute;
   inset-inline: 0;
-  height: 2.75rem;
+  height: 1.75rem;
   z-index: 1;
 }
 
 .about-ed-who-ticker-fade--top {
   top: 0;
-  background: linear-gradient(180deg, white 0%, rgb(255 255 255 / 0.72) 55%, transparent 100%);
+  background: linear-gradient(180deg, rgb(252 253 254) 0%, rgb(252 253 254 / 0.55) 70%, transparent 100%);
 }
 
 .about-ed-who-ticker-fade--bottom {
   bottom: 0;
-  background: linear-gradient(0deg, rgb(252 253 254) 0%, rgb(252 253 254 / 0.7) 55%, transparent 100%);
+  background: linear-gradient(0deg, rgb(252 253 254) 0%, rgb(252 253 254 / 0.55) 70%, transparent 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .about-ed-who-feedback-track {
     position: static;
+    animation: none;
+    transform: none;
   }
 }
 
@@ -832,7 +867,7 @@
 }
 
 .about-ed-trust-shell {
-  max-width: 48rem;
+  width: 100%;
   margin-inline: auto;
 }
 
