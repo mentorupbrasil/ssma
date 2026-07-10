@@ -1,6 +1,7 @@
 import { AboutDeliverables } from "@/components/public/about/AboutDeliverables";
 import { AboutFinalCTA } from "@/components/public/about/AboutFinalCTA";
 import { AboutHero } from "@/components/public/about/AboutHero";
+import { AboutHighlights } from "@/components/public/about/AboutHighlights";
 import { AboutHistory } from "@/components/public/about/AboutHistory";
 import { AboutMissionVision } from "@/components/public/about/AboutMissionVision";
 import { AboutMotionRoot } from "@/components/public/about/AboutMotionRoot";
@@ -56,6 +57,7 @@ export default function SobrePage() {
     <AboutMotionRoot>
       <AboutPageJsonLd />
       <AboutHero clinicName={clinic.name} />
+      <AboutHighlights />
       <AboutHistory />
       <AboutDeliverables />
       <AboutStructure />

@@ -259,6 +259,98 @@
   }
 }
 
+/* Highlights — faixa de credibilidade -------------------------------- */
+
+.about-highlights {
+  padding-block: clamp(0.5rem, 2vw, 1rem) clamp(1.75rem, 4vw, 2.75rem);
+  background: var(--background);
+}
+
+.about-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  border-radius: 1.25rem;
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: linear-gradient(180deg, #ffffff 0%, rgb(248 250 252 / 0.85) 100%);
+  box-shadow: 0 14px 38px rgb(15 61 74 / 0.05);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .about-highlights-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.about-highlights-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.05rem 1.15rem;
+  text-align: center;
+}
+
+.about-highlights-item::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 2.4rem;
+  background: rgb(226 232 240 / 0.9);
+}
+
+.about-highlights-item:nth-child(2n)::after {
+  display: none;
+}
+
+.about-highlights-item:nth-child(-n + 2)::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 1px;
+  background: rgb(226 232 240 / 0.9);
+}
+
+@media (min-width: 768px) {
+  .about-highlights-item:nth-child(2n)::after {
+    display: block;
+  }
+
+  .about-highlights-item:last-child::after {
+    display: none;
+  }
+
+  .about-highlights-item:nth-child(-n + 2)::before {
+    display: none;
+  }
+}
+
+.about-highlights-value {
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--brand-navy);
+}
+
+.about-highlights-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgb(100 116 139);
+  text-wrap: balance;
+}
+
 /* History — editorial split layout ----------------------------------- */
 
 .about-history {
@@ -1009,7 +1101,7 @@
 /* Featured light card (green tint + glow + heartbeat) */
 .about-structure-card--featured {
   justify-content: space-between;
-  min-height: 15rem;
+  min-height: 13rem;
   border-color: rgb(22 160 133 / 0.2);
   background: linear-gradient(
     150deg,
@@ -1156,6 +1248,31 @@
 .about-team-avatar svg {
   width: 1.4rem;
   height: 1.4rem;
+}
+
+/* Tons distintos por área para variar o ritmo visual */
+.about-team-avatar--medicina {
+  background: linear-gradient(150deg, rgb(236 253 245) 0%, rgb(167 243 208 / 0.55) 100%);
+  color: rgb(15 118 110);
+  box-shadow: inset 0 0 0 1px rgb(94 234 212 / 0.55);
+}
+
+.about-team-avatar--examinador {
+  background: linear-gradient(150deg, rgb(240 253 250) 0%, rgb(153 246 228 / 0.5) 100%);
+  color: rgb(13 148 136);
+  box-shadow: inset 0 0 0 1px rgb(94 234 212 / 0.5);
+}
+
+.about-team-avatar--sst {
+  background: linear-gradient(150deg, rgb(236 253 245) 0%, rgb(110 231 183 / 0.4) 100%);
+  color: var(--brand-green);
+  box-shadow: inset 0 0 0 1px rgb(52 211 153 / 0.45);
+}
+
+.about-team-avatar--rh {
+  background: linear-gradient(150deg, rgb(239 246 255) 0%, rgb(191 219 254 / 0.45) 100%);
+  color: rgb(30 64 90);
+  box-shadow: inset 0 0 0 1px rgb(148 197 253 / 0.5);
 }
 
 .about-team-card:hover .about-team-avatar {

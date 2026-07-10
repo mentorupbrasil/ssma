@@ -2642,6 +2642,18 @@
     }
   }
 
+  .about-final-cta .final-cta-btn-secondary {
+    border-color: rgb(255 255 255 / 0.55);
+    background: rgb(255 255 255 / 0.06);
+    color: rgb(255 255 255);
+  }
+
+  .about-final-cta .final-cta-btn-secondary:hover {
+    border-color: rgb(255 255 255 / 0.8);
+    background: rgb(255 255 255 / 0.16);
+    color: rgb(255 255 255);
+  }
+
   /* Services final CTA — see services-premium.css */
 
   .empresas-final-cta.final-cta-section {

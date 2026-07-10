@@ -21,6 +21,32 @@ export const ABOUT_HERO_STRIP = [
 ] as const;
 
 /* ------------------------------------------------------------------ */
+/* Destaques (faixa de credibilidade)                                  */
+/* ------------------------------------------------------------------ */
+/*
+ * Métricas de credibilidade da Unimetra.
+ * TODO: substituir "+ de XXX" pelo número real de atendimentos realizados.
+ */
+export const ABOUT_HIGHLIGHTS = [
+  {
+    value: "Desde 2017",
+    label: "Ano de fundação",
+  },
+  {
+    value: "9 anos",
+    label: "de mercado",
+  },
+  {
+    value: "+ de XXX",
+    label: "Atendimentos realizados",
+  },
+  {
+    value: "Imperatriz — MA",
+    label: "Atendimento presencial",
+  },
+] as const;
+
+/* ------------------------------------------------------------------ */
 /* Nossa história                                                      */
 /* ------------------------------------------------------------------ */
 

@@ -8,6 +8,7 @@ import {
 
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { ABOUT_TEAM, ABOUT_TEAM_MEMBERS } from "@/data/about";
+import { cn } from "@/lib/utils";
 
 const TEAM_ICONS: Record<string, LucideIcon> = {
   medicina: Stethoscope,
@@ -33,7 +34,10 @@ export function AboutTeam() {
 
             return (
               <article key={member.role} className="about-team-card">
-                <span className="about-team-avatar" aria-hidden>
+                <span
+                  className={cn("about-team-avatar", `about-team-avatar--${member.variant}`)}
+                  aria-hidden
+                >
                   <Icon strokeWidth={1.6} />
                 </span>
 
