@@ -2133,6 +2133,47 @@
   color: rgb(203 213 225 / 0.92);
 }
 
+.home-why .home-why-clients {
+  margin-top: 1.35rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.home-why .home-why-clients-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(148 163 184 / 0.9);
+}
+
+.home-why .home-why-clients-logos {
+  margin-top: 0.15rem;
+}
+
+.logo-cloud-mark-primary {
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgb(71 85 105);
+}
+
+.logo-cloud-mark-secondary {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgb(148 163 184);
+}
+
+.logo-cloud-mark--dark .logo-cloud-mark-primary {
+  color: rgb(226 232 240 / 0.92);
+}
+
+.logo-cloud-mark--dark .logo-cloud-mark-secondary {
+  color: rgb(148 163 184 / 0.85);
+}
+
 /* Location --------------------------------------------------------- */
 
 .home-location {
@@ -2520,51 +2561,5 @@
   .home-hero-highlights,
   .home-hero-visual-frame {
     max-width: 42.5rem;
-  }
-}
-
-/* Client logos ----------------------------------------------------- */
-
-.home-clients {
-  padding-block: 1.35rem 1.5rem;
-  background: white;
-  border-top: 1px solid rgb(241 245 249);
-  border-bottom: 1px solid rgb(241 245 249);
-}
-
-.home-clients-inner {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.home-clients-eyebrow {
-  margin: 0;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(13 148 136);
-}
-
-.home-clients-title {
-  margin: 0;
-  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: rgb(71 85 105);
-}
-
-.home-clients-logos {
-  margin-top: 0.15rem;
-}
-
-.home-clients-logos img {
-  height: 1.1rem;
-  opacity: 0.65;
-}
-
-@media (min-width: 768px) {
-  .home-clients-logos img {
-    height: 1.25rem;
   }
 }

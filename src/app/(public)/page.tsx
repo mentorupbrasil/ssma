@@ -4,7 +4,6 @@ import { HomeHero } from "@/components/public/HomeHero";
 import { HomeClinicalExams } from "@/components/public/HomeClinicalExams";
 import { HomeComplianceSection } from "@/components/public/home/HomeComplianceSection";
 import { HomePortalSection } from "@/components/public/home/HomePortalSection";
-import { HomeClientsSection } from "@/components/public/home/HomeClientsSection";
 import { HomeProcessSection } from "@/components/public/home/HomeProcessSection";
 import { HomeWhyChooseSection } from "@/components/public/home/HomeWhyChooseSection";
 import { HomeLocationSection } from "@/components/public/home/HomeLocationSection";
@@ -23,8 +22,6 @@ export default async function HomePage() {
       <HomeComplianceSection />
 
       <HomePortalSection />
-
-      <HomeClientsSection />
 
       <HomeClinicalExams />
 

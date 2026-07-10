@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { HOME_WHY_CHOOSE } from "@/data/home";
+import { LogoCloud } from "@/components/public/LogoCloud";
+import { HOME_CLIENT_WORDMARKS, HOME_WHY_CHOOSE } from "@/data/home";
 
 const STATS = [
   { value: "6", label: "documentos e programas cobertos", variant: "number" },
@@ -51,6 +52,15 @@ export function HomeWhyChooseSection() {
               </li>
             ))}
           </ul>
+
+          <div className="home-why-clients">
+            <p className="home-why-clients-label">Empresas que confiam na Unimetra</p>
+            <LogoCloud
+              wordmarks={HOME_CLIENT_WORDMARKS}
+              variant="dark"
+              className="home-why-clients-logos"
+            />
+          </div>
         </div>
       </div>
     </section>

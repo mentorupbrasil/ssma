@@ -1,37 +1,46 @@
 import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import { cn } from "@/lib/utils";
 
-type Logo = {
-  src: string;
+export type ClientWordmark = {
+  primary: string;
+  secondary?: string;
   alt: string;
-  width?: number;
-  height?: number;
 };
 
 type LogoCloudProps = React.ComponentProps<"div"> & {
-  logos: readonly Logo[];
+  wordmarks: readonly ClientWordmark[];
+  variant?: "light" | "dark";
 };
 
-export function LogoCloud({ className, logos, ...props }: LogoCloudProps) {
+export function LogoCloud({
+  className,
+  wordmarks,
+  variant = "light",
+  ...props
+}: LogoCloudProps) {
   return (
     <div
       {...props}
       className={cn(
-        "overflow-hidden py-4 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]",
+        "overflow-hidden py-3 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]",
         className
       )}
     >
-      <InfiniteSlider gap={42} reverse speed={80} speedOnHover={25}>
-        {logos.map((logo) => (
-          <img
-            alt={logo.alt}
-            className="pointer-events-none h-4 select-none opacity-70 grayscale transition-opacity duration-300 hover:opacity-100 md:h-5"
-            height={logo.height || "auto"}
-            key={`logo-${logo.alt}`}
-            loading="lazy"
-            src={logo.src}
-            width={logo.width || "auto"}
-          />
+      <InfiniteSlider gap={48} reverse speed={80} speedOnHover={25}>
+        {wordmarks.map((mark) => (
+          <div
+            key={mark.alt}
+            aria-label={mark.alt}
+            className={cn(
+              "logo-cloud-mark flex shrink-0 items-baseline gap-1.5 whitespace-nowrap select-none",
+              variant === "dark" && "logo-cloud-mark--dark"
+            )}
+          >
+            <span className="logo-cloud-mark-primary">{mark.primary}</span>
+            {mark.secondary ? (
+              <span className="logo-cloud-mark-secondary">{mark.secondary}</span>
+            ) : null}
+          </div>
         ))}
       </InfiniteSlider>
     </div>

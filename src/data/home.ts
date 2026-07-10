@@ -18,14 +18,14 @@ export const HOME_HERO_BADGES = [
   "Suporte para RH",
 ] as const;
 
-export const HOME_CLIENT_LOGOS = [
-  { src: "/logos/clients/alfa-industria.svg", alt: "Alfa Indústria" },
-  { src: "/logos/clients/grupo-nordeste.svg", alt: "Grupo Nordeste" },
-  { src: "/logos/clients/meta-foods.svg", alt: "Meta Foods" },
-  { src: "/logos/clients/imperatriz-energia.svg", alt: "Imperatriz Energia" },
-  { src: "/logos/clients/rio-verde-agro.svg", alt: "Rio Verde Agro" },
-  { src: "/logos/clients/beta-logistica.svg", alt: "Beta Logística" },
-  { src: "/logos/clients/delta-construcoes.svg", alt: "Delta Construções" },
+export const HOME_CLIENT_WORDMARKS = [
+  { primary: "ALFA", secondary: "Indústria", alt: "Alfa Indústria" },
+  { primary: "GRUPO", secondary: "Nordeste", alt: "Grupo Nordeste" },
+  { primary: "META", secondary: "Foods", alt: "Meta Foods" },
+  { primary: "IMPERATRIZ", secondary: "Energia", alt: "Imperatriz Energia" },
+  { primary: "RIO VERDE", secondary: "Agro", alt: "Rio Verde Agro" },
+  { primary: "BETA", secondary: "Logística", alt: "Beta Logística" },
+  { primary: "DELTA", secondary: "Construções", alt: "Delta Construções" },
 ] as const;
 
 export type HomeWhyChooseItem = {
