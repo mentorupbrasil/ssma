@@ -3,7 +3,7 @@ import { ABOUT_INSTITUTIONAL_STRIP } from "@/data/about";
 export function AboutInstitutionalStrip() {
   return (
     <div className="about-ed-strip">
-      <div className="container-page">
+      <div className="container-page about-ed-page">
         <p className="about-ed-strip-label">Áreas de atuação</p>
         <ul className="about-ed-strip-list" aria-label="Áreas de atuação da clínica">
           {ABOUT_INSTITUTIONAL_STRIP.map((item) => {

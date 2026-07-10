@@ -15,7 +15,7 @@ export function AboutTrustSection() {
       ref={sectionRef}
       className="about-ed-trust scroll-mt-[var(--header-height)]"
     >
-      <div className="container-page">
+      <div className="container-page about-ed-page">
         <div className="about-ed-trust-shell">
           <div className="about-ed-trust-panel">
             <div className="about-ed-trust-copy">

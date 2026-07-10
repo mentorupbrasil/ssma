@@ -1,9 +1,10 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
 import type { LucideIcon } from "lucide-react";
 
 import { ABOUT_WHO_FEEDBACK } from "@/data/about";
+import { motion, useReducedMotion } from "framer-motion";
 
 type FeedbackItemProps = {
   quote: string;
@@ -12,21 +13,14 @@ type FeedbackItemProps = {
 };
 
 function FeedbackItem({ quote, topic, icon: Icon }: FeedbackItemProps) {
-  const initial = topic.charAt(0).toUpperCase();
-
   return (
     <article className="about-ed-who-feedback-item">
-      <div className="about-ed-who-feedback-avatar" aria-hidden>
-        <span>{initial}</span>
-      </div>
-
-      <div className="about-ed-who-feedback-body">
-        <p className="about-ed-who-feedback-quote">{quote}</p>
-        <p className="about-ed-who-feedback-topic">{topic}</p>
-      </div>
-
-      <div className="about-ed-who-feedback-icon" aria-hidden>
+      <span className="about-ed-who-feedback-icon" aria-hidden>
         <Icon strokeWidth={1.75} />
+      </span>
+      <div className="about-ed-who-feedback-body">
+        <p className="about-ed-who-feedback-topic">{topic}</p>
+        <p className="about-ed-who-feedback-quote">{quote}</p>
       </div>
     </article>
   );
@@ -40,8 +34,7 @@ export function AboutWhoFeedbackTicker() {
     <aside className="about-ed-who-ticker" aria-label="Destaques para empresas">
       <div className="about-ed-who-ticker-card">
         <div className="about-ed-who-ticker-head">
-          <p className="about-ed-who-ticker-eyebrow">Destaques para empresas</p>
-          <p className="about-ed-who-ticker-caption">O que o RH valoriza na rotina ocupacional</p>
+          <p className="about-ed-who-ticker-eyebrow">O que o RH valoriza</p>
         </div>
 
         <div className="about-ed-who-ticker-viewport">
@@ -58,7 +51,7 @@ export function AboutWhoFeedbackTicker() {
               transition={{
                 repeat: Infinity,
                 repeatType: "loop",
-                duration: 18,
+                duration: 20,
                 ease: "linear",
               }}
             >

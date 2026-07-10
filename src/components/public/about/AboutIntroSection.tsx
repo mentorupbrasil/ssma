@@ -16,7 +16,7 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
 
   return (
     <section id="quem-somos" ref={sectionRef} className="about-ed-who scroll-mt-[var(--header-height)]">
-      <div className="container-page">
+      <div className="container-page about-ed-page">
         <div className="about-ed-who-grid">
           <div className="about-ed-who-copy">
             <TimelineContent animationNum={0} timelineRef={sectionRef}>
@@ -34,9 +34,8 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
                 documentação ocupacional com atenção à conformidade legal.
               </p>
               <p>
-                Nosso diferencial é unir estrutura presencial de qualidade com um portal
-                empresarial para encaminhamento online, acompanhamento de status e centralização
-                documental — menos retrabalho para o RH, mais previsibilidade para a empresa.
+                Unimos estrutura presencial de qualidade com portal empresarial para
+                encaminhamento online, acompanhamento de status e centralização documental.
               </p>
             </TimelineContent>
 
@@ -46,10 +45,6 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
                   <li key={chip}>{chip}</li>
                 ))}
               </ul>
-
-              <blockquote className="about-ed-who-signature">
-                Estrutura clínica, organização documental e tecnologia a serviço do RH.
-              </blockquote>
             </TimelineContent>
           </div>
 

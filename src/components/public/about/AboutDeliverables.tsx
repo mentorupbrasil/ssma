@@ -45,7 +45,7 @@ export function AboutDeliverables() {
 
   return (
     <section ref={sectionRef} className="about-ed-deliver scroll-mt-[var(--header-height)]">
-      <div className="container-page">
+      <div className="container-page about-ed-page">
         <TimelineContent animationNum={0} timelineRef={sectionRef}>
           <SectionHeader
             eyebrow="O que entregamos"
