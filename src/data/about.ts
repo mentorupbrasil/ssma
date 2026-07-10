@@ -33,13 +33,6 @@ export const ABOUT_HERO = {
   secondaryCta: "Conhecer nossos serviços",
 } as const;
 
-export const ABOUT_HERO_PANEL_ITEMS = [
-  { icon: Stethoscope, label: "Medicina do Trabalho" },
-  { icon: Shield, label: "Segurança do Trabalho" },
-  { icon: LayoutDashboard, label: "Portal empresarial" },
-  { icon: MapPin, label: "Imperatriz — MA" },
-] as const;
-
 /* ------------------------------------------------------------------ */
 /* Faixa de pilares                                                    */
 /* ------------------------------------------------------------------ */
@@ -62,8 +55,9 @@ export const ABOUT_HISTORY = {
   paragraphs: [
     "Com atuação em Imperatriz, a Unimetra construiu sua trajetória oferecendo soluções em Medicina e Segurança do Trabalho para empresas de diferentes portes e segmentos. Desde sua comunicação institucional, a clínica mantém o compromisso com um atendimento personalizado, organizado e atento às necessidades de empresas, gestores e profissionais de RH.",
     "Ao longo de sua atuação, a Unimetra passou a unir atendimento presencial, suporte técnico e tecnologia para facilitar exames ocupacionais, documentos, encaminhamentos e rotinas de saúde e segurança do trabalho. Essa evolução permite oferecer uma experiência mais clara para a empresa e mais organizada para quem acompanha a saúde ocupacional dos colaboradores.",
-    "Mais do que realizar exames e elaborar documentos, a Unimetra busca construir relações de confiança, contribuindo para ambientes de trabalho mais seguros, produtivos e equilibrados.",
   ],
+  quote:
+    "Mais do que realizar exames e elaborar documentos, a Unimetra busca construir relações de confiança, contribuindo para ambientes de trabalho mais seguros, produtivos e equilibrados.",
 } as const;
 
 export const ABOUT_HISTORY_HIGHLIGHTS = [

@@ -7,6 +7,8 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_TEAM, ABOUT_TEAM_MEMBERS } from "@/data/about";
 
+const ACCENTS = ["a", "b", "c", "d"] as const;
+
 export function AboutTeam() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -42,10 +44,10 @@ export function AboutTeam() {
               >
                 <AboutMediaFallback
                   icon={Icon}
-                  monogram={member.monogram}
                   image={member.photo}
                   alt={photoAlt}
                   variant="team"
+                  accent={ACCENTS[index % ACCENTS.length]}
                   className="about-ed-team-card-media"
                 />
                 <div className="about-ed-team-card-body">

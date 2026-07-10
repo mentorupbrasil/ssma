@@ -5,17 +5,19 @@ import type { LucideIcon } from "lucide-react";
 
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
+import { cn } from "@/lib/utils";
 import { ABOUT_DELIVERABLES, ABOUT_SCOPE } from "@/data/about";
 
 type DeliverableFeatureProps = {
   title: string;
   description: string;
   icon: LucideIcon;
+  featured?: boolean;
 };
 
-function DeliverableFeature({ title, description, icon: Icon }: DeliverableFeatureProps) {
+function DeliverableFeature({ title, description, icon: Icon, featured }: DeliverableFeatureProps) {
   return (
-    <article className="about-ed-deliver-card group/deliver">
+    <article className={cn("about-ed-deliver-card group/deliver", featured && "about-ed-deliver-card--featured")}>
       <div className="about-ed-deliver-card-icon" aria-hidden>
         <Icon strokeWidth={1.75} />
       </div>
@@ -45,13 +47,14 @@ export function AboutDeliverables() {
         </TimelineContent>
 
         <TimelineContent animationNum={1} timelineRef={sectionRef}>
-          <div className="about-ed-deliver-grid">
-            {ABOUT_DELIVERABLES.map((item) => (
+          <div className="about-ed-deliver-bento">
+            {ABOUT_DELIVERABLES.map((item, index) => (
               <DeliverableFeature
                 key={item.title}
                 title={item.title}
                 description={item.text}
                 icon={item.icon}
+                featured={index === 0}
               />
             ))}
           </div>

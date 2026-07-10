@@ -21,7 +21,7 @@ export function AboutMissionVision() {
             eyebrow={ABOUT_VALUES_SECTION.eyebrow}
             title={ABOUT_VALUES_SECTION.title}
             description={ABOUT_VALUES_SECTION.description}
-            className="about-ed-section-header"
+            className="about-ed-section-header about-ed-section-header--center"
           />
         </TimelineContent>
 
@@ -35,6 +35,9 @@ export function AboutMissionVision() {
                 timelineRef={sectionRef}
                 className="about-ed-mission-card"
               >
+                <span className="about-ed-mission-card-num" aria-hidden>
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <span className="about-ed-mission-card-icon" aria-hidden>
                   <Icon strokeWidth={1.75} />
                 </span>

@@ -10,6 +10,7 @@ type AboutMediaFallbackProps = {
   alt?: string;
   className?: string;
   variant?: "hero" | "structure" | "team";
+  accent?: "a" | "b" | "c" | "d";
 };
 
 export function AboutMediaFallback({
@@ -19,6 +20,7 @@ export function AboutMediaFallback({
   alt = "",
   className,
   variant = "structure",
+  accent = "a",
 }: AboutMediaFallbackProps) {
   if (image) {
     return (
@@ -38,19 +40,25 @@ export function AboutMediaFallback({
     );
   }
 
+  const showMonogram = Boolean(monogram) && variant !== "team";
+
   return (
     <div
-      className={cn("about-ed-media", `about-ed-media--${variant}`, className)}
+      className={cn(
+        "about-ed-media",
+        `about-ed-media--${variant}`,
+        `about-ed-media--accent-${accent}`,
+        className
+      )}
       aria-hidden={variant !== "team"}
     >
-      <div className="about-ed-media-texture" aria-hidden />
-      <div className="about-ed-media-shape about-ed-media-shape--a" aria-hidden />
-      <div className="about-ed-media-shape about-ed-media-shape--b" aria-hidden />
+      <div className="about-ed-media-gradient" aria-hidden />
+      <div className="about-ed-media-lines" aria-hidden />
       <span className="about-ed-media-icon-wrap">
-        {monogram ? (
+        {showMonogram ? (
           <span className="about-ed-media-monogram">{monogram}</span>
         ) : (
-          <Icon strokeWidth={1.65} aria-hidden />
+          <Icon strokeWidth={1.5} aria-hidden />
         )}
       </span>
     </div>

@@ -31,22 +31,34 @@ export function AboutHistory() {
                 <p key={paragraph.slice(0, 48)}>{paragraph}</p>
               ))}
             </TimelineContent>
+
+            <TimelineContent animationNum={2} timelineRef={sectionRef}>
+              <blockquote className="about-ed-history-quote">
+                <p>{ABOUT_HISTORY.quote}</p>
+              </blockquote>
+            </TimelineContent>
           </div>
 
-          <TimelineContent animationNum={2} timelineRef={sectionRef}>
-            <ul className="about-ed-history-highlights" aria-label="Destaques institucionais">
-              {ABOUT_HISTORY_HIGHLIGHTS.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <li key={item.label} className="about-ed-history-highlight">
-                    <span className="about-ed-history-highlight-icon" aria-hidden>
-                      <Icon strokeWidth={1.75} />
-                    </span>
-                    <span>{item.label}</span>
-                  </li>
-                );
-              })}
-            </ul>
+          <TimelineContent animationNum={3} timelineRef={sectionRef}>
+            <div className="about-ed-history-aside">
+              <p className="about-ed-history-aside-label">Destaques</p>
+              <ul className="about-ed-history-highlights" aria-label="Destaques institucionais">
+                {ABOUT_HISTORY_HIGHLIGHTS.map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.label} className="about-ed-history-highlight">
+                      <span className="about-ed-history-highlight-num" aria-hidden>
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="about-ed-history-highlight-icon" aria-hidden>
+                        <Icon strokeWidth={1.75} />
+                      </span>
+                      <span className="about-ed-history-highlight-text">{item.label}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </TimelineContent>
         </div>
       </div>

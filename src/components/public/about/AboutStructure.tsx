@@ -7,6 +7,8 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import { TimelineContent } from "@/components/ui/timeline-animation";
 import { ABOUT_STRUCTURE, ABOUT_STRUCTURE_ITEMS } from "@/data/about";
 
+const ACCENTS = ["a", "b", "c", "d"] as const;
+
 export function AboutStructure() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -41,6 +43,7 @@ export function AboutStructure() {
                   image={item.image}
                   alt={item.title}
                   variant="structure"
+                  accent={ACCENTS[index % ACCENTS.length]}
                   className="about-ed-structure-card-media"
                 />
                 <div className="about-ed-structure-card-body">

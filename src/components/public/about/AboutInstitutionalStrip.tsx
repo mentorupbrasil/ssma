@@ -9,9 +9,7 @@ export function AboutInstitutionalStrip() {
             const Icon = item.icon;
             return (
               <li key={item.label} className="about-ed-strip-item">
-                <span className="about-ed-strip-icon" aria-hidden>
-                  <Icon strokeWidth={1.75} />
-                </span>
+                <Icon className="about-ed-strip-icon" strokeWidth={1.75} aria-hidden />
                 <span>{item.label}</span>
               </li>
             );

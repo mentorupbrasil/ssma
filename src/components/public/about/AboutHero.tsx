@@ -21,7 +21,11 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
 
   return (
     <section ref={sectionRef} className="about-ed-hero scroll-mt-[var(--header-height)]">
-      <div className="container-page about-ed-page">
+      <div className="about-ed-hero-bg" aria-hidden />
+      <div className="about-ed-hero-glow about-ed-hero-glow--a" aria-hidden />
+      <div className="about-ed-hero-glow about-ed-hero-glow--b" aria-hidden />
+
+      <div className="container-page about-ed-page about-ed-hero-container">
         <div className="about-ed-hero-grid">
           <div className="about-ed-hero-copy">
             <TimelineContent animationNum={0} timelineRef={sectionRef} eager>
@@ -42,7 +46,7 @@ export function AboutHero({ clinicName }: AboutHeroProps) {
                   {ABOUT_HERO.primaryCta}
                   <Phone className="size-4" aria-hidden />
                 </AboutCtaLink>
-                <AboutCtaLink href="/servicos" variant="outline" size="lg">
+                <AboutCtaLink href="/servicos" variant="outline-light" size="lg">
                   {ABOUT_HERO.secondaryCta}
                   <ArrowRight className="size-4" aria-hidden />
                 </AboutCtaLink>

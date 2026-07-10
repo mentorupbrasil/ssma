@@ -1,28 +1,43 @@
-import { ABOUT_HERO_PANEL_ITEMS } from "@/data/about";
+import { LayoutDashboard, MapPin, Shield, Stethoscope } from "lucide-react";
+
+const LAYERS = [
+  { icon: Stethoscope, label: "Medicina do Trabalho", tone: "a" as const },
+  { icon: Shield, label: "Segurança do Trabalho", tone: "b" as const },
+  { icon: LayoutDashboard, label: "Portal empresarial", tone: "c" as const },
+];
 
 export function AboutHeroPanel() {
   return (
     <div className="about-ed-hero-panel">
-      <div className="about-ed-hero-panel-bg">
-        <div className="about-ed-hero-panel-grid" />
-        <div className="about-ed-hero-panel-bar" />
-      </div>
+      <div className="about-ed-hero-panel-glow" aria-hidden />
+      <div className="about-ed-hero-panel-frame">
+        <div className="about-ed-hero-panel-head">
+          <span className="about-ed-hero-panel-badge">
+            <MapPin className="size-3.5" aria-hidden />
+            Imperatriz — MA
+          </span>
+          <p className="about-ed-hero-panel-label">Medicina e Segurança do Trabalho</p>
+        </div>
 
-      <div className="about-ed-hero-panel-body">
-        <p className="about-ed-hero-panel-kicker">Medicina e Segurança do Trabalho</p>
-        <ul className="about-ed-hero-panel-list">
-          {ABOUT_HERO_PANEL_ITEMS.map((item) => {
-            const Icon = item.icon;
+        <div className="about-ed-hero-panel-stack" aria-hidden>
+          {LAYERS.map((layer, index) => {
+            const Icon = layer.icon;
             return (
-              <li key={item.label} className="about-ed-hero-panel-item">
-                <span className="about-ed-hero-panel-item-icon">
-                  <Icon strokeWidth={1.75} />
+              <div
+                key={layer.label}
+                className={`about-ed-hero-panel-layer about-ed-hero-panel-layer--${layer.tone}`}
+                style={{ ["--layer-i" as string]: index }}
+              >
+                <span className="about-ed-hero-panel-layer-icon">
+                  <Icon strokeWidth={1.65} />
                 </span>
-                <span>{item.label}</span>
-              </li>
+                <span className="about-ed-hero-panel-layer-text">{layer.label}</span>
+              </div>
             );
           })}
-        </ul>
+        </div>
+
+        <p className="about-ed-hero-panel-foot">Atendimento presencial e suporte digital</p>
       </div>
     </div>
   );
