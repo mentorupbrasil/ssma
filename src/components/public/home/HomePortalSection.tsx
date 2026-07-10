@@ -38,7 +38,7 @@ export function HomePortalSection() {
                 </Button>
               </Link>
               <Link href="/contato?tipo=demonstracao">
-                <Button variant="outline" className="rounded-xl">
+                <Button variant="outline" className="home-portal-btn-secondary rounded-xl">
                   Solicitar demonstração
                 </Button>
               </Link>
