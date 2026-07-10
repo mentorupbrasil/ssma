@@ -54,7 +54,7 @@ export const PUBLIC_PAGE_SEO = {
   sobre: {
     title: "Sobre nós",
     description:
-      "Conheça a Unimetra: equipe especializada em SST, atendimento empresarial e conformidade com NR-7 e eSocial.",
+      "Conheça a Unimetra, clínica de Medicina e Segurança do Trabalho em Imperatriz-MA, com atendimento empresarial, exames ocupacionais, documentação e suporte ao RH.",
     path: "/sobre",
   },
   servicos: {
