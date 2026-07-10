@@ -1,5 +1,7 @@
-import { Building2, Check } from "lucide-react";
+import Image from "next/image";
+import { Check } from "lucide-react";
 import { ABOUT_HERO_PILLARS } from "@/data/about";
+import { UNIMETRA_LOGO_SRC } from "@/components/brand/BrandLogo";
 
 import { AboutGridPattern } from "@/components/public/about/AboutGridPattern";
 
@@ -16,12 +18,18 @@ export function AboutHeroPanel({ clinicName }: AboutHeroPanelProps) {
 
       <div className="about-ed-hero-panel-main">
         <div className="about-ed-hero-panel-head">
-          <span className="about-ed-hero-panel-icon">
-            <Building2 strokeWidth={1.65} />
+          <span className="about-ed-hero-panel-logo">
+            <Image
+              src={UNIMETRA_LOGO_SRC}
+              alt=""
+              width={120}
+              height={30}
+              className="h-7 w-auto object-contain"
+            />
           </span>
           <div>
             <p className="about-ed-hero-panel-brand">{clinicName}</p>
-            <p className="about-ed-hero-panel-sub">Medicina e Segurança do Trabalho</p>
+            <p className="about-ed-hero-panel-sub">Medicina e Segurança do Trabalho · Imperatriz, MA</p>
           </div>
         </div>
 

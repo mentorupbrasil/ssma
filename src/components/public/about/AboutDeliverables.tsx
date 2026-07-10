@@ -30,6 +30,9 @@ export function AboutDeliverables() {
                 timelineRef={sectionRef}
                 className="about-ed-deliver-card"
               >
+                <span className="about-ed-deliver-index" aria-hidden>
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <div className="about-ed-deliver-icon" aria-hidden>
                   <Icon strokeWidth={1.75} />
                 </div>

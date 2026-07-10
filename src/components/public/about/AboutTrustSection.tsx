@@ -35,11 +35,8 @@ export function AboutTrustSection() {
 
           <TimelineContent animationNum={3} timelineRef={sectionRef}>
             <ul className="about-ed-trust-list" aria-label="Compromissos institucionais">
-              {ABOUT_TRUST_CHECKLIST.map((item, index) => (
+              {ABOUT_TRUST_CHECKLIST.map((item) => (
                 <li key={item}>
-                  <span className="about-ed-trust-index" aria-hidden>
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
                   <Check className="about-ed-trust-check" strokeWidth={2.25} aria-hidden />
                   <span>{item}</span>
                 </li>

@@ -1,4 +1,4 @@
-import { BadgeCheck, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { ABOUT_WHO_CHECKLIST, ABOUT_WHO_CHIPS } from "@/data/about";
 
 type AboutWhoPanelProps = {
@@ -10,9 +10,6 @@ export function AboutWhoPanel({ clinicName }: AboutWhoPanelProps) {
     <aside className="about-ed-who-panel">
       <div className="about-ed-who-panel-card">
         <div className="about-ed-who-panel-top">
-          <span className="about-ed-who-panel-mark" aria-hidden>
-            <BadgeCheck strokeWidth={1.75} />
-          </span>
           <div>
             <p className="about-ed-who-panel-eyebrow">Assinatura institucional</p>
             <p className="about-ed-who-panel-title">{clinicName}</p>
@@ -20,11 +17,9 @@ export function AboutWhoPanel({ clinicName }: AboutWhoPanelProps) {
           </div>
         </div>
 
-        <ul className="about-ed-who-chips" aria-label="Especialidades">
-          {ABOUT_WHO_CHIPS.map((chip) => (
-            <li key={chip}>{chip}</li>
-          ))}
-        </ul>
+        <p className="about-ed-who-specialties">
+          {ABOUT_WHO_CHIPS.join(" · ")}
+        </p>
 
         <ul className="about-ed-who-checklist">
           {ABOUT_WHO_CHECKLIST.map((item) => (
@@ -36,9 +31,9 @@ export function AboutWhoPanel({ clinicName }: AboutWhoPanelProps) {
         </ul>
       </div>
 
-      <p className="about-ed-who-signature">
+      <blockquote className="about-ed-who-signature">
         Estrutura clínica, organização documental e tecnologia a serviço do RH.
-      </p>
+      </blockquote>
     </aside>
   );
 }

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ABOUT_CTA_TAGS } from "@/data/about";
 
 type AboutCTAProps = {
   whatsappHref: string;
@@ -13,12 +12,6 @@ export function AboutCTA({ whatsappHref }: AboutCTAProps) {
     <section className="about-ed-cta scroll-mt-[var(--header-height)]">
       <div className="container-page">
         <div className="about-ed-cta-panel">
-          <ul className="about-ed-cta-tags" aria-label="Áreas de atuação">
-            {ABOUT_CTA_TAGS.map((tag) => (
-              <li key={tag}>{tag}</li>
-            ))}
-          </ul>
-
           <h2 className="about-ed-cta-title">
             Conheça uma forma mais organizada de cuidar da saúde ocupacional da sua empresa
           </h2>
