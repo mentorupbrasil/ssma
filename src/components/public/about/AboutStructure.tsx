@@ -28,11 +28,21 @@ export function AboutStructure() {
             <span className="about-structure-pulse" aria-hidden>
               <svg viewBox="0 0 320 60" fill="none" preserveAspectRatio="none">
                 <path
+                  className="about-structure-pulse-base"
                   d="M0 34H70L92 12L116 52L142 24L166 34H210L230 20L252 44L276 30H320"
                   stroke="currentColor"
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                />
+                <path
+                  className="about-structure-pulse-beat"
+                  d="M0 34H70L92 12L116 52L142 24L166 34H210L230 20L252 44L276 30H320"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  pathLength={100}
                 />
               </svg>
             </span>
