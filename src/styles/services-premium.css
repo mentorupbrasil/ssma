@@ -214,23 +214,50 @@
 
 .service-features-grid {
   display: grid;
-  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
   border: 1px solid rgb(226 232 240 / 0.9);
   border-radius: 1.15rem;
   overflow: hidden;
-  background: white;
+  background: rgb(226 232 240 / 0.85);
   box-shadow: 0 1px 2px rgb(14 20 43 / 0.03);
 }
 
+/* Tablet: base de 6 colunas — cards ocupam 3 (2 por linha) */
 @media (min-width: 640px) {
   .service-features-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .service-feature-card {
+    grid-column: span 3;
+  }
+
+  /* Sobra de 1 no layout de 2 colunas: último card preenche a linha */
+  .service-features-grid[data-rem-md="1"] .service-feature-card:last-child {
+    grid-column: span 6;
   }
 }
 
+/* Desktop: cards ocupam 2 (3 por linha) */
 @media (min-width: 1024px) {
-  .service-features-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .service-feature-card {
+    grid-column: span 2;
+  }
+
+  /* Reset da regra de tablet quando a contagem é múltipla de 3 */
+  .service-features-grid[data-rem-md="1"] .service-feature-card:last-child {
+    grid-column: span 2;
+  }
+
+  /* Sobra de 1: os últimos 4 cards viram 2 linhas de 2 (evita card solitário) */
+  .service-features-grid[data-rem-lg="1"] .service-feature-card:nth-last-child(-n + 4) {
+    grid-column: span 3;
+  }
+
+  /* Sobra de 2: os dois últimos dividem a linha meio a meio */
+  .service-features-grid[data-rem-lg="2"] .service-feature-card:nth-last-child(-n + 2) {
+    grid-column: span 3;
   }
 }
 
@@ -242,47 +269,10 @@
   flex-direction: column;
   min-height: 100%;
   padding: 1.2rem 1.15rem 1.15rem;
-  border-bottom: 1px solid rgb(226 232 240 / 0.85);
-  background: rgb(255 255 255 / 0.92);
+  background: #fff;
   transition:
     background 0.28s ease,
     box-shadow 0.28s ease;
-}
-
-@media (min-width: 640px) {
-  .service-feature-card {
-    border-right: 1px solid rgb(226 232 240 / 0.85);
-  }
-
-  .service-feature-card:nth-child(2n) {
-    border-right: none;
-  }
-}
-
-@media (min-width: 1024px) {
-  .service-feature-card:nth-child(2n) {
-    border-right: 1px solid rgb(226 232 240 / 0.85);
-  }
-
-  .service-feature-card:nth-child(3n) {
-    border-right: none;
-  }
-}
-
-.service-feature-card:last-child {
-  border-bottom: none;
-}
-
-@media (min-width: 640px) {
-  .service-features-grid .service-feature-card:nth-last-child(-n + 2) {
-    border-bottom: none;
-  }
-}
-
-@media (min-width: 1024px) {
-  .service-features-grid .service-feature-card:nth-last-child(-n + 3) {
-    border-bottom: none;
-  }
 }
 
 .service-feature-card-accent {
