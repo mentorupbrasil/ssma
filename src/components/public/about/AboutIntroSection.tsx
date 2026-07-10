@@ -18,16 +18,20 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
     <section id="quem-somos" ref={sectionRef} className="about-ed-who scroll-mt-[var(--header-height)]">
       <div className="container-page about-ed-page">
         <div className="about-ed-who-grid">
+          <TimelineContent animationNum={0} timelineRef={sectionRef} className="about-ed-who-ticker-slot">
+            <AboutWhoFeedbackTicker />
+          </TimelineContent>
+
           <div className="about-ed-who-copy">
-            <TimelineContent animationNum={0} timelineRef={sectionRef}>
+            <TimelineContent animationNum={1} timelineRef={sectionRef}>
               <SectionHeader
                 eyebrow="Quem somos"
                 title="Uma clínica preparada para simplificar a rotina ocupacional das empresas"
-                className="about-ed-section-header"
+                className="about-ed-section-header about-ed-who-header"
               />
             </TimelineContent>
 
-            <TimelineContent animationNum={1} timelineRef={sectionRef} className="about-ed-prose">
+            <TimelineContent animationNum={2} timelineRef={sectionRef} className="about-ed-prose about-ed-who-prose">
               <p>
                 A {clinicName} atua em Medicina e Segurança do Trabalho, apoiando empresas de
                 pequeno, médio e grande porte na organização de exames, ASOs, programas, laudos e
@@ -39,22 +43,14 @@ export function AboutIntroSection({ clinicName }: AboutIntroSectionProps) {
               </p>
             </TimelineContent>
 
-            <TimelineContent animationNum={2} timelineRef={sectionRef}>
+            <TimelineContent animationNum={3} timelineRef={sectionRef}>
               <ul className="about-ed-who-chips" aria-label="Especialidades">
                 {ABOUT_WHO_CHIPS.map((chip) => (
                   <li key={chip}>{chip}</li>
                 ))}
               </ul>
-
-              <p className="about-ed-who-note">
-                Estrutura clínica, organização documental e tecnologia a serviço do RH.
-              </p>
             </TimelineContent>
           </div>
-
-          <TimelineContent animationNum={3} timelineRef={sectionRef}>
-            <AboutWhoFeedbackTicker />
-          </TimelineContent>
         </div>
       </div>
     </section>

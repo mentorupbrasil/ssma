@@ -17,13 +17,18 @@ type FeedbackItemProps = {
 function FeedbackItem({ quote, topic, icon: Icon, hidden = false }: FeedbackItemProps) {
   return (
     <li className="about-ed-who-feedback-item" aria-hidden={hidden || undefined}>
-      <span className="about-ed-who-feedback-icon" aria-hidden>
+      <span className="about-ed-who-feedback-thumb" aria-hidden>
         <Icon strokeWidth={1.75} />
       </span>
+
       <div className="about-ed-who-feedback-body">
         <p className="about-ed-who-feedback-topic">{topic}</p>
         <p className="about-ed-who-feedback-quote">{quote}</p>
       </div>
+
+      <span className="about-ed-who-feedback-trail" aria-hidden>
+        <Icon strokeWidth={1.5} />
+      </span>
     </li>
   );
 }
@@ -54,11 +59,9 @@ export function AboutWhoFeedbackTicker() {
   return (
     <aside className="about-ed-who-ticker" aria-label="O que o RH valoriza">
       <div className="about-ed-who-ticker-card">
-        <div className="about-ed-who-ticker-head">
-          <p className="about-ed-who-ticker-eyebrow" id="about-who-ticker-label">
-            O que o RH valoriza
-          </p>
-        </div>
+        <p className="about-ed-who-ticker-sr-label" id="about-who-ticker-label">
+          O que o RH valoriza
+        </p>
 
         <div
           className={cn(

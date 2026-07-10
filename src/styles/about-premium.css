@@ -2,9 +2,10 @@
 /* About page — premium institutional (typography aligned with Home)   */
 /* ================================================================== */
 
-.about-ed-page {
+/* Um pouco mais estreita que a home (max-w-7xl = 80rem), centralizada */
+.container-page.about-ed-page {
   width: 100%;
-  max-width: 56rem;
+  max-width: 74rem;
   margin-inline: auto;
 }
 
@@ -232,90 +233,108 @@
 /* Quem somos ---------------------------------------------------------- */
 
 .about-ed-who {
-  padding-block: 1.75rem 2rem;
+  padding-block: clamp(1.75rem, 3vw, 2.25rem);
   background: white;
 }
 
 .about-ed-who-grid {
   display: grid;
-  gap: 1.35rem;
-  align-items: start;
+  gap: 1.5rem;
+  align-items: center;
 }
 
-@media (min-width: 1024px) {
-  .about-ed-who-grid {
-    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.72fr);
-    gap: 1.75rem;
-  }
+.about-ed-who-ticker-slot {
+  order: 2;
 }
 
 .about-ed-who-copy {
+  order: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.65rem;
+}
+
+@media (min-width: 768px) {
+  .about-ed-who-grid {
+    grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
+    gap: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .about-ed-who-ticker-slot {
+    order: 1;
+  }
+
+  .about-ed-who-copy {
+    order: 2;
+  }
+}
+
+.about-ed-who-header .home-section-title {
+  max-width: 22ch;
+}
+
+.about-ed-who-prose {
+  margin-top: 0.35rem;
+  max-width: none;
 }
 
 .about-ed-who-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin: 0.35rem 0 0;
+  gap: 0.45rem;
+  margin: 0.5rem 0 0;
   padding: 0;
   list-style: none;
 }
 
 .about-ed-who-chips li {
-  padding: 0.28rem 0.6rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 999px;
   border: 1px solid rgb(226 232 240 / 0.95);
   background: rgb(248 250 252);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: rgb(71 85 105);
-}
-
-.about-ed-who-note {
-  margin: 0.65rem 0 0;
-  padding-left: 0.75rem;
-  max-width: 28rem;
-  border-left: 2px solid rgb(22 160 133 / 0.28);
-  font-size: 0.8125rem;
-  line-height: 1.55;
-  font-weight: 500;
-  color: rgb(100 116 139);
 }
 
 /* Quem somos — feedback ticker ---------------------------------------- */
 
 .about-ed-who-ticker {
   width: 100%;
+  max-width: 22rem;
+}
+
+@media (min-width: 768px) {
+  .about-ed-who-ticker {
+    max-width: none;
+  }
 }
 
 .about-ed-who-ticker-card {
   overflow: hidden;
-  border-radius: 0.9rem;
-  border: 1px solid rgb(226 232 240 / 0.95);
-  background: rgb(252 253 254);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.02);
+  border-radius: 1rem;
+  border: 1px solid rgb(241 245 249);
+  background: white;
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.03),
+    0 10px 28px rgb(15 61 74 / 0.05);
 }
 
-.about-ed-who-ticker-head {
-  padding: 0.75rem 0.9rem 0.65rem;
-  border-bottom: 1px solid rgb(241 245 249);
-}
-
-.about-ed-who-ticker-eyebrow {
-  margin: 0;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgb(100 116 139);
+.about-ed-who-ticker-sr-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .about-ed-who-ticker-viewport {
   position: relative;
-  height: 12.5rem;
+  height: 13.5rem;
   overflow: hidden;
 }
 
@@ -358,14 +377,14 @@
 
 .about-ed-who-feedback-static {
   overflow: visible;
-  padding-bottom: 0;
 }
 
 .about-ed-who-feedback-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
-  padding: 0.7rem 0.9rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid rgb(241 245 249);
 }
 
@@ -373,61 +392,73 @@
   border-bottom: none;
 }
 
-.about-ed-who-feedback-icon {
+.about-ed-who-feedback-thumb {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 1.65rem;
-  height: 1.65rem;
-  border-radius: 0.45rem;
-  background: rgb(22 160 133 / 0.08);
-  color: var(--brand-green);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: rgb(248 250 252);
+  border: 1px solid rgb(241 245 249);
+  color: rgb(148 163 184);
 }
 
-.about-ed-who-feedback-icon svg {
-  width: 0.85rem;
-  height: 0.85rem;
+.about-ed-who-feedback-thumb svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .about-ed-who-feedback-body {
-  flex: 1;
   min-width: 0;
 }
 
 .about-ed-who-feedback-topic {
   margin: 0;
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgb(100 116 139);
+  line-height: 1.35;
+  color: var(--brand-navy);
 }
 
 .about-ed-who-feedback-quote {
-  margin: 0.18rem 0 0;
+  margin: 0.15rem 0 0;
   font-size: 0.75rem;
-  line-height: 1.5;
+  line-height: 1.45;
   font-weight: 500;
-  color: var(--brand-navy);
+  color: rgb(100 116 139);
+}
+
+.about-ed-who-feedback-trail {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: rgb(203 213 225);
+}
+
+.about-ed-who-feedback-trail svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .about-ed-who-ticker-fade {
   pointer-events: none;
   position: absolute;
   inset-inline: 0;
-  height: 1.75rem;
+  height: 2rem;
   z-index: 1;
 }
 
 .about-ed-who-ticker-fade--top {
   top: 0;
-  background: linear-gradient(180deg, rgb(252 253 254) 0%, rgb(252 253 254 / 0.55) 70%, transparent 100%);
+  background: linear-gradient(180deg, white 0%, rgb(255 255 255 / 0.6) 75%, transparent 100%);
 }
 
 .about-ed-who-ticker-fade--bottom {
   bottom: 0;
-  background: linear-gradient(0deg, rgb(252 253 254) 0%, rgb(252 253 254 / 0.55) 70%, transparent 100%);
+  background: linear-gradient(0deg, white 0%, rgb(255 255 255 / 0.6) 75%, transparent 100%);
 }
 
 /* Reduced motion + fallbacks de carregamento ------------------------ */
