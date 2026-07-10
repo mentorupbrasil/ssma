@@ -16,34 +16,11 @@
 }
 
 .about-ed-section-header {
-  margin-bottom: 0;
-}
-
-.about-ed-section-header .home-section-title {
-  max-width: 20ch;
-  font-size: clamp(1.3rem, 2vw, 1.65rem);
-  line-height: 1.22;
+  margin-bottom: 1.25rem;
 }
 
 .about-ed-section-header .home-section-eyebrow {
-  margin-bottom: 0.45rem;
-}
-
-.about-ed-section-header .home-section-lead {
-  margin-top: 0.55rem;
-  max-width: 34rem;
-  font-size: 0.8125rem;
-  line-height: 1.58;
-  color: rgb(100 116 139);
-}
-
-.about-ed-label {
-  margin-bottom: 0.4rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--brand-green);
+  margin-bottom: 0.5rem;
 }
 
 .about-ed-prose {
@@ -51,9 +28,9 @@
   flex-direction: column;
   gap: 0.7rem;
   margin-top: 0.85rem;
-  max-width: 34rem;
-  font-size: 0.875rem;
-  line-height: 1.62;
+  max-width: 40rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
   color: rgb(71 85 105);
 }
 
@@ -155,13 +132,13 @@
   gap: 0.1rem;
   margin: 0;
   font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--brand-navy);
 }
 
 .about-ed-hero-title-line {
-  font-size: clamp(1.5rem, 3.5vw, 2.35rem);
-  font-weight: 500;
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-weight: 700;
   line-height: 1.15;
   color: var(--brand-navy);
 }
@@ -174,9 +151,9 @@
   width: 100%;
   max-width: 14ch;
   height: 1.15em;
-  font-size: clamp(1.85rem, 4.5vw, 3.15rem);
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.15;
   color: var(--brand-green);
 }
 
@@ -197,11 +174,11 @@
 }
 
 .about-ed-hero-lead {
-  max-width: 36rem;
+  max-width: 40rem;
   margin: 0 auto;
-  font-size: clamp(0.875rem, 1.6vw, 1rem);
+  font-size: 0.9375rem;
   line-height: 1.65;
-  color: rgb(100 116 139);
+  color: rgb(71 85 105);
 }
 
 .about-ed-hero-actions {
@@ -267,10 +244,6 @@
   .about-ed-who-copy {
     order: 2;
   }
-}
-
-.about-ed-who-header .home-section-title {
-  max-width: 22ch;
 }
 
 .about-ed-who-prose {
@@ -416,7 +389,7 @@
 
 .about-ed-who-feedback-topic {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.35;
   color: var(--brand-navy);
@@ -424,8 +397,8 @@
 
 .about-ed-who-feedback-quote {
   margin: 0.15rem 0 0;
-  font-size: 0.75rem;
-  line-height: 1.45;
+  font-size: 0.8125rem;
+  line-height: 1.55;
   font-weight: 500;
   color: rgb(100 116 139);
 }
@@ -639,7 +612,7 @@ html:not(.about-ed-ready) .about-ed-who-feedback-track {
   position: relative;
   z-index: 1;
   max-width: none;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   line-height: 1.55;
   color: rgb(100 116 139);
 }
@@ -717,7 +690,7 @@ html:not(.about-ed-ready) .about-ed-who-feedback-track {
 }
 
 .about-ed-timeline-body h3 {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.35;
   color: var(--brand-navy);
@@ -725,8 +698,8 @@ html:not(.about-ed-ready) .about-ed-who-feedback-track {
 
 .about-ed-timeline-body p {
   margin-top: 0.25rem;
-  font-size: 0.75rem;
-  line-height: 1.52;
+  font-size: 0.8125rem;
+  line-height: 1.55;
   color: rgb(100 116 139);
 }
 
@@ -777,20 +750,19 @@ html:not(.about-ed-ready) .about-ed-who-feedback-track {
 
 .about-ed-trust-title {
   margin: 0;
-  max-width: 18ch;
   font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
   font-weight: 700;
-  line-height: 1.22;
+  line-height: 1.15;
   letter-spacing: -0.02em;
   color: var(--brand-navy);
 }
 
 .about-ed-trust-desc {
-  margin: 0.55rem 0 0;
-  font-size: 0.8125rem;
-  line-height: 1.6;
-  color: rgb(100 116 139);
+  margin: 0.65rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: rgb(71 85 105);
 }
 
 .about-ed-trust-list {
@@ -814,9 +786,9 @@ html:not(.about-ed-ready) .about-ed-who-feedback-track {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  line-height: 1.45;
+  line-height: 1.55;
   color: var(--brand-navy);
 }
 
@@ -891,8 +863,8 @@ html:not(.about-ed-ready) .about-ed-who-feedback-track {
 
 .about-ed-mission-card-body p {
   margin-top: 0.3rem;
-  font-size: 0.75rem;
-  line-height: 1.52;
+  font-size: 0.8125rem;
+  line-height: 1.55;
   color: rgb(100 116 139);
 }
 
