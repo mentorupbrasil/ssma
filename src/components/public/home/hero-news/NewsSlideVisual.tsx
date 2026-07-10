@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { BadgeCheck, FlaskConical } from "lucide-react";
 import type { NewsSlideVisualType } from "@/data/home-hero-news-slides";
 
@@ -79,7 +80,7 @@ function JulhoVisual() {
   );
 }
 
-const VISUALS: Record<NewsSlideVisualType, () => JSX.Element> = {
+const VISUALS: Record<NewsSlideVisualType, () => ReactElement> = {
   toxicologico: ToxicologicoVisual,
   concurso: ConcursoVisual,
   julho: JulhoVisual,
