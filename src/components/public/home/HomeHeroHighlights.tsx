@@ -1,133 +1,156 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  ArrowRight,
+  BadgeCheck,
+  Briefcase,
   Calendar,
   CalendarHeart,
   ClipboardList,
+  Clock,
+  FileCheck,
+  FlaskConical,
+  Headphones,
   MessageCircle,
+  ShieldCheck,
+  Snowflake,
+  TestTube2,
+  Truck,
   type LucideIcon,
 } from "lucide-react";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 
-type BannerCta = {
+type SlideCta = {
   label: string;
   variant: "primary" | "secondary";
   href?: string;
   whatsappMessage?: string;
-  icon: "calendar" | "clipboard" | "message";
-};
-
-type BannerHighlight = {
-  kind: "banner";
-  id: string;
-  label: string;
-  image: string;
-  alt: string;
-  ctas: [BannerCta, BannerCta];
-};
-
-type CardHighlight = {
-  kind: "card";
-  id: string;
-  label: string;
-  tag: string;
-  title: string;
-  description: string;
   icon: LucideIcon;
-  tone: "emerald" | "sky" | "amber";
-  href?: string;
-  ctaLabel?: string;
 };
 
-type Highlight = CardHighlight | BannerHighlight;
+type EditorialSlide = {
+  id: string;
+  label: string;
+  eyebrow: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+  tone: "emerald" | "sky" | "amber";
+  features: { icon: LucideIcon; label: string }[];
+  ctas: [SlideCta, SlideCta];
+  visual: "toxicologico" | "concurso" | "julho";
+};
 
-const BANNER_HIGHLIGHTS = [
+const SLIDES: EditorialSlide[] = [
   {
-    kind: "banner" as const,
     id: "toxicologico",
     label: "Exame Toxicológico",
-    image: "/images/hero/highlights/toxicologico.png",
-    alt: "Exame Toxicológico UniMetra — agilidade, segurança e atendimento especializado para motoristas e empresas.",
+    eyebrow: "Serviço em destaque",
+    title: "Exame",
+    titleAccent: "Toxicológico",
+    description:
+      "Coleta orientada e laudo para CNH, funções regulamentadas e exigências do PCMSO.",
+    tone: "emerald",
+    features: [
+      { icon: Clock, label: "Atendimento ágil" },
+      { icon: ShieldCheck, label: "Resultado confiável" },
+      { icon: Headphones, label: "Suporte especializado" },
+    ],
     ctas: [
       {
         label: "Agendar exame",
-        variant: "primary" as const,
+        variant: "primary",
         href: "/encaminhamento-online",
-        icon: "calendar" as const,
+        icon: Calendar,
       },
       {
         label: "Fale com a Unimetra",
-        variant: "secondary" as const,
+        variant: "secondary",
         whatsappMessage: "Olá! Gostaria de agendar um exame toxicológico na Unimetra.",
-        icon: "message" as const,
+        icon: MessageCircle,
       },
     ],
+    visual: "toxicologico",
   },
   {
-    kind: "banner" as const,
     id: "concurso",
     label: "Pacotes para concursos",
-    image: "/images/hero/highlights/concurso-publico.png",
-    alt: "Pacotes de exames para concursos públicos — agilidade e orientação especializada para candidatos aprovados.",
+    eyebrow: "Solução em destaque",
+    title: "Pacotes de exames",
+    titleAccent: "para concursos",
+    description:
+      "Passou na prova? Realize os exames do edital com orientação de preparo e fluxo organizado.",
+    tone: "amber",
+    features: [
+      { icon: FileCheck, label: "Pacotes exclusivos" },
+      { icon: Clock, label: "Atendimento rápido" },
+      { icon: Headphones, label: "Suporte completo" },
+    ],
     ctas: [
       {
         label: "Solicitar pacote",
-        variant: "primary" as const,
+        variant: "primary",
         href: "/contato?tipo=orcamento",
-        icon: "clipboard" as const,
+        icon: ClipboardList,
       },
       {
         label: "Fale com a Unimetra",
-        variant: "secondary" as const,
+        variant: "secondary",
         whatsappMessage:
           "Olá! Gostaria de solicitar o pacote de exames para concurso público na Unimetra.",
-        icon: "message" as const,
+        icon: MessageCircle,
       },
     ],
+    visual: "concurso",
   },
-] satisfies BannerHighlight[];
-
-const CARD_HIGHLIGHTS = [
   {
-    kind: "card" as const,
     id: "julho",
     label: "Julho · Prevenção",
-    tag: "Julho · Prevenção",
-    title: "Cuidado com a saúde no inverno",
+    eyebrow: "Campanha do mês",
+    title: "Prevenção em",
+    titleAccent: "SST no inverno",
     description:
-      "Campanha de orientação em SST e exames preventivos para equipes — mais prevenção e conformidade no segundo semestre.",
-    icon: CalendarHeart,
-    tone: "sky" as const,
-    href: "/servicos",
-    ctaLabel: "Conhecer serviços",
+      "Orientação para equipes sobre exames preventivos, riscos sazonais e rotinas de conformidade.",
+    tone: "sky",
+    features: [
+      { icon: Snowflake, label: "Riscos sazonais" },
+      { icon: CalendarHeart, label: "Exames preventivos" },
+      { icon: Briefcase, label: "Apoio ao RH" },
+    ],
+    ctas: [
+      {
+        label: "Conhecer serviços",
+        variant: "primary",
+        href: "/servicos",
+        icon: FileCheck,
+      },
+      {
+        label: "Fale com a Unimetra",
+        variant: "secondary",
+        whatsappMessage: "Olá! Gostaria de saber mais sobre a campanha de prevenção em SST.",
+        icon: MessageCircle,
+      },
+    ],
+    visual: "julho",
   },
-] satisfies CardHighlight[];
+];
 
 const TONE_CLASS = {
-  emerald: "home-hero-highlight-card--emerald",
-  sky: "home-hero-highlight-card--sky",
-  amber: "home-hero-highlight-card--amber",
+  emerald: "home-hero-editorial--emerald",
+  sky: "home-hero-editorial--sky",
+  amber: "home-hero-editorial--amber",
 } as const;
 
-const CTA_ICONS = {
-  calendar: Calendar,
-  clipboard: ClipboardList,
-  message: MessageCircle,
-} as const;
-
-function BannerCtaButton({ cta }: { cta: BannerCta }) {
+function SlideCtaButton({ cta }: { cta: SlideCta }) {
   const clinic = getClinicInfo();
-  const Icon = CTA_ICONS[cta.icon];
+  const Icon = cta.icon;
   const className = cn(
-    "home-hero-highlight-btn",
+    "home-hero-editorial-btn",
     cta.variant === "primary"
-      ? "home-hero-highlight-btn--primary"
-      : "home-hero-highlight-btn--secondary"
+      ? "home-hero-editorial-btn--primary"
+      : "home-hero-editorial-btn--secondary"
   );
 
   if (cta.whatsappMessage) {
@@ -149,70 +172,151 @@ function BannerCtaButton({ cta }: { cta: BannerCta }) {
   );
 }
 
-function BannerSlide({
-  item,
-  isActive,
-  priority,
-}: {
-  item: BannerHighlight;
-  isActive: boolean;
-  priority?: boolean;
-}) {
+function ToxicologicoVisual() {
   return (
-    <article
-      className={cn(
-        "home-hero-highlight-banner",
-        isActive && "home-hero-highlight-banner--active"
-      )}
-      aria-hidden={!isActive}
-    >
-      <div className="home-hero-highlight-banner-media">
-        <Image
-          src={item.image}
-          alt={item.alt}
-          fill
-          sizes="(max-width: 1024px) 100vw, 520px"
-          className="home-hero-highlight-banner-image"
-          priority={priority}
-        />
+    <div className="home-hero-editorial-visual-panel">
+      <div className="home-hero-editorial-visual-card home-hero-editorial-visual-card--main">
+        <span className="home-hero-editorial-visual-icon" aria-hidden>
+          <FlaskConical strokeWidth={1.75} />
+        </span>
+        <div>
+          <p className="home-hero-editorial-visual-title">Coleta toxicológica</p>
+          <p className="home-hero-editorial-visual-sub">Laudo para CNH e PCMSO</p>
+        </div>
+        <span className="home-hero-editorial-visual-badge home-hero-editorial-visual-badge--ok">
+          Disponível
+        </span>
       </div>
-
-      <div className="home-hero-highlight-banner-actions">
-        {item.ctas.map((cta) => (
-          <BannerCtaButton key={`${item.id}-${cta.label}`} cta={cta} />
-        ))}
+      <div className="home-hero-editorial-visual-row">
+        <div className="home-hero-editorial-visual-chip">
+          <TestTube2 className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+          <span>Coleta orientada</span>
+        </div>
+        <div className="home-hero-editorial-visual-chip">
+          <Truck className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+          <span>Motoristas</span>
+        </div>
       </div>
-    </article>
+      <div className="home-hero-editorial-visual-foot">
+        <BadgeCheck className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+        <span>Conforme exigências legais</span>
+      </div>
+    </div>
   );
 }
 
-function CardSlide({ item, isActive }: { item: CardHighlight; isActive: boolean }) {
-  const Icon = item.icon;
+function ConcursoVisual() {
+  const steps = [
+    { label: "Edital", status: "Conferido" },
+    { label: "Exames", status: "Em andamento" },
+    { label: "Apto", status: "Próximo passo" },
+  ] as const;
+
+  return (
+    <div className="home-hero-editorial-visual-panel">
+      <p className="home-hero-editorial-visual-kicker">Fluxo do candidato</p>
+      <ol className="home-hero-editorial-visual-steps">
+        {steps.map((step, index) => (
+          <li key={step.label} className="home-hero-editorial-visual-step">
+            <span className="home-hero-editorial-visual-step-num">{index + 1}</span>
+            <div>
+              <p className="home-hero-editorial-visual-step-label">{step.label}</p>
+              <p className="home-hero-editorial-visual-step-status">{step.status}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <div className="home-hero-editorial-visual-quote">
+        <p>Avaliação · Apto · Pronto para sua posse</p>
+      </div>
+    </div>
+  );
+}
+
+function JulhoVisual() {
+  return (
+    <div className="home-hero-editorial-visual-panel">
+      <div className="home-hero-editorial-visual-stats">
+        <div className="home-hero-editorial-visual-stat">
+          <span className="home-hero-editorial-visual-stat-value">Jul</span>
+          <span className="home-hero-editorial-visual-stat-label">Campanha ativa</span>
+        </div>
+        <div className="home-hero-editorial-visual-stat">
+          <span className="home-hero-editorial-visual-stat-value">SST</span>
+          <span className="home-hero-editorial-visual-stat-label">Prevenção</span>
+        </div>
+      </div>
+      <div className="home-hero-editorial-visual-card home-hero-editorial-visual-card--soft">
+        <Snowflake className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
+        <div>
+          <p className="home-hero-editorial-visual-title">Saúde no inverno</p>
+          <p className="home-hero-editorial-visual-sub">
+            Orientação para equipes e exames preventivos
+          </p>
+        </div>
+      </div>
+      <div className="home-hero-editorial-visual-foot">
+        <CalendarHeart className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+        <span>Apoio contínuo ao RH</span>
+      </div>
+    </div>
+  );
+}
+
+const VISUALS = {
+  toxicologico: ToxicologicoVisual,
+  concurso: ConcursoVisual,
+  julho: JulhoVisual,
+} as const;
+
+function EditorialSlideCard({
+  slide,
+  isActive,
+}: {
+  slide: EditorialSlide;
+  isActive: boolean;
+}) {
+  const Visual = VISUALS[slide.visual];
 
   return (
     <article
       className={cn(
-        "home-hero-highlight-card",
-        TONE_CLASS[item.tone],
-        isActive && "home-hero-highlight-card--active"
+        "home-hero-editorial",
+        TONE_CLASS[slide.tone],
+        isActive && "home-hero-editorial--active"
       )}
       aria-hidden={!isActive}
     >
-      <div className="home-hero-highlight-card-accent" aria-hidden />
-      <div className="home-hero-highlight-card-top">
-        <span className="home-hero-highlight-card-icon" aria-hidden>
-          <Icon strokeWidth={1.75} />
-        </span>
-        <span className="home-hero-highlight-card-tag">{item.tag}</span>
+      <div className="home-hero-editorial-copy">
+        <p className="home-hero-editorial-eyebrow">{slide.eyebrow}</p>
+        <h2 className="home-hero-editorial-title">
+          {slide.title}{" "}
+          <span className="home-hero-editorial-title-accent">{slide.titleAccent}</span>
+        </h2>
+        <p className="home-hero-editorial-desc">{slide.description}</p>
+
+        <ul className="home-hero-editorial-features">
+          {slide.features.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <li key={feature.label}>
+                <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden />
+                <span>{feature.label}</span>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="home-hero-editorial-actions">
+          {slide.ctas.map((cta) => (
+            <SlideCtaButton key={cta.label} cta={cta} />
+          ))}
+        </div>
       </div>
-      <p className="home-hero-highlight-card-title">{item.title}</p>
-      <p className="home-hero-highlight-card-desc">{item.description}</p>
-      {item.href && item.ctaLabel ? (
-        <Link href={item.href} className="home-hero-highlight-card-link group">
-          {item.ctaLabel}
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      ) : null}
+
+      <div className="home-hero-editorial-aside" aria-hidden>
+        <Visual />
+      </div>
     </article>
   );
 }
@@ -220,63 +324,37 @@ function CardSlide({ item, isActive }: { item: CardHighlight; isActive: boolean 
 export function HomeHeroHighlights() {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const highlights = useMemo<Highlight[]>(
-    () => [...BANNER_HIGHLIGHTS, ...CARD_HIGHLIGHTS],
-    []
-  );
-
-  const hasBanner = highlights.some((item) => item.kind === "banner");
-
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % highlights.length);
+      setActiveIndex((current) => (current + 1) % SLIDES.length);
     }, 7000);
 
     return () => window.clearInterval(timer);
-  }, [highlights.length]);
+  }, []);
 
   return (
     <div className="home-hero-highlights" aria-label="Novidades e destaques">
-      <div
-        className={cn(
-          "home-hero-highlights-frame",
-          hasBanner && "home-hero-highlights-frame--banner"
-        )}
-      >
+      <div className="home-hero-highlights-frame home-hero-highlights-frame--editorial">
         <p className="home-hero-highlights-kicker">Novidades</p>
 
-        <div
-          className={cn(
-            "home-hero-highlights-stage",
-            hasBanner && "home-hero-highlights-stage--banner"
-          )}
-        >
-          {highlights.map((item, index) => {
-            const isActive = index === activeIndex;
-
-            if (item.kind === "banner") {
-              return (
-                <BannerSlide
-                  key={item.id}
-                  item={item}
-                  isActive={isActive}
-                  priority={index === 0}
-                />
-              );
-            }
-
-            return <CardSlide key={item.id} item={item} isActive={isActive} />;
-          })}
+        <div className="home-hero-highlights-stage home-hero-highlights-stage--editorial">
+          {SLIDES.map((slide, index) => (
+            <EditorialSlideCard
+              key={slide.id}
+              slide={slide}
+              isActive={index === activeIndex}
+            />
+          ))}
         </div>
 
         <div className="home-hero-highlights-dots" role="tablist" aria-label="Destaques">
-          {highlights.map((item, index) => (
+          {SLIDES.map((slide, index) => (
             <button
-              key={item.id}
+              key={slide.id}
               type="button"
               role="tab"
               aria-selected={index === activeIndex}
-              aria-label={item.label}
+              aria-label={slide.label}
               className={cn(
                 "home-hero-highlights-dot",
                 index === activeIndex && "home-hero-highlights-dot--active"
@@ -288,9 +366,9 @@ export function HomeHeroHighlights() {
       </div>
 
       <ul className="home-hero-highlights-mini" aria-label="Resumo dos destaques">
-        {highlights.map((item) => (
-          <li key={item.id}>
-            <span>{item.label}</span>
+        {SLIDES.map((slide) => (
+          <li key={slide.id}>
+            <span>{slide.label}</span>
           </li>
         ))}
       </ul>
