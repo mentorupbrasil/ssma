@@ -940,10 +940,10 @@
 
 .about-structure-pulse {
   position: absolute;
-  inset: auto 0 0 0;
+  inset: 3.6rem 0 auto 0;
   z-index: 0;
   display: block;
-  height: 4rem;
+  height: 3rem;
   pointer-events: none;
 }
 
