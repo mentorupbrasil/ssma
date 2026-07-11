@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format, differenceInCalendarDays } from "date-fns";
@@ -84,8 +84,19 @@ export function ColaboradorDetailClient({
 }: ColaboradorDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get("tab") as TabId) || "overview";
-  const resolvedTab = TABS.some((t) => t.id === activeTab) ? activeTab : "overview";
+  const tabFromUrl = searchParams.get("tab");
+  const initialTab: TabId =
+    tabFromUrl && TABS.some((t) => t.id === tabFromUrl) ? (tabFromUrl as TabId) : "overview";
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+
+  useEffect(() => {
+    const param = searchParams.get("tab");
+    if (param && TABS.some((t) => t.id === param)) {
+      setActiveTab(param as TabId);
+      return;
+    }
+    if (!param) setActiveTab("overview");
+  }, [searchParams]);
 
   const [editOpen, setEditOpen] = useState(false);
 
@@ -95,13 +106,17 @@ export function ColaboradorDetailClient({
   const companyName =
     collaborator.company?.tradeName ?? collaborator.company?.legalName ?? null;
 
-  const setTab = (tab: TabId) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", tab);
-    router.replace(`/dashboard/colaboradores/${collaborator.id}?${params.toString()}`, {
-      scroll: false,
-    });
-  };
+  const setTab = useCallback(
+    (tab: TabId) => {
+      setActiveTab(tab);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", tab);
+      router.replace(`/dashboard/colaboradores/${collaborator.id}?${params.toString()}`, {
+        scroll: false,
+      });
+    },
+    [collaborator.id, router, searchParams]
+  );
 
   const refresh = () => router.refresh();
 
@@ -158,13 +173,18 @@ export function ColaboradorDetailClient({
         )}
       </header>
 
-      <div className="dash-module-tabs colaborador-perfil-tabs">
+      <div className="dash-module-tabs colaborador-perfil-tabs" role="tablist" aria-label="Seções do colaborador">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
             onClick={() => setTab(tab.id)}
-            className={cn("dash-module-tab", resolvedTab === tab.id && "dash-module-tab-active")}
+            className={cn(
+              "dash-module-tab colaborador-perfil-tab",
+              activeTab === tab.id && "dash-module-tab-active colaborador-perfil-tab--active"
+            )}
           >
             <tab.icon className="mr-1.5 inline h-3.5 w-3.5" />
             {tab.label}
@@ -172,7 +192,7 @@ export function ColaboradorDetailClient({
         ))}
       </div>
 
-      {resolvedTab === "overview" && (
+      {activeTab === "overview" && (
         <OverviewTab
           collaborator={collaborator}
           timeline={timeline}
@@ -181,10 +201,10 @@ export function ColaboradorDetailClient({
           onNavigate={setTab}
         />
       )}
-      {resolvedTab === "referrals" && (
+      {activeTab === "referrals" && (
         <ReferralsTab collaborator={collaborator} canManage={canManage} scheduleHref={scheduleHref} />
       )}
-      {resolvedTab === "documents" && <DocumentsTab collaborator={collaborator} />}
+      {activeTab === "documents" && <DocumentsTab collaborator={collaborator} />}
 
       {canManage && (
         <EditCollaboratorDialog

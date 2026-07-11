@@ -649,11 +649,14 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    border: 1px solid transparent;
     border-radius: calc(var(--dash-radius-lg) - 2px);
     padding: 0.48rem 0.9rem;
     font-size: 0.8125rem;
     font-weight: 500;
     color: var(--dash-text-muted);
+    background: transparent;
+    cursor: pointer;
     transition: all var(--dash-transition);
   }
 
@@ -2624,6 +2627,14 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.colaborador-perfil-header a,
+.colaborador-perfil-header button {
+  pointer-events: auto;
 }
 
 .colaborador-perfil-identity {
@@ -2632,6 +2643,7 @@
   gap: 0.875rem;
   min-width: 0;
   flex: 1;
+  pointer-events: none;
 }
 
 .colaborador-perfil-avatar {
@@ -2672,7 +2684,30 @@
 }
 
 .colaborador-perfil-tabs {
+  position: relative;
+  z-index: 5;
   margin-bottom: 0;
+  isolation: isolate;
+}
+
+.colaborador-perfil-tab {
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  font: inherit;
+  line-height: inherit;
+  pointer-events: auto;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.colaborador-perfil-tab--active {
+  pointer-events: auto;
+}
+
+.colaborador-perfil-body {
+  position: relative;
+  z-index: 1;
 }
 
 .colaborador-perfil .colaboradores-empresa-table-scroll {
