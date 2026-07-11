@@ -270,7 +270,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           where: {
             ...companyWhere,
             scheduledAt: { gte: todayStart, lte: todayEnd },
-            status: { in: ["AGENDADO", "CONFIRMADO", "REALIZADO"] },
+            status: { in: ["AGENDADO", "CONFIRMADO", "CONCLUIDO"] },
           },
         })
       : Promise.resolve(0),
