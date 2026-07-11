@@ -3833,155 +3833,100 @@
   pointer-events: auto;
 }
 
-.empresa-perfil-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.75rem;
-  align-items: start;
+.empresa-perfil-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
   min-width: 0;
-}
-
-.empresa-perfil-nav {
-  display: none;
-  width: 220px;
-  flex-shrink: 0;
-  border-radius: 0.8125rem;
   border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
   background: white;
-  padding: 0.75rem 0.65rem;
+  overflow: hidden;
 }
 
-.empresa-perfil-main {
+.empresa-perfil-toolbar-row {
   display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
   min-width: 0;
-  flex-direction: column;
-  gap: 0.65rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-.empresa-perfil-body {
-  min-width: 0;
+.empresa-perfil-toolbar-row:last-child {
+  border-bottom: 0;
 }
 
-.empresa-perfil-nav-mobile-bar {
-  display: block;
+.empresa-perfil-toolbar-row::-webkit-scrollbar {
+  display: none;
+  height: 0;
 }
 
-.empresa-perfil-nav-mobile-btn {
+.empresa-perfil-toolbar-item {
   display: inline-flex;
-  width: 100%;
-  justify-content: flex-start;
+  flex: 1 1 0;
   align-items: center;
-  gap: 0.35rem;
-  border-color: rgb(226 232 240);
-  background: white;
-  color: rgb(51 65 85);
-  font-weight: 500;
-}
-
-.empresa-perfil-nav-mobile-current {
-  margin-left: auto;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgb(46 103 255);
-}
-
-.empresa-perfil-nav-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.empresa-perfil-nav-group-label {
-  margin: 0 0 0.35rem;
-  padding: 0 0.45rem;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgb(148 163 184);
-}
-
-.empresa-perfil-nav-items {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.empresa-perfil-nav-item {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 0.55rem;
-  border: 1px solid transparent;
-  border-radius: 0.55rem;
+  justify-content: center;
+  gap: 0.4rem;
+  min-width: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
   background: transparent;
-  padding: 0.45rem 0.55rem;
-  text-align: left;
+  padding: 0.55rem 0.7rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1.2;
   color: rgb(71 85 105);
+  white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
 }
 
-.empresa-perfil-nav-item:hover {
+.empresa-perfil-toolbar-item:hover {
   background: rgb(248 250 252);
   color: var(--brand-navy, #0e142b);
 }
 
-.empresa-perfil-nav-item--active {
-  border-color: rgb(46 103 255 / 0.18);
+.empresa-perfil-toolbar-item--active {
   background: rgb(239 246 255);
   color: rgb(29 78 216);
   font-weight: 600;
+  border-bottom-color: rgb(46 103 255);
 }
 
-.empresa-perfil-nav-item-icon {
-  width: 1rem;
-  height: 1rem;
+.empresa-perfil-toolbar-icon {
+  width: 0.875rem;
+  height: 0.875rem;
   flex-shrink: 0;
-  color: inherit;
-  opacity: 0.9;
 }
 
-.empresa-perfil-nav-sheet {
-  background: white !important;
-  width: 230px !important;
-  max-width: 230px !important;
-  gap: 0 !important;
-}
-
-.empresa-perfil-nav-sheet-header {
-  border-bottom: 1px solid rgb(226 232 240);
-  padding: 0.9rem 1rem 0.75rem;
-}
-
-.empresa-perfil-nav-sheet-body {
-  padding: 0.75rem 0.65rem 1rem;
+.empresa-perfil-body {
+  min-width: 0;
+  width: 100%;
 }
 
 @media (min-width: 1024px) {
-  .empresa-perfil-layout {
-    grid-template-columns: 220px minmax(0, 1fr);
-    gap: 0.85rem;
+  .empresa-perfil-toolbar-row {
+    overflow: visible;
   }
 
-  .empresa-perfil-nav {
-    display: block;
-    position: sticky;
-    top: 1rem;
-    align-self: start;
-    max-height: calc(100vh - 2rem);
-    overflow-y: auto;
-    scrollbar-width: thin;
+  .empresa-perfil-toolbar-item {
+    flex: 1 1 0;
   }
+}
 
-  .empresa-perfil-nav-mobile-bar {
-    display: none;
+@media (max-width: 1023px) {
+  .empresa-perfil-toolbar-item {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    padding: 0.55rem 0.85rem;
   }
 }
 

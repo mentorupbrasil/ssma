@@ -27,7 +27,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   MoreHorizontal,
-  PanelLeft,
 } from "lucide-react";
 import type { CompanyDetailSerialized } from "@/lib/companies";
 import {
@@ -58,12 +57,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { toggleCompanyPortal } from "@/actions/companies";
@@ -92,52 +85,23 @@ type NavItem = {
   icon: typeof LayoutDashboard;
 };
 
-type NavSection = {
-  id: string;
-  label: string;
-  items: NavItem[];
-};
-
-const NAV_SECTIONS: NavSection[] = [
-  {
-    id: "overview-group",
-    label: "Visão geral",
-    items: [{ id: "overview", label: "Visão geral", icon: LayoutDashboard }],
-  },
-  {
-    id: "operation",
-    label: "Operação",
-    items: [
-      { id: "employees", label: "Colaboradores", icon: Users },
-      { id: "referrals", label: "Atendimentos", icon: FileText },
-      { id: "agenda", label: "Agenda", icon: Calendar },
-      { id: "documents", label: "Documentos", icon: FolderOpen },
-    ],
-  },
-  {
-    id: "commercial",
-    label: "Comercial",
-    items: [
-      { id: "quotes", label: "Orçamentos", icon: DollarSign },
-      { id: "contract", label: "Contrato e preços", icon: Tags },
-    ],
-  },
-  {
-    id: "relationship",
-    label: "Relacionamento",
-    items: [
-      { id: "contacts", label: "Contatos", icon: Phone },
-      { id: "portal", label: "Portal", icon: Globe },
-      { id: "history", label: "Histórico", icon: History },
-    ],
-  },
+const NAV_ROW_PRIMARY: NavItem[] = [
+  { id: "overview", label: "Visão geral", icon: LayoutDashboard },
+  { id: "employees", label: "Colaboradores", icon: Users },
+  { id: "referrals", label: "Atendimentos", icon: FileText },
+  { id: "agenda", label: "Agenda", icon: Calendar },
+  { id: "documents", label: "Documentos", icon: FolderOpen },
 ];
 
-const ALL_NAV_ITEMS: NavItem[] = NAV_SECTIONS.flatMap((section) => section.items);
+const NAV_ROW_SECONDARY: NavItem[] = [
+  { id: "quotes", label: "Orçamentos", icon: DollarSign },
+  { id: "contract", label: "Contrato e preços", icon: Tags },
+  { id: "contacts", label: "Contatos", icon: Phone },
+  { id: "portal", label: "Portal", icon: Globe },
+  { id: "history", label: "Histórico", icon: History },
+];
 
-function getNavLabel(tab: TabId): string {
-  return ALL_NAV_ITEMS.find((item) => item.id === tab)?.label ?? "Visão geral";
-}
+const ALL_NAV_ITEMS: NavItem[] = [...NAV_ROW_PRIMARY, ...NAV_ROW_SECONDARY];
 
 function isTabId(value: string | null): value is TabId {
   return ALL_NAV_ITEMS.some((item) => item.id === value);
@@ -176,7 +140,6 @@ export function CompanyDetailClient({
   const [editOpen, setEditOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
-  const [navOpen, setNavOpen] = useState(false);
 
   const displayName = company.tradeName ?? company.legalName;
   useBreadcrumbSegmentLabel(company.id, displayName);
@@ -190,7 +153,6 @@ export function CompanyDetailClient({
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
     router.replace(`/dashboard/empresas/${company.id}?${params.toString()}`);
-    setNavOpen(false);
   };
 
   const refresh = () => router.refresh();
@@ -355,77 +317,89 @@ export function CompanyDetailClient({
         </div>
       </header>
 
-      <div className="empresa-perfil-layout">
-        <aside className="empresa-perfil-nav" aria-label="Menu da empresa">
-          <CompanySectionNav activeTab={activeTab} onNavigate={setTab} />
-        </aside>
-
-        <div className="empresa-perfil-main">
-          <div className="empresa-perfil-nav-mobile-bar">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="rounded-lg empresa-perfil-nav-mobile-btn"
-              onClick={() => setNavOpen(true)}
-            >
-              <PanelLeft className="mr-2 h-4 w-4" />
-              Seções da empresa
-              <span className="empresa-perfil-nav-mobile-current">{getNavLabel(activeTab)}</span>
-            </Button>
-          </div>
-
-          <div className="empresa-perfil-body">
-            {activeTab === "overview" && (
-              <OverviewTab company={company} onNavigate={setTab} />
-            )}
-            {activeTab === "employees" && (
-              <EmployeesTab company={company} canManage={canManage} />
-            )}
-            {activeTab === "referrals" && (
-              <ReferralsTab company={company} canManage={canManage} />
-            )}
-            {activeTab === "agenda" && (
-              <AgendaTab company={company} canManage={canManage} />
-            )}
-            {activeTab === "documents" && <DocumentsTab company={company} />}
-            {activeTab === "quotes" && (
-              <QuotesTab company={company} canCommercial={canCommercial} />
-            )}
-            {activeTab === "contract" && (
-              <ContractTab company={company} canCommercial={canCommercial} />
-            )}
-            {activeTab === "contacts" && (
-              <ContactsTab
-                company={company}
-                canManage={canManage}
-                onAddContact={() => setContactOpen(true)}
-              />
-            )}
-            {activeTab === "portal" && (
-              <PortalTab
-                company={company}
-                canManage={canManage}
-                busy={portalBusy}
-                onToggle={handlePortalToggle}
-                onRefresh={refresh}
-              />
-            )}
-            {activeTab === "history" && <HistoryTab company={company} />}
-          </div>
+      <nav className="empresa-perfil-toolbar" aria-label="Seções da empresa">
+        <div className="empresa-perfil-toolbar-row">
+          {NAV_ROW_PRIMARY.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={cn(
+                  "empresa-perfil-toolbar-item",
+                  isActive && "empresa-perfil-toolbar-item--active"
+                )}
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => setTab(item.id)}
+              >
+                <Icon className="empresa-perfil-toolbar-icon" aria-hidden />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
-      </div>
+        <div className="empresa-perfil-toolbar-row">
+          {NAV_ROW_SECONDARY.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={cn(
+                  "empresa-perfil-toolbar-item",
+                  isActive && "empresa-perfil-toolbar-item--active"
+                )}
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => setTab(item.id)}
+              >
+                <Icon className="empresa-perfil-toolbar-icon" aria-hidden />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
-      <Sheet open={navOpen} onOpenChange={setNavOpen}>
-        <SheetContent side="left" className="empresa-perfil-nav-sheet p-0" showCloseButton>
-          <SheetHeader className="empresa-perfil-nav-sheet-header">
-            <SheetTitle>Seções da empresa</SheetTitle>
-          </SheetHeader>
-          <div className="empresa-perfil-nav-sheet-body">
-            <CompanySectionNav activeTab={activeTab} onNavigate={setTab} />
-          </div>
-        </SheetContent>
-      </Sheet>
+      <div className="empresa-perfil-body">
+        {activeTab === "overview" && (
+          <OverviewTab company={company} onNavigate={setTab} />
+        )}
+        {activeTab === "employees" && (
+          <EmployeesTab company={company} canManage={canManage} />
+        )}
+        {activeTab === "referrals" && (
+          <ReferralsTab company={company} canManage={canManage} />
+        )}
+        {activeTab === "agenda" && (
+          <AgendaTab company={company} canManage={canManage} />
+        )}
+        {activeTab === "documents" && <DocumentsTab company={company} />}
+        {activeTab === "quotes" && (
+          <QuotesTab company={company} canCommercial={canCommercial} />
+        )}
+        {activeTab === "contract" && (
+          <ContractTab company={company} canCommercial={canCommercial} />
+        )}
+        {activeTab === "contacts" && (
+          <ContactsTab
+            company={company}
+            canManage={canManage}
+            onAddContact={() => setContactOpen(true)}
+          />
+        )}
+        {activeTab === "portal" && (
+          <PortalTab
+            company={company}
+            canManage={canManage}
+            busy={portalBusy}
+            onToggle={handlePortalToggle}
+            onRefresh={refresh}
+          />
+        )}
+        {activeTab === "history" && <HistoryTab company={company} />}
+      </div>
 
       <EditCompanyDialog
         open={editOpen}
@@ -451,46 +425,6 @@ export function CompanyDetailClient({
         onSuccess={refresh}
       />
     </PageModule>
-  );
-}
-
-function CompanySectionNav({
-  activeTab,
-  onNavigate,
-}: {
-  activeTab: TabId;
-  onNavigate: (tab: TabId) => void;
-}) {
-  return (
-    <nav className="empresa-perfil-nav-list">
-      {NAV_SECTIONS.map((section) => (
-        <div key={section.id} className="empresa-perfil-nav-group">
-          <p className="empresa-perfil-nav-group-label">{section.label}</p>
-          <ul className="empresa-perfil-nav-items">
-            {section.items.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    className={cn(
-                      "empresa-perfil-nav-item",
-                      isActive && "empresa-perfil-nav-item--active"
-                    )}
-                    aria-current={isActive ? "page" : undefined}
-                    onClick={() => onNavigate(item.id)}
-                  >
-                    <Icon className="empresa-perfil-nav-item-icon" aria-hidden />
-                    <span>{item.label}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </nav>
   );
 }
 
