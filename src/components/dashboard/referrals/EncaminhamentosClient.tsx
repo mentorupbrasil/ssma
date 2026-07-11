@@ -65,7 +65,7 @@ import {
   ReferralScheduleDialog,
   ReferralDocumentDialog,
 } from "./ReferralActionDialogs";
-import { referralStatCardsForEmpresa, empresaReferralStatusLabel } from "@/lib/empresa-portal";
+import { referralStatCardsForEmpresa, empresaReferralStatusLabel, empresaReferralCardLabel } from "@/lib/empresa-portal";
 import { cn } from "@/lib/utils";
 
 type CompanyOption = { id: string; name: string };
@@ -75,7 +75,7 @@ type EncaminhamentosClientProps = {
   initialTotal: number;
   initialPage: number;
   pageSize: number;
-  statusCounts: Partial<Record<ReferralStatus, number>>;
+  statusCounts: Record<string, number>;
   companies: CompanyOption[];
   isEmpresa: boolean;
   canManage: boolean;
@@ -164,7 +164,7 @@ export function EncaminhamentosClient({
     () =>
       buildFilterChips([
         { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
-        { key: "status", value: filters.status, label: (v) => `Status: ${isEmpresa ? empresaReferralStatusLabel(v as ReferralStatus) : v}`, skip: (v) => v === "ALL" },
+        { key: "status", value: filters.status, label: (v) => `Status: ${isEmpresa ? empresaReferralCardLabel(v) : v}`, skip: (v) => v === "ALL" },
         { key: "companyId", value: filters.companyId, label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}` },
         { key: "clinicalExamType", value: filters.clinicalExamType, label: (v) => `Exame: ${CLINICAL_EXAM_LABELS[v as keyof typeof CLINICAL_EXAM_LABELS] ?? v}` },
         { key: "dateFrom", value: filters.dateFrom, label: (v) => `De ${v}` },
@@ -243,18 +243,34 @@ export function EncaminhamentosClient({
       )}
 
       <FilterMetricGrid
-        items={statCards.map((card) => {
-          const isActive = filters.status === card.status;
-          return {
-            key: card.status,
-            metaKey: `referral:${card.status}`,
-            label: card.label,
-            value: statusCounts[card.status] ?? 0,
-            active: isActive,
-            onClick: () =>
-              updateFilters({ status: isActive ? undefined : card.status }),
-          };
-        })}
+        items={
+          isEmpresa
+            ? statCards.map((card) => {
+                const isActive = filters.status === card.key;
+                return {
+                  key: card.key,
+                  metaKey: `referral:${card.key}`,
+                  label: card.label,
+                  description: card.description,
+                  value: statusCounts[card.key] ?? 0,
+                  active: isActive,
+                  onClick: () =>
+                    updateFilters({ status: isActive ? undefined : card.key }),
+                };
+              })
+            : statCards.map((card) => {
+                const isActive = filters.status === card.status;
+                return {
+                  key: card.status,
+                  metaKey: `referral:${card.status}`,
+                  label: card.label,
+                  value: statusCounts[card.status] ?? 0,
+                  active: isActive,
+                  onClick: () =>
+                    updateFilters({ status: isActive ? undefined : card.status }),
+                };
+              })
+        }
       />
 
       <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending} activeChips={activeChips} onRemoveChip={removeChip} onClearChips={clearFilters}>
@@ -329,7 +345,7 @@ export function EncaminhamentosClient({
                 : "Crie um novo encaminhamento ou ajuste os filtros."
             }
             action={{
-              label: isEmpresa ? "Solicitar exames" : "Novo encaminhamento",
+              label: isEmpresa ? "Agendar exames" : "Novo encaminhamento",
               href: "/dashboard/encaminhamentos/novo",
             }}
           />

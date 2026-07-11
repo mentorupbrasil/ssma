@@ -226,6 +226,18 @@ export const METRIC_META: Record<string, MetricMeta> = {
   "referral:CONCLUIDO": { tone: "success", icon: CheckCircle2, description: "Processo finalizado" },
   "referral:CANCELADO": { tone: "danger", icon: XCircle, description: "Encaminhamentos cancelados" },
 
+  // Encaminhamentos — portal RH
+  "referral:AGENDADOS": {
+    tone: "info",
+    icon: CalendarCheck,
+    description: "Colaboradores encaminhados à clínica",
+  },
+  "referral:ASO_PENDENTE": {
+    tone: "warning",
+    icon: FileClock,
+    description: "Encaminhados sem ASO liberado",
+  },
+
   // Agenda
   "appointment:today": { tone: "info", icon: CalendarCheck, description: "Agendados para hoje" },
   "appointment:confirmado": { tone: "success", icon: CheckCircle2, description: "Presença confirmada" },

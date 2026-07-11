@@ -44,7 +44,7 @@ export default async function DashboardPage() {
         },
         {
           href: "/dashboard/encaminhamentos/novo",
-          label: "Solicitar exames",
+          label: "Agendar exames",
           description: "Encaminhar colaboradores para a clínica",
           icon: FileText,
         },

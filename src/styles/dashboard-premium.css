@@ -1505,7 +1505,14 @@
   }
 }
 
-/* Exames unificados — portal RH */
+/* Exames — portal RH */
+.exames-empresa-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+/* Exames unificados — portal RH (legado) */
 .exames-operacao-intro {
   margin-bottom: 1rem;
   border-radius: 0.75rem;

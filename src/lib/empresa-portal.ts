@@ -30,26 +30,82 @@ export const EMPRESA_NAV_ICON_OVERRIDES: Record<string, string> = {
 
 export const EMPRESA_EXAMES_BASE_PATH = "/dashboard/encaminhamentos";
 
-/** Cards de status na tela Exames — visão simplificada do RH */
-export const EMPRESA_REFERRAL_STAT_CARDS: { status: ReferralStatus; label: string }[] = [
-  { status: "NOVO", label: "Encaminhados" },
-  { status: "EM_ANALISE", label: "Em andamento" },
-  { status: "EM_ATENDIMENTO", label: "Na clínica" },
-  { status: "AGUARDANDO_DOCUMENTO", label: "Aguardando ASO" },
-  { status: "ASO_DISPONIVEL", label: "ASO disponível" },
-  { status: "CONCLUIDO", label: "Concluídos" },
-  { status: "CANCELADO", label: "Cancelados" },
+export type EmpresaReferralCardKey =
+  | "AGENDADOS"
+  | "AGUARDANDO_DOCUMENTO"
+  | "ASO_DISPONIVEL"
+  | "ASO_PENDENTE";
+
+export type EmpresaReferralCard = {
+  key: EmpresaReferralCardKey;
+  label: string;
+  description: string;
+  statuses: ReferralStatus[];
+};
+
+const EMPRESA_REFERRAL_PIPELINE_STATUSES: ReferralStatus[] = [
+  "NOVO",
+  "EM_ANALISE",
+  "AGUARDANDO_AGENDAMENTO",
+  "AGENDADO",
+  "EM_ATENDIMENTO",
+  "AGUARDANDO_RESULTADO",
 ];
+
+/** Cards de status na tela Exames — visão do RH */
+export const EMPRESA_REFERRAL_STAT_CARDS: EmpresaReferralCard[] = [
+  {
+    key: "AGENDADOS",
+    label: "Agendados",
+    description: "Colaboradores encaminhados à clínica",
+    statuses: EMPRESA_REFERRAL_PIPELINE_STATUSES,
+  },
+  {
+    key: "AGUARDANDO_DOCUMENTO",
+    label: "Aguardando documento",
+    description: "Exame realizado, aguardando anexo",
+    statuses: ["AGUARDANDO_DOCUMENTO"],
+  },
+  {
+    key: "ASO_DISPONIVEL",
+    label: "ASO disponível",
+    description: "Pronto para baixar",
+    statuses: ["ASO_DISPONIVEL", "CONCLUIDO"],
+  },
+  {
+    key: "ASO_PENDENTE",
+    label: "ASO pendente",
+    description: "Encaminhados sem ASO liberado",
+    statuses: [...EMPRESA_REFERRAL_PIPELINE_STATUSES, "AGUARDANDO_DOCUMENTO"],
+  },
+];
+
+export function empresaReferralCardByKey(key?: string): EmpresaReferralCard | undefined {
+  return EMPRESA_REFERRAL_STAT_CARDS.find((card) => card.key === key);
+}
+
+export function empresaReferralCardLabel(key: string): string {
+  return empresaReferralCardByKey(key)?.label ?? key;
+}
+
+export function applyEmpresaReferralStatusFilter(
+  where: import("@prisma/client").Prisma.ReferralWhereInput,
+  statusFilter?: string
+): import("@prisma/client").Prisma.ReferralWhereInput {
+  const card = empresaReferralCardByKey(statusFilter);
+  if (!card) return where;
+  return { ...where, status: { in: card.statuses } };
+}
 
 /** Rótulos amigáveis para o RH (sem jargão de agenda da clínica) */
 export const EMPRESA_REFERRAL_STATUS_LABELS: Partial<Record<ReferralStatus, string>> = {
-  NOVO: "Encaminhado",
-  EM_ANALISE: "Em andamento",
-  AGUARDANDO_AGENDAMENTO: "Autorizado",
-  AGENDADO: "Autorizado",
-  EM_ATENDIMENTO: "Na clínica",
-  AGUARDANDO_RESULTADO: "Aguardando resultado",
-  AGUARDANDO_DOCUMENTO: "Aguardando ASO",
+  NOVO: "Agendado",
+  EM_ANALISE: "Agendado",
+  AGUARDANDO_AGENDAMENTO: "Agendado",
+  AGENDADO: "Agendado",
+  EM_ATENDIMENTO: "Agendado",
+  AGUARDANDO_RESULTADO: "Agendado",
+  AGUARDANDO_DOCUMENTO: "Aguardando documento",
   ASO_DISPONIVEL: "ASO disponível",
   CONCLUIDO: "Concluído",
   CANCELADO: "Cancelado",
