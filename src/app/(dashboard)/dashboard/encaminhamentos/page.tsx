@@ -4,11 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { requireAuthSession } from "@/lib/page-auth";
 import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
 import { buildReferralWhere, REFERRAL_STAT_CARDS, type ReferralListItem } from "@/lib/referrals";
-import {
-  referralStatCardsForEmpresa,
-  empresaReferralCardByKey,
-  applyEmpresaReferralStatusFilter,
-} from "@/lib/empresa-portal";
 import { EncaminhamentosClient } from "@/components/dashboard/referrals/EncaminhamentosClient";
 import { ExamesOperacaoEmpresaClient } from "@/components/dashboard/referrals/ExamesOperacaoEmpresaClient";
 import { Loader2 } from "lucide-react";
@@ -32,7 +27,7 @@ async function loadReferralsForPage(
 
   const filters = {
     q: getParam(params, "q") || undefined,
-    status: getParam(params, "status") || undefined,
+    status: isEmpresa ? undefined : getParam(params, "status") || undefined,
     companyId: getParam(params, "companyId") || undefined,
     clinicalExamType: getParam(params, "clinicalExamType") || undefined,
     dateFrom: getParam(params, "dateFrom") || undefined,
@@ -40,25 +35,13 @@ async function loadReferralsForPage(
   };
 
   const page = Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1);
-  const empresaCard = isEmpresa ? empresaReferralCardByKey(filters.status) : undefined;
-  const where = buildReferralWhere(
-    empresaCard ? { ...filters, status: undefined } : filters,
-    companyScope
-  );
-  const finalWhere = empresaCard ? applyEmpresaReferralStatusFilter(where, filters.status) : where;
+  const where = buildReferralWhere(filters, companyScope);
   const skip = (page - 1) * REFERRAL_PAGE_SIZE;
 
   const baseWhere = companyScope ? { companyId: companyScope } : {};
 
   const countResultsPromise = isEmpresa
-    ? Promise.all(
-        referralStatCardsForEmpresa().map(async (card) => ({
-          key: card.key,
-          count: await prisma.referral.count({
-            where: { ...baseWhere, status: { in: card.statuses } },
-          }),
-        }))
-      )
+    ? Promise.resolve([])
     : Promise.all(
         REFERRAL_STAT_CARDS.map(async (card) => ({
           key: card.status,
@@ -69,9 +52,9 @@ async function loadReferralsForPage(
       );
 
   const [total, referrals, countResults, companies] = await Promise.all([
-    prisma.referral.count({ where: finalWhere }),
+    prisma.referral.count({ where }),
     prisma.referral.findMany({
-      where: finalWhere,
+      where,
       include: { company: true, patient: true, assignedTo: true },
       orderBy: { createdAt: "desc" },
       skip,

@@ -66,7 +66,7 @@ import {
   ReferralScheduleDialog,
   ReferralDocumentDialog,
 } from "./ReferralActionDialogs";
-import { referralStatCardsForEmpresa, empresaReferralStatusLabel, empresaReferralCardLabel } from "@/lib/empresa-portal";
+import { empresaReferralStatusLabel } from "@/lib/empresa-portal";
 import { cn } from "@/lib/utils";
 
 type CompanyOption = { id: string; name: string };
@@ -109,7 +109,6 @@ export function EncaminhamentosClient({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const listPath = listPathProp ?? "/dashboard/encaminhamentos";
-  const empresaStatCards = referralStatCardsForEmpresa();
 
   const [q, setQ] = useState(filters.q ?? "");
   const [companyId, setCompanyId] = useState(filters.companyId ?? "");
@@ -168,7 +167,7 @@ export function EncaminhamentosClient({
         {
           key: "status",
           value: filters.status,
-          label: (v) => `Status: ${isEmpresa ? empresaReferralCardLabel(v) : v}`,
+          label: (v) => `Status: ${v}`,
           skip: (v) => v === "ALL" || isEmpresa,
         },
         { key: "companyId", value: filters.companyId, label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}` },
@@ -248,23 +247,9 @@ export function EncaminhamentosClient({
         </PageHeader>
       )}
 
+      {!isEmpresa && (
       <FilterMetricGrid
-        items={
-          isEmpresa
-            ? empresaStatCards.map((card) => {
-                const isActive = filters.status === card.key;
-                return {
-                  key: card.key,
-                  metaKey: `referral:${card.key}`,
-                  label: card.label,
-                  description: card.description,
-                  value: statusCounts[card.key] ?? 0,
-                  active: isActive,
-                  onClick: () =>
-                    updateFilters({ status: isActive ? undefined : card.key }),
-                };
-              })
-            : REFERRAL_STAT_CARDS.map((card) => {
+        items={REFERRAL_STAT_CARDS.map((card) => {
                 const isActive = filters.status === card.status;
                 return {
                   key: card.status,
@@ -275,9 +260,9 @@ export function EncaminhamentosClient({
                   onClick: () =>
                     updateFilters({ status: isActive ? undefined : card.status }),
                 };
-              })
-        }
+              })}
       />
+      )}
 
       <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending} activeChips={activeChips} onRemoveChip={removeChip} onClearChips={clearFilters}>
         <div className="relative col-span-full sm:col-span-2">
