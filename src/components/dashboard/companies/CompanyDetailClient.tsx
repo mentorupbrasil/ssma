@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  FileText,
   DollarSign,
   MessageCircle,
   Pencil,
@@ -176,15 +175,6 @@ export function CompanyDetailClient({
         </div>
 
         <div className="empresa-perfil-actions">
-          {canManage && (
-            <Link
-              href={`/dashboard/encaminhamentos/novo?companyId=${company.id}`}
-              className={cn(buttonVariants({ variant: "brand", size: "sm" }), "empresa-perfil-btn")}
-            >
-              <FileText className="mr-1.5 h-3.5 w-3.5" />
-              Criar atendimento
-            </Link>
-          )}
           {canManage && canCommercial && (
             <Link
               href={`/dashboard/orcamentos?companyId=${company.id}`}
@@ -328,7 +318,7 @@ export function CompanyDetailClient({
           <EmployeesTab company={company} canManage={canManage} />
         )}
         {activeTab === "referrals" && (
-          <ReferralsTab company={company} canManage={canManage} />
+          <ReferralsTab company={company} />
         )}
         {activeTab === "agenda" && (
           <AgendaTab company={company} canManage={canManage} />
@@ -604,10 +594,8 @@ function EmployeesTab({
 
 function ReferralsTab({
   company,
-  canManage,
 }: {
   company: CompanyDetailSerialized;
-  canManage: boolean;
 }) {
   if (company.referrals.length === 0) {
     return (
@@ -615,14 +603,6 @@ function ReferralsTab({
         compact
         title="Nenhum atendimento"
         description="Esta empresa ainda não possui atendimentos registrados."
-        action={
-          canManage
-            ? {
-                label: "Criar atendimento",
-                href: `/dashboard/encaminhamentos/novo?companyId=${company.id}`,
-              }
-            : undefined
-        }
       />
     );
   }
