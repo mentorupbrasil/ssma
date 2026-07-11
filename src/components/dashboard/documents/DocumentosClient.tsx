@@ -518,33 +518,37 @@ export function DocumentosClient({
           </>
         )}
 
-        <div className="documentos-ops-pagination">
-          <p className="documentos-ops-pagination-meta">
-            {totalPages > 1 ? `Página ${initialPage} de ${totalPages}` : "—"}
-          </p>
-          <div className="flex gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 rounded-lg p-0"
-              disabled={initialPage <= 1 || isPending || totalPages <= 1}
-              onClick={() => updateFilters({ page: String(initialPage - 1) })}
-              aria-label="Página anterior"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 w-8 rounded-lg p-0"
-              disabled={initialPage >= totalPages || isPending || totalPages <= 1}
-              onClick={() => updateFilters({ page: String(initialPage + 1) })}
-              aria-label="Próxima página"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+        {initialTotal > 0 && (
+          <div className="documentos-ops-pagination">
+            <p className="documentos-ops-pagination-meta">
+              {totalPages > 1
+                ? `Página ${initialPage} de ${totalPages}`
+                : `${Math.min(pageSize, initialTotal)} por página`}
+            </p>
+            <div className="flex gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-lg p-0"
+                disabled={initialPage <= 1 || isPending || totalPages <= 1}
+                onClick={() => updateFilters({ page: String(initialPage - 1) })}
+                aria-label="Página anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-lg p-0"
+                disabled={initialPage >= totalPages || isPending || totalPages <= 1}
+                onClick={() => updateFilters({ page: String(initialPage + 1) })}
+                aria-label="Próxima página"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <DocumentAttachPanel

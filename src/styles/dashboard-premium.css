@@ -5149,6 +5149,7 @@
 }
 
 .documentos-ops-table-shell {
+  height: fit-content;
   overflow: hidden;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.7rem;
@@ -5213,8 +5214,8 @@
 .documentos-ops-table-scroll {
   display: none;
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .documentos-ops-mobile {
@@ -5235,14 +5236,14 @@
 
 .documentos-ops-table {
   width: 100%;
-  min-width: 970px;
+  max-width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
 .documentos-ops-table thead th {
-  height: 2.5rem;
-  padding: 0 0.75rem;
+  height: 2.4rem;
+  padding: 0 0.55rem;
   border-bottom: 1px solid rgb(226 232 240);
   background: rgb(248 250 252);
   font-size: 0.625rem;
@@ -5253,16 +5254,18 @@
   text-align: left;
   white-space: nowrap;
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .documentos-ops-table tbody td {
-  height: 3.5rem;
-  max-height: 3.75rem;
-  padding: 0.45rem 0.75rem;
+  height: 3.4rem;
+  padding: 0.4rem 0.55rem;
   border-bottom: 1px solid rgb(241 245 249);
   vertical-align: middle;
   font-size: 0.8125rem;
   color: rgb(51 65 85);
+  overflow: hidden;
 }
 
 .documentos-ops-table tbody tr:last-child td {
@@ -5273,25 +5276,23 @@
   background: rgb(248 250 252 / 0.7);
 }
 
-.documentos-ops-col-collaborator { width: 22%; min-width: 180px; }
-.documentos-ops-col-company { width: 16%; min-width: 130px; }
-.documentos-ops-col-role { width: 17%; min-width: 150px; }
-.documentos-ops-col-exam { width: 17%; min-width: 150px; }
+/* Proporções que somam 100% — sem min-width que force overflow */
+.documentos-ops-col-collaborator { width: 18%; }
+.documentos-ops-col-company { width: 12%; }
+.documentos-ops-col-role { width: 14%; }
+.documentos-ops-col-exam { width: 14%; }
+.documentos-ops-col-date { width: 8%; }
+.documentos-ops-col-status { width: 18%; }
+.documentos-ops-col-action { width: 16%; }
+
 .documentos-ops-col-date {
-  width: 105px;
-  min-width: 105px;
   text-align: center;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.documentos-ops-col-status {
-  width: 145px;
-  min-width: 145px;
-  text-align: center;
-}
+
+.documentos-ops-col-status,
 .documentos-ops-col-action {
-  width: 110px;
-  min-width: 110px;
   text-align: center;
 }
 
@@ -5305,6 +5306,10 @@
 }
 
 .documentos-ops-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 600;
   color: rgb(15 23 42);
 }
@@ -5319,8 +5324,17 @@
 .documentos-ops-exam-stack {
   display: flex;
   min-width: 0;
+  max-width: 100%;
   flex-direction: column;
   gap: 0.05rem;
+}
+
+.documentos-ops-exam-primary,
+.documentos-ops-exam-secondary {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .documentos-ops-exam-primary {
@@ -5337,9 +5351,9 @@
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  max-width: 100% !important;
   height: 1.55rem !important;
-  max-width: none !important;
-  padding: 0 0.55rem !important;
+  padding: 0 0.5rem !important;
   border-radius: 999px !important;
   font-size: 0.6875rem !important;
   font-weight: 600 !important;
@@ -5351,16 +5365,34 @@
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  min-width: 88px;
+  gap: 0.3rem;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
   height: 32px !important;
-  padding-left: 0.8rem !important;
-  padding-right: 0.8rem !important;
+  padding-left: 0.7rem !important;
+  padding-right: 0.7rem !important;
   border-radius: 0.5rem !important;
   font-size: 0.75rem !important;
   font-weight: 600 !important;
   white-space: nowrap;
   box-shadow: none !important;
+}
+
+@media (min-width: 1280px) {
+  .documentos-ops-table thead th,
+  .documentos-ops-table tbody td {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .documentos-ops-col-collaborator { width: 20%; }
+  .documentos-ops-col-company { width: 14%; }
+  .documentos-ops-col-role { width: 15%; }
+  .documentos-ops-col-exam { width: 15%; }
+  .documentos-ops-col-date { width: 8%; }
+  .documentos-ops-col-status { width: 15%; }
+  .documentos-ops-col-action { width: 13%; }
 }
 
 .documentos-ops-pagination {
