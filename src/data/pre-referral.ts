@@ -1,3 +1,10 @@
+export const ENCAMINHAMENTO_HERO_BADGES = [
+  "Solicitação com protocolo",
+  "Confirmação pelo WhatsApp",
+  "Tratamento seguro dos dados",
+  "Atendimento ágil",
+] as const;
+
 export const PRE_REFERRAL_EXAM_OPTIONS = [
   "Audiometria",
   "Acuidade visual",

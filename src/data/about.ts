@@ -18,6 +18,7 @@ export const ABOUT_HERO_STRIP = [
   "Medicina do Trabalho",
   "Segurança do Trabalho",
   "Imperatriz — MA",
+  "Atendimento presencial",
 ] as const;
 
 /* ------------------------------------------------------------------ */

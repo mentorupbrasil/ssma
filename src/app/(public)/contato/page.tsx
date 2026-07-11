@@ -1,15 +1,13 @@
-import { MessageCircle } from "lucide-react";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { ContactQuickActions } from "@/components/public/ContactQuickActions";
 import { ContactInfoPanel } from "@/components/public/ContactInfoPanel";
+import { ContactHero } from "@/components/public/ContactHero";
 import { LocationMap } from "@/components/public/LocationMap";
-import { PageHero } from "@/components/public/PageHero";
 import { PageSection } from "@/components/public/PageSection";
 import { CTASection } from "@/components/public/CTASection";
 import { getClinicSiteConfig } from "@/config/clinic";
 import { resolveContactPrefill, CONTACT_WHATSAPP_MESSAGES } from "@/data/contact";
 import { whatsappLink } from "@/lib/helpers";
-import { Button } from "@/components/ui/button";
 
 import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
 
@@ -27,26 +25,7 @@ export default async function ContatoPage({
 
   return (
     <>
-      <PageHero
-        eyebrow="Fale conosco"
-        title="Entre em contato com a Unimetra"
-        description="Nossa equipe comercial responde com agilidade. Para demandas urgentes, fale diretamente pelo WhatsApp."
-        supportingText="Orçamentos, encaminhamentos, dúvidas sobre exames e suporte ao RH — escolha o canal mais conveniente."
-        layout="stack"
-      >
-        {clinic.hasWhatsApp && (
-          <a
-            href={whatsappLink(CONTACT_WHATSAPP_MESSAGES.direct)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="brand" className="rounded-xl">
-              <MessageCircle className="mr-2 h-4 w-4" />
-              WhatsApp direto
-            </Button>
-          </a>
-        )}
-      </PageHero>
+      <ContactHero hasWhatsApp={clinic.hasWhatsApp} />
 
       <PageSection className="!py-8 md:!py-10">
         <ContactQuickActions />

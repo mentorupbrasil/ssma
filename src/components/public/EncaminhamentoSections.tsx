@@ -6,19 +6,15 @@ import {
   MessageCircle,
   Zap,
   Shield,
-  FileCheck,
-  Lock,
+  ClipboardList,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AboutCtaLink } from "@/components/public/about/AboutCtaLink";
+import { EditorialHero } from "@/components/public/EditorialHero";
 import { whatsappLink } from "@/lib/helpers";
-import { WHATSAPP_PRE_REFERRAL_TEMPLATE } from "@/data/pre-referral";
+import { ENCAMINHAMENTO_HERO_BADGES, WHATSAPP_PRE_REFERRAL_TEMPLATE } from "@/data/pre-referral";
 import { cn } from "@/lib/utils";
-
-const TRUST_BADGES = [
-  { icon: FileCheck, label: "Solicitação com protocolo" },
-  { icon: MessageCircle, label: "Confirmação pelo WhatsApp" },
-  { icon: Lock, label: "Tratamento seguro dos dados" },
-];
 
 type EncaminhamentoPathCardsProps = {
   onScrollToForm: () => void;
@@ -26,36 +22,38 @@ type EncaminhamentoPathCardsProps = {
 
 export function EncaminhamentoHero() {
   return (
-    <section className="page-hero-offset scroll-mt-[var(--header-height)] relative overflow-hidden border-b border-slate-200/80 bg-gradient-to-br from-[var(--brand-navy)] via-[#16204a] to-[#0e142b]">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(22,160,133,0.18),transparent_55%)]" />
-      <div className="container-page relative pb-10 pt-1 md:pb-12 lg:pb-14">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300/90">
-          PORTAL EMPRESARIAL
-        </p>
-        <div className="max-w-3xl">
-          <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15]">
-            Encaminhamento rápido de colaborador
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-200/95 sm:text-lg">
-            Envie as informações principais e nossa equipe confirma o atendimento pelo WhatsApp.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {TRUST_BADGES.map((item) => {
-              const Icon = item.icon;
-              return (
-                <span
-                  key={item.label}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/95 backdrop-blur-sm"
-                >
-                  <Icon className="h-3.5 w-3.5 text-emerald-300" strokeWidth={1.75} />
-                  {item.label}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </section>
+    <EditorialHero
+      pill={{ href: "#pre-encaminhamento", label: "Portal empresarial" }}
+      title="Encaminhamento rápido de colaborador"
+      description="Envie as informações principais e nossa equipe confirma o atendimento pelo WhatsApp."
+      badges={ENCAMINHAMENTO_HERO_BADGES}
+      badgesAriaLabel="Benefícios do encaminhamento"
+      actions={
+        <>
+          <AboutCtaLink
+            href="#pre-encaminhamento"
+            variant="brand"
+            size="default"
+            className="about-v2-hero-cta about-v2-hero-cta-primary group"
+          >
+            <ClipboardList className="size-4" aria-hidden />
+            Preencher formulário
+          </AboutCtaLink>
+          <AboutCtaLink
+            href="/login"
+            variant="outline"
+            size="default"
+            className="about-v2-hero-cta about-v2-hero-cta-secondary group"
+          >
+            Acessar portal
+            <ArrowRight
+              className="size-4 transition-transform group-hover:translate-x-0.5"
+              aria-hidden
+            />
+          </AboutCtaLink>
+        </>
+      }
+    />
   );
 }
 

@@ -1,3 +1,10 @@
+export const CONTACT_HERO_BADGES = [
+  "Orçamentos",
+  "Encaminhamentos",
+  "Dúvidas sobre exames",
+  "Suporte ao RH",
+] as const;
+
 export const CONTACT_SUBJECTS = [
   "Solicitar orçamento",
   "Encaminhamento de colaborador",

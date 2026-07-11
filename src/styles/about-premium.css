@@ -8,169 +8,7 @@
   margin-inline: auto;
 }
 
-/* Hero — elegante, centralizado, fundo claro ----------------------- */
-
-.about-v2-hero {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  padding-block: calc(var(--header-height) + 2.5rem) clamp(2.5rem, 5vw, 3.5rem);
-  background: var(--background);
-}
-
-.about-v2-hero-glows {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  contain: strict;
-  opacity: 0.55;
-}
-
-.about-v2-hero-glow {
-  position: absolute;
-  border-radius: 999px;
-}
-
-.about-v2-hero-glow--a {
-  top: -18rem;
-  left: 50%;
-  width: 42rem;
-  height: 42rem;
-  transform: translateX(-35%) rotate(-18deg);
-  background: radial-gradient(
-    68% 68% at 55% 31%,
-    rgb(46 103 255 / 0.09) 0%,
-    rgb(14 20 43 / 0.04) 50%,
-    transparent 80%
-  );
-}
-
-.about-v2-hero-glow--b {
-  top: -10rem;
-  right: -6rem;
-  width: 22rem;
-  height: 22rem;
-  background: radial-gradient(
-    50% 50% at 50% 50%,
-    rgb(14 20 43 / 0.07) 0%,
-    rgb(14 20 43 / 0.02) 75%,
-    transparent 100%
-  );
-}
-
-.about-v2-hero-glow--c {
-  top: 2rem;
-  left: -8rem;
-  width: 18rem;
-  height: 18rem;
-  background: radial-gradient(
-    50% 50% at 50% 50%,
-    rgb(46 103 255 / 0.06) 0%,
-    transparent 85%
-  );
-}
-
-.about-v2-hero-fade {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: radial-gradient(125% 125% at 50% 100%, transparent 0%, var(--background) 72%);
-}
-
-.about-v2-hero-inner {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 46rem;
-  margin-inline: auto;
-  gap: 0;
-}
-
-.about-v2-hero-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.85rem;
-  margin: 0 auto 1.5rem;
-  padding: 0.35rem 0.35rem 0.35rem 1rem;
-  border-radius: 999px;
-  border: 1px solid rgb(14 20 43 / 0.08);
-  background: white;
-  box-shadow: 0 4px 20px rgb(14 20 43 / 0.06);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--brand-navy);
-  text-decoration: none;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-}
-
-.about-v2-hero-pill:hover {
-  border-color: rgb(46 103 255 / 0.25);
-  box-shadow: 0 8px 28px rgb(14 20 43 / 0.08);
-}
-
-.about-v2-hero-pill-divider {
-  width: 1px;
-  height: 1rem;
-  background: rgb(14 20 43 / 0.12);
-}
-
-.about-v2-hero-pill-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 999px;
-  background: rgb(244 247 250);
-  color: var(--brand-green);
-  transition: background 0.25s ease, transform 0.25s ease;
-}
-
-.about-v2-hero-pill:hover .about-v2-hero-pill-icon {
-  background: rgb(46 103 255 / 0.12);
-  transform: translateX(2px);
-}
-
-.about-v2-hero-title {
-  margin: 0;
-  max-width: 18ch;
-  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  font-size: clamp(1.85rem, 4vw, 2.85rem);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-  color: var(--brand-navy);
-}
-
-@media (min-width: 640px) {
-  .about-v2-hero-title {
-    max-width: 22ch;
-  }
-}
-
-.about-v2-hero-lead {
-  margin: 1.25rem auto 0;
-  max-width: 36rem;
-  font-size: clamp(1rem, 1.5vw, 1.125rem);
-  line-height: 1.7;
-  text-wrap: balance;
-  color: rgb(71 85 105);
-}
-
-.about-v2-hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-top: 1.85rem;
-}
+/* Hero — see editorial-hero-premium.css */
 
 .about-v2-hero-cta {
   min-width: min(100%, 11.5rem);
@@ -187,37 +25,20 @@
   transform: translateY(-1px);
 }
 
-.about-v2-hero-cta-secondary {
-  border-color: rgb(14 20 43 / 0.12);
-  background: white;
-  color: var(--brand-navy);
-}
-
-.about-v2-hero-cta-secondary:hover {
-  background: rgb(248 250 252);
-  border-color: rgb(14 20 43 / 0.18);
-  color: var(--brand-navy);
-}
-
 @media (max-width: 479px) {
-  .about-v2-hero-actions {
+  .editorial-hero-actions {
     flex-direction: column;
     width: 100%;
   }
 
-  .about-v2-hero-actions > a {
+  .editorial-hero-actions > a {
     width: 100%;
     justify-content: center;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .about-v2-hero-pill,
-  .about-v2-hero-pill-icon {
-    transition: none;
-  }
-
-  .about-v2-hero-pill:hover .about-v2-hero-pill-icon {
+  .about-v2-hero-cta-primary:hover {
     transform: none;
   }
 }
