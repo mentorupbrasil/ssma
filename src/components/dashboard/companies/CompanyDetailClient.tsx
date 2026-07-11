@@ -705,22 +705,29 @@ function EmployeesTab({
   );
 }
 
-const DOCUMENT_CATEGORIES = [
-  "Todos",
+const DOCUMENT_CATEGORY_ORDER = [
   "Programas ocupacionais",
   "Documentos cadastrais",
-  "Contratos",
   "Laudos e relatórios",
+  "Contratos",
+  "Documentos ambientais",
   "Outros",
 ] as const;
 
-type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
+type DocumentCategory = (typeof DOCUMENT_CATEGORY_ORDER)[number];
 
 function getDocumentCategory(type: string): DocumentCategory {
   if (["PCMSO", "PGR", "LTCAT", "PPP"].includes(type)) return "Programas ocupacionais";
   if (type === "DOCUMENTO_ADMINISTRATIVO") return "Documentos cadastrais";
   if (type === "CONTRATO") return "Contratos";
-  if (type.startsWith("LAUDO") || type === "LAUDO") return "Laudos e relatórios";
+  if (
+    type === "LAUDO_INSALUBRIDADE" ||
+    type === "LAUDO_PERICULOSIDADE" ||
+    type === "LAUDO"
+  ) {
+    return "Laudos e relatórios";
+  }
+  if (["AET", "PPRA"].includes(type)) return "Documentos ambientais";
   return "Outros";
 }
 
@@ -737,9 +744,86 @@ function getDocumentValidityLabel(validUntil: string | null): {
   return { label: "Vigente", tone: "success" };
 }
 
+type CompanyDocument = CompanyDetailSerialized["documents"][number];
+
+function DocumentTable({ docs }: { docs: CompanyDocument[] }) {
+  return (
+    <div className="empresa-perfil-table-scroll empresa-perfil-table-scroll--always">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Documento</TableHead>
+            <TableHead>Validade</TableHead>
+            <TableHead>Atualizado em</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="w-12">Ações</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {docs.map((d) => {
+            const validity = getDocumentValidityLabel(d.validUntil);
+            const typeLabel =
+              DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS] ?? d.type;
+            return (
+              <TableRow key={d.id}>
+                <TableCell>
+                  <div className="empresa-perfil-doc-cell">
+                    <span className="empresa-perfil-doc-title">{d.title}</span>
+                    <span className="empresa-perfil-doc-sub">{typeLabel}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={cn(
+                      "empresa-perfil-validity",
+                      validity.tone === "danger" && "is-danger",
+                      validity.tone === "warning" && "is-warning",
+                      validity.tone === "success" && "is-success"
+                    )}
+                  >
+                    {validity.label}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  {format(new Date(d.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge
+                    status={normalizeDocumentStatus(
+                      d.status as import("@prisma/client").DocumentStatus
+                    )}
+                    type="document"
+                  />
+                </TableCell>
+                <TableCell>
+                  {d.fileUrl ? (
+                    <a
+                      href={`/api/documents/${d.id}/file`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        buttonVariants({ variant: "ghost", size: "sm" }),
+                        "h-8 px-2"
+                      )}
+                    >
+                      Ver arquivo
+                    </a>
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<DocumentCategory>("Todos");
+  const [categoryFilter, setCategoryFilter] = useState<DocumentCategory | "Todos">("Todos");
 
   const companyDocs = useMemo(
     () =>
@@ -760,6 +844,19 @@ function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
       return [d.title, typeLabel, category].join(" ").toLowerCase().includes(q);
     });
   }, [companyDocs, search, categoryFilter]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<DocumentCategory, CompanyDocument[]>();
+    for (const cat of DOCUMENT_CATEGORY_ORDER) map.set(cat, []);
+    for (const doc of filtered) {
+      const cat = getDocumentCategory(doc.type);
+      map.get(cat)?.push(doc);
+    }
+    return DOCUMENT_CATEGORY_ORDER.map((cat) => ({
+      category: cat,
+      docs: map.get(cat) ?? [],
+    })).filter((group) => group.docs.length > 0);
+  }, [filtered]);
 
   return (
     <div>
@@ -794,11 +891,14 @@ function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
             </div>
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value as DocumentCategory)}
+              onChange={(e) =>
+                setCategoryFilter(e.target.value as DocumentCategory | "Todos")
+              }
               className="empresa-perfil-select"
               aria-label="Filtrar por categoria"
             >
-              {DOCUMENT_CATEGORIES.map((cat) => (
+              <option value="Todos">Todas as categorias</option>
+              {DOCUMENT_CATEGORY_ORDER.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
@@ -819,7 +919,7 @@ function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
             href: `/dashboard/documentos?companyId=${company.id}`,
           }}
         />
-      ) : filtered.length === 0 ? (
+      ) : grouped.length === 0 ? (
         <EmptyState
           compact
           className="empresa-perfil-empty-compact"
@@ -827,82 +927,18 @@ function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
           description="Ajuste a busca ou a categoria para ver mais documentos."
         />
       ) : (
-        <div className="empresa-perfil-panel">
-          <div className="empresa-perfil-table-shell">
-            <div className="empresa-perfil-table-scroll">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Documento</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Validade</TableHead>
-                    <TableHead>Atualizado em</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-12">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((d) => {
-                    const validity = getDocumentValidityLabel(d.validUntil);
-                    const typeLabel =
-                      DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS] ??
-                      d.type;
-                    return (
-                      <TableRow key={d.id}>
-                        <TableCell>
-                          <div className="empresa-perfil-doc-cell">
-                            <span className="empresa-perfil-doc-title">{d.title}</span>
-                            <span className="empresa-perfil-doc-sub">{typeLabel}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{getDocumentCategory(d.type)}</TableCell>
-                        <TableCell>
-                          <span
-                            className={cn(
-                              "empresa-perfil-validity",
-                              validity.tone === "danger" && "is-danger",
-                              validity.tone === "warning" && "is-warning",
-                              validity.tone === "success" && "is-success"
-                            )}
-                          >
-                            {validity.label}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(d.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell>
-                          <StatusBadge
-                            status={normalizeDocumentStatus(
-                              d.status as import("@prisma/client").DocumentStatus
-                            )}
-                            type="document"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {d.fileUrl ? (
-                            <a
-                              href={`/api/documents/${d.id}/file`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={cn(
-                                buttonVariants({ variant: "ghost", size: "sm" }),
-                                "h-8 px-2"
-                              )}
-                            >
-                              Ver arquivo
-                            </a>
-                          ) : (
-                            <span className="text-xs text-slate-400">—</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+        <div className="empresa-perfil-doc-groups">
+          {grouped.map((group) => (
+            <section key={group.category} className="empresa-erp-panel empresa-perfil-doc-group">
+              <div className="empresa-perfil-doc-group-head">
+                <h3 className="empresa-perfil-section-title">{group.category}</h3>
+                <span className="empresa-perfil-count">
+                  {group.docs.length} documento{group.docs.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              <DocumentTable docs={group.docs} />
+            </section>
+          ))}
         </div>
       )}
     </div>
@@ -958,7 +994,7 @@ function ContractTab({
         </div>
 
         {company.priceListItems.length === 0 ? (
-          <div className="empresa-perfil-empty-compact">
+          <div className="empresa-perfil-empty-compact empresa-perfil-prices-empty">
             <p className="empresa-perfil-empty-title">Nenhum preço específico cadastrado</p>
             <p className="empresa-perfil-empty-desc">
               Os valores padrão da clínica serão aplicados aos atendimentos desta empresa.

@@ -6295,6 +6295,37 @@
   padding: 0.85rem;
 }
 
+.empresa-perfil-prices-empty {
+  margin: 0.85rem;
+  padding: 0.95rem 1rem;
+}
+
+.empresa-perfil-doc-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.empresa-perfil-doc-group {
+  overflow: hidden;
+  padding: 0;
+}
+
+.empresa-perfil-doc-group .empresa-erp-panel-title,
+.empresa-perfil-doc-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252);
+}
+
+.empresa-perfil-doc-group .empresa-perfil-table-scroll--always {
+  border-radius: 0;
+}
+
 .empresa-portal-checklist-card {
   gap: 0.75rem;
 }
