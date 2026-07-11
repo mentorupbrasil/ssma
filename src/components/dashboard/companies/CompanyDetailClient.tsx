@@ -26,6 +26,7 @@ import {
   KeyRound,
   CheckCircle2,
   AlertTriangle,
+  MoreHorizontal,
 } from "lucide-react";
 import type { CompanyDetailSerialized } from "@/lib/companies";
 import {
@@ -35,6 +36,7 @@ import {
   COMPANY_HISTORY_ACTION_LABELS,
   COMPANY_STATUS_LABELS,
   buildCompanyWhatsAppMessage,
+  formatCompanyPendingLabel,
 } from "@/lib/companies";
 import {
   DOCUMENT_TYPE_LABELS,
@@ -53,6 +55,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { toggleCompanyPortal } from "@/actions/companies";
@@ -146,7 +154,7 @@ export function CompanyDetailClient({
     <PageModule className="empresa-perfil">
       <header className="colaborador-perfil-header empresa-perfil-header">
         <div className="colaborador-perfil-identity">
-          <div className="colaborador-perfil-avatar" aria-hidden>
+          <div className="colaborador-perfil-avatar empresa-perfil-avatar" aria-hidden>
             <Building2 className="h-5 w-5" />
           </div>
           <div className="colaborador-perfil-copy">
@@ -155,64 +163,118 @@ export function CompanyDetailClient({
               {company.tradeName ?? "Sem nome fantasia"}
             </p>
             <div className="colaborador-perfil-meta">
-              <span>CNPJ {formatCNPJ(company.cnpj)}</span>
+              <span className="empresas-clinica-cnpj">CNPJ {formatCNPJ(company.cnpj)}</span>
               {cityLine ? <span>{cityLine}</span> : null}
               <StatusBadge status={company.status} type="company" />
             </div>
           </div>
         </div>
 
-        <div className="colaboradores-empresa-header-actions">
+        <div className="colaboradores-empresa-header-actions empresa-perfil-actions">
           {canManage && (
             <Link
               href={`/dashboard/encaminhamentos/novo?companyId=${company.id}`}
               className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
             >
-              <FileText className="mr-1.5 h-4 w-4" /> Criar atendimento
+              <FileText className="mr-2 h-4 w-4" />
+              Criar atendimento
             </Link>
           )}
           {canManage && canCommercial && (
             <Link
               href={`/dashboard/orcamentos?companyId=${company.id}`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "rounded-lg empresa-perfil-action-secondary"
+              )}
             >
-              <DollarSign className="mr-1.5 h-4 w-4" /> Novo orçamento
+              <DollarSign className="mr-2 h-4 w-4" />
+              Novo orçamento
             </Link>
           )}
-          {waUrl && (
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
-            >
-              <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
-            </a>
-          )}
           {canManage && (
-            <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setEditOpen(true)}>
-              <Pencil className="mr-1.5 h-4 w-4" /> Editar cadastro
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-lg empresa-perfil-action-secondary"
+              onClick={() => setEditOpen(true)}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar cadastro
             </Button>
+          )}
+          {(waUrl || canManage) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg"
+                  aria-label="Mais ações"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                {waUrl && (
+                  <DropdownMenuItem
+                    onClick={() => window.open(waUrl, "_blank", "noopener,noreferrer")}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    WhatsApp
+                  </DropdownMenuItem>
+                )}
+                {canManage && canCommercial && (
+                  <DropdownMenuItem
+                    className="md:hidden"
+                    onClick={() => router.push(`/dashboard/orcamentos?companyId=${company.id}`)}
+                  >
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    Novo orçamento
+                  </DropdownMenuItem>
+                )}
+                {canManage && (
+                  <DropdownMenuItem className="md:hidden" onClick={() => setEditOpen(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Editar cadastro
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => setTab("portal")}>
+                  <Globe className="mr-2 h-4 w-4" />
+                  Gerenciar portal
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTab("contacts")}>
+                  <Phone className="mr-2 h-4 w-4" />
+                  Contatos
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </header>
 
-      <nav className="colaborador-perfil-tabs" aria-label="Seções da empresa">
+      <div
+        className="dash-module-tabs colaborador-perfil-tabs empresa-perfil-tabs"
+        role="tablist"
+        aria-label="Seções da empresa"
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
             onClick={() => setTab(tab.id)}
             className={cn(
-              "colaborador-perfil-tab",
-              activeTab === tab.id && "colaborador-perfil-tab--active"
+              "dash-module-tab colaborador-perfil-tab",
+              activeTab === tab.id && "dash-module-tab-active colaborador-perfil-tab--active"
             )}
           >
-            <tab.icon className="mr-1.5 inline h-3.5 w-3.5" />
-            {tab.label}
+            <tab.icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <span>{tab.label}</span>
           </button>
         ))}
-      </nav>
+      </div>
 
       <div className="colaborador-perfil-body">
         {activeTab === "overview" && (
@@ -285,6 +347,7 @@ function OverviewTab({
   company: CompanyDetailSerialized;
   onNavigate: (tab: TabId) => void;
 }) {
+  const portalState = getPortalState(company);
   const stats = [
     {
       key: "employees",
@@ -329,7 +392,7 @@ function OverviewTab({
     "—";
 
   return (
-    <div className="colaborador-perfil-overview">
+    <div className="colaborador-perfil-overview empresa-perfil-overview">
       <div className="colaboradores-empresa-stats empresa-perfil-stats">
         {stats.map((s) => {
           const Icon = s.icon;
@@ -358,7 +421,44 @@ function OverviewTab({
         })}
       </div>
 
-      <div className="colaborador-perfil-grid colaborador-perfil-grid--2">
+      <div className="empresa-perfil-summary" role="note">
+        <div className="empresa-perfil-summary-item">
+          <span className="empresa-perfil-summary-label">Último atendimento</span>
+          <span className="empresa-perfil-summary-value">
+            {company.stats.lastAppointmentAt
+              ? format(new Date(company.stats.lastAppointmentAt), "dd/MM/yyyy", {
+                  locale: ptBR,
+                })
+              : "—"}
+          </span>
+        </div>
+        <div className="empresa-perfil-summary-item">
+          <span className="empresa-perfil-summary-label">Contrato</span>
+          <span className="empresa-perfil-summary-value">
+            {company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "—"}
+          </span>
+        </div>
+        <div className="empresa-perfil-summary-item">
+          <span className="empresa-perfil-summary-label">Portal</span>
+          <span className="empresa-perfil-summary-value">
+            {PORTAL_STATE_LABELS[portalState]}
+          </span>
+        </div>
+        <div className="empresa-perfil-summary-item">
+          <span className="empresa-perfil-summary-label">Pendências</span>
+          <span className="empresa-perfil-summary-value">
+            {formatCompanyPendingLabel(company.stats.pendingDocuments)}
+          </span>
+        </div>
+        <div className="empresa-perfil-summary-item">
+          <span className="empresa-perfil-summary-label">Última atualização</span>
+          <span className="empresa-perfil-summary-value">
+            {format(new Date(company.updatedAt), "dd/MM/yyyy", { locale: ptBR })}
+          </span>
+        </div>
+      </div>
+
+      <div className="colaborador-perfil-grid colaborador-perfil-grid--3 empresa-perfil-blocks">
         <section className="colaborador-perfil-block">
           <h2 className="colaborador-perfil-block-title">Dados da empresa</h2>
           <dl className="colaborador-perfil-fields">
@@ -382,11 +482,12 @@ function OverviewTab({
             />
             <Field label="Telefone" value={company.phone ? formatPhone(company.phone) : "—"} />
             <Field label="E-mail" value={company.email ?? "—"} />
+            {company.notes ? <Field label="Observações internas" value={company.notes} /> : null}
           </dl>
         </section>
 
         <section className="colaborador-perfil-block">
-          <h2 className="colaborador-perfil-block-title">Contrato e situação cadastral</h2>
+          <h2 className="colaborador-perfil-block-title">Contrato, portal e situação cadastral</h2>
           <dl className="colaborador-perfil-fields">
             <Field
               label="Porte"
@@ -398,42 +499,12 @@ function OverviewTab({
                 company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "—"
               }
             />
-            <Field label="Status" value={COMPANY_STATUS_LABELS[company.status]} />
-            <Field label="Portal" value={PORTAL_STATE_LABELS[getPortalState(company)]} />
-          </dl>
-        </section>
-
-        <section className="colaborador-perfil-block">
-          <h2 className="colaborador-perfil-block-title">Resumo operacional</h2>
-          <dl className="colaborador-perfil-fields">
-            <Field label="Colaboradores" value={String(company.stats.employees)} />
+            <Field label="Status cadastral" value={COMPANY_STATUS_LABELS[company.status]} />
+            <Field label="Portal" value={PORTAL_STATE_LABELS[portalState]} />
             <Field
-              label="Atendimentos em aberto"
-              value={String(company.stats.openReferrals)}
+              label="Cadastro em"
+              value={format(new Date(company.createdAt), "dd/MM/yyyy", { locale: ptBR })}
             />
-            <Field
-              label="Agendamentos futuros"
-              value={String(company.stats.upcomingAppointments)}
-            />
-            <Field
-              label="Documentos pendentes"
-              value={String(company.stats.pendingDocuments)}
-            />
-            <Field
-              label="Último atendimento"
-              value={
-                company.stats.lastAppointmentAt
-                  ? format(new Date(company.stats.lastAppointmentAt), "dd/MM/yyyy", {
-                      locale: ptBR,
-                    })
-                  : "—"
-              }
-            />
-            {company.notes ? (
-              <div className="sm:col-span-2">
-                <Field label="Observações internas" value={company.notes} />
-              </div>
-            ) : null}
           </dl>
         </section>
       </div>

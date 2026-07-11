@@ -3802,14 +3802,112 @@
   align-items: flex-start;
 }
 
+.empresa-perfil-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: rgb(230 237 255);
+  color: rgb(46 103 255);
+}
+
+.empresa-perfil-actions {
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.empresa-perfil-tabs.dash-module-tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  gap: 0.35rem;
+}
+
+.empresa-perfil-tabs .dash-module-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.empresa-perfil-tabs .dash-module-tab span {
+  line-height: 1.2;
+}
+
+.empresa-perfil-overview {
+  gap: 0.85rem;
+}
+
 .empresa-perfil-stats {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-bottom: 0.25rem;
+  align-items: stretch;
+  margin-bottom: 0;
+}
+
+.empresa-perfil-stats .colaboradores-empresa-stat {
+  min-height: 6.5rem;
+  height: 100%;
 }
 
 @media (min-width: 1024px) {
   .empresa-perfil-stats {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.empresa-perfil-summary {
+  display: grid;
+  gap: 0.5rem 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-radius: 0.8125rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .empresa-perfil-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .empresa-perfil-summary {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.empresa-perfil-summary-item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.empresa-perfil-summary-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgb(148 163 184);
+}
+
+.empresa-perfil-summary-value {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand-navy, #0e142b);
+}
+
+.empresa-perfil-blocks {
+  gap: 0.75rem;
+}
+
+@media (max-width: 767px) {
+  .empresa-perfil-action-secondary {
+    display: none;
   }
 }
 
