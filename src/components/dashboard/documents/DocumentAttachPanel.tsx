@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlertCircle,
   CheckCircle2,
   ChevronRight,
+  Eye,
   FileText,
   Loader2,
+  MoreHorizontal,
   Paperclip,
   Upload,
 } from "lucide-react";
@@ -26,6 +29,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -74,6 +83,12 @@ async function uploadSlotFile(params: {
   return data.documentId as string;
 }
 
+function fileExtLabel(fileName: string | null | undefined) {
+  if (!fileName) return "Arquivo";
+  const ext = fileName.split(".").pop()?.toUpperCase();
+  return ext || "Arquivo";
+}
+
 export function DocumentAttachPanel({
   open,
   onOpenChange,
@@ -85,6 +100,7 @@ export function DocumentAttachPanel({
   const [relatedDocs, setRelatedDocs] = useState<DocumentListItem[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [liberating, setLiberating] = useState(false);
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -106,6 +122,7 @@ export function DocumentAttachPanel({
 
   useEffect(() => {
     if (open && context) {
+      setErrorKey(null);
       void loadRelated(context);
     }
   }, [open, context, loadRelated]);
@@ -115,13 +132,19 @@ export function DocumentAttachPanel({
     for (const slot of CLINIC_ATTACH_SLOTS) {
       map[slot.key] = relatedDocs.find((d) => matchDocumentToAttachSlot(d) === slot.key && d.hasFile);
     }
-    // fallback: current row document if it's ASO without referral docs loaded yet
     if (context?.documentId && !map.aso) {
       const current = relatedDocs.find((d) => d.id === context.documentId);
       if (current?.hasFile && current.type === "ASO") map.aso = current;
     }
     return map;
   }, [relatedDocs, context]);
+
+  const attachedCount = useMemo(
+    () => CLINIC_ATTACH_SLOTS.filter((slot) => Boolean(slotDocs[slot.key]?.hasFile)).length,
+    [slotDocs]
+  );
+  const totalSlots = CLINIC_ATTACH_SLOTS.length;
+  const progressPct = Math.round((attachedCount / totalSlots) * 100);
 
   const asoDoc = slotDocs.aso;
   const asoReady = Boolean(asoDoc?.hasFile);
@@ -154,6 +177,7 @@ export function DocumentAttachPanel({
     const title = `${slot.titlePrefix} — ${patientLabel}`;
     const existing = relatedDocs.find((d) => matchDocumentToAttachSlot(d) === slotKey);
 
+    setErrorKey(null);
     setUploadingKey(slotKey);
     try {
       await uploadSlotFile({
@@ -170,6 +194,7 @@ export function DocumentAttachPanel({
       await loadRelated(context);
       onDone();
     } catch (e) {
+      setErrorKey(slotKey);
       toast.error(e instanceof Error ? e.message : "Falha no upload.");
     } finally {
       setUploadingKey(null);
@@ -199,89 +224,142 @@ export function DocumentAttachPanel({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="doc-attach-panel flex w-full flex-col gap-0 overflow-y-auto p-0 sm:max-w-lg"
+        showCloseButton
+        overlayClassName="doc-attach-overlay bg-slate-900/20 backdrop-blur-[1px] supports-backdrop-filter:backdrop-blur-[1px]"
+        className="doc-attach-panel gap-0 bg-white p-0 shadow-[ -8px_0_24px_rgba(15,23,42,0.06)] sm:max-w-[420px]"
       >
-        <SheetHeader className="border-b border-slate-200 px-5 py-4 text-left">
-          <SheetTitle className="text-base font-semibold text-slate-900">
+        <SheetHeader className="doc-attach-header shrink-0 space-y-1 border-b border-slate-200 px-5 py-4 pr-12 text-left">
+          <SheetTitle className="text-[19px] font-semibold tracking-tight text-slate-900">
             Anexar documentação
           </SheetTitle>
-          <SheetDescription className="text-sm text-slate-500">
-            Vá anexando os arquivos deste colaborador. Depois libere para a empresa.
+          <SheetDescription className="text-[12px] leading-relaxed text-slate-500">
+            Adicione os documentos do atendimento e libere-os para a empresa após a conferência.
           </SheetDescription>
         </SheetHeader>
 
-        <div className="border-b border-slate-100 bg-slate-50 px-5 py-4">
-          <dl className="grid gap-2 text-sm">
-            <div className="flex justify-between gap-3">
-              <dt className="text-slate-500">Colaborador</dt>
-              <dd className="font-medium text-slate-900 text-right">
-                {context.patientName ?? "—"}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-slate-500">Empresa</dt>
-              <dd className="font-medium text-slate-900 text-right">
-                {context.companyName ?? "—"}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt className="text-slate-500">Protocolo</dt>
-              <dd className="font-mono text-xs text-slate-700 text-right">
-                {context.protocol ?? "—"}
-              </dd>
-            </div>
-          </dl>
-        </div>
+        <div className="doc-attach-body min-h-0 flex-1 overflow-y-auto px-5 py-5">
+          <section className="doc-attach-meta" aria-label="Dados do atendimento">
+            <h3 className="doc-attach-section-label">Dados do atendimento</h3>
+            <dl className="doc-attach-meta-card">
+              <div className="doc-attach-meta-row">
+                <dt>Colaborador</dt>
+                <dd>{context.patientName ?? "Não informado"}</dd>
+              </div>
+              <div className="doc-attach-meta-row">
+                <dt>Empresa</dt>
+                <dd>{context.companyName ?? "Não informado"}</dd>
+              </div>
+              <div className="doc-attach-meta-row">
+                <dt>Protocolo</dt>
+                <dd className="font-mono text-[12px]">
+                  {context.protocol?.trim() ? context.protocol : "Não informado"}
+                </dd>
+              </div>
+            </dl>
+          </section>
 
-        <div className="flex-1 px-5 py-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Arquivos do atendimento
-          </p>
-
-          {loadingDocs ? (
-            <div className="flex items-center justify-center py-10 text-slate-400">
-              <Loader2 className="h-5 w-5 animate-spin" />
+          <section className="doc-attach-files" aria-label="Documentos do atendimento">
+            <div className="doc-attach-progress-head">
+              <h3 className="doc-attach-section-label mb-0">Documentos do atendimento</h3>
+              <p className="doc-attach-progress-count" aria-live="polite">
+                {attachedCount} de {totalSlots} anexados
+              </p>
             </div>
-          ) : (
-            <ul className="space-y-2">
-              {CLINIC_ATTACH_SLOTS.map((slot) => {
-                const doc = slotDocs[slot.key];
-                const done = Boolean(doc?.hasFile);
-                const busy = uploadingKey === slot.key;
-                return (
-                  <li
-                    key={slot.key}
-                    className={cn(
-                      "rounded-md border px-3 py-3",
-                      done ? "border-emerald-200 bg-emerald-50/40" : "border-slate-200 bg-white"
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          {done ? (
-                            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-                          ) : (
-                            <FileText className="h-4 w-4 shrink-0 text-slate-400" />
-                          )}
-                          <p className="text-sm font-medium text-slate-900">
-                            {slot.label}
-                            {slot.required ? (
-                              <span className="ml-1 text-xs font-normal text-slate-400">
-                                (obrigatório)
-                              </span>
-                            ) : null}
-                          </p>
-                        </div>
-                        <p className="mt-0.5 pl-6 text-xs text-slate-500">{slot.hint}</p>
-                        {done && doc?.fileName ? (
-                          <p className="mt-1 pl-6 truncate text-xs text-emerald-700">
-                            {doc.fileName}
-                          </p>
-                        ) : null}
+            <div
+              className="doc-attach-progress-track"
+              role="progressbar"
+              aria-valuenow={attachedCount}
+              aria-valuemin={0}
+              aria-valuemax={totalSlots}
+              aria-label={`${attachedCount} de ${totalSlots} documentos anexados`}
+            >
+              <div className="doc-attach-progress-fill" style={{ width: `${progressPct}%` }} />
+            </div>
+
+            {loadingDocs ? (
+              <div className="flex items-center justify-center py-12 text-slate-400">
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                <span className="sr-only">Carregando documentos</span>
+              </div>
+            ) : (
+              <ul className="doc-attach-list">
+                {CLINIC_ATTACH_SLOTS.map((slot) => {
+                  const doc = slotDocs[slot.key];
+                  const done = Boolean(doc?.hasFile);
+                  const busy = uploadingKey === slot.key;
+                  const hasError = errorKey === slot.key && !done;
+                  const statusLabel = busy
+                    ? "Enviando"
+                    : hasError
+                      ? "Erro no envio"
+                      : done
+                        ? "Anexado"
+                        : "Pendente";
+
+                  return (
+                    <li
+                      key={slot.key}
+                      className={cn(
+                        "doc-attach-row",
+                        done && "doc-attach-row--done",
+                        busy && "doc-attach-row--busy",
+                        hasError && "doc-attach-row--error"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "doc-attach-icon",
+                          done && "doc-attach-icon--done",
+                          hasError && "doc-attach-icon--error"
+                        )}
+                        aria-hidden
+                      >
+                        {busy ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : done ? (
+                          <CheckCircle2 className="h-4 w-4" />
+                        ) : hasError ? (
+                          <AlertCircle className="h-4 w-4" />
+                        ) : (
+                          <FileText className="h-4 w-4" />
+                        )}
                       </div>
 
-                      <div className="shrink-0">
+                      <div className="doc-attach-row-copy min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <p className="doc-attach-row-title">{slot.label}</p>
+                          {slot.required ? (
+                            <span className="doc-attach-badge doc-attach-badge--required">
+                              Obrigatório
+                            </span>
+                          ) : (
+                            <span className="doc-attach-badge doc-attach-badge--optional">
+                              Opcional
+                            </span>
+                          )}
+                          <span
+                            className={cn(
+                              "doc-attach-badge",
+                              busy && "doc-attach-badge--pending",
+                              hasError && "doc-attach-badge--error",
+                              done && "doc-attach-badge--done",
+                              !busy && !hasError && !done && "doc-attach-badge--pending"
+                            )}
+                          >
+                            {statusLabel}
+                          </span>
+                        </div>
+                        {done && doc?.fileName ? (
+                          <p className="doc-attach-row-meta truncate">
+                            {doc.fileName}
+                            <span className="text-slate-400"> · {fileExtLabel(doc.fileName)}</span>
+                          </p>
+                        ) : (
+                          <p className="doc-attach-row-meta">{slot.hint}</p>
+                        )}
+                      </div>
+
+                      <div className="doc-attach-row-actions shrink-0">
                         <input
                           ref={(el) => {
                             fileInputs.current[slot.key] = el;
@@ -289,61 +367,129 @@ export function DocumentAttachPanel({
                           type="file"
                           className="hidden"
                           accept=".pdf,.jpg,.jpeg,.png,.webp"
+                          aria-label={`Selecionar arquivo para ${slot.label}`}
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             e.target.value = "";
                             if (file) void handleUpload(slot.key, file);
                           }}
                         />
-                        <Button
-                          type="button"
-                          variant={done ? "outline" : "brand"}
-                          size="sm"
-                          className="rounded-md"
-                          disabled={busy}
-                          onClick={() => fileInputs.current[slot.key]?.click()}
-                        >
-                          {busy ? (
-                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                          ) : done ? (
-                            <Upload className="mr-1.5 h-3.5 w-3.5" />
-                          ) : (
-                            <Paperclip className="mr-1.5 h-3.5 w-3.5" />
-                          )}
-                          {done ? "Trocar" : "Anexar"}
-                        </Button>
+
+                        {done && doc ? (
+                          <div className="flex items-center gap-1">
+                            <a
+                              href={`/api/documents/${doc.id}/file`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex"
+                            >
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="doc-attach-btn-secondary h-8 rounded-lg px-2.5 text-xs"
+                                aria-label={`Visualizar ${slot.label}`}
+                              >
+                                <Eye className="mr-1 h-3.5 w-3.5" />
+                                Ver
+                              </Button>
+                            </a>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                render={
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    className="size-8 rounded-lg text-slate-500"
+                                    aria-label={`Mais ações de ${slot.label}`}
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                }
+                              />
+                              <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuItem
+                                  disabled={busy}
+                                  onClick={() => fileInputs.current[slot.key]?.click()}
+                                >
+                                  <Upload className="mr-2 h-3.5 w-3.5" />
+                                  Substituir
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="doc-attach-btn-attach h-8 rounded-lg px-2.5 text-xs"
+                            disabled={busy}
+                            aria-label={
+                              busy ? `Enviando ${slot.label}` : `Anexar ${slot.label}`
+                            }
+                            onClick={() => fileInputs.current[slot.key]?.click()}
+                          >
+                            {busy ? (
+                              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Paperclip className="mr-1.5 h-3.5 w-3.5" />
+                            )}
+                            {busy ? "Enviando" : "Anexar"}
+                          </Button>
+                        )}
                       </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
         </div>
 
-        <div className="mt-auto space-y-2 border-t border-slate-200 bg-white px-5 py-4">
-          <Button
-            type="button"
-            variant="brand"
-            className="w-full rounded-md"
-            disabled={!asoReady || asoLiberado || liberating}
-            onClick={() => void handleLiberar()}
-          >
-            {liberating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {asoLiberado ? "Já liberado para a empresa" : "Liberar para a empresa"}
-          </Button>
+        <div className="doc-attach-footer shrink-0 border-t border-slate-200 bg-white px-5 py-4">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 flex-1 rounded-lg text-sm"
+              onClick={() => onOpenChange(false)}
+            >
+              Salvar como rascunho
+            </Button>
+            <Button
+              type="button"
+              variant="brand"
+              className="h-9 flex-1 rounded-lg text-sm shadow-none"
+              disabled={!asoReady || asoLiberado || liberating}
+              onClick={() => void handleLiberar()}
+            >
+              {liberating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {asoLiberado ? "Já liberado" : "Liberar para empresa"}
+            </Button>
+          </div>
+          {!asoReady ? (
+            <p className="mt-2 text-[11px] leading-snug text-slate-500">
+              Anexe o ASO obrigatório para liberar a documentação à empresa.
+            </p>
+          ) : asoLiberado ? (
+            <p className="mt-2 text-[11px] leading-snug text-emerald-700">
+              Documentação já disponibilizada para a empresa no portal.
+            </p>
+          ) : null}
 
           {nextPending && onOpenNext ? (
             <Button
               type="button"
-              variant="outline"
-              className="w-full rounded-md"
+              variant="ghost"
+              className="mt-2 h-8 w-full justify-between rounded-lg px-2 text-xs text-slate-600"
               onClick={() => onOpenNext(nextPending)}
             >
-              Próximo pendente
-              <ChevronRight className="ml-1.5 h-4 w-4" />
-              <span className="ml-1 truncate text-slate-500">
+              <span>Próximo pendente</span>
+              <span className="inline-flex items-center gap-1 truncate font-medium text-slate-800">
                 {nextPending.patientName ?? "Colaborador"}
+                <ChevronRight className="h-3.5 w-3.5 shrink-0" />
               </span>
             </Button>
           ) : null}

@@ -5045,3 +5045,263 @@
   font-size: 0.75rem;
   color: rgb(100 116 139);
 }
+
+/* —— Documentos: drawer Anexar documentação —— */
+.doc-attach-overlay {
+  background: rgba(15, 23, 42, 0.2) !important;
+  backdrop-filter: blur(1px) !important;
+  -webkit-backdrop-filter: blur(1px) !important;
+}
+
+.doc-attach-panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-left: 1px solid rgb(226 232 240) !important;
+  background: #fff !important;
+  box-shadow: -6px 0 24px rgba(15, 23, 42, 0.06) !important;
+}
+
+@media (min-width: 640px) {
+  .doc-attach-panel {
+    width: min(100vw, 420px) !important;
+    max-width: 420px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .doc-attach-panel {
+    width: 420px !important;
+    max-width: 440px !important;
+  }
+}
+
+.doc-attach-header {
+  padding: 1.15rem 1.25rem !important;
+  padding-right: 3rem !important;
+}
+
+.doc-attach-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.doc-attach-section-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+}
+
+.doc-attach-meta-card {
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.7rem;
+  background: rgb(248 250 252);
+}
+
+.doc-attach-meta-row {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding: 0.28rem 0;
+}
+
+.doc-attach-meta-row + .doc-attach-meta-row {
+  border-top: 1px solid rgb(241 245 249);
+}
+
+.doc-attach-meta-row dt {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: rgb(100 116 139);
+}
+
+.doc-attach-meta-row dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 550;
+  color: rgb(15 23 42);
+  text-align: right;
+  word-break: break-word;
+}
+
+.doc-attach-progress-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+}
+
+.doc-attach-progress-count {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 550;
+  color: rgb(100 116 139);
+  white-space: nowrap;
+}
+
+.doc-attach-progress-track {
+  height: 3px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(226 232 240);
+}
+
+.doc-attach-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand-green, #0f766e);
+  transition: width 0.25s ease;
+}
+
+.doc-attach-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.doc-attach-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 4.25rem;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.65rem;
+  background: #fff;
+}
+
+.doc-attach-row--done {
+  border-color: rgb(209 250 229);
+  background: rgb(236 253 245 / 0.45);
+}
+
+.doc-attach-row--busy {
+  border-color: rgb(226 232 240);
+  background: rgb(248 250 252);
+}
+
+.doc-attach-row--error {
+  border-color: rgb(254 226 226);
+  background: rgb(254 242 242 / 0.55);
+}
+
+.doc-attach-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 0.55rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  color: rgb(100 116 139);
+}
+
+.doc-attach-icon--done {
+  border-color: rgb(167 243 208);
+  background: rgb(236 253 245);
+  color: rgb(5 150 105);
+}
+
+.doc-attach-icon--error {
+  border-color: rgb(254 202 202);
+  background: rgb(254 242 242);
+  color: rgb(185 28 28);
+}
+
+.doc-attach-row-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  line-height: 1.25;
+}
+
+.doc-attach-row-meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: rgb(100 116 139);
+}
+
+.doc-attach-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+.doc-attach-badge--required {
+  background: rgb(254 242 242);
+  color: rgb(185 28 28);
+}
+
+.doc-attach-badge--optional {
+  background: rgb(241 245 249);
+  color: rgb(100 116 139);
+}
+
+.doc-attach-badge--pending {
+  background: rgb(254 249 195);
+  color: rgb(161 98 7);
+}
+
+.doc-attach-badge--done {
+  background: rgb(236 253 245);
+  color: rgb(4 120 87);
+}
+
+.doc-attach-badge--error {
+  background: rgb(254 226 226);
+  color: rgb(185 28 28);
+}
+
+.doc-attach-btn-attach {
+  border-color: rgb(203 213 225) !important;
+  background: #fff !important;
+  color: rgb(51 65 85) !important;
+  box-shadow: none !important;
+}
+
+.doc-attach-btn-attach:hover:not(:disabled) {
+  border-color: rgb(148 163 184) !important;
+  background: rgb(248 250 252) !important;
+}
+
+.doc-attach-btn-secondary {
+  box-shadow: none !important;
+}
+
+.doc-attach-footer {
+  padding: 1rem 1.25rem;
+}
+
+@media (max-width: 639px) {
+  .doc-attach-footer .flex {
+    flex-direction: column;
+  }
+
+  .doc-attach-footer .flex > * {
+    width: 100%;
+  }
+
+  .doc-attach-meta-row {
+    grid-template-columns: 5.5rem 1fr;
+  }
+}
