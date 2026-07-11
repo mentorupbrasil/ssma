@@ -22,6 +22,7 @@ import {
   type DocumentDetailSerialized,
   type DocumentHistoryItem,
   type DocumentFormOptions,
+  type DocumentListItem,
 } from "@/lib/documents";
 import {
   applyEmpresaDocumentCardFilter,
