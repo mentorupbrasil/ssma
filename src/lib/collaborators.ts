@@ -6,13 +6,36 @@ import { formatCPF } from "@/lib/helpers";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { DOCUMENT_TYPE_LABELS } from "@/lib/documents";
 
-export const COLLABORATOR_STAT_CARDS: { key: string; filter: string; label: string }[] = [
-  { key: "ativos", filter: "ATIVO", label: "Colaboradores ativos" },
-  { key: "inativos", filter: "INATIVO", label: "Inativos" },
-  { key: "agendados", filter: "SCHEDULED", label: "Com exame agendado" },
-  { key: "docs_pendentes", filter: "DOCS_PENDING", label: "Com documentos pendentes" },
-  { key: "periodico_vencer", filter: "PERIODIC_DUE", label: "Com periódico a vencer" },
-  { key: "sem_empresa", filter: "NO_COMPANY", label: "Sem empresa vinculada" },
+export const COLLABORATOR_STAT_CARDS: {
+  key: string;
+  filter: string;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    key: "ativos",
+    filter: "ATIVO",
+    label: "Colaboradores ativos",
+    hint: "Cadastros com vínculo ativo",
+  },
+  {
+    key: "inativos",
+    filter: "INATIVO",
+    label: "Inativos",
+    hint: "Sem operação ativa",
+  },
+  {
+    key: "docs_pendentes",
+    filter: "DOCS_PENDING",
+    label: "Com pendências",
+    hint: "Documentos a regularizar",
+  },
+  {
+    key: "sem_empresa",
+    filter: "NO_COMPANY",
+    label: "Sem empresa vinculada",
+    hint: "Sem vínculo empresarial",
+  },
 ];
 
 export const PATIENT_STATUS_LABELS: Record<PatientStatus, string> = {
@@ -142,7 +165,6 @@ export function buildCollaboratorWhere(
       { department: { contains: q, mode: "insensitive" } },
       { company: { legalName: { contains: q, mode: "insensitive" } } },
       { company: { tradeName: { contains: q, mode: "insensitive" } } },
-      { referrals: { some: { protocol: { contains: q, mode: "insensitive" } } } },
       ...(digits.length >= 3 ? [{ cpf: { contains: digits } }] : []),
     ];
   }
