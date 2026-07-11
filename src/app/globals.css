@@ -3619,63 +3619,59 @@
     color: var(--brand-green);
   }
 
-  /* Portal RH — menu fixo, sem barra de rolagem */
+  /* Portal RH — menu contínuo, sem rolagem e sem vão vazio */
+  .app-shell-sidebar--empresa {
+    display: flex;
+    flex-direction: column;
+  }
+
   .app-shell-sidebar-inner--empresa {
+    height: auto;
+    min-height: 0;
     justify-content: flex-start;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-sidebar-brand {
     flex-shrink: 0;
-    padding: 0.7rem 0.85rem 0.6rem;
+    padding: 0.9rem 0.95rem 0.8rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-sidebar-brand-link {
-    gap: 0.45rem;
+    gap: 0.55rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-nav,
   .app-shell-sidebar-inner--empresa .app-shell-nav--empresa {
     flex: 0 0 auto;
-    overflow: hidden;
-    padding: 0.45rem 0.6rem 0.35rem;
-    scrollbar-width: none;
+    overflow: visible;
+    padding: 0.65rem 0.75rem 0.5rem;
   }
 
-  .app-shell-sidebar-inner--empresa .app-shell-nav::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
+  .app-shell-sidebar-inner--empresa .app-shell-nav-section + .app-shell-nav-section {
+    margin-top: 0.8rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-nav-label {
+    margin-bottom: 0.4rem;
+    font-size: 0.625rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-nav-link {
-    gap: 0.55rem;
-    padding: 0.42rem 0.55rem;
+    gap: 0.6rem;
+    padding: 0.52rem 0.65rem;
     font-size: 0.8125rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-sidebar-footer {
     flex-shrink: 0;
-    margin-top: auto;
-    padding: 0.6rem 0.7rem 0.7rem;
+    margin-top: 0.35rem;
+    padding: 0.8rem 0.85rem 0.9rem;
+    border-top: 1px solid rgb(241 245 249);
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-user-card {
-    margin-bottom: 0.35rem;
-    padding: 0.45rem 0.55rem;
-  }
-
-  .app-shell-sidebar-inner--empresa .app-shell-user-avatar {
-    height: 1.65rem;
-    width: 1.65rem;
-    font-size: 0.6rem;
-  }
-
-  .app-shell-sidebar-inner--empresa .app-shell-user-meta p:first-child {
-    font-size: 0.8125rem;
-  }
-
-  .app-shell-sidebar-inner--empresa .app-shell-user-meta p:last-child {
-    font-size: 0.6875rem;
+    margin-bottom: 0.45rem;
+    padding: 0.55rem 0.65rem;
   }
 
   .app-shell-sidebar-footer {

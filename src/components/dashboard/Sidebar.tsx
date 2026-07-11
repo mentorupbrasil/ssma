@@ -170,45 +170,29 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
     <div className={cn("app-shell-sidebar-inner", isEmpresa && "app-shell-sidebar-inner--empresa")}>
       <div className="app-shell-sidebar-brand">
         <Link href="/dashboard" onClick={onNavigate} className="app-shell-sidebar-brand-link">
-          <BrandLogo
-            height={isEmpresa ? 22 : 28}
-            showLink={false}
-            className="app-shell-sidebar-logo"
-          />
+          <BrandLogo height={26} showLink={false} className="app-shell-sidebar-logo" />
           <div className="app-shell-sidebar-brand-copy">
             <p className="app-shell-sidebar-brand-title">Unimetra · Painel</p>
-            {!isEmpresa && (
-              <p className="app-shell-sidebar-brand-role">{getRoleLabel(user.role)}</p>
-            )}
+            <p className="app-shell-sidebar-brand-role">{getRoleLabel(user.role)}</p>
           </div>
         </Link>
       </div>
 
       <nav className={cn("app-shell-nav", isEmpresa && "app-shell-nav--empresa")}>
-        {isEmpresa ? (
-          <div className="app-shell-nav-flat space-y-0.5">
-            {EMPRESA_NAV_HREFS.map((href) => {
-              const item = itemByHref.get(href);
-              if (!item) return null;
-              return renderNavLink(item);
-            })}
-          </div>
-        ) : (
-          navSections.map((section) => {
-            const sectionItems = section.hrefs
-              .map((href) => itemByHref.get(href))
-              .filter((item): item is (typeof items)[number] => Boolean(item));
+        {navSections.map((section) => {
+          const sectionItems = section.hrefs
+            .map((href) => itemByHref.get(href))
+            .filter((item): item is (typeof items)[number] => Boolean(item));
 
-            if (sectionItems.length === 0) return null;
+          if (sectionItems.length === 0) return null;
 
-            return (
-              <div key={section.label} className="app-shell-nav-section">
-                <p className="app-shell-nav-label">{section.label}</p>
-                <div className="space-y-0.5">{sectionItems.map(renderNavLink)}</div>
-              </div>
-            );
-          })
-        )}
+          return (
+            <div key={section.label} className="app-shell-nav-section">
+              <p className="app-shell-nav-label">{section.label}</p>
+              <div className="space-y-0.5">{sectionItems.map(renderNavLink)}</div>
+            </div>
+          );
+        })}
       </nav>
 
       <div className="app-shell-sidebar-footer">
@@ -223,10 +207,7 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
         </div>
         <Button
           variant="ghost"
-          className={cn(
-            "w-full justify-start rounded-xl text-sm text-slate-600 hover:bg-red-50 hover:text-red-600",
-            isEmpresa && "h-8 px-2"
-          )}
+          className="w-full justify-start rounded-xl text-sm text-slate-600 hover:bg-red-50 hover:text-red-600"
           onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />
