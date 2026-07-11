@@ -55,12 +55,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { toggleCompanyPortal } from "@/actions/companies";
@@ -204,51 +199,93 @@ export function CompanyDetailClient({
             </Button>
           )}
           {(waUrl || canManage) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg"
-                  aria-label="Mais ações"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
+            <Popover>
+              <PopoverTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg"
+                    aria-label="Mais ações"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              <PopoverContent className="collaborator-action-menu w-60 p-1.5" align="end" sideOffset={6}>
                 {waUrl && (
-                  <DropdownMenuItem
+                  <button
+                    type="button"
+                    className="collaborator-action-item"
                     onClick={() => window.open(waUrl, "_blank", "noopener,noreferrer")}
                   >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    WhatsApp
-                  </DropdownMenuItem>
+                    <span className="collaborator-action-icon collaborator-action-icon--schedule">
+                      <MessageCircle className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="collaborator-action-label">WhatsApp</span>
+                      <span className="collaborator-action-hint">Contato rápido da empresa</span>
+                    </span>
+                  </button>
                 )}
                 {canManage && canCommercial && (
-                  <DropdownMenuItem
-                    className="md:hidden"
+                  <button
+                    type="button"
+                    className="collaborator-action-item empresa-perfil-action-menu-mobile"
                     onClick={() => router.push(`/dashboard/orcamentos?companyId=${company.id}`)}
                   >
-                    <DollarSign className="mr-2 h-4 w-4" />
-                    Novo orçamento
-                  </DropdownMenuItem>
+                    <span className="collaborator-action-icon collaborator-action-icon--quote">
+                      <DollarSign className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="collaborator-action-label">Novo orçamento</span>
+                      <span className="collaborator-action-hint">Proposta comercial</span>
+                    </span>
+                  </button>
                 )}
                 {canManage && (
-                  <DropdownMenuItem className="md:hidden" onClick={() => setEditOpen(true)}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Editar cadastro
-                  </DropdownMenuItem>
+                  <button
+                    type="button"
+                    className="collaborator-action-item empresa-perfil-action-menu-mobile"
+                    onClick={() => setEditOpen(true)}
+                  >
+                    <span className="collaborator-action-icon collaborator-action-icon--docs">
+                      <Pencil className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="collaborator-action-label">Editar cadastro</span>
+                      <span className="collaborator-action-hint">Dados e responsável</span>
+                    </span>
+                  </button>
                 )}
-                <DropdownMenuItem onClick={() => setTab("portal")}>
-                  <Globe className="mr-2 h-4 w-4" />
-                  Gerenciar portal
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTab("contacts")}>
-                  <Phone className="mr-2 h-4 w-4" />
-                  Contatos
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <button
+                  type="button"
+                  className="collaborator-action-item"
+                  onClick={() => setTab("portal")}
+                >
+                  <span className="collaborator-action-icon collaborator-action-icon--portal">
+                    <Globe className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="collaborator-action-label">Gerenciar portal</span>
+                    <span className="collaborator-action-hint">Acesso do RH da empresa</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="collaborator-action-item"
+                  onClick={() => setTab("contacts")}
+                >
+                  <span className="collaborator-action-icon collaborator-action-icon--view">
+                    <Phone className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="collaborator-action-label">Contatos</span>
+                    <span className="collaborator-action-hint">Agenda de contatos</span>
+                  </span>
+                </button>
+              </PopoverContent>
+            </Popover>
           )}
         </div>
       </header>
@@ -270,8 +307,8 @@ export function CompanyDetailClient({
               activeTab === tab.id && "dash-module-tab-active colaborador-perfil-tab--active"
             )}
           >
-            <tab.icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span>{tab.label}</span>
+            <tab.icon className="mr-1.5 inline h-3.5 w-3.5 shrink-0" aria-hidden />
+            {tab.label}
           </button>
         ))}
       </div>
