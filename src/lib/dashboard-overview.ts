@@ -493,7 +493,9 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
         ...availableDocuments.slice(0, 3).map((d) => ({
           id: d.id,
           title: d.title,
-          subtitle: d.patientName ? `Colaborador: ${d.patientName}` : "Documento disponível no portal",
+          subtitle: d.patient?.fullName
+            ? `Colaborador: ${d.patient.fullName}`
+            : "Documento disponível no portal",
           href: "/dashboard/documentos?card=disponiveis",
           type: "documento",
         })),
