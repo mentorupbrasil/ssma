@@ -166,13 +166,13 @@
 /* Clinical exams --------------------------------------------------- */
 
 .exams-clinical {
-  padding-block: clamp(2.5rem, 5vw, 3.5rem);
+  padding-block: clamp(1.75rem, 3.5vw, 2.5rem);
   background: linear-gradient(180deg, rgb(248 250 252) 0%, white 100%);
 }
 
 .exams-clinical-header {
   max-width: 38rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 
 /* Grid clínico — 5 colunas nesta página (uma linha, sem sobrar) */
@@ -326,24 +326,14 @@
   color: rgb(100 116 139);
 }
 
-.exams-clinical-cta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-top: 2rem;
-}
-
-/* Catalog section -------------------------------------------------- */
-
 .exams-catalog-section {
-  padding-block: clamp(2.5rem, 5vw, 3.75rem);
+  padding-block: clamp(1.75rem, 3.5vw, 2.5rem);
   background: white;
 }
 
 .exams-catalog-header {
   max-width: 38rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.15rem;
 }
 
 .exam-catalog {

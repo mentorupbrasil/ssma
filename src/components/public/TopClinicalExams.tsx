@@ -1,7 +1,5 @@
-import Link from "next/link";
-import { ArrowRight, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { CLINICAL_EXAM_TYPES } from "@/data/marketing";
-import { Button } from "@/components/ui/button";
 
 export function TopClinicalExams() {
   return (
@@ -40,20 +38,6 @@ export function TopClinicalExams() {
             </li>
           ))}
         </ol>
-
-        <div className="exams-clinical-cta">
-          <Link href="/encaminhamento-online">
-            <Button variant="brand" size="lg" className="rounded-xl">
-              Fazer encaminhamento online
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href="/exames#preparo-por-exame">
-            <Button variant="outline" size="lg" className="rounded-xl">
-              Ver preparo de exames
-            </Button>
-          </Link>
-        </div>
       </div>
     </section>
   );
