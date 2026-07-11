@@ -7,13 +7,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Plus,
-  Search,
-  MoreHorizontal,
-  Eye,
-  FileText,
-  Calendar,
-  FolderOpen,
-  Pencil,
   Loader2,
   ChevronLeft,
   ChevronRight,
@@ -23,13 +16,14 @@ import type { CollaboratorListItem } from "@/lib/collaborators";
 import { COLLABORATOR_STAT_CARDS, getPeriodicExamBadge } from "@/lib/collaborators";
 import { collaboratorStatCardsForEmpresa } from "@/lib/empresa-portal";
 import { CollaboratorBulkImport } from "./CollaboratorBulkImport";
+import { CollaboratorFilterPanel } from "./CollaboratorFilterPanel";
+import { CollaboratorActionMenu } from "./CollaboratorActionMenu";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { FilterBar } from "@/components/dashboard/FilterBar";
 import { DetailDrawer } from "@/components/dashboard/DetailDrawer";
 import { MobileListCard } from "@/components/dashboard/MobileListCard";
 import { CollaboratorDetailDrawerContent } from "./CollaboratorDetailDrawerContent";
@@ -39,7 +33,6 @@ import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
 import { toast } from "sonner";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -48,12 +41,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { NewCollaboratorDialog } from "./CollaboratorDialogs";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -65,6 +52,8 @@ type ColaboradoresClientProps = {
   pageSize: number;
   statCounts: Record<string, number>;
   companies: { id: string; name: string }[];
+  jobTitles: string[];
+  departments: string[];
   canManage: boolean;
   isEmpresaPortal?: boolean;
   filters: Record<string, string | undefined>;
@@ -77,6 +66,8 @@ export function ColaboradoresClient({
   pageSize,
   statCounts,
   companies,
+  jobTitles,
+  departments,
   canManage,
   isEmpresaPortal = false,
   filters,
@@ -152,6 +143,16 @@ export function ColaboradoresClient({
         { key: "jobTitle", value: filters.jobTitle, label: (v) => `Função: ${v}` },
         { key: "department", value: filters.department, label: (v) => `Setor: ${v}` },
         { key: "clinicalExamType", value: filters.clinicalExamType, label: (v) => `Exame: ${v}` },
+        {
+          key: "dateFrom",
+          value: filters.dateFrom || filters.dateTo,
+          label: () =>
+            filters.dateFrom && filters.dateTo
+              ? `Período: ${filters.dateFrom} – ${filters.dateTo}`
+              : filters.dateFrom
+                ? `De: ${filters.dateFrom}`
+                : `Até: ${filters.dateTo}`,
+        },
         { key: "periodicDue", value: filters.periodicDue, label: () => "Periódico a vencer" },
         { key: "docsPending", value: filters.docsPending, label: () => "Docs pendentes" },
       ]),
@@ -159,6 +160,12 @@ export function ColaboradoresClient({
   );
 
   const removeChip = (key: string) => {
+    if (key === "dateFrom") {
+      setDateFrom("");
+      setDateTo("");
+      updateFilters({ ...removeFilterKey(key, filters), dateTo: undefined });
+      return;
+    }
     const next = removeFilterKey(key, filters);
     updateFilters(next);
   };
@@ -216,97 +223,40 @@ export function ColaboradoresClient({
         })}
       />
 
-      <FilterBar
+      <CollaboratorFilterPanel
+        q={q}
+        onQChange={setQ}
+        status={activeStatus === "ALL" ? "" : activeStatus}
+        onStatusChange={(value) => updateFilters({ status: value || "ALL" })}
+        jobTitle={jobTitle}
+        onJobTitleChange={setJobTitle}
+        department={department}
+        onDepartmentChange={setDepartment}
+        clinicalExamType={clinicalExamType}
+        onClinicalExamTypeChange={setClinicalExamType}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateRangeChange={(from, to) => {
+          setDateFrom(from ?? "");
+          setDateTo(to ?? "");
+        }}
+        periodicDue={periodicDue}
+        onPeriodicDueChange={setPeriodicDue}
+        docsPending={docsPending}
+        onDocsPendingChange={setDocsPending}
+        companyId={companyId}
+        onCompanyIdChange={setCompanyId}
+        companies={companies}
+        jobTitles={jobTitles}
+        departments={departments}
+        isEmpresaPortal={isEmpresaPortal}
+        isPending={isPending}
         onSearch={handleSearch}
         onClear={clearFilters}
-        isPending={isPending}
         activeChips={activeChips}
         onRemoveChip={removeChip}
         onClearChips={clearFilters}
-      >
-        <div className="referral-filter-search sm:col-span-2">
-            <Search className="referral-filter-search-icon h-4 w-4" />
-            <Input
-              placeholder={
-                isEmpresaPortal
-                  ? "Buscar por nome, CPF, função ou protocolo"
-                  : "Buscar por nome, CPF, empresa, função ou protocolo"
-              }
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-9"
-            />
-          </div>
-          {!isEmpresaPortal && (
-          <select
-            value={companyId}
-            onChange={(e) => setCompanyId(e.target.value)}
-            className="form-select h-9"
-          >
-            <option value="">Empresa</option>
-            {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          )}
-          <select
-            value={activeStatus === "ALL" ? "" : activeStatus}
-            onChange={(e) => updateFilters({ status: e.target.value || "ALL" })}
-            className="form-select h-9"
-          >
-            <option value="">Status</option>
-            <option value="ATIVO">Ativo</option>
-            <option value="INATIVO">Inativo</option>
-            <option value="AFASTADO">Afastado</option>
-            <option value="DESLIGADO">Desligado</option>
-            <option value="PENDENTE">Pendente</option>
-          </select>
-          <Input
-            placeholder="Função"
-            value={jobTitle}
-            onChange={(e) => setJobTitle(e.target.value)}
-            className="h-9"
-          />
-          <Input
-            placeholder="Setor"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            className="h-9"
-          />
-          <select
-            value={clinicalExamType}
-            onChange={(e) => setClinicalExamType(e.target.value)}
-            className="form-select h-9"
-          >
-            <option value="">Tipo de exame</option>
-            <option value="ADMISSIONAL">Admissional</option>
-            <option value="PERIODICO">Periódico</option>
-            <option value="DEMISSIONAL">Demissional</option>
-            <option value="RETORNO_TRABALHO">Retorno ao trabalho</option>
-            <option value="MUDANCA_FUNCAO">Mudança de função</option>
-          </select>
-          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} title="Cadastro de" />
-          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} title="Cadastro até" />
-          <select
-            value={periodicDue}
-            onChange={(e) => setPeriodicDue(e.target.value)}
-            className="form-select h-9"
-          >
-            <option value="">Próximo periódico</option>
-            <option value="true">A vencer (30 dias)</option>
-          </select>
-          <select
-            value={docsPending}
-            onChange={(e) => setDocsPending(e.target.value)}
-            className="form-select h-9"
-          >
-            <option value="">Documento pendente</option>
-            <option value="true">Sim</option>
-          </select>
-      </FilterBar>
+      />
 
       <div className="relative mt-6">
         {isPending && <LoadingState overlay label="Atualizando colaboradores..." />}
@@ -420,52 +370,15 @@ export function ColaboradoresClient({
                       <StatusBadge status={c.status} type="collaborator" />
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => router.push(`/dashboard/colaboradores/${c.id}`)}>
-                            <Eye className="mr-2 h-4 w-4" /> Ver detalhes
-                          </DropdownMenuItem>
-                          {canManage && (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  router.push(
-                                    `/dashboard/encaminhamentos/novo?patientId=${c.id}&companyId=${c.companyId ?? ""}`
-                                  )
-                                }
-                              >
-                                <FileText className="mr-2 h-4 w-4" /> Novo encaminhamento
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  router.push(`/dashboard/agenda?new=1&patientId=${c.id}`)
-                                }
-                              >
-                                <Calendar className="mr-2 h-4 w-4" /> Agendar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  router.push(`/dashboard/colaboradores/${c.id}?tab=documents`)
-                                }
-                              >
-                                <FolderOpen className="mr-2 h-4 w-4" /> Ver documentos
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  router.push(`/dashboard/colaboradores/${c.id}?tab=overview`)
-                                }
-                              >
-                                <Pencil className="mr-2 h-4 w-4" /> Editar
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <CollaboratorActionMenu
+                        onViewDetails={() => openDetail(c.id)}
+                        onSchedule={() =>
+                          router.push(`/dashboard/agenda?new=1&patientId=${c.id}`)
+                        }
+                        onViewDocuments={() =>
+                          router.push(`/dashboard/documentos?patientId=${c.id}`)
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                   );
@@ -530,9 +443,9 @@ export function ColaboradoresClient({
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         title={drawerCollaborator?.fullName ?? "Colaborador"}
-        description={drawerCollaborator?.company?.tradeName ?? drawerCollaborator?.company?.legalName}
+        description="Histórico"
         loading={drawerLoading}
-        size="xl"
+        size="lg"
       >
         {drawerCollaborator && (
           <CollaboratorDetailDrawerContent collaborator={drawerCollaborator} />
@@ -543,7 +456,12 @@ export function ColaboradoresClient({
         open={newDialogOpen}
         onOpenChange={setNewDialogOpen}
         companies={companies}
-        defaultCompanyId={searchParams.get("companyId") ?? undefined}
+        defaultCompanyId={
+          isEmpresaPortal && companies[0]
+            ? companies[0].id
+            : searchParams.get("companyId") ?? undefined
+        }
+        isEmpresaPortal={isEmpresaPortal}
         onSuccess={(id, createReferral) => {
           if (createReferral) {
             router.push(`/dashboard/encaminhamentos/novo?patientId=${id}`);

@@ -8,33 +8,118 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+
+type CollaboratorFormState = {
+  fullName: string;
+  cpf: string;
+  birthDate: string;
+  phone: string;
+  email: string;
+  companyId: string;
+  jobTitle: string;
+  department: string;
+  admissionDate: string;
+  nextPeriodicDate: string;
+  notes: string;
+  status: string;
+};
 
 type NewCollaboratorDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   companies: { id: string; name: string }[];
   defaultCompanyId?: string;
+  isEmpresaPortal?: boolean;
   onSuccess: (id: string, createReferral: boolean) => void;
 };
+
+function CollaboratorFormField({
+  label,
+  required,
+  wide,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  wide?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={wide ? "exam-modal-item exam-modal-item--wide" : "exam-modal-item"}>
+      <label className="exam-modal-item-label">
+        {label}
+        {required ? " *" : ""}
+      </label>
+      <div className="collaborator-modal-field">{children}</div>
+    </div>
+  );
+}
+
+function CollaboratorModalShell({
+  open,
+  onOpenChange,
+  title,
+  description,
+  badges,
+  children,
+  footer,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  badges: { label: string; variant?: "category" | "status" }[];
+  children: React.ReactNode;
+  footer: React.ReactNode;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="exam-modal collaborator-modal" showCloseButton>
+        <header className="exam-modal-head">
+          <div className="exam-modal-head-top">
+            <div className="exam-drawer-badges">
+              {badges.map((badge) => (
+                <span
+                  key={badge.label}
+                  className={
+                    badge.variant === "status"
+                      ? "exam-drawer-badge exam-drawer-badge--status"
+                      : "exam-drawer-badge exam-drawer-badge--category"
+                  }
+                >
+                  {badge.label}
+                </span>
+              ))}
+            </div>
+          </div>
+          <DialogTitle className="exam-modal-title">{title}</DialogTitle>
+          <DialogDescription className="collaborator-modal-subtitle">
+            {description}
+          </DialogDescription>
+        </header>
+
+        <div className="exam-modal-grid collaborator-modal-grid">{children}</div>
+
+        <footer className="exam-modal-footer collaborator-modal-footer">{footer}</footer>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export function NewCollaboratorDialog({
   open,
   onOpenChange,
   companies,
   defaultCompanyId,
+  isEmpresaPortal = false,
   onSuccess,
 }: NewCollaboratorDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<CollaboratorFormState>({
     fullName: "",
     cpf: "",
     birthDate: "",
@@ -51,24 +136,25 @@ export function NewCollaboratorDialog({
 
   useEffect(() => {
     if (open) {
-      setForm((f) => ({
-        ...f,
-        companyId: defaultCompanyId ?? f.companyId,
+      setForm({
         fullName: "",
         cpf: "",
         birthDate: "",
         phone: "",
         email: "",
+        companyId: defaultCompanyId ?? "",
         jobTitle: "",
         department: "",
         admissionDate: "",
         nextPeriodicDate: "",
         notes: "",
-      }));
+        status: "ATIVO",
+      });
     }
   }, [open, defaultCompanyId]);
 
-  const set = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const set = (key: keyof CollaboratorFormState, value: string) =>
+    setForm((f) => ({ ...f, [key]: value }));
 
   const save = async (createReferral: boolean) => {
     setLoading(true);
@@ -83,93 +169,130 @@ export function NewCollaboratorDialog({
     }
   };
 
+  const companyName = companies.find((c) => c.id === form.companyId)?.name;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Novo colaborador</DialogTitle>
-          <DialogDescription>
-            Cadastre o colaborador vinculado à empresa para encaminhamentos e exames ocupacionais.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label>Nome completo *</Label>
-            <Input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>CPF *</Label>
-              <Input value={form.cpf} onChange={(e) => set("cpf", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Data de nascimento</Label>
-              <Input type="date" value={form.birthDate} onChange={(e) => set("birthDate", e.target.value)} />
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Telefone</Label>
-              <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>E-mail</Label>
-              <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Empresa *</Label>
-            <select
-              value={form.companyId}
-              onChange={(e) => set("companyId", e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">Selecione</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Função *</Label>
-              <Input value={form.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Setor</Label>
-              <Input value={form.department} onChange={(e) => set("department", e.target.value)} />
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Data de admissão</Label>
-              <Input type="date" value={form.admissionDate} onChange={(e) => set("admissionDate", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Próximo periódico</Label>
-              <Input type="date" value={form.nextPeriodicDate} onChange={(e) => set("nextPeriodicDate", e.target.value)} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Observações internas</Label>
-            <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} />
-          </div>
-        </div>
-        <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+    <CollaboratorModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Novo colaborador"
+      description={
+        isEmpresaPortal
+          ? "Cadastro admissional ou individual para encaminhamentos e controle de ASO."
+          : "Cadastre o colaborador vinculado à empresa para encaminhamentos e exames ocupacionais."
+      }
+      badges={[
+        { label: isEmpresaPortal ? "Portal RH" : "Cadastro", variant: "category" },
+        { label: "Admissional", variant: "status" },
+      ]}
+      footer={
+        <div className="collaborator-modal-actions">
+          <Button variant="outline" className="collaborator-modal-btn" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button variant="outline" onClick={() => save(false)} disabled={loading}>
-            Salvar colaborador
+          <Button
+            variant="outline"
+            className="collaborator-modal-btn"
+            onClick={() => save(false)}
+            disabled={loading}
+          >
+            {loading ? "Salvando..." : "Salvar colaborador"}
           </Button>
-          <Button variant="brand" onClick={() => save(true)} disabled={loading}>
-            {loading ? "Salvando..." : "Salvar e criar encaminhamento"}
+          <Button variant="brand" className="collaborator-modal-btn" onClick={() => save(true)} disabled={loading}>
+            {loading ? "Salvando..." : "Salvar e encaminhar"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      }
+    >
+      <CollaboratorFormField label="Nome completo" required wide>
+        <input
+          value={form.fullName}
+          onChange={(e) => set("fullName", e.target.value)}
+          placeholder="Nome completo do colaborador"
+        />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="CPF" required>
+        <input
+          value={form.cpf}
+          onChange={(e) => set("cpf", e.target.value)}
+          placeholder="000.000.000-00"
+        />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Data de nascimento">
+        <input type="date" value={form.birthDate} onChange={(e) => set("birthDate", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Telefone">
+        <input
+          value={form.phone}
+          onChange={(e) => set("phone", e.target.value)}
+          placeholder="(00) 00000-0000"
+        />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="E-mail">
+        <input
+          type="email"
+          value={form.email}
+          onChange={(e) => set("email", e.target.value)}
+          placeholder="email@empresa.com"
+        />
+      </CollaboratorFormField>
+
+      {!isEmpresaPortal ? (
+        <CollaboratorFormField label="Empresa" required wide>
+          <select value={form.companyId} onChange={(e) => set("companyId", e.target.value)}>
+            <option value="">Selecione a empresa</option>
+            {companies.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </CollaboratorFormField>
+      ) : (
+        companyName && (
+          <CollaboratorFormField label="Empresa" wide>
+            <input value={companyName} readOnly className="collaborator-modal-readonly" />
+          </CollaboratorFormField>
+        )
+      )}
+
+      <CollaboratorFormField label="Função" required>
+        <input
+          value={form.jobTitle}
+          onChange={(e) => set("jobTitle", e.target.value)}
+          placeholder="Ex.: Operador de máquinas"
+        />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Setor">
+        <input
+          value={form.department}
+          onChange={(e) => set("department", e.target.value)}
+          placeholder="Ex.: Produção"
+        />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Data de admissão">
+        <input type="date" value={form.admissionDate} onChange={(e) => set("admissionDate", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Próximo periódico">
+        <input type="date" value={form.nextPeriodicDate} onChange={(e) => set("nextPeriodicDate", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Observações internas" wide>
+        <textarea
+          value={form.notes}
+          onChange={(e) => set("notes", e.target.value)}
+          rows={3}
+          placeholder="Informações relevantes para RH ou clínica"
+        />
+      </CollaboratorFormField>
+    </CollaboratorModalShell>
   );
 }
 
@@ -257,85 +380,75 @@ export function EditCollaboratorDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Editar colaborador</DialogTitle>
-          <DialogDescription>Atualize os dados cadastrais e ocupacionais.</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label>Nome completo *</Label>
-            <Input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>CPF *</Label>
-              <Input value={form.cpf} onChange={(e) => set("cpf", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Data de nascimento</Label>
-              <Input type="date" value={form.birthDate} onChange={(e) => set("birthDate", e.target.value)} />
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Telefone</Label>
-              <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>E-mail</Label>
-              <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Função *</Label>
-              <Input value={form.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Setor</Label>
-              <Input value={form.department} onChange={(e) => set("department", e.target.value)} />
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Data de admissão</Label>
-              <Input type="date" value={form.admissionDate} onChange={(e) => set("admissionDate", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Próximo periódico</Label>
-              <Input type="date" value={form.nextPeriodicDate} onChange={(e) => set("nextPeriodicDate", e.target.value)} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <select
-              value={form.status}
-              onChange={(e) => set("status", e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
-              {(Object.keys(PATIENT_STATUS_LABELS) as PatientStatus[]).map((s) => (
-                <option key={s} value={s}>
-                  {PATIENT_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label>Observações internas</Label>
-            <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+    <CollaboratorModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Editar colaborador"
+      description="Atualize os dados cadastrais e ocupacionais do colaborador."
+      badges={[
+        { label: "Edição", variant: "category" },
+        { label: PATIENT_STATUS_LABELS[form.status as PatientStatus], variant: "status" },
+      ]}
+      footer={
+        <div className="collaborator-modal-actions">
+          <Button variant="outline" className="collaborator-modal-btn" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button variant="brand" onClick={handleSave} disabled={loading}>
-            {loading ? "Salvando..." : "Salvar"}
+          <Button variant="brand" className="collaborator-modal-btn" onClick={handleSave} disabled={loading}>
+            {loading ? "Salvando..." : "Salvar alterações"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      }
+    >
+      <CollaboratorFormField label="Nome completo" required wide>
+        <input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="CPF" required>
+        <input value={form.cpf} onChange={(e) => set("cpf", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Data de nascimento">
+        <input type="date" value={form.birthDate} onChange={(e) => set("birthDate", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Telefone">
+        <input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="E-mail">
+        <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Função" required>
+        <input value={form.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Setor">
+        <input value={form.department} onChange={(e) => set("department", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Data de admissão">
+        <input type="date" value={form.admissionDate} onChange={(e) => set("admissionDate", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Próximo periódico">
+        <input type="date" value={form.nextPeriodicDate} onChange={(e) => set("nextPeriodicDate", e.target.value)} />
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Status" wide>
+        <select value={form.status} onChange={(e) => set("status", e.target.value)}>
+          {(Object.keys(PATIENT_STATUS_LABELS) as PatientStatus[]).map((s) => (
+            <option key={s} value={s}>
+              {PATIENT_STATUS_LABELS[s]}
+            </option>
+          ))}
+        </select>
+      </CollaboratorFormField>
+
+      <CollaboratorFormField label="Observações internas" wide>
+        <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} />
+      </CollaboratorFormField>
+    </CollaboratorModalShell>
   );
 }

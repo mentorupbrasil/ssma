@@ -862,6 +862,88 @@
   }
 }
 
+/* Colaborador — modal no padrão exam-modal */
+.collaborator-modal {
+  max-width: min(36rem, calc(100% - 1.5rem)) !important;
+  max-height: min(92dvh, calc(100% - 1.5rem)) !important;
+  overflow-y: auto !important;
+}
+
+.collaborator-modal-subtitle {
+  margin-top: 0.3rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgb(100 116 139);
+}
+
+.collaborator-modal-grid {
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+.collaborator-modal-field input,
+.collaborator-modal-field select,
+.collaborator-modal-field textarea {
+  width: 100%;
+  min-height: 2.125rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: rgb(15 23 42);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.collaborator-modal-field textarea {
+  min-height: 4.75rem;
+  resize: vertical;
+}
+
+.collaborator-modal-field input:focus,
+.collaborator-modal-field select:focus,
+.collaborator-modal-field textarea:focus {
+  outline: none;
+  border-color: rgb(46 103 255);
+  box-shadow: 0 0 0 3px rgb(46 103 255 / 0.12);
+}
+
+.collaborator-modal-readonly {
+  background: rgb(248 250 252) !important;
+  color: rgb(71 85 105) !important;
+  cursor: default;
+}
+
+.collaborator-modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+}
+
+.collaborator-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.collaborator-modal-btn {
+  flex: 1;
+  min-width: 7.5rem;
+  height: 2.25rem;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 479px) {
+  .collaborator-modal-actions {
+    flex-direction: column;
+  }
+
+  .collaborator-modal-btn {
+    width: 100%;
+  }
+}
+
 /* CTA -------------------------------------------------------------- */
 
 .exams-cta {

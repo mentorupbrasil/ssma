@@ -4,15 +4,16 @@ import { TopbarExpandableActions } from "@/components/dashboard/TopbarExpandable
 
 type TopbarProps = {
   userName: string;
+  showSearch?: boolean;
 };
 
-export function Topbar({ userName }: TopbarProps) {
+export function Topbar({ userName, showSearch = true }: TopbarProps) {
   return (
     <header className="app-shell-topbar">
       <div className="app-shell-topbar-inner">
         <div className="app-shell-topbar-leading">
           <TopbarBreadcrumb />
-          <TopbarSearch />
+          {showSearch && <TopbarSearch />}
         </div>
 
         <div className="app-shell-topbar-trailing">

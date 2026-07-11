@@ -49,7 +49,9 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
   const isEmpresa = isEmpresaUser(session);
   const statCardDefs = isEmpresa ? collaboratorStatCardsForEmpresa() : COLLABORATOR_STAT_CARDS;
 
-  const [total, patients, countResults, companies] = await Promise.all([
+  const patientScope = companyScope ? { companyId: companyScope } : {};
+
+  const [total, patients, countResults, companies, jobTitleRows, departmentRows] = await Promise.all([
     prisma.patient.count({ where }),
     prisma.patient.findMany({
       where,
@@ -127,7 +129,26 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
           orderBy: { legalName: "asc" },
           take: 200,
         }),
+    prisma.patient.findMany({
+      where: { ...patientScope, jobTitle: { not: null } },
+      distinct: ["jobTitle"],
+      select: { jobTitle: true },
+      orderBy: { jobTitle: "asc" },
+    }),
+    prisma.patient.findMany({
+      where: { ...patientScope, department: { not: null } },
+      distinct: ["department"],
+      select: { department: true },
+      orderBy: { department: "asc" },
+    }),
   ]);
+
+  const jobTitles = jobTitleRows
+    .map((row) => row.jobTitle?.trim())
+    .filter((value): value is string => Boolean(value));
+  const departments = departmentRows
+    .map((row) => row.department?.trim())
+    .filter((value): value is string => Boolean(value));
 
   const statCounts = Object.fromEntries(countResults.map((c) => [c.key, c.count]));
   const items = patients.map(serializeCollaboratorListItem);
@@ -147,6 +168,8 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
         id: c.id,
         name: c.tradeName ?? c.legalName,
       }))}
+      jobTitles={jobTitles}
+      departments={departments}
       canManage={canManage || session.user.role === "EMPRESA"}
       isEmpresaPortal={isEmpresa}
       filters={filters}
