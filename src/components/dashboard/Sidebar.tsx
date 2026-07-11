@@ -168,32 +168,34 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
 
   return (
     <div className={cn("app-shell-sidebar-inner", isEmpresa && "app-shell-sidebar-inner--empresa")}>
-      <div className="app-shell-sidebar-brand">
-        <Link href="/dashboard" onClick={onNavigate} className="app-shell-sidebar-brand-link">
-          <BrandLogo height={26} showLink={false} className="app-shell-sidebar-logo" />
-          <div className="app-shell-sidebar-brand-copy">
-            <p className="app-shell-sidebar-brand-title">Unimetra · Painel</p>
-            <p className="app-shell-sidebar-brand-role">{getRoleLabel(user.role)}</p>
-          </div>
-        </Link>
-      </div>
-
-      <nav className={cn("app-shell-nav", isEmpresa && "app-shell-nav--empresa")}>
-        {navSections.map((section) => {
-          const sectionItems = section.hrefs
-            .map((href) => itemByHref.get(href))
-            .filter((item): item is (typeof items)[number] => Boolean(item));
-
-          if (sectionItems.length === 0) return null;
-
-          return (
-            <div key={section.label} className="app-shell-nav-section">
-              <p className="app-shell-nav-label">{section.label}</p>
-              <div className="space-y-0.5">{sectionItems.map(renderNavLink)}</div>
+      <div className={cn("app-shell-sidebar-body", isEmpresa && "app-shell-sidebar-body--empresa")}>
+        <div className="app-shell-sidebar-brand">
+          <Link href="/dashboard" onClick={onNavigate} className="app-shell-sidebar-brand-link">
+            <BrandLogo height={26} showLink={false} className="app-shell-sidebar-logo" />
+            <div className="app-shell-sidebar-brand-copy">
+              <p className="app-shell-sidebar-brand-title">Unimetra · Painel</p>
+              <p className="app-shell-sidebar-brand-role">{getRoleLabel(user.role)}</p>
             </div>
-          );
-        })}
-      </nav>
+          </Link>
+        </div>
+
+        <nav className={cn("app-shell-nav", isEmpresa && "app-shell-nav--empresa")}>
+          {navSections.map((section) => {
+            const sectionItems = section.hrefs
+              .map((href) => itemByHref.get(href))
+              .filter((item): item is (typeof items)[number] => Boolean(item));
+
+            if (sectionItems.length === 0) return null;
+
+            return (
+              <div key={section.label} className="app-shell-nav-section">
+                <p className="app-shell-nav-label">{section.label}</p>
+                <div className="space-y-0.5">{sectionItems.map(renderNavLink)}</div>
+              </div>
+            );
+          })}
+        </nav>
+      </div>
 
       <div className="app-shell-sidebar-footer">
         <div className="app-shell-user-card">

@@ -3532,6 +3532,19 @@
     flex-direction: column;
   }
 
+  .app-shell-sidebar-body {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .app-shell-sidebar-body .app-shell-nav {
+    flex: 1;
+    min-height: 0;
+  }
+
   .app-shell-sidebar-brand {
     border-bottom: 1px solid rgb(241 245 249);
     padding: 1rem 1rem 0.95rem;
@@ -3619,58 +3632,75 @@
     color: var(--brand-green);
   }
 
-  /* Portal RH — menu contínuo, sem rolagem e sem vão vazio */
+  /* Portal RH — sidebar 100vh, rodapé no fundo, menu sem rolagem */
+  @media (min-width: 1024px) {
+    .app-shell-sidebar--empresa {
+      top: 0;
+      bottom: 0;
+      height: auto;
+    }
+  }
+
   .app-shell-sidebar--empresa {
     display: flex;
     flex-direction: column;
+    background: rgb(255 255 255 / 0.96);
   }
 
   .app-shell-sidebar-inner--empresa {
-    height: auto;
+    display: flex;
+    height: 100%;
+    min-height: 100%;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  .app-shell-sidebar-body--empresa {
+    display: flex;
     min-height: 0;
-    justify-content: flex-start;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-sidebar-brand {
-    flex-shrink: 0;
-    padding: 0.9rem 0.95rem 0.8rem;
-  }
-
-  .app-shell-sidebar-inner--empresa .app-shell-sidebar-brand-link {
-    gap: 0.55rem;
+    flex: 0 0 auto;
+    padding: 0.9rem 0.95rem 0.75rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-nav,
   .app-shell-sidebar-inner--empresa .app-shell-nav--empresa {
-    flex: 0 0 auto;
-    overflow: visible;
-    padding: 0.65rem 0.75rem 0.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.6rem 0.75rem 0.5rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-nav-section + .app-shell-nav-section {
-    margin-top: 0.8rem;
+    margin-top: 0.75rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-nav-label {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
     font-size: 0.625rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-nav-link {
     gap: 0.6rem;
-    padding: 0.52rem 0.65rem;
+    padding: 0.5rem 0.65rem;
     font-size: 0.8125rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-sidebar-footer {
-    flex-shrink: 0;
-    margin-top: 0.35rem;
-    padding: 0.8rem 0.85rem 0.9rem;
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding: 0.75rem 0.85rem 0.85rem;
     border-top: 1px solid rgb(241 245 249);
+    background: rgb(255 255 255 / 0.96);
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-user-card {
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.4rem;
     padding: 0.55rem 0.65rem;
   }
 
