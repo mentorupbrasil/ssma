@@ -59,6 +59,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ReferralEmpresaDetailDialog } from "./ReferralEmpresaDetailDialog";
 import { ReferralDetailContent } from "./ReferralDetailContent";
 import {
   ReferralStatusDialog,
@@ -360,7 +361,7 @@ export function EncaminhamentosClient({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Protocolo</TableHead>
+                {!isEmpresa && <TableHead>Protocolo</TableHead>}
                 {!isEmpresa && <TableHead>Empresa</TableHead>}
                 <TableHead>Colaborador</TableHead>
                 <TableHead className="hidden md:table-cell">Função</TableHead>
@@ -368,8 +369,12 @@ export function EncaminhamentosClient({
                 <TableHead className="hidden sm:table-cell">Solicitação</TableHead>
                 {!isEmpresa && <TableHead className="hidden lg:table-cell">Agendamento</TableHead>}
                 <TableHead>Status</TableHead>
-                <TableHead className="hidden xl:table-cell">Responsável</TableHead>
-                <TableHead className="w-12">Ações</TableHead>
+                {!isEmpresa && <TableHead className="hidden xl:table-cell">Responsável</TableHead>}
+                {isEmpresa ? (
+                  <TableHead className="text-right">Ver detalhes</TableHead>
+                ) : (
+                  <TableHead className="w-12">Ações</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -378,12 +383,14 @@ export function EncaminhamentosClient({
                 return (
                   <TableRow
                     key={item.id}
-                    className="referral-table-row cursor-pointer"
-                    onClick={() => openDetail(item.id)}
+                    className={cn("referral-table-row", !isEmpresa && "cursor-pointer")}
+                    onClick={!isEmpresa ? () => openDetail(item.id) : undefined}
                   >
-                    <TableCell className="font-semibold text-[var(--brand-green)]">
-                      {item.protocol}
-                    </TableCell>
+                    {!isEmpresa && (
+                      <TableCell className="font-semibold text-[var(--brand-green)]">
+                        {item.protocol}
+                      </TableCell>
+                    )}
                     {!isEmpresa && <TableCell>{item.companyName}</TableCell>}
                     <TableCell>{item.employeeName}</TableCell>
                     <TableCell className="hidden md:table-cell">
@@ -411,9 +418,29 @@ export function EncaminhamentosClient({
                         }
                       />
                     </TableCell>
-                    <TableCell className="hidden xl:table-cell">
-                      {item.responsibleName ?? "—"}
-                    </TableCell>
+                    {!isEmpresa && (
+                      <TableCell className="hidden xl:table-cell">
+                        {item.responsibleName ?? "—"}
+                      </TableCell>
+                    )}
+                    {isEmpresa ? (
+                      <TableCell className="text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full"
+                          disabled={detailLoading && selectedId === item.id}
+                          onClick={() => openDetail(item.id)}
+                        >
+                          {detailLoading && selectedId === item.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Eye className="mr-2 h-4 w-4" />
+                          )}
+                          Ver detalhes
+                        </Button>
+                      </TableCell>
+                    ) : (
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger
@@ -470,6 +497,7 @@ export function EncaminhamentosClient({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
+                    )}
                   </TableRow>
                 );
               })}
@@ -481,13 +509,17 @@ export function EncaminhamentosClient({
               <MobileListCard
                 key={item.id}
                 icon={FileText}
-                title={item.protocol}
+                title={isEmpresa ? item.employeeName : item.protocol}
                 subtitle={
                   isEmpresa
-                    ? item.employeeName
+                    ? CLINICAL_EXAM_LABELS[item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS]
                     : `${item.employeeName} · ${item.companyName}`
                 }
-                meta={CLINICAL_EXAM_LABELS[item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS] ?? item.clinicalExamType}
+                meta={
+                  isEmpresa
+                    ? format(new Date(item.requestedDate), "dd/MM/yyyy", { locale: ptBR })
+                    : CLINICAL_EXAM_LABELS[item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS] ?? item.clinicalExamType
+                }
                 badge={
                   <StatusBadge
                     status={item.status}
@@ -530,6 +562,16 @@ export function EncaminhamentosClient({
         </div>
       )}
 
+      {isEmpresa ? (
+        <ReferralEmpresaDetailDialog
+          referral={detail}
+          open={!!selectedId}
+          loading={detailLoading}
+          error={detailError}
+          onOpenChange={(open) => !open && setSelectedId(null)}
+          onRetry={() => selectedId && loadDetail(selectedId)}
+        />
+      ) : (
       <Sheet open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
         <SheetContent
           side="right"
@@ -571,8 +613,9 @@ export function EncaminhamentosClient({
           )}
         </SheetContent>
       </Sheet>
+      )}
 
-      {selectedId && detail && (
+      {!isEmpresa && selectedId && detail && (
         <>
           <ReferralStatusDialog
             open={statusDialogOpen}

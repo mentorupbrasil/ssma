@@ -1505,7 +1505,31 @@
   }
 }
 
-/* Exames — portal RH */
+.referral-empresa-modal-tabs {
+  margin: 0.75rem 0 0;
+}
+
+.referral-empresa-modal-grid {
+  padding-top: 0.85rem;
+  padding-bottom: 0.5rem;
+}
+
+.referral-empresa-modal-panel {
+  padding: 0.85rem 0 0.5rem;
+}
+
+.referral-empresa-modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.referral-empresa-modal {
+  max-width: min(36rem, calc(100% - 1.5rem)) !important;
+  max-height: min(92dvh, calc(100% - 1.5rem)) !important;
+  overflow-y: auto !important;
+}
+
 .exames-empresa-actions {
   display: flex;
   justify-content: flex-end;
