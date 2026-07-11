@@ -69,11 +69,11 @@ export const PUBLIC_PAGE_SEO = {
       "Catálogo de exames ocupacionais com orientações de preparo, prazos e agendamento em Imperatriz.",
     path: "/exames",
   },
-  empresas: {
-    title: "Empresas",
+  blog: {
+    title: "Blog de SST",
     description:
-      "Soluções em medicina do trabalho para empresas: portal online, encaminhamentos, documentos e gestão de colaboradores.",
-    path: "/empresas",
+      "Artigos sobre Saúde e Segurança do Trabalho, conformidade legal, exames ocupacionais e orientações para empresas e RH.",
+    path: "/blog",
   },
   encaminhamento: {
     title: "Encaminhamento Online",
@@ -92,11 +92,6 @@ export const PUBLIC_PAGE_SEO = {
     description:
       "Fale com a Unimetra em Imperatriz-MA. Orçamento, dúvidas sobre exames ocupacionais e atendimento empresarial.",
     path: "/contato",
-  },
-  atualizacoes: {
-    title: "Atualizações",
-    description: "Notícias e conteúdos sobre medicina ocupacional, SST e saúde do trabalho.",
-    path: "/atualizacoes",
   },
   privacidade: {
     title: "Política de Privacidade",

@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  BookOpen,
   Briefcase,
-  Building2,
   FileText,
   Home,
   Info,
@@ -20,7 +20,7 @@ export const PUBLIC_NAV_ITEMS: PublicNavItem[] = [
   { name: "Sobre", url: "/sobre", icon: Info },
   { name: "Serviços", url: "/servicos", icon: Briefcase },
   { name: "Exames", url: "/exames", icon: Stethoscope },
-  { name: "Empresas", url: "/empresas", icon: Building2 },
+  { name: "Blog", url: "/blog", icon: BookOpen },
   { name: "Encaminhamento", url: "/encaminhamento-online", icon: FileText },
   { name: "Contato", url: "/contato", icon: Mail },
 ];

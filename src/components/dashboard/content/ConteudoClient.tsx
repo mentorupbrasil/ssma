@@ -24,7 +24,15 @@ import { toast } from "sonner";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES = ["Atualizações", "Saúde ocupacional", "Normas e legislação", "Dicas", "Institucional"];
+const CATEGORIES = [
+  "Saúde ocupacional",
+  "Exames ocupacionais",
+  "Segurança do trabalho",
+  "Medicina do trabalho",
+  "Normas e legislação",
+  "Dicas",
+  "Institucional",
+];
 
 type Post = {
   id: string;
@@ -47,7 +55,7 @@ export function ConteudoClient({ posts }: { posts: Post[] }) {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("Atualizações");
+  const [category, setCategory] = useState("Saúde ocupacional");
   const [published, setPublished] = useState(true);
 
   const filtered = posts.filter((p) => {
@@ -61,7 +69,7 @@ export function ConteudoClient({ posts }: { posts: Post[] }) {
     setTitle("");
     setExcerpt("");
     setContent("");
-    setCategory("Atualizações");
+    setCategory("Saúde ocupacional");
     setPublished(true);
   }
 
@@ -184,7 +192,7 @@ export function ConteudoClient({ posts }: { posts: Post[] }) {
       {filtered.length === 0 ? (
         <EmptyState
           title="Nenhuma publicação"
-          description="Crie conteúdo para o blog e página de atualizações do site."
+          description="Crie conteúdo para o blog público do site."
           action={{ label: "Nova publicação", onClick: () => setOpen(true) }}
         />
       ) : (
@@ -211,7 +219,7 @@ export function ConteudoClient({ posts }: { posts: Post[] }) {
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Link
-                      href={`/atualizacoes/${p.slug}`}
+                      href={`/blog/${p.slug}`}
                       target="_blank"
                       className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
                     >

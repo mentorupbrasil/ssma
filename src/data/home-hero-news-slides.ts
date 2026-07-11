@@ -63,7 +63,7 @@ export const HOME_HERO_NEWS_SLIDES: NewsSlide[] = [
     action: {
       // TODO: criar página dedicada de campanhas preventivas quando disponível.
       label: "Conhecer ações preventivas",
-      href: "/atualizacoes",
+      href: "/blog",
     },
     accent: "campaign",
     visualType: "julho",

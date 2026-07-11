@@ -43,7 +43,7 @@ export async function createBlogPost(input: {
     });
     await createAuditLog({ action: "CREATE", entity: "BlogPost", entityId: post.id });
     revalidatePath("/dashboard/conteudo");
-    revalidatePath("/atualizacoes");
+    revalidatePath("/blog");
     return { success: true, id: post.id };
   } catch (e) {
     if (isPrismaUniqueError(e)) return { success: false, error: "Slug já existe." };
@@ -72,7 +72,7 @@ export async function updateBlogPost(input: {
     if (input.published !== undefined) data.published = input.published;
     await prisma.blogPost.update({ where: { id: input.id }, data });
     revalidatePath("/dashboard/conteudo");
-    revalidatePath("/atualizacoes");
+    revalidatePath("/blog");
     return { success: true, id: input.id };
   } catch (e) {
     return { success: false, error: actionError(e, "Erro ao atualizar conteúdo.") };
@@ -84,7 +84,7 @@ export async function deleteBlogPost(id: string): Promise<Result> {
     await requirePermission("settings.manage");
     await prisma.blogPost.delete({ where: { id } });
     revalidatePath("/dashboard/conteudo");
-    revalidatePath("/atualizacoes");
+    revalidatePath("/blog");
     return { success: true, id };
   } catch (e) {
     return { success: false, error: actionError(e, "Erro ao excluir conteúdo.") };

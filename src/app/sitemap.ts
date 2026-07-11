@@ -7,10 +7,9 @@ const STATIC_ROUTES = [
   "/sobre",
   "/servicos",
   "/exames",
-  "/empresas",
+  "/blog",
   "/encaminhamento-online",
   "/contato",
-  "/atualizacoes",
   "/politica-de-privacidade",
   "/termos-de-uso",
 ] as const;
@@ -34,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       orderBy: { updatedAt: "desc" },
     });
     blogEntries = posts.map((post) => ({
-      url: `${siteUrl}/atualizacoes/${post.slug}`,
+      url: `${siteUrl}/blog/${post.slug}`,
       lastModified: post.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.6,

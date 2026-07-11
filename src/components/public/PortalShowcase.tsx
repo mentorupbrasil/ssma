@@ -12,8 +12,8 @@ type PortalShowcaseProps = {
 
 export function PortalShowcase({
   demoMode = false,
-  primaryHref = "/empresas",
-  secondaryHref = "/empresas",
+  primaryHref = "/login",
+  secondaryHref = "/contato?tipo=demonstracao",
 }: PortalShowcaseProps) {
   return (
     <section className="portal-showcase-section scroll-mt-[var(--header-height)] overflow-hidden bg-white">
