@@ -46,7 +46,9 @@ export function MobileListCard({
           )}
           {children}
         </div>
-        <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-[var(--dash-text-subtle)]" />
+        {(onClick || href) && (
+          <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-[var(--dash-text-subtle)]" />
+        )}
       </div>
     </>
   );
@@ -61,9 +63,13 @@ export function MobileListCard({
     );
   }
 
-  return (
-    <button type="button" onClick={onClick} className={cn(classes, "w-full text-left")}>
-      {inner}
-    </button>
-  );
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={cn(classes, "w-full text-left")}>
+        {inner}
+      </button>
+    );
+  }
+
+  return <div className={classes}>{inner}</div>;
 }

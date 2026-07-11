@@ -7,7 +7,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Search,
-  RefreshCw,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -38,6 +37,7 @@ import { Input } from "@/components/ui/input";
 import { ReferralEmpresaDetailDialog } from "./ReferralEmpresaDetailDialog";
 import { ExamesEmpresaListSection } from "./ExamesEmpresaListSection";
 import { ReferralStatusDialog } from "./ReferralActionDialogs";
+import { ReferralStatusMenu } from "./ReferralStatusMenu";
 import { EMPRESA_EXAMES_STATUS_FILTER_OPTIONS } from "@/lib/empresa-portal";
 import { cn } from "@/lib/utils";
 
@@ -223,7 +223,7 @@ export function EncaminhamentosClient({
     loadDetail(id);
   };
 
-  const openStatusDialog = (item: ReferralListItem) => {
+  const openCancelDialog = (item: ReferralListItem) => {
     setStatusTarget(item);
     setStatusDialogOpen(true);
   };
@@ -480,16 +480,12 @@ export function EncaminhamentosClient({
                       </td>
                       {canManage && (
                         <td className="colaboradores-empresa-td-actions">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="rounded-md"
-                            onClick={() => openStatusDialog(item)}
-                          >
-                            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-                            Status
-                          </Button>
+                          <ReferralStatusMenu
+                            referralId={item.id}
+                            currentStatus={item.status}
+                            onCancelRequest={() => openCancelDialog(item)}
+                            onSuccess={refreshAfterStatus}
+                          />
                         </td>
                       )}
                     </tr>
@@ -513,8 +509,18 @@ export function EncaminhamentosClient({
                       label={getClinicReferralStatusLabel(item.status)}
                     />
                   }
-                  onClick={canManage ? () => openStatusDialog(item) : undefined}
-                />
+                >
+                  {canManage && (
+                    <div className="mt-2">
+                      <ReferralStatusMenu
+                        referralId={item.id}
+                        currentStatus={item.status}
+                        onCancelRequest={() => openCancelDialog(item)}
+                        onSuccess={refreshAfterStatus}
+                      />
+                    </div>
+                  )}
+                </MobileListCard>
               ))}
             </div>
           </>
@@ -602,6 +608,7 @@ export function EncaminhamentosClient({
           currentStatus={statusTarget.status}
           onSuccess={refreshAfterStatus}
           clinicMode
+          cancelOnly
         />
       )}
     </>

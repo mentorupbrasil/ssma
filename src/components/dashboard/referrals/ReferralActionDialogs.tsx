@@ -37,25 +37,30 @@ export function ReferralStatusDialog({
   currentStatus,
   onSuccess,
   clinicMode = false,
-}: StatusDialogProps & { clinicMode?: boolean }) {
-  const [status, setStatus] = useState(currentStatus);
+  cancelOnly = false,
+}: StatusDialogProps & { clinicMode?: boolean; cancelOnly?: boolean }) {
+  const [status, setStatus] = useState(cancelOnly ? "CANCELADO" : currentStatus);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
-      const initial = clinicMode
-        ? CLINIC_OPERATIONAL_STATUSES.includes(currentStatus as (typeof CLINIC_OPERATIONAL_STATUSES)[number])
-          ? currentStatus
-          : "AGENDADO"
-        : currentStatus;
-      setStatus(initial);
+      if (cancelOnly) {
+        setStatus("CANCELADO");
+      } else {
+        const initial = clinicMode
+          ? CLINIC_OPERATIONAL_STATUSES.includes(currentStatus as (typeof CLINIC_OPERATIONAL_STATUSES)[number])
+            ? currentStatus
+            : "AGENDADO"
+          : currentStatus;
+        setStatus(initial);
+      }
       setNotes("");
     }
-  }, [open, currentStatus, clinicMode]);
+  }, [open, currentStatus, clinicMode, cancelOnly]);
 
   const handleSave = async () => {
-    if (status === currentStatus) {
+    if (status === currentStatus && !cancelOnly) {
       onOpenChange(false);
       return;
     }
@@ -67,7 +72,7 @@ export function ReferralStatusDialog({
     const result = await updateReferralStatusWithNotes(referralId, status, notes);
     setLoading(false);
     if (result.success) {
-      toast.success("Status atualizado!");
+      toast.success(cancelOnly ? "Atendimento cancelado." : "Status atualizado!");
       onOpenChange(false);
       setNotes("");
       onSuccess();
@@ -87,53 +92,59 @@ export function ReferralStatusDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Alterar status</DialogTitle>
+          <DialogTitle>{cancelOnly ? "Cancelar atendimento" : "Alterar status"}</DialogTitle>
           <DialogDescription>
-            {clinicMode
-              ? "A empresa acompanha esta mudança no portal. No cancelamento, o motivo é obrigatório."
-              : "A alteração será registrada no histórico do encaminhamento."}
+            {cancelOnly
+              ? "O motivo será visível para a empresa no portal."
+              : clinicMode
+                ? "A empresa acompanha esta mudança no portal. No cancelamento, o motivo é obrigatório."
+                : "A alteração será registrada no histórico do encaminhamento."}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="status">Novo status</Label>
-            <select
-              id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          {!cancelOnly && (
+            <div className="space-y-2">
+              <Label htmlFor="status">Novo status</Label>
+              <select
+                id="status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="notes">
-              {status === "CANCELADO" ? "Motivo do cancelamento" : "Observação (opcional)"}
+              {status === "CANCELADO" || cancelOnly
+                ? "Motivo do cancelamento"
+                : "Observação (opcional)"}
             </Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={
-                status === "CANCELADO"
+                status === "CANCELADO" || cancelOnly
                   ? "Explique o motivo para a empresa visualizar"
                   : "Motivo ou detalhes da alteração"
               }
               rows={3}
-              required={status === "CANCELADO"}
+              required={status === "CANCELADO" || cancelOnly}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
+            Voltar
           </Button>
           <Button variant="brand" onClick={handleSave} disabled={loading}>
-            {loading ? "Salvando..." : "Confirmar"}
+            {loading ? "Salvando..." : cancelOnly ? "Confirmar cancelamento" : "Confirmar"}
           </Button>
         </DialogFooter>
       </DialogContent>

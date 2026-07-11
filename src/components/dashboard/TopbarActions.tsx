@@ -47,7 +47,7 @@ export function TopbarSearch() {
       />
       <Input
         placeholder="Buscar empresas, colaboradores, protocolos, documentos, orçamentos..."
-        className="topbar-search-input"
+        className="topbar-search-input pl-10 pr-4"
         value={query}
         onChange={(e) => runSearch(e.target.value)}
       />

@@ -234,7 +234,8 @@
     border-radius: var(--dash-radius-md);
     border: 1px solid var(--dash-border-strong);
     background: rgb(248 250 252 / 0.8);
-    padding-left: 2.5rem;
+    padding-left: 2.75rem !important;
+    padding-right: 1rem !important;
     font-size: 0.8125rem;
     box-shadow: var(--dash-shadow-inset);
     transition: all var(--dash-transition);
@@ -1396,6 +1397,21 @@
   .collaborator-action-icon--portal {
     background: rgb(243 232 255);
     color: rgb(126 34 206);
+  }
+
+  .collaborator-action-icon--progress {
+    background: rgb(239 246 255);
+    color: rgb(37 99 235);
+  }
+
+  .collaborator-action-icon--done {
+    background: rgb(236 253 245);
+    color: rgb(5 150 105);
+  }
+
+  .collaborator-action-icon--cancel {
+    background: rgb(254 242 242);
+    color: rgb(220 38 38);
   }
 
   .collaborator-action-label {

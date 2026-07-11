@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { createCompanyFull } from "@/actions/companies";
 import {
   Dialog,
@@ -23,53 +22,82 @@ type NewCompanyDialogProps = {
   onSuccess: (id: string) => void;
 };
 
+type CompanyFormState = {
+  legalName: string;
+  tradeName: string;
+  cnpj: string;
+  stateRegistration: string;
+  size: string;
+  segment: string;
+  responsibleName: string;
+  responsibleRole: string;
+  whatsapp: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  contractType: string;
+  notes: string;
+  status: string;
+  portalEnabled: boolean;
+};
+
+const EMPTY_FORM: CompanyFormState = {
+  legalName: "",
+  tradeName: "",
+  cnpj: "",
+  stateRegistration: "",
+  size: "",
+  segment: "",
+  responsibleName: "",
+  responsibleRole: "",
+  whatsapp: "",
+  email: "",
+  phone: "",
+  address: "",
+  city: "",
+  state: "",
+  zipCode: "",
+  contractType: "",
+  notes: "",
+  status: "ATIVA",
+  portalEnabled: false,
+};
+
+function CompanyFormField({
+  label,
+  required,
+  wide,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  wide?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={wide ? "exam-modal-item exam-modal-item--wide" : "exam-modal-item"}>
+      <label className="exam-modal-item-label">
+        {label}
+        {required ? " *" : ""}
+      </label>
+      <div className="collaborator-modal-field">{children}</div>
+    </div>
+  );
+}
+
 export function NewCompanyDialog({ open, onOpenChange, onSuccess }: NewCompanyDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    legalName: "",
-    tradeName: "",
-    cnpj: "",
-    stateRegistration: "",
-    size: "",
-    segment: "",
-    responsibleName: "",
-    responsibleRole: "",
-    whatsapp: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    contractType: "",
-    notes: "",
-    status: "ATIVA",
-    portalEnabled: false,
-  });
+  const [form, setForm] = useState<CompanyFormState>(EMPTY_FORM);
 
-  const reset = () => {
-    setForm({
-      legalName: "",
-      tradeName: "",
-      cnpj: "",
-      stateRegistration: "",
-      size: "",
-      segment: "",
-      responsibleName: "",
-      responsibleRole: "",
-      whatsapp: "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      contractType: "",
-      notes: "",
-      status: "ATIVA",
-      portalEnabled: false,
-    });
-  };
+  useEffect(() => {
+    if (open) setForm(EMPTY_FORM);
+  }, [open]);
+
+  const set = (key: keyof CompanyFormState, value: string | boolean) =>
+    setForm((f) => ({ ...f, [key]: value }));
 
   const handleSave = async () => {
     setLoading(true);
@@ -82,101 +110,157 @@ export function NewCompanyDialog({ open, onOpenChange, onSuccess }: NewCompanyDi
     if (result.success) {
       toast.success("Empresa cadastrada!");
       onOpenChange(false);
-      reset();
+      setForm(EMPTY_FORM);
       onSuccess(result.id);
     } else {
       toast.error(result.error);
     }
   };
 
-  const set = (key: string, value: string | boolean) =>
-    setForm((f) => ({ ...f, [key]: value }));
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Nova empresa</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="exam-modal collaborator-modal" showCloseButton>
+        <header className="exam-modal-head">
+          <div className="exam-modal-head-top">
+            <div className="exam-drawer-badges">
+              <span className="exam-drawer-badge exam-drawer-badge--category">Cadastro</span>
+              <span className="exam-drawer-badge exam-drawer-badge--status">Empresa</span>
+            </div>
+          </div>
+          <DialogTitle className="exam-modal-title">Nova empresa</DialogTitle>
+          <DialogDescription className="collaborator-modal-subtitle">
             Cadastre os dados da empresa cliente. Campos com * são obrigatórios.
           </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-2 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
-            <Label>Razão social *</Label>
-            <Input value={form.legalName} onChange={(e) => set("legalName", e.target.value)} />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label>Nome fantasia</Label>
-            <Input value={form.tradeName} onChange={(e) => set("tradeName", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>CNPJ *</Label>
-            <Input value={form.cnpj} onChange={(e) => set("cnpj", e.target.value)} placeholder="00.000.000/0000-00" />
-          </div>
-          <div className="space-y-2">
-            <Label>Inscrição estadual</Label>
-            <Input value={form.stateRegistration} onChange={(e) => set("stateRegistration", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Porte</Label>
-            <select
-              value={form.size}
-              onChange={(e) => set("size", e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
+        </header>
+
+        <div className="exam-modal-grid collaborator-modal-grid">
+          <CompanyFormField label="Razão social" required wide>
+            <input
+              value={form.legalName}
+              onChange={(e) => set("legalName", e.target.value)}
+              placeholder="Razão social completa"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Nome fantasia" wide>
+            <input
+              value={form.tradeName}
+              onChange={(e) => set("tradeName", e.target.value)}
+              placeholder="Nome fantasia"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="CNPJ" required>
+            <input
+              value={form.cnpj}
+              onChange={(e) => set("cnpj", e.target.value)}
+              placeholder="00.000.000/0000-00"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Inscrição estadual">
+            <input
+              value={form.stateRegistration}
+              onChange={(e) => set("stateRegistration", e.target.value)}
+              placeholder="Inscrição estadual"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Porte">
+            <select value={form.size} onChange={(e) => set("size", e.target.value)}>
               <option value="">Selecione</option>
               <option value="PEQUENA">Pequena</option>
               <option value="MEDIA">Média</option>
               <option value="GRANDE">Grande</option>
             </select>
-          </div>
-          <div className="space-y-2">
-            <Label>Segmento</Label>
-            <Input value={form.segment} onChange={(e) => set("segment", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Responsável principal</Label>
-            <Input value={form.responsibleName} onChange={(e) => set("responsibleName", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Cargo do responsável</Label>
-            <Input value={form.responsibleRole} onChange={(e) => set("responsibleRole", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>WhatsApp *</Label>
-            <Input value={form.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>E-mail</Label>
-            <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Telefone secundário</Label>
-            <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>CEP</Label>
-            <Input value={form.zipCode} onChange={(e) => set("zipCode", e.target.value)} />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label>Endereço</Label>
-            <Input value={form.address} onChange={(e) => set("address", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Cidade</Label>
-            <Input value={form.city} onChange={(e) => set("city", e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Estado</Label>
-            <Input value={form.state} onChange={(e) => set("state", e.target.value)} maxLength={2} />
-          </div>
-          <div className="space-y-2">
-            <Label>Tipo de contrato</Label>
+          </CompanyFormField>
+
+          <CompanyFormField label="Segmento">
+            <input
+              value={form.segment}
+              onChange={(e) => set("segment", e.target.value)}
+              placeholder="Ex.: Indústria, Comércio"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Responsável principal">
+            <input
+              value={form.responsibleName}
+              onChange={(e) => set("responsibleName", e.target.value)}
+              placeholder="Nome do responsável"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Cargo do responsável">
+            <input
+              value={form.responsibleRole}
+              onChange={(e) => set("responsibleRole", e.target.value)}
+              placeholder="Ex.: Gerente de RH"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="WhatsApp" required>
+            <input
+              value={form.whatsapp}
+              onChange={(e) => set("whatsapp", e.target.value)}
+              placeholder="(00) 00000-0000"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="E-mail">
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
+              placeholder="contato@empresa.com"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Telefone secundário">
+            <input
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              placeholder="(00) 0000-0000"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="CEP">
+            <input
+              value={form.zipCode}
+              onChange={(e) => set("zipCode", e.target.value)}
+              placeholder="00000-000"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Endereço" wide>
+            <input
+              value={form.address}
+              onChange={(e) => set("address", e.target.value)}
+              placeholder="Rua, número e complemento"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Cidade">
+            <input
+              value={form.city}
+              onChange={(e) => set("city", e.target.value)}
+              placeholder="Cidade"
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Estado">
+            <input
+              value={form.state}
+              onChange={(e) => set("state", e.target.value)}
+              placeholder="UF"
+              maxLength={2}
+            />
+          </CompanyFormField>
+
+          <CompanyFormField label="Tipo de contrato">
             <select
               value={form.contractType}
               onChange={(e) => set("contractType", e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
               <option value="">Selecione</option>
               <option value="AVULSO">Avulso</option>
@@ -184,40 +268,56 @@ export function NewCompanyDialog({ open, onOpenChange, onSuccess }: NewCompanyDi
               <option value="ANUAL">Anual</option>
               <option value="EM_NEGOCIACAO">Em negociação</option>
             </select>
-          </div>
-          <div className="space-y-2">
-            <Label>Status inicial</Label>
-            <select
-              value={form.status}
-              onChange={(e) => set("status", e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-            >
+          </CompanyFormField>
+
+          <CompanyFormField label="Status inicial">
+            <select value={form.status} onChange={(e) => set("status", e.target.value)}>
               <option value="ATIVA">Ativa</option>
               <option value="PENDENTE">Pendente</option>
               <option value="INATIVA">Inativa</option>
             </select>
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label>Observações internas</Label>
-            <Textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} />
-          </div>
-          <label className="flex items-center gap-2 text-sm sm:col-span-2">
-            <input
-              type="checkbox"
-              checked={form.portalEnabled}
-              onChange={(e) => set("portalEnabled", e.target.checked)}
+          </CompanyFormField>
+
+          <CompanyFormField label="Observações internas" wide>
+            <textarea
+              value={form.notes}
+              onChange={(e) => set("notes", e.target.value)}
+              rows={3}
+              placeholder="Anotações internas da clínica"
             />
-            Ativar portal empresarial agora
-          </label>
+          </CompanyFormField>
+
+          <div className="exam-modal-item exam-modal-item--wide">
+            <label className="collaborator-modal-check">
+              <input
+                type="checkbox"
+                checked={form.portalEnabled}
+                onChange={(e) => set("portalEnabled", e.target.checked)}
+              />
+              <span>Ativar portal empresarial agora</span>
+            </label>
+          </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button variant="brand" onClick={handleSave} disabled={loading}>
-            {loading ? "Salvando..." : "Cadastrar empresa"}
-          </Button>
-        </DialogFooter>
+
+        <footer className="exam-modal-footer collaborator-modal-footer">
+          <div className="collaborator-modal-actions">
+            <Button
+              variant="outline"
+              className="collaborator-modal-btn"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="brand"
+              className="collaborator-modal-btn"
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : "Cadastrar empresa"}
+            </Button>
+          </div>
+        </footer>
       </DialogContent>
     </Dialog>
   );
@@ -260,6 +360,21 @@ export function EditCompanyDialog({
     notes: company.notes ?? "",
     status: company.status,
   });
+
+  useEffect(() => {
+    if (!open) return;
+    setForm({
+      legalName: company.legalName,
+      tradeName: company.tradeName ?? "",
+      cnpj: company.cnpj,
+      whatsapp: company.whatsapp ?? "",
+      email: company.email ?? "",
+      phone: company.phone ?? "",
+      responsibleName: company.responsibleName ?? "",
+      notes: company.notes ?? "",
+      status: company.status,
+    });
+  }, [open, company]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -351,6 +466,7 @@ export function CompanyContactDialog({
     if (result.success) {
       toast.success("Contato registrado!");
       onOpenChange(false);
+      setTitle("");
       setNotes("");
       onSuccess();
     } else {
@@ -377,7 +493,6 @@ export function CompanyContactDialog({
               <option value="TELEFONE">Telefone</option>
               <option value="EMAIL">E-mail</option>
               <option value="VISITA">Visita</option>
-              <option value="SITE">Site</option>
               <option value="OUTRO">Outro</option>
             </select>
           </div>
@@ -386,7 +501,7 @@ export function CompanyContactDialog({
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-1">
-            <Label>Observação *</Label>
+            <Label>Notas</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} />
           </div>
         </div>
@@ -395,7 +510,7 @@ export function CompanyContactDialog({
             Cancelar
           </Button>
           <Button variant="brand" onClick={handleSave} disabled={loading}>
-            {loading ? "Salvando..." : "Registrar"}
+            {loading ? "Salvando..." : "Salvar"}
           </Button>
         </DialogFooter>
       </DialogContent>
