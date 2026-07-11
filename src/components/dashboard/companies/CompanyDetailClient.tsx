@@ -668,7 +668,10 @@ function AgendaTab({
         description="Não há agendamentos vinculados a esta empresa."
         action={
           canManage
-            ? { label: "Agendar atendimento", href: `/dashboard/agenda?companyId=${company.id}` }
+            ? {
+                label: "Ver fila de atendimentos",
+                href: `/dashboard/encaminhamentos?companyId=${company.id}`,
+              }
             : undefined
         }
       />
@@ -695,7 +698,7 @@ function AgendaTab({
               </TableCell>
               <TableCell>
                 <Link
-                  href={`/dashboard/agenda?id=${a.id}`}
+                  href={`/dashboard/encaminhamentos?companyId=${company.id}`}
                   className="text-[var(--brand-green)] hover:underline"
                 >
                   {format(new Date(a.scheduledAt), "HH:mm", { locale: ptBR })}
