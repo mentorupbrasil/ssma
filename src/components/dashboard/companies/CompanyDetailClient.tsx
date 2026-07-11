@@ -10,23 +10,16 @@ import {
   DollarSign,
   MessageCircle,
   Pencil,
-  Users,
-  Calendar,
-  FolderOpen,
-  History,
-  LayoutDashboard,
-  Globe,
-  Phone,
   Plus,
-  Tags,
   Building2,
-  ClipboardList,
   UserPlus,
   ShieldOff,
   KeyRound,
   CheckCircle2,
   AlertTriangle,
   MoreHorizontal,
+  Globe,
+  Phone,
 } from "lucide-react";
 import type { CompanyDetailSerialized } from "@/lib/companies";
 import {
@@ -43,7 +36,6 @@ import {
   normalizeDocumentStatus,
 } from "@/lib/documents";
 import { CLINICAL_EXAM_LABELS } from "@/types";
-import type { DocumentStatus } from "@prisma/client";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -79,32 +71,21 @@ type TabId =
   | "portal"
   | "history";
 
-type NavItem = {
-  id: TabId;
-  label: string;
-  icon: typeof LayoutDashboard;
-};
-
-const NAV_ROW_PRIMARY: NavItem[] = [
-  { id: "overview", label: "Visão geral", icon: LayoutDashboard },
-  { id: "employees", label: "Colaboradores", icon: Users },
-  { id: "referrals", label: "Atendimentos", icon: FileText },
-  { id: "agenda", label: "Agenda", icon: Calendar },
-  { id: "documents", label: "Documentos", icon: FolderOpen },
+const COMPANY_NAV: { id: TabId; label: string }[] = [
+  { id: "overview", label: "Visão geral" },
+  { id: "employees", label: "Colaboradores" },
+  { id: "referrals", label: "Atendimentos" },
+  { id: "agenda", label: "Agenda" },
+  { id: "documents", label: "Documentos" },
+  { id: "quotes", label: "Orçamentos" },
+  { id: "contract", label: "Contrato e preços" },
+  { id: "contacts", label: "Contatos" },
+  { id: "portal", label: "Portal" },
+  { id: "history", label: "Histórico" },
 ];
-
-const NAV_ROW_SECONDARY: NavItem[] = [
-  { id: "quotes", label: "Orçamentos", icon: DollarSign },
-  { id: "contract", label: "Contrato e preços", icon: Tags },
-  { id: "contacts", label: "Contatos", icon: Phone },
-  { id: "portal", label: "Portal", icon: Globe },
-  { id: "history", label: "Histórico", icon: History },
-];
-
-const ALL_NAV_ITEMS: NavItem[] = [...NAV_ROW_PRIMARY, ...NAV_ROW_SECONDARY];
 
 function isTabId(value: string | null): value is TabId {
-  return ALL_NAV_ITEMS.some((item) => item.id === value);
+  return COMPANY_NAV.some((item) => item.id === value);
 }
 
 type PortalState = "not_configured" | "active" | "suspended";
@@ -174,17 +155,19 @@ export function CompanyDetailClient({
 
   return (
     <PageModule className="empresa-perfil">
-      <header className="colaborador-perfil-header empresa-perfil-header">
-        <div className="colaborador-perfil-identity">
-          <div className="colaborador-perfil-avatar empresa-perfil-avatar" aria-hidden>
-            <Building2 className="h-5 w-5" />
+      <header className="empresa-perfil-header">
+        <div className="empresa-perfil-identity">
+          <div className="empresa-perfil-avatar" aria-hidden>
+            <Building2 className="h-4 w-4" />
           </div>
-          <div className="colaborador-perfil-copy">
-            <h1 className="colaboradores-empresa-title">{company.legalName}</h1>
-            <p className="colaborador-perfil-role">
-              {company.tradeName ?? "Sem nome fantasia"}
-            </p>
-            <div className="colaborador-perfil-meta">
+          <div className="empresa-perfil-copy">
+            <div className="empresa-perfil-title-row">
+              <h1 className="empresa-perfil-title">{company.legalName}</h1>
+              {company.tradeName ? (
+                <span className="empresa-perfil-trade">{company.tradeName}</span>
+              ) : null}
+            </div>
+            <div className="empresa-perfil-meta">
               <span className="empresas-clinica-cnpj">CNPJ {formatCNPJ(company.cnpj)}</span>
               {cityLine ? <span>{cityLine}</span> : null}
               <StatusBadge status={company.status} type="company" />
@@ -192,13 +175,13 @@ export function CompanyDetailClient({
           </div>
         </div>
 
-        <div className="colaboradores-empresa-header-actions empresa-perfil-actions">
+        <div className="empresa-perfil-actions">
           {canManage && (
             <Link
               href={`/dashboard/encaminhamentos/novo?companyId=${company.id}`}
-              className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
+              className={cn(buttonVariants({ variant: "brand", size: "sm" }), "empresa-perfil-btn")}
             >
-              <FileText className="mr-2 h-4 w-4" />
+              <FileText className="mr-1.5 h-3.5 w-3.5" />
               Criar atendimento
             </Link>
           )}
@@ -207,10 +190,10 @@ export function CompanyDetailClient({
               href={`/dashboard/orcamentos?companyId=${company.id}`}
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
-                "rounded-lg empresa-perfil-action-secondary"
+                "empresa-perfil-btn empresa-perfil-action-secondary"
               )}
             >
-              <DollarSign className="mr-2 h-4 w-4" />
+              <DollarSign className="mr-1.5 h-3.5 w-3.5" />
               Novo orçamento
             </Link>
           )}
@@ -218,10 +201,10 @@ export function CompanyDetailClient({
             <Button
               variant="outline"
               size="sm"
-              className="rounded-lg empresa-perfil-action-secondary"
+              className="empresa-perfil-btn empresa-perfil-action-secondary"
               onClick={() => setEditOpen(true)}
             >
-              <Pencil className="mr-2 h-4 w-4" />
+              <Pencil className="mr-1.5 h-3.5 w-3.5" />
               Editar cadastro
             </Button>
           )}
@@ -232,7 +215,7 @@ export function CompanyDetailClient({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8 rounded-lg"
+                    className="empresa-perfil-btn-icon"
                     aria-label="Mais ações"
                   >
                     <MoreHorizontal className="h-4 w-4" />
@@ -317,49 +300,24 @@ export function CompanyDetailClient({
         </div>
       </header>
 
-      <nav className="empresa-perfil-toolbar" aria-label="Seções da empresa">
-        <div className="empresa-perfil-toolbar-row">
-          {NAV_ROW_PRIMARY.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                className={cn(
-                  "empresa-perfil-toolbar-item",
-                  isActive && "empresa-perfil-toolbar-item--active"
-                )}
-                aria-current={isActive ? "page" : undefined}
-                onClick={() => setTab(item.id)}
-              >
-                <Icon className="empresa-perfil-toolbar-icon" aria-hidden />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="empresa-perfil-toolbar-row">
-          {NAV_ROW_SECONDARY.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                className={cn(
-                  "empresa-perfil-toolbar-item",
-                  isActive && "empresa-perfil-toolbar-item--active"
-                )}
-                aria-current={isActive ? "page" : undefined}
-                onClick={() => setTab(item.id)}
-              >
-                <Icon className="empresa-perfil-toolbar-icon" aria-hidden />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
+      <nav className="empresa-perfil-tabs" aria-label="Seções da empresa">
+        {COMPANY_NAV.map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={cn(
+                "empresa-perfil-tab",
+                isActive && "empresa-perfil-tab--active"
+              )}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => setTab(item.id)}
+            >
+              {item.label}
+            </button>
+          );
+        })}
       </nav>
 
       <div className="empresa-perfil-body">
@@ -441,36 +399,24 @@ function OverviewTab({
       key: "employees",
       label: "Colaboradores",
       value: company.stats.employees,
-      hint: "Cadastros vinculados",
-      tone: "primary" as const,
-      icon: Users,
       tab: "employees" as TabId,
     },
     {
       key: "open_referrals",
       label: "Atendimentos em aberto",
       value: company.stats.openReferrals,
-      hint: "Em andamento",
-      tone: "warning" as const,
-      icon: ClipboardList,
       tab: "referrals" as TabId,
     },
     {
       key: "upcoming_appointments",
       label: "Agendamentos futuros",
       value: company.stats.upcomingAppointments,
-      hint: "Próximas datas",
-      tone: "primary" as const,
-      icon: Calendar,
       tab: "agenda" as TabId,
     },
     {
       key: "pending_documents",
       label: "Documentos pendentes",
       value: company.stats.pendingDocuments,
-      hint: "A regularizar",
-      tone: "warning" as const,
-      icon: FolderOpen,
       tab: "documents" as TabId,
     },
   ];
@@ -479,154 +425,117 @@ function OverviewTab({
     [company.address, company.city, company.state, company.zipCode].filter(Boolean).join(", ") ||
     "—";
 
-  const now = Date.now();
-  const nextAppointment = [...company.appointments]
-    .filter((a) => new Date(a.scheduledAt).getTime() >= now)
-    .sort(
-      (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
-    )[0];
-
-  const availableDocuments = company.documents.filter(
-    (d) => normalizeDocumentStatus(d.status as DocumentStatus) === "DISPONIVEL"
-  ).length;
-
-  const availableDocumentsLabel =
-    availableDocuments <= 0
-      ? "Nenhum disponível"
-      : availableDocuments === 1
-        ? "1 disponível"
-        : `${availableDocuments} disponíveis`;
-
   return (
-    <div className="colaborador-perfil-overview empresa-perfil-overview">
-      <div className="colaboradores-empresa-stats empresa-perfil-stats">
-        {stats.map((s) => {
-          const Icon = s.icon;
-          return (
-            <button
-              key={s.key}
-              type="button"
-              onClick={() => onNavigate(s.tab)}
-              className="colaboradores-empresa-stat colaboradores-empresa-stat--clickable"
-            >
-              <span
-                className={cn(
-                  "colaboradores-empresa-stat-icon",
-                  `colaboradores-empresa-stat-icon--${s.tone}`
-                )}
-              >
-                <Icon className="h-4 w-4" aria-hidden />
-              </span>
-              <span className="colaboradores-empresa-stat-body">
-                <span className="colaboradores-empresa-stat-value">{s.value}</span>
-                <span className="colaboradores-empresa-stat-title">{s.label}</span>
-                <span className="colaboradores-empresa-stat-hint">{s.hint}</span>
-              </span>
-            </button>
-          );
-        })}
+    <div className="empresa-perfil-overview">
+      <div className="empresa-perfil-kpis">
+        {stats.map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            onClick={() => onNavigate(s.tab)}
+            className="empresa-perfil-kpi"
+          >
+            <span className="empresa-perfil-kpi-value">{s.value}</span>
+            <span className="empresa-perfil-kpi-label">{s.label}</span>
+          </button>
+        ))}
       </div>
 
-      <div className="empresa-perfil-summary" role="note">
-        <div className="empresa-perfil-summary-item">
-          <span className="empresa-perfil-summary-label">Último atendimento</span>
-          <span className="empresa-perfil-summary-value">
-            {company.stats.lastAppointmentAt
-              ? format(new Date(company.stats.lastAppointmentAt), "dd/MM/yyyy", {
-                  locale: ptBR,
-                })
-              : "—"}
-          </span>
-        </div>
-        <div className="empresa-perfil-summary-item">
-          <span className="empresa-perfil-summary-label">Próximo agendamento</span>
-          <span className="empresa-perfil-summary-value">
-            {nextAppointment
-              ? format(new Date(nextAppointment.scheduledAt), "dd/MM/yyyy HH:mm", {
-                  locale: ptBR,
-                })
-              : "—"}
-          </span>
-        </div>
-        <div className="empresa-perfil-summary-item">
-          <span className="empresa-perfil-summary-label">Pendências</span>
-          <span className="empresa-perfil-summary-value">
-            {formatCompanyPendingLabel(company.stats.pendingDocuments)}
-          </span>
-        </div>
-        <div className="empresa-perfil-summary-item">
-          <span className="empresa-perfil-summary-label">Documentos disponíveis</span>
-          <span className="empresa-perfil-summary-value">{availableDocumentsLabel}</span>
-        </div>
-        <div className="empresa-perfil-summary-item">
-          <span className="empresa-perfil-summary-label">Última atualização</span>
-          <span className="empresa-perfil-summary-value">
-            {format(new Date(company.updatedAt), "dd/MM/yyyy", { locale: ptBR })}
-          </span>
-        </div>
-      </div>
+      <div className="empresa-perfil-columns">
+        <div className="empresa-perfil-main-col">
+          <section className="empresa-erp-panel">
+            <h2 className="empresa-erp-panel-title">Dados cadastrais</h2>
+            <dl className="empresa-erp-fields">
+              <FieldRow label="Razão social" value={company.legalName} />
+              <FieldRow label="Nome fantasia" value={company.tradeName ?? "—"} />
+              <FieldRow label="CNPJ" value={formatCNPJ(company.cnpj)} />
+              <FieldRow label="Inscrição estadual" value={company.stateRegistration ?? "—"} />
+              <FieldRow label="Endereço" value={address} />
+              <FieldRow label="Segmento" value={company.segment ?? "—"} />
+              <FieldRow
+                label="Porte"
+                value={company.size ? COMPANY_SIZE_LABELS[company.size] : "—"}
+              />
+              <FieldRow
+                label="Cadastro em"
+                value={format(new Date(company.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+              />
+            </dl>
+          </section>
 
-      <div className="colaborador-perfil-grid colaborador-perfil-grid--3 empresa-perfil-blocks">
-        <section className="colaborador-perfil-block">
-          <h2 className="colaborador-perfil-block-title">Dados da empresa</h2>
-          <dl className="colaborador-perfil-fields">
-            <Field label="Razão social" value={company.legalName} />
-            <Field label="Nome fantasia" value={company.tradeName ?? "—"} />
-            <Field label="CNPJ" value={formatCNPJ(company.cnpj)} />
-            <Field label="Inscrição estadual" value={company.stateRegistration ?? "—"} />
-            <Field label="Endereço" value={address} />
-            <Field label="Segmento" value={company.segment ?? "—"} />
-          </dl>
-        </section>
+          <section className="empresa-erp-panel">
+            <h2 className="empresa-erp-panel-title">Responsável e contatos</h2>
+            <dl className="empresa-erp-fields">
+              <FieldRow label="Responsável" value={company.responsibleName ?? "—"} />
+              <FieldRow label="Cargo" value={company.responsibleRole ?? "—"} />
+              <FieldRow
+                label="WhatsApp"
+                value={company.whatsapp ? formatPhone(company.whatsapp) : "—"}
+              />
+              <FieldRow
+                label="Telefone"
+                value={company.phone ? formatPhone(company.phone) : "—"}
+              />
+              <FieldRow label="E-mail" value={company.email ?? "—"} />
+              {company.notes ? (
+                <FieldRow label="Observações internas" value={company.notes} />
+              ) : null}
+            </dl>
+          </section>
+        </div>
 
-        <section className="colaborador-perfil-block">
-          <h2 className="colaborador-perfil-block-title">Responsável e contatos</h2>
-          <dl className="colaborador-perfil-fields">
-            <Field label="Responsável" value={company.responsibleName ?? "—"} />
-            <Field label="Cargo" value={company.responsibleRole ?? "—"} />
-            <Field
-              label="WhatsApp"
-              value={company.whatsapp ? formatPhone(company.whatsapp) : "—"}
-            />
-            <Field label="Telefone" value={company.phone ? formatPhone(company.phone) : "—"} />
-            <Field label="E-mail" value={company.email ?? "—"} />
-            {company.notes ? <Field label="Observações internas" value={company.notes} /> : null}
-          </dl>
-        </section>
-
-        <section className="colaborador-perfil-block">
-          <h2 className="colaborador-perfil-block-title">Contrato, portal e situação cadastral</h2>
-          <dl className="colaborador-perfil-fields">
-            <Field
-              label="Porte"
-              value={company.size ? COMPANY_SIZE_LABELS[company.size] : "—"}
-            />
-            <Field
-              label="Contrato"
-              value={
-                company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "—"
-              }
-            />
-            <Field label="Status cadastral" value={COMPANY_STATUS_LABELS[company.status]} />
-            <Field label="Portal" value={PORTAL_STATE_LABELS[portalState]} />
-            <Field
-              label="Cadastro em"
-              value={format(new Date(company.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-            />
-          </dl>
-        </section>
+        <aside className="empresa-perfil-side-col">
+          <section className="empresa-erp-panel empresa-erp-panel--side">
+            <h2 className="empresa-erp-panel-title">Situação</h2>
+            <dl className="empresa-erp-side-fields">
+              <FieldRow
+                label="Situação cadastral"
+                value={COMPANY_STATUS_LABELS[company.status]}
+              />
+              <FieldRow
+                label="Contrato"
+                value={
+                  company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "—"
+                }
+              />
+              <FieldRow label="Portal" value={PORTAL_STATE_LABELS[portalState]} />
+              <FieldRow
+                label="Pendências"
+                value={formatCompanyPendingLabel(company.stats.pendingDocuments)}
+              />
+              <FieldRow
+                label="Último atendimento"
+                value={
+                  company.stats.lastAppointmentAt
+                    ? format(new Date(company.stats.lastAppointmentAt), "dd/MM/yyyy", {
+                        locale: ptBR,
+                      })
+                    : "—"
+                }
+              />
+              <FieldRow
+                label="Última atualização"
+                value={format(new Date(company.updatedAt), "dd/MM/yyyy", { locale: ptBR })}
+              />
+            </dl>
+          </section>
+        </aside>
       </div>
     </div>
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function FieldRow({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <dt className="colaborador-perfil-field-label">{label}</dt>
-      <dd className="colaborador-perfil-field-value">{value}</dd>
+    <div className="empresa-erp-field-row">
+      <dt className="empresa-erp-field-label">{label}</dt>
+      <dd className="empresa-erp-field-value">{value}</dd>
     </div>
   );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return <FieldRow label={label} value={value} />;
 }
 
 function EmployeesTab({
