@@ -215,9 +215,6 @@ export function buildExamListWhere(filters: ExamListFilters): Prisma.ExamWhereIn
   if (q) {
     where.OR = [
       { name: { contains: q, mode: "insensitive" } },
-      { shortDescription: { contains: q, mode: "insensitive" } },
-      { preparationBefore: { contains: q, mode: "insensitive" } },
-      { internalTags: { contains: q, mode: "insensitive" } },
     ];
   }
 

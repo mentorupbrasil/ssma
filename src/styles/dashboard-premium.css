@@ -6661,3 +6661,242 @@
   }
 }
 
+/* ── Exames (cadastro interno Unimetra) ───────────────── */
+.exames-catalogo-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .exames-catalogo-filters {
+    grid-template-columns: minmax(0, 1fr) 11rem 9rem;
+    align-items: center;
+  }
+}
+
+.exames-catalogo-search {
+  position: relative;
+  min-width: 0;
+}
+
+.exames-catalogo-search-icon {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  z-index: 1;
+  height: 1rem;
+  width: 1rem;
+  transform: translateY(-50%);
+  color: rgb(148 163 184);
+}
+
+.exames-catalogo-search-input {
+  height: 2.375rem !important;
+  border-radius: 0.55rem !important;
+  padding-left: 2.25rem !important;
+  font-size: 0.8125rem !important;
+}
+
+.exames-catalogo-select {
+  height: 2.375rem;
+  width: 100%;
+  border-radius: 0.55rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  color: rgb(51 65 85);
+}
+
+.exames-catalogo-table-shell {
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.6rem;
+  background: white;
+}
+
+.exames-catalogo-result-bar {
+  display: flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.85rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.exames-catalogo-table-scroll {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.exames-catalogo-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.exames-catalogo-col-name {
+  width: 60%;
+}
+
+.exames-catalogo-col-status {
+  width: 14%;
+}
+
+.exames-catalogo-col-date {
+  width: 18%;
+}
+
+.exames-catalogo-col-actions {
+  width: 8%;
+}
+
+.exames-catalogo-table thead th {
+  height: 2.35rem;
+  padding: 0 0.85rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.exames-catalogo-th-actions,
+.exames-catalogo-td-actions {
+  text-align: right;
+  width: 3.5rem;
+}
+
+.exames-catalogo-group-row td {
+  height: 2.2rem;
+  padding: 0 0.85rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  vertical-align: middle;
+}
+
+.exames-catalogo-group-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgb(71 85 105);
+}
+
+.exames-catalogo-group-count {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: rgb(148 163 184);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.exames-catalogo-row td {
+  height: 2.85rem;
+  padding: 0 0.85rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: white;
+  vertical-align: middle;
+  font-size: 0.8125rem;
+}
+
+.exames-catalogo-row:last-child td {
+  border-bottom: 0;
+}
+
+.exames-catalogo-row:hover td {
+  background: rgb(248 250 252 / 0.7);
+}
+
+.exames-catalogo-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.exames-catalogo-date {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: rgb(71 85 105);
+}
+
+.exames-catalogo-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  padding: 0 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.exames-catalogo-status-dot {
+  height: 0.35rem;
+  width: 0.35rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.exames-catalogo-status--active {
+  background: rgb(236 253 245);
+  color: rgb(5 150 105);
+}
+
+.exames-catalogo-status--inactive {
+  background: rgb(241 245 249);
+  color: rgb(100 116 139);
+}
+
+.exames-catalogo-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-top: 1px solid rgb(241 245 249);
+}
+
+.exames-catalogo-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0.75rem;
+}
+
+.exames-catalogo-mobile-group-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgb(100 116 139);
+}
+
+.exames-catalogo-mobile-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.55rem;
+  padding: 0.7rem 0.75rem;
+  background: white;
+}
+
+.exames-catalogo-mobile-meta {
+  margin-top: 0.15rem;
+  font-size: 0.6875rem;
+  color: rgb(148 163 184);
+}
+

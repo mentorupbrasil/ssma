@@ -26,20 +26,15 @@ async function ExamesContent({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const page = Math.max(1, parseInt(param(sp.page) ?? "1", 10) || 1);
 
-  const data = await listExamsForDashboard({
-    q: param(sp.q),
-    card: param(sp.card),
-    category: param(sp.category),
-    status: param(sp.status),
-    preparationType: param(sp.preparationType),
-    showOnWebsite: param(sp.showOnWebsite),
-    requiresAppointment: param(sp.requiresAppointment),
-    deadline: param(sp.deadline),
-    sort: param(sp.sort),
-    page,
-  });
-
   if (isEmpresa) {
+    const data = await listExamsForDashboard({
+      q: param(sp.q),
+      card: param(sp.card),
+      category: param(sp.category),
+      preparationType: param(sp.preparationType),
+      page,
+    });
+
     return (
       <EmpresaPreparosClient
         initialItems={data.items}
@@ -56,25 +51,25 @@ async function ExamesContent({ searchParams }: { searchParams: SearchParams }) {
     );
   }
 
+  const data = await listExamsForDashboard({
+    q: param(sp.q),
+    category: param(sp.category),
+    status: param(sp.status),
+    sort: "category",
+    page,
+  });
+
   return (
     <ExamesClient
       initialItems={data.items}
       initialTotal={data.total}
       initialPage={data.page}
       pageSize={data.pageSize}
-      statCounts={data.statCounts}
       canManage={canManage}
-      isEmpresaPortal={false}
       filters={{
         q: param(sp.q),
-        card: param(sp.card),
         category: param(sp.category),
         status: param(sp.status),
-        preparationType: param(sp.preparationType),
-        showOnWebsite: param(sp.showOnWebsite),
-        requiresAppointment: param(sp.requiresAppointment),
-        deadline: param(sp.deadline),
-        sort: param(sp.sort),
       }}
     />
   );

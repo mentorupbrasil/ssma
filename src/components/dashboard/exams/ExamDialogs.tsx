@@ -3,85 +3,43 @@
 import { useEffect, useState } from "react";
 import { createExam, updateExam } from "@/actions/exams";
 import type { ExamDetailSerialized } from "@/lib/exams";
-import {
-  EXAM_CATEGORY_LABELS,
-  EXAM_PREPARATION_LABELS,
-  EXAM_DEADLINE_TYPE_LABELS,
-  EXAM_STATUS_LABELS,
-} from "@/lib/exams";
+import { EXAM_CATEGORY_LABELS, EXAM_STATUS_LABELS } from "@/lib/exams";
 import {
   SystemModalShell,
   SystemModalField,
 } from "@/components/dashboard/SystemModalShell";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 type ExamFormDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   exam?: ExamDetailSerialized | null;
-  onSuccess: (examId?: string) => void;
+  onSuccess: () => void;
 };
 
 const CATEGORIES = Object.entries(EXAM_CATEGORY_LABELS);
-const PREPARATION_TYPES = Object.entries(EXAM_PREPARATION_LABELS);
-const DEADLINE_TYPES = Object.entries(EXAM_DEADLINE_TYPE_LABELS);
-const STATUSES = Object.entries(EXAM_STATUS_LABELS);
+const STATUS_OPTIONS = [
+  { value: "ATIVO", label: EXAM_STATUS_LABELS.ATIVO },
+  { value: "INATIVO", label: EXAM_STATUS_LABELS.INATIVO },
+] as const;
 
-const defaultForm = {
-  name: "",
-  category: "COMPLEMENTAR",
-  shortDescription: "",
-  status: "ATIVO",
-  showOnWebsite: false,
-  availableOnPublicForm: true,
-  availableOnCompanyPortal: true,
-  preparationType: "SEM_PREPARO",
-  preparationBefore: "",
-  instructionsOnDay: "",
-  averageDeadline: "",
-  deadlineType: "" as string,
-  observations: "",
-  whenToNotifyClinic: "",
-  requiresAppointment: false,
-  requiresProfessional: false,
-  requiresAttachment: false,
-  displayOrder: "" as string,
-  internalTags: "",
+type FormState = {
+  name: string;
+  category: string;
+  status: string;
 };
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="exam-modal-item exam-modal-item--wide border-0 bg-transparent px-0 py-1">
-      <p className="exam-modal-item-label mb-0">{children}</p>
-    </div>
-  );
-}
-
-function CheckboxWide({
-  checked,
-  onCheckedChange,
-  label,
-}: {
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-  label: string;
-}) {
-  return (
-    <div className="exam-modal-item exam-modal-item--wide">
-      <label className="flex items-center gap-2 text-sm text-slate-700">
-        <Checkbox checked={checked} onCheckedChange={(c) => onCheckedChange(c === true)} />
-        {label}
-      </label>
-    </div>
-  );
-}
+const defaultForm: FormState = {
+  name: "",
+  category: "COMPLEMENTAR",
+  status: "ATIVO",
+};
 
 export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamFormDialogProps) {
   const isEdit = !!exam;
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState(defaultForm);
+  const [form, setForm] = useState<FormState>(defaultForm);
 
   useEffect(() => {
     if (!open) return;
@@ -89,43 +47,62 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
       setForm({
         name: exam.name,
         category: exam.category,
-        shortDescription: exam.shortDescription ?? "",
-        status: exam.status,
-        showOnWebsite: exam.showOnWebsite,
-        availableOnPublicForm: exam.availableOnPublicForm,
-        availableOnCompanyPortal: exam.availableOnCompanyPortal,
-        preparationType: exam.preparationType,
-        preparationBefore: exam.preparationBefore ?? "",
-        instructionsOnDay: exam.instructionsOnDay ?? "",
-        averageDeadline: exam.averageDeadline ?? "",
-        deadlineType: exam.deadlineType ?? "",
-        observations: exam.observations ?? "",
-        whenToNotifyClinic: exam.whenToNotifyClinic ?? "",
-        requiresAppointment: exam.requiresAppointment,
-        requiresProfessional: exam.requiresProfessional,
-        requiresAttachment: exam.requiresAttachment,
-        displayOrder: exam.displayOrder != null ? String(exam.displayOrder) : "",
-        internalTags: exam.internalTags ?? "",
+        status: exam.status === "EM_REVISAO" ? "ATIVO" : exam.status,
       });
     } else {
       setForm(defaultForm);
     }
   }, [open, exam]);
 
-  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const buildPayload = (publishOnSave: boolean) => ({
-    ...form,
-    displayOrder: form.displayOrder ? Number(form.displayOrder) : null,
-    deadlineType: form.deadlineType || null,
-    publishOnSave,
-  });
+  const handleSave = async () => {
+    if (!form.name.trim()) {
+      toast.error("Informe o nome do exame.");
+      return;
+    }
 
-  const handleSave = async (publishOnSave = false) => {
     setLoading(true);
-    const payload = buildPayload(publishOnSave);
+
+    const payload = isEdit && exam
+      ? {
+          name: form.name.trim(),
+          category: form.category,
+          status: form.status,
+          shortDescription: exam.shortDescription ?? undefined,
+          showOnWebsite: exam.showOnWebsite,
+          availableOnPublicForm: exam.availableOnPublicForm,
+          availableOnCompanyPortal: exam.availableOnCompanyPortal,
+          preparationType: exam.preparationType,
+          preparationBefore: exam.preparationBefore ?? undefined,
+          instructionsOnDay: exam.instructionsOnDay ?? undefined,
+          averageDeadline: exam.averageDeadline ?? undefined,
+          deadlineType: exam.deadlineType,
+          observations: exam.observations ?? undefined,
+          whenToNotifyClinic: exam.whenToNotifyClinic ?? undefined,
+          requiresAppointment: exam.requiresAppointment,
+          requiresProfessional: exam.requiresProfessional,
+          requiresAttachment: exam.requiresAttachment,
+          displayOrder: exam.displayOrder,
+          internalTags: exam.internalTags ?? undefined,
+          publishOnSave: false,
+        }
+      : {
+          name: form.name.trim(),
+          category: form.category,
+          status: form.status,
+          showOnWebsite: false,
+          availableOnPublicForm: true,
+          availableOnCompanyPortal: true,
+          preparationType: "SEM_PREPARO",
+          requiresAppointment: false,
+          requiresProfessional: false,
+          requiresAttachment: false,
+          publishOnSave: false,
+        };
+
     const result = isEdit
       ? await updateExam(exam!.id, payload)
       : await createExam(payload);
@@ -138,12 +115,7 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
 
     toast.success(isEdit ? "Exame atualizado." : "Exame cadastrado.");
     onOpenChange(false);
-    const savedExamId = isEdit
-      ? exam?.id
-      : "examId" in result && typeof result.examId === "string"
-        ? result.examId
-        : undefined;
-    onSuccess(savedExamId);
+    onSuccess();
   };
 
   return (
@@ -151,7 +123,7 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
       open={open}
       onOpenChange={onOpenChange}
       title={isEdit ? "Editar exame" : "Novo exame"}
-      description="Catálogo de exames e preparos para o portal e o site."
+      description="Cadastre o exame para uso nos atendimentos e contratos."
       badges={[
         { label: isEdit ? "Edição" : "Cadastro", variant: "category" },
         {
@@ -172,24 +144,14 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
           <Button
             variant="brand"
             className="collaborator-modal-btn"
-            onClick={() => handleSave(false)}
+            onClick={() => void handleSave()}
             disabled={loading}
           >
             {loading ? "Salvando..." : "Salvar exame"}
           </Button>
-          <Button
-            variant="brand"
-            className="collaborator-modal-btn"
-            onClick={() => handleSave(true)}
-            disabled={loading}
-          >
-            {loading ? "Salvando..." : "Salvar e publicar no site"}
-          </Button>
         </div>
       }
     >
-      <SectionLabel>Dados principais</SectionLabel>
-
       <SystemModalField label="Nome do exame" required wide>
         <input
           value={form.name}
@@ -198,7 +160,7 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
         />
       </SystemModalField>
 
-      <SystemModalField label="Categoria">
+      <SystemModalField label="Categoria" required>
         <select value={form.category} onChange={(e) => set("category", e.target.value)}>
           {CATEGORIES.map(([value, label]) => (
             <option key={value} value={value}>
@@ -208,138 +170,14 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
         </select>
       </SystemModalField>
 
-      <SystemModalField label="Status">
+      <SystemModalField label="Status" required>
         <select value={form.status} onChange={(e) => set("status", e.target.value)}>
-          {STATUSES.map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
+          {STATUS_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
             </option>
           ))}
         </select>
-      </SystemModalField>
-
-      <SystemModalField label="Descrição curta" wide>
-        <textarea
-          value={form.shortDescription}
-          onChange={(e) => set("shortDescription", e.target.value)}
-          rows={2}
-        />
-      </SystemModalField>
-
-      <CheckboxWide
-        checked={form.showOnWebsite}
-        onCheckedChange={(c) => set("showOnWebsite", c)}
-        label="Exibir no site"
-      />
-      <CheckboxWide
-        checked={form.availableOnPublicForm}
-        onCheckedChange={(c) => set("availableOnPublicForm", c)}
-        label="Disponível no formulário público"
-      />
-      <CheckboxWide
-        checked={form.availableOnCompanyPortal}
-        onCheckedChange={(c) => set("availableOnCompanyPortal", c)}
-        label="Disponível no portal empresarial"
-      />
-
-      <SectionLabel>Preparo</SectionLabel>
-
-      <SystemModalField label="Tipo de preparo" wide>
-        <select
-          value={form.preparationType}
-          onChange={(e) => set("preparationType", e.target.value)}
-        >
-          {PREPARATION_TYPES.map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </SystemModalField>
-
-      <SystemModalField label="Preparo antes do exame" wide>
-        <textarea
-          value={form.preparationBefore}
-          onChange={(e) => set("preparationBefore", e.target.value)}
-          rows={3}
-        />
-      </SystemModalField>
-
-      <SystemModalField label="Orientações no dia do exame" wide>
-        <textarea
-          value={form.instructionsOnDay}
-          onChange={(e) => set("instructionsOnDay", e.target.value)}
-          rows={2}
-        />
-      </SystemModalField>
-
-      <SystemModalField label="Prazo médio">
-        <input
-          value={form.averageDeadline}
-          onChange={(e) => set("averageDeadline", e.target.value)}
-          placeholder="Ex.: No dia do exame"
-        />
-      </SystemModalField>
-
-      <SystemModalField label="Unidade de prazo">
-        <select value={form.deadlineType} onChange={(e) => set("deadlineType", e.target.value)}>
-          <option value="">Automático</option>
-          {DEADLINE_TYPES.map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </SystemModalField>
-
-      <SystemModalField label="Observações importantes" wide>
-        <textarea
-          value={form.observations}
-          onChange={(e) => set("observations", e.target.value)}
-          rows={2}
-        />
-      </SystemModalField>
-
-      <SystemModalField label="Quando informar a clínica" wide>
-        <textarea
-          value={form.whenToNotifyClinic}
-          onChange={(e) => set("whenToNotifyClinic", e.target.value)}
-          rows={2}
-        />
-      </SystemModalField>
-
-      <SectionLabel>Operacional</SectionLabel>
-
-      <CheckboxWide
-        checked={form.requiresAppointment}
-        onCheckedChange={(c) => set("requiresAppointment", c)}
-        label="Requer agendamento"
-      />
-      <CheckboxWide
-        checked={form.requiresProfessional}
-        onCheckedChange={(c) => set("requiresProfessional", c)}
-        label="Requer profissional específico"
-      />
-      <CheckboxWide
-        checked={form.requiresAttachment}
-        onCheckedChange={(c) => set("requiresAttachment", c)}
-        label="Requer anexos/documentos"
-      />
-
-      <SystemModalField label="Ordem de exibição">
-        <input
-          type="number"
-          value={form.displayOrder}
-          onChange={(e) => set("displayOrder", e.target.value)}
-        />
-      </SystemModalField>
-
-      <SystemModalField label="Tags internas" wide>
-        <input
-          value={form.internalTags}
-          onChange={(e) => set("internalTags", e.target.value)}
-          placeholder="Separadas por vírgula"
-        />
       </SystemModalField>
     </SystemModalShell>
   );

@@ -183,7 +183,7 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard/colaboradores", label: "Colaboradores", icon: "Users", permission: "patients.manage" as Permission },
   { href: "/dashboard/encaminhamentos", label: "Fila de atendimentos", icon: "FileText", permission: "referrals.manage" as Permission },
   { href: "/dashboard/documentos", label: "Documentos", icon: "FolderOpen", permission: "documents.manage" as Permission },
-  { href: "/dashboard/exames", label: "Exames e preparos", icon: "Stethoscope", permission: "exams.view" as Permission },
+  { href: "/dashboard/exames", label: "Exames", icon: "Stethoscope", permission: "exams.view" as Permission },
   { href: "/dashboard/orcamentos", label: "Comercial", icon: "DollarSign", permission: "leads.manage" as Permission },
   { href: "/dashboard/tabela-precos", label: "Tabela de preços", icon: "Tags", permission: "pricing.manage" as Permission },
   { href: "/dashboard/fechamento-mensal", label: "Fechamento mensal", icon: "Calculator", permission: "closings.manage" as Permission },
