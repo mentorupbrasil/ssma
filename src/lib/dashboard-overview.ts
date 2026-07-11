@@ -547,7 +547,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
     upcomingAppointments: isEmpresa
       ? upcomingAppointments.map((a) => ({
           id: a.id,
-          patientName: a.patient.fullName,
+          patientName: a.patient?.fullName ?? "Sem colaborador",
           scheduledAt: a.scheduledAt,
           status: a.status,
         }))
