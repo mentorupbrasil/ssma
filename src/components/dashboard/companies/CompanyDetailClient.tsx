@@ -74,7 +74,31 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { useBreadcrumbSegmentLabel } from "@/components/dashboard/BreadcrumbLabelProvider";
 import { toast } from "sonner";
 
-const NAV_SECTIONS = [
+type TabId =
+  | "overview"
+  | "employees"
+  | "referrals"
+  | "agenda"
+  | "documents"
+  | "quotes"
+  | "contract"
+  | "contacts"
+  | "portal"
+  | "history";
+
+type NavItem = {
+  id: TabId;
+  label: string;
+  icon: typeof LayoutDashboard;
+};
+
+type NavSection = {
+  id: string;
+  label: string;
+  items: NavItem[];
+};
+
+const NAV_SECTIONS: NavSection[] = [
   {
     id: "overview-group",
     label: "Visão geral",
@@ -107,14 +131,16 @@ const NAV_SECTIONS = [
       { id: "history", label: "Histórico", icon: History },
     ],
   },
-] as const;
+];
 
-const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap((section) => section.items);
-
-type TabId = (typeof ALL_NAV_ITEMS)[number]["id"];
+const ALL_NAV_ITEMS: NavItem[] = NAV_SECTIONS.flatMap((section) => section.items);
 
 function getNavLabel(tab: TabId): string {
   return ALL_NAV_ITEMS.find((item) => item.id === tab)?.label ?? "Visão geral";
+}
+
+function isTabId(value: string | null): value is TabId {
+  return ALL_NAV_ITEMS.some((item) => item.id === value);
 }
 
 type PortalState = "not_configured" | "active" | "suspended";
@@ -144,7 +170,8 @@ export function CompanyDetailClient({
 }: CompanyDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const activeTab = (searchParams.get("tab") as TabId) || "overview";
+  const tabParam = searchParams.get("tab");
+  const activeTab: TabId = isTabId(tabParam) ? tabParam : "overview";
 
   const [editOpen, setEditOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
@@ -158,10 +185,6 @@ export function CompanyDetailClient({
   const waUrl = phone
     ? `https://wa.me/55${phone.replace(/\D/g, "")}?text=${encodeURIComponent(buildCompanyWhatsAppMessage(displayName))}`
     : null;
-
-  const resolvedTab = ALL_NAV_ITEMS.some((item) => item.id === activeTab)
-    ? activeTab
-    : ("overview" as TabId);
 
   const setTab = (tab: TabId) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -334,7 +357,7 @@ export function CompanyDetailClient({
 
       <div className="empresa-perfil-layout">
         <aside className="empresa-perfil-nav" aria-label="Menu da empresa">
-          <CompanySectionNav activeTab={resolvedTab} onNavigate={setTab} />
+          <CompanySectionNav activeTab={activeTab} onNavigate={setTab} />
         </aside>
 
         <div className="empresa-perfil-main">
@@ -348,38 +371,38 @@ export function CompanyDetailClient({
             >
               <PanelLeft className="mr-2 h-4 w-4" />
               Seções da empresa
-              <span className="empresa-perfil-nav-mobile-current">{getNavLabel(resolvedTab)}</span>
+              <span className="empresa-perfil-nav-mobile-current">{getNavLabel(activeTab)}</span>
             </Button>
           </div>
 
           <div className="empresa-perfil-body">
-            {resolvedTab === "overview" && (
+            {activeTab === "overview" && (
               <OverviewTab company={company} onNavigate={setTab} />
             )}
-            {resolvedTab === "employees" && (
+            {activeTab === "employees" && (
               <EmployeesTab company={company} canManage={canManage} />
             )}
-            {resolvedTab === "referrals" && (
+            {activeTab === "referrals" && (
               <ReferralsTab company={company} canManage={canManage} />
             )}
-            {resolvedTab === "agenda" && (
+            {activeTab === "agenda" && (
               <AgendaTab company={company} canManage={canManage} />
             )}
-            {resolvedTab === "documents" && <DocumentsTab company={company} />}
-            {resolvedTab === "quotes" && (
+            {activeTab === "documents" && <DocumentsTab company={company} />}
+            {activeTab === "quotes" && (
               <QuotesTab company={company} canCommercial={canCommercial} />
             )}
-            {resolvedTab === "contract" && (
+            {activeTab === "contract" && (
               <ContractTab company={company} canCommercial={canCommercial} />
             )}
-            {resolvedTab === "contacts" && (
+            {activeTab === "contacts" && (
               <ContactsTab
                 company={company}
                 canManage={canManage}
                 onAddContact={() => setContactOpen(true)}
               />
             )}
-            {resolvedTab === "portal" && (
+            {activeTab === "portal" && (
               <PortalTab
                 company={company}
                 canManage={canManage}
@@ -388,7 +411,7 @@ export function CompanyDetailClient({
                 onRefresh={refresh}
               />
             )}
-            {resolvedTab === "history" && <HistoryTab company={company} />}
+            {activeTab === "history" && <HistoryTab company={company} />}
           </div>
         </div>
       </div>
@@ -399,7 +422,7 @@ export function CompanyDetailClient({
             <SheetTitle>Seções da empresa</SheetTitle>
           </SheetHeader>
           <div className="empresa-perfil-nav-sheet-body">
-            <CompanySectionNav activeTab={resolvedTab} onNavigate={setTab} />
+            <CompanySectionNav activeTab={activeTab} onNavigate={setTab} />
           </div>
         </SheetContent>
       </Sheet>
