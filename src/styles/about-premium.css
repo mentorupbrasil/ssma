@@ -25,18 +25,6 @@
   transform: translateY(-1px);
 }
 
-@media (max-width: 479px) {
-  .editorial-hero-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .editorial-hero-actions > a {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .about-v2-hero-cta-primary:hover {
     transform: none;

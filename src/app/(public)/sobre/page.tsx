@@ -55,7 +55,7 @@ export default function SobrePage() {
   return (
     <AboutMotionRoot>
       <AboutPageJsonLd />
-      <AboutHero clinicName={clinic.name} />
+      <AboutHero />
       <AboutHighlights />
       <AboutHistory />
       <AboutDeliverables />

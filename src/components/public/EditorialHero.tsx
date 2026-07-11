@@ -1,26 +1,24 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type EditorialHeroPill = {
+export type EditorialHeroPill = {
   href: string;
   label: string;
   external?: boolean;
 };
 
 type EditorialHeroProps = {
-  pill: EditorialHeroPill;
+  ctaPill: EditorialHeroPill;
   title: string;
   description: string;
   badges?: readonly string[];
   badgesAriaLabel?: string;
-  actions: ReactNode;
   className?: string;
 };
 
-function EditorialHeroPillLink({ pill }: { pill: EditorialHeroPill }) {
+export function EditorialHeroPillLink({ pill }: { pill: EditorialHeroPill }) {
   const content = (
     <>
       <span>{pill.label}</span>
@@ -52,12 +50,11 @@ function EditorialHeroPillLink({ pill }: { pill: EditorialHeroPill }) {
 }
 
 export function EditorialHero({
-  pill,
+  ctaPill,
   title,
   description,
   badges,
   badgesAriaLabel = "Destaques",
-  actions,
   className,
 }: EditorialHeroProps) {
   return (
@@ -65,8 +62,6 @@ export function EditorialHero({
       <div className="editorial-hero-bg" aria-hidden />
       <div className="container-page editorial-hero-inner">
         <div className="editorial-hero-content animate-fade-up">
-          <EditorialHeroPillLink pill={pill} />
-
           <h1 className="editorial-hero-title">{title}</h1>
           <p className="editorial-hero-desc">{description}</p>
 
@@ -80,7 +75,9 @@ export function EditorialHero({
             </div>
           )}
 
-          <div className="editorial-hero-actions">{actions}</div>
+          <div className="editorial-hero-cta">
+            <EditorialHeroPillLink pill={ctaPill} />
+          </div>
         </div>
       </div>
     </section>

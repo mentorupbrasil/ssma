@@ -6,11 +6,8 @@ import {
   MessageCircle,
   Zap,
   Shield,
-  ClipboardList,
-  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AboutCtaLink } from "@/components/public/about/AboutCtaLink";
 import { EditorialHero } from "@/components/public/EditorialHero";
 import { whatsappLink } from "@/lib/helpers";
 import { ENCAMINHAMENTO_HERO_BADGES, WHATSAPP_PRE_REFERRAL_TEMPLATE } from "@/data/pre-referral";
@@ -23,36 +20,11 @@ type EncaminhamentoPathCardsProps = {
 export function EncaminhamentoHero() {
   return (
     <EditorialHero
-      pill={{ href: "#pre-encaminhamento", label: "Portal empresarial" }}
+      ctaPill={{ href: "#pre-encaminhamento", label: "Preencher formulário" }}
       title="Encaminhamento rápido de colaborador"
       description="Envie as informações principais e nossa equipe confirma o atendimento pelo WhatsApp."
       badges={ENCAMINHAMENTO_HERO_BADGES}
       badgesAriaLabel="Benefícios do encaminhamento"
-      actions={
-        <>
-          <AboutCtaLink
-            href="#pre-encaminhamento"
-            variant="brand"
-            size="default"
-            className="about-v2-hero-cta about-v2-hero-cta-primary group"
-          >
-            <ClipboardList className="size-4" aria-hidden />
-            Preencher formulário
-          </AboutCtaLink>
-          <AboutCtaLink
-            href="/login"
-            variant="outline"
-            size="default"
-            className="about-v2-hero-cta about-v2-hero-cta-secondary group"
-          >
-            Acessar portal
-            <ArrowRight
-              className="size-4 transition-transform group-hover:translate-x-0.5"
-              aria-hidden
-            />
-          </AboutCtaLink>
-        </>
-      }
     />
   );
 }
