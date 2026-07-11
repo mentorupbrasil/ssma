@@ -71,6 +71,15 @@ function pendingLabel(count: number): string {
   return count === 1 ? "1 documento" : `${count} documentos`;
 }
 
+function collaboratorInitials(fullName: string): string {
+  return fullName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export function ColaboradoresEmpresaClient({
   initialItems,
   initialTotal,
@@ -383,16 +392,17 @@ export function ColaboradoresEmpresaClient({
             )}
           </Button>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="colaboradores-empresa-clear-btn rounded-lg"
-            onClick={clearFilters}
-            disabled={!hasActiveFilters && !q}
-          >
-            Limpar
-          </Button>
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="colaboradores-empresa-clear-btn rounded-lg"
+              onClick={clearFilters}
+            >
+              Limpar
+            </Button>
+          )}
         </div>
 
         {moreFiltersOpen && (
@@ -477,10 +487,6 @@ export function ColaboradoresEmpresaClient({
         )}
       </div>
 
-      <div className="colaboradores-empresa-list-header">
-        <p className="colaboradores-empresa-result-count">{resultLabel}</p>
-      </div>
-
       <div className="colaboradores-empresa-table-wrap relative">
         {isPending && <LoadingState overlay label="Atualizando colaboradores..." />}
 
@@ -511,7 +517,11 @@ export function ColaboradoresEmpresaClient({
           />
         ) : (
           <>
-            <div className="colaboradores-empresa-table-scroll hidden md:block">
+            <div className="colaboradores-empresa-result-bar">
+              <p className="colaboradores-empresa-result-count">{resultLabel}</p>
+            </div>
+
+            <div className="colaboradores-empresa-table-scroll">
               <table className="colaboradores-empresa-table">
                 <thead>
                   <tr>
@@ -531,9 +541,19 @@ export function ColaboradoresEmpresaClient({
                     return (
                       <tr key={c.id} className="colaboradores-empresa-row">
                         <td>
-                          <div className="colaboradores-empresa-name">{c.fullName}</div>
-                          <div className="colaboradores-empresa-role">
-                            {collaboratorRoleLine(c.jobTitle, c.department)}
+                          <div className="colaboradores-empresa-cell-collaborator">
+                            <span
+                              className="colaboradores-empresa-avatar"
+                              title={c.fullName}
+                            >
+                              {collaboratorInitials(c.fullName)}
+                            </span>
+                            <div className="colaboradores-empresa-cell-collaborator-text">
+                              <div className="colaboradores-empresa-name">{c.fullName}</div>
+                              <div className="colaboradores-empresa-role">
+                                {collaboratorRoleLine(c.jobTitle, c.department)}
+                              </div>
+                            </div>
                           </div>
                         </td>
                         <td className="colaboradores-empresa-cpf">{c.cpfFormatted}</td>
@@ -613,48 +633,86 @@ export function ColaboradoresEmpresaClient({
               </table>
             </div>
 
-            <div className="colaboradores-empresa-mobile-list md:hidden">
-              {initialItems.map((c) => (
-                <article key={c.id} className="colaboradores-empresa-mobile-card">
-                  <div className="colaboradores-empresa-mobile-card-head">
-                    <div>
+            <div className="colaboradores-empresa-mobile-list">
+              {initialItems.map((c) => {
+                const periodic = getPeriodicExamBadge(c.nextPeriodicDate);
+                const periodicHint = formatPeriodicHint(c.nextPeriodicDate);
+                const lastExamText = c.lastExamLabel
+                  ? c.lastExamDate
+                    ? `${c.lastExamLabel} · ${format(new Date(c.lastExamDate), "dd/MM/yyyy", { locale: ptBR })}`
+                    : c.lastExamLabel
+                  : "—";
+                const periodicText = c.nextPeriodicDate
+                  ? `${format(new Date(c.nextPeriodicDate), "dd/MM/yyyy", { locale: ptBR })}${periodicHint ? ` · ${periodicHint}` : ""}`
+                  : "Não definido";
+
+                return (
+                  <article key={c.id} className="colaboradores-empresa-mobile-card">
+                    <div className="colaboradores-empresa-mobile-card-head">
                       <p className="colaboradores-empresa-name">{c.fullName}</p>
-                      <p className="colaboradores-empresa-role">
-                        {collaboratorRoleLine(c.jobTitle, c.department)}
-                      </p>
+                      <div className="colaboradores-empresa-mobile-status">
+                        <StatusBadge status={c.status} type="collaborator" />
+                      </div>
                     </div>
-                    <StatusBadge status={c.status} type="collaborator" />
-                  </div>
-                  <dl className="colaboradores-empresa-mobile-meta">
-                    <div>
-                      <dt>CPF</dt>
-                      <dd>{c.cpfFormatted}</dd>
+                    <p className="colaboradores-empresa-mobile-role">
+                      {collaboratorRoleLine(c.jobTitle, c.department)}
+                    </p>
+                    <dl className="colaboradores-empresa-mobile-meta">
+                      <div>
+                        <dt>CPF</dt>
+                        <dd>{c.cpfFormatted}</dd>
+                      </div>
+                      <div>
+                        <dt>Último exame</dt>
+                        <dd>{lastExamText}</dd>
+                      </div>
+                      <div>
+                        <dt>Próximo periódico</dt>
+                        <dd
+                          className={cn(
+                            periodic.tone === "danger" && "is-danger",
+                            periodic.tone === "warning" && "is-warning"
+                          )}
+                        >
+                          {periodicText}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Pendências</dt>
+                        <dd>
+                          {c.pendingDocsCount > 0 ? (
+                            <Badge variant="outline" className="colaboradores-empresa-pending-badge">
+                              {pendingLabel(c.pendingDocsCount)}
+                            </Badge>
+                          ) : (
+                            <span className="colaboradores-empresa-muted">Sem pendências</span>
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+                    <div className="colaboradores-empresa-mobile-actions">
+                      <Link
+                        href={`/dashboard/colaboradores/${c.id}`}
+                        className={cn(
+                          buttonVariants({ variant: "outline", size: "sm" }),
+                          "colaboradores-empresa-mobile-action-btn rounded-lg"
+                        )}
+                      >
+                        Ver perfil
+                      </Link>
+                      <Link
+                        href={`/dashboard/encaminhamentos/novo?patientId=${c.id}`}
+                        className={cn(
+                          buttonVariants({ variant: "brand", size: "sm" }),
+                          "colaboradores-empresa-mobile-action-btn rounded-lg"
+                        )}
+                      >
+                        Encaminhar
+                      </Link>
                     </div>
-                    <div>
-                      <dt>Último exame</dt>
-                      <dd>{c.lastExamLabel ?? "—"}</dd>
-                    </div>
-                    <div>
-                      <dt>Pendências</dt>
-                      <dd>{c.pendingDocsCount > 0 ? pendingLabel(c.pendingDocsCount) : "Sem pendências"}</dd>
-                    </div>
-                  </dl>
-                  <div className="colaboradores-empresa-mobile-actions">
-                    <Link
-                      href={`/dashboard/colaboradores/${c.id}`}
-                      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
-                    >
-                      Ver perfil
-                    </Link>
-                    <Link
-                      href={`/dashboard/encaminhamentos/novo?patientId=${c.id}`}
-                      className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
-                    >
-                      Encaminhar
-                    </Link>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           </>
         )}
