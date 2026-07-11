@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import { EDITORIAL_HERO_BADGES } from "@/data/editorial-hero";
+import type { EditorialHeroLines } from "@/data/editorial-hero";
 import { cn } from "@/lib/utils";
 
 export type EditorialHeroPill = {
@@ -11,10 +13,8 @@ export type EditorialHeroPill = {
 
 type EditorialHeroProps = {
   ctaPill: EditorialHeroPill;
-  title: string;
-  description: string;
-  badges?: readonly string[];
-  badgesAriaLabel?: string;
+  titleLines: EditorialHeroLines;
+  descriptionLines: EditorialHeroLines;
   className?: string;
 };
 
@@ -51,10 +51,8 @@ export function EditorialHeroPillLink({ pill }: { pill: EditorialHeroPill }) {
 
 export function EditorialHero({
   ctaPill,
-  title,
-  description,
-  badges,
-  badgesAriaLabel = "Destaques",
+  titleLines,
+  descriptionLines,
   className,
 }: EditorialHeroProps) {
   return (
@@ -62,18 +60,23 @@ export function EditorialHero({
       <div className="editorial-hero-bg" aria-hidden />
       <div className="container-page editorial-hero-inner">
         <div className="editorial-hero-content animate-fade-up">
-          <h1 className="editorial-hero-title">{title}</h1>
-          <p className="editorial-hero-desc">{description}</p>
+          <h1 className="editorial-hero-title">
+            <span className="editorial-hero-title-line">{titleLines[0]}</span>
+            <span className="editorial-hero-title-line">{titleLines[1]}</span>
+          </h1>
 
-          {badges && badges.length > 0 && (
-            <div className="editorial-hero-badges" aria-label={badgesAriaLabel}>
-              {badges.map((badge) => (
-                <span key={badge} className="editorial-hero-badge">
-                  {badge}
-                </span>
-              ))}
-            </div>
-          )}
+          <p className="editorial-hero-desc">
+            <span className="editorial-hero-desc-line">{descriptionLines[0]}</span>
+            <span className="editorial-hero-desc-line">{descriptionLines[1]}</span>
+          </p>
+
+          <div className="editorial-hero-badges" aria-label="Destaques">
+            {EDITORIAL_HERO_BADGES.map((badge) => (
+              <span key={badge} className="editorial-hero-badge">
+                {badge}
+              </span>
+            ))}
+          </div>
 
           <div className="editorial-hero-cta">
             <EditorialHeroPillLink pill={ctaPill} />

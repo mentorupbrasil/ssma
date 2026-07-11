@@ -79,14 +79,16 @@
 
 .editorial-hero-title {
   margin: 0;
-  max-width: 22ch;
   font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
   font-size: clamp(1.95rem, 4.2vw, 2.85rem);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.035em;
-  text-wrap: balance;
   color: white;
+}
+
+.editorial-hero-title-line {
+  display: block;
 }
 
 .editorial-hero-desc {
@@ -94,8 +96,11 @@
   max-width: 40rem;
   font-size: clamp(1rem, 1.5vw, 1.125rem);
   line-height: 1.7;
-  text-wrap: balance;
   color: rgb(226 232 240 / 0.9);
+}
+
+.editorial-hero-desc-line {
+  display: block;
 }
 
 .editorial-hero-badges {

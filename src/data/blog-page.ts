@@ -1,10 +1,3 @@
-export const BLOG_HERO_BADGES = [
-  "Legislação e NRs",
-  "Exames ocupacionais",
-  "Dicas para RH",
-  "eSocial e conformidade",
-] as const;
-
 export const BLOG_CATEGORIES = [
   { slug: "todos", label: "Todos" },
   { slug: "saude-ocupacional", label: "Saúde ocupacional", match: "Saúde ocupacional" },

@@ -1,5 +1,7 @@
 import { EditorialHero } from "@/components/public/EditorialHero";
-import { BLOG_HERO_BADGES } from "@/data/blog-page";
+import { EDITORIAL_HERO_CONTENT } from "@/data/editorial-hero";
+
+const content = EDITORIAL_HERO_CONTENT.blog;
 
 type BlogHeroProps = {
   whatsappHref: string;
@@ -8,11 +10,9 @@ type BlogHeroProps = {
 export function BlogHero({ whatsappHref }: BlogHeroProps) {
   return (
     <EditorialHero
-      ctaPill={{ href: whatsappHref, label: "Falar com especialista", external: true }}
-      title="Blog de Saúde e Segurança do Trabalho"
-      description="Artigos, orientações e atualizações para empresas, gestores e equipes de RH manterem a rotina ocupacional organizada e em conformidade."
-      badges={BLOG_HERO_BADGES}
-      badgesAriaLabel="Temas do blog"
+      ctaPill={{ href: whatsappHref, label: content.ctaLabel, external: true }}
+      titleLines={content.titleLines}
+      descriptionLines={content.descriptionLines}
     />
   );
 }

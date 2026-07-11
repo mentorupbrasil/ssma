@@ -1,5 +1,7 @@
 import { EditorialHero } from "@/components/public/EditorialHero";
-import { EXAMS_HERO_BADGES } from "@/data/exams-page";
+import { EDITORIAL_HERO_CONTENT } from "@/data/editorial-hero";
+
+const content = EDITORIAL_HERO_CONTENT.exames;
 
 type ExamsHeroProps = {
   whatsappHref: string;
@@ -8,11 +10,9 @@ type ExamsHeroProps = {
 export function ExamsHero({ whatsappHref }: ExamsHeroProps) {
   return (
     <EditorialHero
-      ctaPill={{ href: whatsappHref, label: "Falar com especialista", external: true }}
-      title="Exames e preparos ocupacionais"
-      description="Consulte preparo, prazos e observações para exames ocupacionais solicitados pela empresa, PCMSO ou avaliação médica."
-      badges={EXAMS_HERO_BADGES}
-      badgesAriaLabel="Destaques da página"
+      ctaPill={{ href: whatsappHref, label: content.ctaLabel, external: true }}
+      titleLines={content.titleLines}
+      descriptionLines={content.descriptionLines}
     />
   );
 }

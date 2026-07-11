@@ -9,9 +9,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditorialHero } from "@/components/public/EditorialHero";
+import { EDITORIAL_HERO_CONTENT } from "@/data/editorial-hero";
+import { WHATSAPP_PRE_REFERRAL_TEMPLATE } from "@/data/pre-referral";
 import { whatsappLink } from "@/lib/helpers";
-import { ENCAMINHAMENTO_HERO_BADGES, WHATSAPP_PRE_REFERRAL_TEMPLATE } from "@/data/pre-referral";
 import { cn } from "@/lib/utils";
+
+const content = EDITORIAL_HERO_CONTENT.encaminhamento;
 
 type EncaminhamentoPathCardsProps = {
   onScrollToForm: () => void;
@@ -20,11 +23,9 @@ type EncaminhamentoPathCardsProps = {
 export function EncaminhamentoHero() {
   return (
     <EditorialHero
-      ctaPill={{ href: "#pre-encaminhamento", label: "Preencher formulário" }}
-      title="Encaminhamento rápido de colaborador"
-      description="Envie as informações principais e nossa equipe confirma o atendimento pelo WhatsApp."
-      badges={ENCAMINHAMENTO_HERO_BADGES}
-      badgesAriaLabel="Benefícios do encaminhamento"
+      ctaPill={{ href: "#pre-encaminhamento", label: content.ctaLabel }}
+      titleLines={content.titleLines}
+      descriptionLines={content.descriptionLines}
     />
   );
 }
