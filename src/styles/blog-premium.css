@@ -4,63 +4,6 @@
 
 /* Hero — see editorial-hero-premium.css */
 
-/* Category nav ----------------------------------------------------- */
-
-.blog-category-nav {
-  position: sticky;
-  top: var(--header-height);
-  z-index: 30;
-  border-bottom: 1px solid rgb(226 232 240 / 0.95);
-  background: rgb(255 255 255 / 0.94);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 1px 0 rgb(255 255 255) inset;
-}
-
-.blog-category-nav-list {
-  display: flex;
-  gap: 0.45rem;
-  overflow-x: auto;
-  padding: 0.8rem 0;
-  margin: 0;
-  list-style: none;
-  scrollbar-width: none;
-}
-
-.blog-category-nav-list::-webkit-scrollbar {
-  display: none;
-}
-
-.blog-category-chip {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  border-radius: 999px;
-  border: 1px solid rgb(226 232 240 / 0.95);
-  background: rgb(248 250 252 / 0.85);
-  padding: 0.45rem 0.95rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgb(51 65 85);
-  text-decoration: none;
-  transition:
-    border-color 0.22s ease,
-    background 0.22s ease,
-    color 0.22s ease,
-    box-shadow 0.22s ease;
-}
-
-.blog-category-chip:hover {
-  border-color: rgb(46 103 255 / 0.35);
-  color: var(--brand-navy);
-}
-
-.blog-category-chip--active {
-  border-color: rgb(46 103 255 / 0.45);
-  background: rgb(46 103 255 / 0.08);
-  color: var(--brand-navy);
-  box-shadow: 0 1px 0 rgb(255 255 255) inset;
-}
-
 /* Listing ---------------------------------------------------------- */
 
 .blog-listing {
