@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getCollaboratorDetail } from "@/actions/collaborators";
 import { ColaboradorDetailClient } from "@/components/dashboard/collaborators/ColaboradorDetailClient";
-import { canClinicalCollaboratorAccess, canManageCollaborators } from "@/lib/collaborators";
+import { canManageCollaborators } from "@/lib/collaborators";
+import { isEmpresaUser } from "@/lib/authz";
 import { requireAuthSession } from "@/lib/page-auth";
 import { Loader2 } from "lucide-react";
 
@@ -15,7 +16,7 @@ async function DetailData({ id }: { id: string }) {
     <ColaboradorDetailClient
       collaborator={result.collaborator}
       canManage={canManageCollaborators(session.user.role) || session.user.role === "RECEPCAO"}
-      canClinical={canClinicalCollaboratorAccess(session.user.role)}
+      isEmpresaPortal={isEmpresaUser(session)}
     />
   );
 }

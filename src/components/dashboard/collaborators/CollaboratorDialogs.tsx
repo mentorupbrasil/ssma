@@ -301,6 +301,21 @@ function toDateInput(iso: string | null | undefined): string {
   return iso.slice(0, 10);
 }
 
+function CollaboratorFormSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="collaborator-form-section exam-modal-item--wide">
+      <p className="collaborator-form-section-title">{title}</p>
+      <div className="collaborator-form-section-grid">{children}</div>
+    </div>
+  );
+}
+
 type EditCollaboratorDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -400,55 +415,59 @@ export function EditCollaboratorDialog({
         </div>
       }
     >
-      <CollaboratorFormField label="Nome completo" required wide>
-        <input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
-      </CollaboratorFormField>
+      <CollaboratorFormSection title="Dados pessoais">
+        <CollaboratorFormField label="Nome completo" required wide>
+          <input value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="CPF" required>
-        <input value={form.cpf} onChange={(e) => set("cpf", e.target.value)} />
-      </CollaboratorFormField>
+        <CollaboratorFormField label="CPF" required>
+          <input value={form.cpf} onChange={(e) => set("cpf", e.target.value)} />
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="Data de nascimento">
-        <input type="date" value={form.birthDate} onChange={(e) => set("birthDate", e.target.value)} />
-      </CollaboratorFormField>
+        <CollaboratorFormField label="Data de nascimento">
+          <input type="date" value={form.birthDate} onChange={(e) => set("birthDate", e.target.value)} />
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="Telefone">
-        <input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
-      </CollaboratorFormField>
+        <CollaboratorFormField label="Telefone">
+          <input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="E-mail">
-        <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
-      </CollaboratorFormField>
+        <CollaboratorFormField label="E-mail">
+          <input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+        </CollaboratorFormField>
+      </CollaboratorFormSection>
 
-      <CollaboratorFormField label="Função" required>
-        <input value={form.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} />
-      </CollaboratorFormField>
+      <CollaboratorFormSection title="Dados profissionais">
+        <CollaboratorFormField label="Função" required>
+          <input value={form.jobTitle} onChange={(e) => set("jobTitle", e.target.value)} />
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="Setor">
-        <input value={form.department} onChange={(e) => set("department", e.target.value)} />
-      </CollaboratorFormField>
+        <CollaboratorFormField label="Setor">
+          <input value={form.department} onChange={(e) => set("department", e.target.value)} />
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="Data de admissão">
-        <input type="date" value={form.admissionDate} onChange={(e) => set("admissionDate", e.target.value)} />
-      </CollaboratorFormField>
+        <CollaboratorFormField label="Data de admissão">
+          <input type="date" value={form.admissionDate} onChange={(e) => set("admissionDate", e.target.value)} />
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="Próximo periódico">
-        <input type="date" value={form.nextPeriodicDate} onChange={(e) => set("nextPeriodicDate", e.target.value)} />
-      </CollaboratorFormField>
+        <CollaboratorFormField label="Próximo periódico">
+          <input type="date" value={form.nextPeriodicDate} onChange={(e) => set("nextPeriodicDate", e.target.value)} />
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="Status" wide>
-        <select value={form.status} onChange={(e) => set("status", e.target.value)}>
-          {(Object.keys(PATIENT_STATUS_LABELS) as PatientStatus[]).map((s) => (
-            <option key={s} value={s}>
-              {PATIENT_STATUS_LABELS[s]}
-            </option>
-          ))}
-        </select>
-      </CollaboratorFormField>
+        <CollaboratorFormField label="Status" wide>
+          <select value={form.status} onChange={(e) => set("status", e.target.value)}>
+            {(Object.keys(PATIENT_STATUS_LABELS) as PatientStatus[]).map((s) => (
+              <option key={s} value={s}>
+                {PATIENT_STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+        </CollaboratorFormField>
 
-      <CollaboratorFormField label="Observações internas" wide>
-        <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} />
-      </CollaboratorFormField>
+        <CollaboratorFormField label="Observações internas" wide>
+          <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} rows={3} />
+        </CollaboratorFormField>
+      </CollaboratorFormSection>
     </CollaboratorModalShell>
   );
 }

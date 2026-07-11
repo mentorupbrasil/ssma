@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
+import { useBreadcrumbLabels } from "@/components/dashboard/BreadcrumbLabelProvider";
 
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Painel",
@@ -32,6 +33,7 @@ function labelFor(segment: string) {
 
 export function TopbarBreadcrumb() {
   const pathname = usePathname();
+  const labelOverrides = useBreadcrumbLabels();
   const segments = pathname.split("/").filter(Boolean);
 
   if (segments[0] !== "dashboard") {
@@ -41,7 +43,8 @@ export function TopbarBreadcrumb() {
   const crumbs = segments.map((segment, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
     const isLast = index === segments.length - 1;
-    return { href, label: labelFor(segment), isLast };
+    const label = labelOverrides[segment] ?? labelFor(segment);
+    return { href, label, isLast };
   });
 
   return (

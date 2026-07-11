@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AppShell } from "./AppShell";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { BreadcrumbLabelProvider } from "./BreadcrumbLabelProvider";
 
 export async function DashboardShell({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -11,11 +12,13 @@ export async function DashboardShell({ children }: { children: React.ReactNode }
   const isEmpresa = isEmpresaUser(session as never);
 
   return (
-    <AppShell
-      sidebar={<Sidebar user={session.user} />}
-      topbar={<Topbar userName={session.user.name} showSearch={!isEmpresa} />}
-    >
-      {children}
-    </AppShell>
+    <BreadcrumbLabelProvider>
+      <AppShell
+        sidebar={<Sidebar user={session.user} />}
+        topbar={<Topbar userName={session.user.name} showSearch={!isEmpresa} />}
+      >
+        {children}
+      </AppShell>
+    </BreadcrumbLabelProvider>
   );
 }
