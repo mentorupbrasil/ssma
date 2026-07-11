@@ -10,7 +10,7 @@ import {
   LGPD_DEFAULT_NOTICE,
   LGPD_DOWNLOAD_FOOTER,
   formatFileSize,
-  normalizeDocumentStatus,
+  getDocumentDisplayStatus,
 } from "@/lib/documents";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Badge } from "@/components/ui/badge";
@@ -66,13 +66,13 @@ function ValidityBadge({ label }: { label: string | null }) {
 }
 
 export function DocumentDetailContent({ document: doc, compact }: DocumentDetailContentProps) {
-  const displayStatus = normalizeDocumentStatus(doc.status);
+  const display = getDocumentDisplayStatus(doc);
 
   return (
     <div className={cn("space-y-6", compact && "space-y-5")}>
       <div>
         <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge status={displayStatus} type="document" />
+          <StatusBadge status={display.status} type="document" label={display.label} />
           <Badge variant="outline" className="rounded-full border-slate-200 bg-white">
             {DOCUMENT_TYPE_LABELS[doc.type] ?? doc.type}
           </Badge>
@@ -110,7 +110,7 @@ export function DocumentDetailContent({ document: doc, compact }: DocumentDetail
       <Section title="Resumo">
         <Row label="Título" value={doc.title} />
         <Row label="Tipo" value={DOCUMENT_TYPE_LABELS[doc.type] ?? doc.type} />
-        <Row label="Status" value={<StatusBadge status={displayStatus} type="document" />} />
+        <Row label="Status" value={<StatusBadge status={display.status} type="document" label={display.label} />} />
         <Row
           label="Data de criação"
           value={format(new Date(doc.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}

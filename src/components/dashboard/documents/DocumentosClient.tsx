@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -11,64 +11,51 @@ import {
   Eye,
   Download,
   Upload,
-  MessageCircle,
   Archive,
-  Trash2,
-  Loader2,
   ChevronLeft,
   ChevronRight,
   FolderOpen,
   Shield,
   Paperclip,
-  RefreshCw,
+  FileWarning,
+  FilePenLine,
+  FileCheck2,
+  CalendarX2,
+  SlidersHorizontal,
+  ChevronDown,
+  Pencil,
+  type LucideIcon,
 } from "lucide-react";
 import type { DocumentDetailSerialized, DocumentListItem } from "@/lib/documents";
 import {
-  DOCUMENT_STAT_CARDS,
+  DOCUMENT_KPI_CARDS,
   DOCUMENT_TYPE_LABELS,
-  DOCUMENT_STATUS_LABELS,
-  LGPD_DEFAULT_NOTICE,
-  buildDocumentWhatsAppMessage,
-  normalizeDocumentStatus,
+  DOCUMENT_STATUS_FILTER_OPTIONS,
+  LGPD_COMPACT_NOTICE,
+  getDocumentDisplayStatus,
+  getDocumentLinkedToLabel,
 } from "@/lib/documents";
-import { documentStatCardsForEmpresa } from "@/lib/empresa-portal";
 import {
   getDocumentDetail,
   updateDocumentStatus,
-  removeDocumentFile,
-  deleteDocument,
   batchArchiveDocuments,
   batchMarkDocumentsAvailable,
 } from "@/actions/documents";
 import type { DocumentFormOptions } from "@/lib/documents";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
-import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { FilterBar } from "@/components/dashboard/FilterBar";
+import { FilterChips } from "@/components/dashboard/FilterChips";
+import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
 import { LoadingState } from "@/components/ui/loading-state";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { DocumentDetailContent } from "./DocumentDetailContent";
 import { DocumentFormDialog } from "./DocumentDialogs";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -77,20 +64,24 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
-import type { DocumentStatus } from "@prisma/client";
 
 type FormOptions = DocumentFormOptions;
+
+const STAT_ICONS: Record<string, LucideIcon> = {
+  aguardando_arquivo: FileWarning,
+  em_elaboracao: FilePenLine,
+  disponiveis: FileCheck2,
+  vencidos: CalendarX2,
+};
+
+const STAT_TONES: Record<string, "primary" | "warning"> = {
+  aguardando_arquivo: "warning",
+  em_elaboracao: "primary",
+  disponiveis: "primary",
+  vencidos: "warning",
+};
 
 type DocumentosClientProps = {
   initialItems: DocumentListItem[];
@@ -103,16 +94,6 @@ type DocumentosClientProps = {
   filters: Record<string, string | undefined>;
   isEmpresaPortal?: boolean;
 };
-
-const STATUS_ACTIONS: DocumentStatus[] = [
-  "PENDENTE",
-  "EM_EMISSAO",
-  "DISPONIVEL",
-  "ENVIADO",
-  "VENCIDO",
-  "ARQUIVADO",
-  "CANCELADO",
-];
 
 function ValidityIndicator({ label }: { label: string | null }) {
   if (!label) return null;
@@ -134,10 +115,8 @@ export function DocumentosClient({
   canManage,
   formOptions,
   filters,
-  isEmpresaPortal = false,
 }: DocumentosClientProps) {
   const router = useRouter();
-  const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
@@ -152,6 +131,17 @@ export function DocumentosClient({
   const [validity, setValidity] = useState(filters.validity ?? "");
   const [sensitive, setSensitive] = useState(filters.sensitive ?? "");
   const [sort, setSort] = useState(filters.sort ?? "");
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(
+    Boolean(
+      filters.patientId ||
+        filters.referralId ||
+        filters.dateFrom ||
+        filters.dateTo ||
+        filters.validity ||
+        filters.sensitive ||
+        filters.sort
+    )
+  );
 
   const [formOpen, setFormOpen] = useState(false);
   const [attachMode, setAttachMode] = useState(false);
@@ -160,11 +150,10 @@ export function DocumentosClient({
   const [detailDoc, setDetailDoc] = useState<DocumentDetailSerialized | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<DocumentListItem | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [batchLoading, setBatchLoading] = useState(false);
 
-  const activeCard = filters.card ?? "ALL";
+  const activeCard = filters.card ?? "";
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
 
   const updateFilters = useCallback(
@@ -174,7 +163,7 @@ export function DocumentosClient({
         if (!value || value === "ALL") params.delete(key);
         else params.set(key, value);
       });
-      if (!updates.page) params.delete("page");
+      if (!("page" in updates)) params.delete("page");
       startTransition(() => {
         router.push(`/dashboard/documentos?${params.toString()}`);
       });
@@ -182,20 +171,21 @@ export function DocumentosClient({
     [router, searchParams]
   );
 
-  const handleSearch = () => {
+  const pushCurrentFilters = (extra?: Record<string, string | undefined>) => {
     updateFilters({
-      q,
-      card: activeCard !== "ALL" ? activeCard : undefined,
-      type,
-      status,
-      companyId,
-      patientId,
-      referralId,
-      dateFrom,
-      dateTo,
-      validity,
-      sensitive,
-      sort,
+      q: q || undefined,
+      card: activeCard || undefined,
+      type: type || undefined,
+      status: status || undefined,
+      companyId: companyId || undefined,
+      patientId: patientId || undefined,
+      referralId: referralId || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      validity: validity || undefined,
+      sensitive: sensitive || undefined,
+      sort: sort || undefined,
+      ...extra,
     });
   };
 
@@ -211,7 +201,155 @@ export function DocumentosClient({
     setValidity("");
     setSensitive("");
     setSort("");
+    setMoreFiltersOpen(false);
     startTransition(() => router.push("/dashboard/documentos"));
+  };
+
+  useEffect(() => {
+    setQ(filters.q ?? "");
+    setType(filters.type ?? "");
+    setStatus(filters.status ?? "");
+    setCompanyId(filters.companyId ?? "");
+    setPatientId(filters.patientId ?? "");
+    setReferralId(filters.referralId ?? "");
+    setDateFrom(filters.dateFrom ?? "");
+    setDateTo(filters.dateTo ?? "");
+    setValidity(filters.validity ?? "");
+    setSensitive(filters.sensitive ?? "");
+    setSort(filters.sort ?? "");
+  }, [filters]);
+
+  const hasActiveFilters = useMemo(
+    () =>
+      Boolean(
+        filters.q ||
+          filters.type ||
+          filters.status ||
+          filters.companyId ||
+          filters.patientId ||
+          filters.referralId ||
+          filters.dateFrom ||
+          filters.dateTo ||
+          filters.validity ||
+          filters.sensitive ||
+          filters.sort ||
+          filters.card
+      ),
+    [filters]
+  );
+
+  const advancedFilterCount = [
+    filters.patientId,
+    filters.referralId,
+    filters.dateFrom,
+    filters.dateTo,
+    filters.validity,
+    filters.sensitive,
+    filters.sort,
+  ].filter(Boolean).length;
+
+  const activeChips = useMemo(
+    () =>
+      buildFilterChips([
+        { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
+        {
+          key: "card",
+          value: filters.card,
+          label: (v) =>
+            DOCUMENT_KPI_CARDS.find((c) => c.filter === v)?.label ?? `Indicador: ${v}`,
+          skip: (v) => v === "ALL",
+        },
+        {
+          key: "type",
+          value: filters.type,
+          label: (v) => `Tipo: ${DOCUMENT_TYPE_LABELS[v as keyof typeof DOCUMENT_TYPE_LABELS] ?? v}`,
+        },
+        {
+          key: "status",
+          value: filters.status,
+          label: (v) =>
+            `Status: ${
+              DOCUMENT_STATUS_FILTER_OPTIONS.find((o) => o.value === v)?.label ?? v
+            }`,
+        },
+        {
+          key: "companyId",
+          value: filters.companyId,
+          label: (v) => {
+            const company = formOptions.companies.find((c) => c.id === v);
+            return `Empresa: ${company ? company.tradeName ?? company.legalName : v}`;
+          },
+        },
+        {
+          key: "patientId",
+          value: filters.patientId,
+          label: (v) =>
+            `Colaborador: ${formOptions.patients.find((p) => p.id === v)?.fullName ?? v}`,
+        },
+        {
+          key: "referralId",
+          value: filters.referralId,
+          label: (v) =>
+            `Atendimento: ${formOptions.referrals.find((r) => r.id === v)?.protocol ?? v}`,
+        },
+        {
+          key: "dateFrom",
+          value: filters.dateFrom || filters.dateTo,
+          label: () =>
+            filters.dateFrom && filters.dateTo
+              ? `Período: ${filters.dateFrom} – ${filters.dateTo}`
+              : filters.dateFrom
+                ? `Período desde ${filters.dateFrom}`
+                : `Período até ${filters.dateTo}`,
+        },
+        {
+          key: "validity",
+          value: filters.validity,
+          label: (v) =>
+            v === "em_dia"
+              ? "Validade: Em dia"
+              : v === "a_vencer"
+                ? "Validade: A vencer"
+                : "Validade: Vencido",
+        },
+        {
+          key: "sensitive",
+          value: filters.sensitive,
+          label: (v) => (v === "true" ? "Documento sensível" : "Não sensível"),
+        },
+        {
+          key: "sort",
+          value: filters.sort,
+          label: (v) =>
+            v === "validUntil"
+              ? "Ordenar: Validade"
+              : v === "status"
+                ? "Ordenar: Status"
+                : v === "company"
+                  ? "Ordenar: Empresa"
+                  : "Ordenar: Data",
+        },
+      ]),
+    [filters, formOptions]
+  );
+
+  const removeChip = (key: string) => {
+    if (key === "q") setQ("");
+    if (key === "type") setType("");
+    if (key === "status") setStatus("");
+    if (key === "companyId") setCompanyId("");
+    if (key === "patientId") setPatientId("");
+    if (key === "referralId") setReferralId("");
+    if (key === "validity") setValidity("");
+    if (key === "sensitive") setSensitive("");
+    if (key === "sort") setSort("");
+    if (key === "dateFrom") {
+      setDateFrom("");
+      setDateTo("");
+      updateFilters({ ...removeFilterKey(key, filters), dateTo: undefined });
+      return;
+    }
+    updateFilters(removeFilterKey(key, filters));
   };
 
   const openDetail = async (id: string) => {
@@ -228,77 +366,20 @@ export function DocumentosClient({
     setDetailDoc(result.document);
   };
 
-  const refreshDetail = async (id: string) => {
-    const result = await getDocumentDetail(id);
-    if (result.success) setDetailDoc(result.document);
-    router.refresh();
-  };
-
-  const handleStatusChange = async (item: DocumentListItem, newStatus: DocumentStatus) => {
-    setActionLoading(item.id);
-    const result = await updateDocumentStatus(item.id, newStatus);
-    setActionLoading(null);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Status atualizado.");
-    router.refresh();
-    if (detailDoc?.id === item.id) refreshDetail(item.id);
-  };
-
   const handleArchive = async (item: DocumentListItem) => {
-    await handleStatusChange(item, "ARQUIVADO");
-  };
-
-  const handleRemoveFile = async (item: DocumentListItem) => {
-    const ok = await confirm({
-      title: "Remover arquivo",
-      description: "Remover o arquivo deste documento? O registro será mantido como pendente.",
-      confirmLabel: "Remover arquivo",
-      variant: "destructive",
-    });
-    if (!ok) return;
     setActionLoading(item.id);
-    const result = await removeDocumentFile(item.id);
+    const result = await updateDocumentStatus(item.id, "ARQUIVADO");
     setActionLoading(null);
     if (!result.success) {
       toast.error(result.error);
       return;
     }
-    toast.success("Arquivo removido.");
+    toast.success("Documento arquivado.");
     router.refresh();
-    if (detailDoc?.id === item.id) refreshDetail(item.id);
-  };
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setActionLoading(deleteTarget.id);
-    const result = await deleteDocument(deleteTarget.id);
-    setActionLoading(null);
-    setDeleteTarget(null);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
+    if (detailDoc?.id === item.id) {
+      const refreshed = await getDocumentDetail(item.id);
+      if (refreshed.success) setDetailDoc(refreshed.document);
     }
-    toast.success("Documento removido.");
-    setDrawerOpen(false);
-    router.refresh();
-  };
-
-  const openWhatsApp = (item: DocumentListItem) => {
-    const msg = buildDocumentWhatsAppMessage({
-      title: item.title,
-      type: item.type,
-      companyName: item.companyName,
-      patientName: item.patientName,
-      protocol: item.protocol,
-    });
-    const phone = item.contactPhone?.replace(/\D/g, "");
-    const url = phone
-      ? `https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`
-      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
   };
 
   const toggleSelect = (id: string) => {
@@ -311,11 +392,8 @@ export function DocumentosClient({
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === initialItems.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(initialItems.map((i) => i.id)));
-    }
+    if (selectedIds.size === initialItems.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(initialItems.map((i) => i.id)));
   };
 
   const runBatch = async (action: "archive" | "available") => {
@@ -362,445 +440,589 @@ export function DocumentosClient({
     if (searchParams.get("attach") === "1" && canManage) openForm(true);
   }, [searchParams, canManage]);
 
-  const hasActiveFilters =
-    !!filters.q ||
-    !!filters.type ||
-    !!filters.status ||
-    !!filters.companyId ||
-    activeCard !== "ALL";
-
-  const empty = initialItems.length === 0 && !hasActiveFilters;
+  const resultLabel =
+    initialTotal === 1
+      ? "1 documento encontrado"
+      : `${initialTotal} documentos encontrados`;
 
   return (
-    <PageModule>
-      <PageHeader
-        title="Documentos"
-        description="ASO, PCMSO, laudos e demais documentos ocupacionais"
-      >
+    <PageModule className="documentos-clinica">
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Documentos</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Gerencie ASOs, laudos, programas ocupacionais e arquivos das empresas.
+          </p>
+        </div>
         {canManage && (
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={() => openForm(true)}>
-              <Paperclip className="mr-2 h-4 w-4" /> Anexar arquivo
-            </Button>
-            <Button variant="brand" onClick={() => openForm(false)}>
-              <Plus className="mr-2 h-4 w-4" /> Novo documento
-            </Button>
+          <div className="colaboradores-empresa-header-actions">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="brand" size="sm" className="rounded-lg">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar documento
+                    <ChevronDown className="ml-1.5 h-3.5 w-3.5 opacity-80" />
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openForm(false)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Criar registro de documento
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openForm(true)}>
+                  <Paperclip className="mr-2 h-4 w-4" />
+                  Anexar arquivo a registro existente
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
-      </PageHeader>
+      </header>
 
-      <div className="mb-4 flex items-start gap-3 rounded-lg border border-violet-100 bg-violet-50/60 px-4 py-3 text-sm text-violet-900">
-        <Shield className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" aria-hidden />
-        <p>{LGPD_DEFAULT_NOTICE}</p>
+      <div className="documentos-clinica-lgpd" role="note">
+        <Shield className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        <p>{LGPD_COMPACT_NOTICE}</p>
       </div>
 
-      <FilterMetricGrid
-        items={(isEmpresaPortal ? documentStatCardsForEmpresa() : DOCUMENT_STAT_CARDS).map((card) => {
+      <div className="colaboradores-empresa-stats documentos-clinica-stats">
+        {DOCUMENT_KPI_CARDS.map((card) => {
+          const Icon = STAT_ICONS[card.key] ?? FolderOpen;
           const isActive = activeCard === card.filter;
-          return {
-            key: card.key,
-            metaKey: `document:${card.key}`,
-            label: card.label,
-            value: statCounts[card.key] ?? 0,
-            active: isActive,
-            onClick: () => updateFilters({ card: isActive ? "ALL" : card.filter }),
-          };
+          return (
+            <button
+              key={card.key}
+              type="button"
+              onClick={() =>
+                updateFilters({ card: isActive ? undefined : card.filter })
+              }
+              className={cn(
+                "colaboradores-empresa-stat colaboradores-empresa-stat--clickable",
+                isActive && "colaboradores-empresa-stat--active"
+              )}
+            >
+              <span
+                className={cn(
+                  "colaboradores-empresa-stat-icon",
+                  `colaboradores-empresa-stat-icon--${STAT_TONES[card.key] ?? "primary"}`
+                )}
+              >
+                <Icon className="h-4 w-4" aria-hidden />
+              </span>
+              <span className="colaboradores-empresa-stat-body">
+                <span className="colaboradores-empresa-stat-value">
+                  {statCounts[card.key] ?? 0}
+                </span>
+                <span className="colaboradores-empresa-stat-title">{card.label}</span>
+                <span className="colaboradores-empresa-stat-hint">{card.hint}</span>
+              </span>
+            </button>
+          );
         })}
-      />
+      </div>
 
-      <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
-        <div className="referral-filter-search sm:col-span-2">
-            <Search className="referral-filter-search-icon h-4 w-4" />
+      <div className="colaboradores-empresa-filters">
+        <div className="colaboradores-empresa-filters-row">
+          <div className="colaboradores-empresa-search">
+            <Search className="colaboradores-empresa-search-icon" aria-hidden />
             <Input
-              placeholder="Buscar por título, empresa, colaborador, protocolo ou tipo de documento"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-9"
+              onKeyDown={(e) => e.key === "Enter" && pushCurrentFilters()}
+              placeholder="Buscar por título, empresa, colaborador ou protocolo"
+              aria-label="Buscar documentos"
+              className="colaboradores-empresa-search-input"
             />
           </div>
+
           <select
-            className="referral-filter-select"
-            value={type || "ALL"}
-            onChange={(e) => setType(e.target.value === "ALL" ? "" : e.target.value)}
+            value={type}
+            onChange={(e) => {
+              const value = e.target.value;
+              setType(value);
+              pushCurrentFilters({ type: value || undefined });
+            }}
+            aria-label="Tipo de documento"
+            className="colaboradores-empresa-select"
           >
-            <option value="ALL">Tipo de documento</option>
+            <option value="">Tipo de documento</option>
             {Object.entries(DOCUMENT_TYPE_LABELS)
               .filter(([k]) => !["LAUDO", "PROPOSTA", "ENCAMINHAMENTO"].includes(k))
-              .map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
+              .map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
                 </option>
               ))}
           </select>
+
           <select
-            className="referral-filter-select"
-            value={status || "ALL"}
-            onChange={(e) => setStatus(e.target.value === "ALL" ? "" : e.target.value)}
+            value={status}
+            onChange={(e) => {
+              const value = e.target.value;
+              setStatus(value);
+              pushCurrentFilters({ status: value || undefined });
+            }}
+            aria-label="Status"
+            className="colaboradores-empresa-select"
           >
-            <option value="ALL">Status</option>
-            {Object.entries(DOCUMENT_STATUS_LABELS)
-              .filter(([k]) =>
-                ["PENDENTE", "EM_EMISSAO", "DISPONIVEL", "ENVIADO", "VENCIDO", "ARQUIVADO", "CANCELADO"].includes(k)
-              )
-              .map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
+            <option value="">Status</option>
+            {DOCUMENT_STATUS_FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
-          {!isEmpresaPortal && (
+
           <select
-            className="referral-filter-select"
-            value={companyId || "ALL"}
-            onChange={(e) => setCompanyId(e.target.value === "ALL" ? "" : e.target.value)}
+            value={companyId}
+            onChange={(e) => {
+              const value = e.target.value;
+              setCompanyId(value);
+              pushCurrentFilters({ companyId: value || undefined });
+            }}
+            aria-label="Empresa"
+            className="colaboradores-empresa-select"
           >
-            <option value="ALL">Empresa</option>
+            <option value="">Empresa</option>
             {formOptions.companies.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.tradeName ?? c.legalName}
               </option>
             ))}
           </select>
-          )}
-          <select
-            className="referral-filter-select"
-            value={patientId || "ALL"}
-            onChange={(e) => setPatientId(e.target.value === "ALL" ? "" : e.target.value)}
-          >
-            <option value="ALL">Colaborador</option>
-            {formOptions.patients.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.fullName}
-              </option>
-            ))}
-          </select>
-          <select
-            className="referral-filter-select"
-            value={referralId || "ALL"}
-            onChange={(e) => setReferralId(e.target.value === "ALL" ? "" : e.target.value)}
-          >
-            <option value="ALL">Encaminhamento</option>
-            {formOptions.referrals.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.protocol}
-              </option>
-            ))}
-          </select>
-          <Input
-            type="date"
-            className="referral-filter-select h-10"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            title="Período — início"
-          />
-          <Input
-            type="date"
-            className="referral-filter-select h-10"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            title="Período — fim"
-          />
-          <select
-            className="referral-filter-select"
-            value={validity || "ALL"}
-            onChange={(e) => setValidity(e.target.value === "ALL" ? "" : e.target.value)}
-          >
-            <option value="ALL">Validade</option>
-            <option value="em_dia">Em dia</option>
-            <option value="a_vencer">A vencer (30 dias)</option>
-            <option value="vencido">Vencido</option>
-          </select>
-          <select
-            className="referral-filter-select"
-            value={sensitive || "ALL"}
-            onChange={(e) => setSensitive(e.target.value === "ALL" ? "" : e.target.value)}
-          >
-            <option value="ALL">Documento sensível</option>
-            <option value="true">Sim</option>
-            <option value="false">Não</option>
-          </select>
-          <select
-            className="referral-filter-select"
-            value={sort || "createdAt"}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            <option value="createdAt">Ordenar: Data</option>
-            <option value="validUntil">Ordenar: Validade</option>
-            <option value="status">Ordenar: Status</option>
-            <option value="company">Ordenar: Empresa</option>
-          </select>
-      </FilterBar>
 
-      {empty ? (
-        <EmptyState
-          icon={FolderOpen}
-          className="mt-8 bg-white"
-          title="Nenhum documento cadastrado"
-          description="Anexe documentos ocupacionais, ASOs, laudos e arquivos vinculados às empresas e colaboradores."
-          secondaryAction={
-            canManage
-              ? {
-                  label: "Anexar arquivo",
-                  onClick: () => openForm(true),
-                  variant: "outline",
-                }
-              : undefined
-          }
-          action={
-            canManage
-              ? {
-                  label: "Novo documento",
-                  onClick: () => openForm(false),
-                }
-              : undefined
-          }
-        />
-      ) : (
-        <div className="relative mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-          {canManage && selectedIds.size > 0 && (
-            <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2">
-              <span className="text-sm font-medium text-slate-600">
-                {selectedIds.size} selecionado(s)
-              </span>
-              <Button size="sm" variant="outline" disabled={batchLoading} onClick={() => runBatch("available")}>
-                Marcar disponível
-              </Button>
-              <Button size="sm" variant="outline" disabled={batchLoading} onClick={() => runBatch("archive")}>
-                Arquivar
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
-                Limpar seleção
-              </Button>
-            </div>
-          )}
-          {isPending && <LoadingState overlay label="Atualizando documentos..." />}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {canManage && (
-                  <TableHead className="w-10">
-                    <input
-                      type="checkbox"
-                      aria-label="Selecionar todos"
-                      checked={initialItems.length > 0 && selectedIds.size === initialItems.length}
-                      onChange={toggleSelectAll}
-                    />
-                  </TableHead>
-                )}
-                <TableHead>Documento</TableHead>
-                <TableHead className="hidden md:table-cell">Tipo</TableHead>
-                <TableHead className="hidden lg:table-cell">Vínculo</TableHead>
-                {!isEmpresaPortal && <TableHead className="hidden sm:table-cell">Empresa</TableHead>}
-                <TableHead className="hidden xl:table-cell">Colaborador</TableHead>
-                <TableHead className="hidden lg:table-cell">Protocolo</TableHead>
-                <TableHead className="hidden sm:table-cell">Data</TableHead>
-                <TableHead className="hidden md:table-cell">Validade</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {initialItems.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={canManage ? 11 : 10} className="py-10 text-center text-slate-500">
-                    Nenhum documento encontrado com os filtros aplicados.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                initialItems.map((item) => (
-                  <TableRow
-                    key={item.id}
-                    className={cn(
-                      "cursor-pointer hover:bg-slate-50/80",
-                      selectedIds.has(item.id) && "bg-emerald-50/40"
-                    )}
-                    onClick={() => openDetail(item.id)}
-                  >
-                    {canManage && (
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          aria-label={`Selecionar ${item.title}`}
-                          checked={selectedIds.has(item.id)}
-                          onChange={() => toggleSelect(item.id)}
-                        />
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      <div className="flex items-start gap-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="font-medium text-slate-900">{item.title}</div>
-                          {item.fileName ? (
-                            <div className="mt-0.5 line-clamp-1 text-xs text-slate-500">
-                              {item.fileName}
-                            </div>
-                          ) : (
-                            <div className="mt-0.5 text-xs text-amber-600">Sem arquivo</div>
-                          )}
-                        </div>
-                        {item.sensitive && (
-                          <span title="Sensível">
-                            <Shield className="h-4 w-4 shrink-0 text-violet-500" aria-hidden />
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="outline" className="rounded-full font-normal">
-                        {DOCUMENT_TYPE_LABELS[item.type] ?? item.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm text-slate-600">
-                      {item.linkLabel}
-                    </TableCell>
-                    {!isEmpresaPortal && (
-                    <TableCell className="hidden sm:table-cell text-sm text-slate-600">
-                      {item.companyName ?? "—"}
-                    </TableCell>
-                    )}
-                    <TableCell className="hidden xl:table-cell text-sm text-slate-600">
-                      {item.patientName ?? "—"}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm font-mono text-slate-500">
-                      {item.protocol ?? "—"}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm text-slate-600">
-                      {format(new Date(item.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {item.validUntil ? (
-                        <div>
-                          <div className="text-sm text-slate-600">
-                            {format(new Date(item.validUntil), "dd/MM/yyyy", { locale: ptBR })}
-                          </div>
-                          <ValidityIndicator label={item.validityLabel} />
-                        </div>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge
-                        status={normalizeDocumentStatus(item.status)}
-                        type="document"
-                      />
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openDetail(item.id)}>
-                            <Eye className="mr-2 h-4 w-4" /> Ver detalhes
-                          </DropdownMenuItem>
-                          {item.hasFile && (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  window.open(`/api/documents/${item.id}/file`, "_blank")
-                                }
-                              >
-                                <Eye className="mr-2 h-4 w-4" /> Visualizar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  window.location.href = `/api/documents/${item.id}/file?action=download`;
-                                }}
-                              >
-                                <Download className="mr-2 h-4 w-4" /> Baixar
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {canManage && (
-                            <>
-                              <DropdownMenuItem onClick={() => openEdit(item.id)}>
-                                <Upload className="mr-2 h-4 w-4" /> Anexar/Substituir
-                              </DropdownMenuItem>
-                              {item.status === "DISPONIVEL" && (
-                                <DropdownMenuItem onClick={() => openWhatsApp(item)}>
-                                  <MessageCircle className="mr-2 h-4 w-4" /> Enviar WhatsApp
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuSub>
-                                <DropdownMenuSubTrigger>
-                                  <RefreshCw className="mr-2 h-4 w-4" /> Alterar status
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                  {STATUS_ACTIONS.map((s) => (
-                                    <DropdownMenuItem
-                                      key={s}
-                                      onClick={() => handleStatusChange(item, s)}
-                                      disabled={actionLoading === item.id}
-                                    >
-                                      {DOCUMENT_STATUS_LABELS[s]}
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuSubContent>
-                              </DropdownMenuSub>
-                              <DropdownMenuItem
-                                onClick={() => handleArchive(item)}
-                                disabled={actionLoading === item.id}
-                              >
-                                <Archive className="mr-2 h-4 w-4" /> Arquivar
-                              </DropdownMenuItem>
-                              {item.hasFile && (
-                                <DropdownMenuItem
-                                  onClick={() => handleRemoveFile(item)}
-                                  disabled={actionLoading === item.id}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" /> Remover arquivo
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                onClick={() => setDeleteTarget(item)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" /> Remover documento
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="colaboradores-empresa-more-btn rounded-lg"
+            onClick={() => setMoreFiltersOpen((open) => !open)}
+            aria-expanded={moreFiltersOpen}
+          >
+            <SlidersHorizontal className="mr-2 h-4 w-4" />
+            Mais filtros
+            {advancedFilterCount > 0 && (
+              <span className="colaboradores-empresa-filter-count">{advancedFilterCount}</span>
+            )}
+          </Button>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
-              <p className="text-sm text-slate-500">
-                {initialTotal} documento{initialTotal !== 1 ? "s" : ""} · Página {initialPage} de{" "}
-                {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={initialPage <= 1 || isPending}
-                  onClick={() => updateFilters({ page: String(initialPage - 1) })}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={initialPage >= totalPages || isPending}
-                  onClick={() => updateFilters({ page: String(initialPage + 1) })}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="colaboradores-empresa-clear-btn rounded-lg"
+              onClick={clearFilters}
+            >
+              Limpar filtros
+            </Button>
           )}
         </div>
-      )}
+
+        {moreFiltersOpen && (
+          <div className="colaboradores-empresa-filters-advanced">
+            <select
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              className="colaboradores-empresa-select"
+              aria-label="Colaborador"
+            >
+              <option value="">Colaborador</option>
+              {formOptions.patients.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.fullName}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={referralId}
+              onChange={(e) => setReferralId(e.target.value)}
+              className="colaboradores-empresa-select"
+              aria-label="Atendimento ou protocolo"
+            >
+              <option value="">Atendimento/protocolo</option>
+              {formOptions.referrals.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.protocol}
+                  {r.patient?.fullName ? ` · ${r.patient.fullName}` : ""}
+                </option>
+              ))}
+            </select>
+
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              title="Período de"
+              aria-label="Período — início"
+              className="h-9 rounded-lg text-sm"
+            />
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              title="Período até"
+              aria-label="Período — fim"
+              className="h-9 rounded-lg text-sm"
+            />
+
+            <select
+              value={validity}
+              onChange={(e) => setValidity(e.target.value)}
+              className="colaboradores-empresa-select"
+              aria-label="Validade"
+            >
+              <option value="">Validade</option>
+              <option value="em_dia">Em dia</option>
+              <option value="a_vencer">A vencer (30 dias)</option>
+              <option value="vencido">Vencido</option>
+            </select>
+
+            <select
+              value={sensitive}
+              onChange={(e) => setSensitive(e.target.value)}
+              className="colaboradores-empresa-select"
+              aria-label="Documento sensível"
+            >
+              <option value="">Documento sensível</option>
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+
+            <select
+              value={sort || "createdAt"}
+              onChange={(e) => setSort(e.target.value === "createdAt" ? "" : e.target.value)}
+              className="colaboradores-empresa-select"
+              aria-label="Ordenação"
+            >
+              <option value="createdAt">Ordenar: Data</option>
+              <option value="validUntil">Ordenar: Validade</option>
+              <option value="status">Ordenar: Status</option>
+              <option value="company">Ordenar: Empresa</option>
+            </select>
+
+            <Button
+              type="button"
+              variant="brand"
+              size="sm"
+              className="rounded-lg"
+              onClick={() => pushCurrentFilters()}
+            >
+              Aplicar
+            </Button>
+          </div>
+        )}
+
+        {activeChips.length > 0 && (
+          <div className="colaboradores-empresa-chips">
+            <FilterChips chips={activeChips} onRemove={removeChip} onClearAll={clearFilters} />
+          </div>
+        )}
+      </div>
+
+      <div className="colaboradores-empresa-table-wrap relative">
+        {isPending && <LoadingState overlay label="Atualizando documentos..." />}
+
+        {canManage && selectedIds.size > 0 && (
+          <div className="documentos-clinica-batch">
+            <span className="text-sm font-medium text-slate-600">
+              {selectedIds.size} selecionado(s)
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-lg"
+              disabled={batchLoading}
+              onClick={() => runBatch("available")}
+            >
+              Marcar disponível
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-lg"
+              disabled={batchLoading}
+              onClick={() => runBatch("archive")}
+            >
+              Arquivar
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="rounded-lg"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              Limpar seleção
+            </Button>
+          </div>
+        )}
+
+        <div className="colaboradores-empresa-result-bar">
+          <span className="text-xs text-slate-500">{resultLabel}</span>
+        </div>
+
+        {initialItems.length === 0 ? (
+          <EmptyState
+            icon={FolderOpen}
+            title={
+              hasActiveFilters
+                ? "Nenhum documento encontrado"
+                : "Nenhum documento cadastrado"
+            }
+            description={
+              hasActiveFilters
+                ? "Ajuste os filtros para localizar documentos."
+                : "Cadastre registros e anexe ASOs, laudos e arquivos das empresas."
+            }
+            action={
+              canManage && !hasActiveFilters
+                ? { label: "Adicionar documento", onClick: () => openForm(false) }
+                : undefined
+            }
+          />
+        ) : (
+          <>
+            <div className="colaboradores-empresa-table-scroll">
+              <table className="colaboradores-empresa-table documentos-clinica-table">
+                <thead>
+                  <tr>
+                    {canManage && (
+                      <th className="documentos-clinica-th-check">
+                        <input
+                          type="checkbox"
+                          aria-label="Selecionar todos"
+                          checked={
+                            initialItems.length > 0 &&
+                            selectedIds.size === initialItems.length
+                          }
+                          onChange={toggleSelectAll}
+                        />
+                      </th>
+                    )}
+                    <th>Documento</th>
+                    <th>Vinculado a</th>
+                    <th>Atendimento</th>
+                    <th>Data</th>
+                    <th>Validade</th>
+                    <th>Status</th>
+                    <th>Arquivo</th>
+                    <th className="colaboradores-empresa-th-actions">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {initialItems.map((item) => {
+                    const display = getDocumentDisplayStatus(item);
+                    return (
+                      <tr
+                        key={item.id}
+                        className={cn(
+                          "documentos-clinica-row cursor-pointer",
+                          selectedIds.has(item.id) && "documentos-clinica-row--selected"
+                        )}
+                        onClick={() => openDetail(item.id)}
+                      >
+                        {canManage && (
+                          <td
+                            className="documentos-clinica-td-check"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <input
+                              type="checkbox"
+                              aria-label={`Selecionar ${item.title}`}
+                              checked={selectedIds.has(item.id)}
+                              onChange={() => toggleSelect(item.id)}
+                            />
+                          </td>
+                        )}
+                        <td>
+                          <div className="documentos-clinica-doc">
+                            <div className="documentos-clinica-doc-title">
+                              {item.title}
+                              {item.sensitive && (
+                                <Shield
+                                  className="h-3.5 w-3.5 shrink-0 text-violet-500"
+                                  aria-label="Sensível"
+                                />
+                              )}
+                            </div>
+                            <span className="documentos-clinica-doc-type">
+                              {DOCUMENT_TYPE_LABELS[item.type] ?? item.type}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="documentos-clinica-linked">
+                            {getDocumentLinkedToLabel(item)}
+                          </div>
+                        </td>
+                        <td className="documentos-clinica-protocol whitespace-nowrap">
+                          {item.protocol ?? "—"}
+                        </td>
+                        <td className="whitespace-nowrap">
+                          {format(new Date(item.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                        </td>
+                        <td>
+                          {item.validUntil ? (
+                            <div className="documentos-clinica-validity">
+                              <span>
+                                {format(new Date(item.validUntil), "dd/MM/yyyy", {
+                                  locale: ptBR,
+                                })}
+                              </span>
+                              <ValidityIndicator label={item.validityLabel} />
+                            </div>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td>
+                          <StatusBadge
+                            status={display.status}
+                            type="document"
+                            label={display.label}
+                          />
+                        </td>
+                        <td className="whitespace-nowrap">
+                          {item.hasFile ? (
+                            <span className="documentos-clinica-file documentos-clinica-file--ok">
+                              Anexado
+                            </span>
+                          ) : (
+                            <span className="documentos-clinica-file documentos-clinica-file--wait">
+                              Sem arquivo
+                            </span>
+                          )}
+                        </td>
+                        <td
+                          className="colaboradores-empresa-td-actions"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              render={
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  aria-label="Ações"
+                                  disabled={actionLoading === item.id}
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              }
+                            />
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openDetail(item.id)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Ver detalhes
+                              </DropdownMenuItem>
+                              {canManage && (
+                                <DropdownMenuItem onClick={() => openEdit(item.id)}>
+                                  <Upload className="mr-2 h-4 w-4" />
+                                  Anexar ou substituir arquivo
+                                </DropdownMenuItem>
+                              )}
+                              {item.hasFile && (
+                                <>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      window.open(`/api/documents/${item.id}/file`, "_blank")
+                                    }
+                                  >
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Visualizar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      window.location.href = `/api/documents/${item.id}/file?action=download`;
+                                    }}
+                                  >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Baixar
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {canManage && (
+                                <>
+                                  <DropdownMenuItem onClick={() => openEdit(item.id)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Editar informações
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleArchive(item)}
+                                    disabled={actionLoading === item.id}
+                                  >
+                                    <Archive className="mr-2 h-4 w-4" />
+                                    Arquivar
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="colaboradores-empresa-mobile-list">
+              {initialItems.map((item) => {
+                const display = getDocumentDisplayStatus(item);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="documentos-clinica-mobile-card"
+                    onClick={() => openDetail(item.id)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="documentos-clinica-doc-title">{item.title}</span>
+                      <StatusBadge
+                        status={display.status}
+                        type="document"
+                        label={display.label}
+                      />
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {DOCUMENT_TYPE_LABELS[item.type] ?? item.type} ·{" "}
+                      {getDocumentLinkedToLabel(item)}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {totalPages > 1 && (
+          <div className="colaboradores-empresa-pagination">
+            <p className="text-sm text-slate-500">
+              {resultLabel} · Página {initialPage} de {totalPages}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={initialPage <= 1 || isPending}
+                onClick={() => updateFilters({ page: String(initialPage - 1) })}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={initialPage >= totalPages || isPending}
+                onClick={() => updateFilters({ page: String(initialPage + 1) })}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
@@ -810,7 +1032,7 @@ export function DocumentosClient({
           <div className="mt-6">
             {detailLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-[#16A085]" />
+                <LoadingState label="Carregando documento..." />
               </div>
             ) : detailDoc ? (
               <>
@@ -835,38 +1057,9 @@ export function DocumentosClient({
                     </>
                   )}
                   {canManage && (
-                    <>
-                      <Button variant="outline" size="sm" onClick={() => openEdit(detailDoc.id)}>
-                        <Upload className="mr-2 h-4 w-4" /> Substituir arquivo
-                      </Button>
-                      {detailDoc.status === "DISPONIVEL" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            openWhatsApp({
-                              id: detailDoc.id,
-                              title: detailDoc.title,
-                              type: detailDoc.type,
-                              companyName: detailDoc.companyName,
-                              patientName: detailDoc.patientName,
-                              contactPhone: detailDoc.contactPhone,
-                              protocol: detailDoc.protocol,
-                              fileName: detailDoc.fileName,
-                              linkLabel: detailDoc.linkLabel,
-                              createdAt: detailDoc.createdAt,
-                              validUntil: detailDoc.validUntil,
-                              validityLabel: detailDoc.validityLabel,
-                              status: detailDoc.status,
-                              sensitive: detailDoc.sensitive,
-                              hasFile: detailDoc.hasFile,
-                            })
-                          }
-                        >
-                          <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
-                        </Button>
-                      )}
-                    </>
+                    <Button variant="outline" size="sm" onClick={() => openEdit(detailDoc.id)}>
+                      <Upload className="mr-2 h-4 w-4" /> Anexar ou substituir
+                    </Button>
                   )}
                 </div>
               </>
@@ -888,31 +1081,6 @@ export function DocumentosClient({
           }}
         />
       )}
-
-      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Remover documento?</DialogTitle>
-            <DialogDescription>
-              Esta ação não pode ser desfeita. O registro e o arquivo serão excluídos
-              permanentemente.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={!!actionLoading}
-            >
-              Remover
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <ConfirmDialogHost />
     </PageModule>
   );
 }

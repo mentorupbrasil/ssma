@@ -14,12 +14,48 @@ import type {
 import { startOfDay, endOfDay, parseISO, isValid } from "date-fns";
 import { getClinicInfo } from "@/lib/helpers";
 
+export type CommercialTab = "solicitacoes" | "orcamentos" | "contatos" | "historico";
+
+export const COMMERCIAL_KPI_CARDS: {
+  key: string;
+  filter: string;
+  label: string;
+  hint: string;
+  tab: CommercialTab;
+}[] = [
+  {
+    key: "solicitacoes_novas",
+    filter: "LEAD_NOVO",
+    label: "Novas solicitações",
+    hint: "Recém-recebidas",
+    tab: "solicitacoes",
+  },
+  {
+    key: "em_negociacao",
+    filter: "EM_NEGOCIACAO",
+    label: "Em negociação",
+    hint: "Em análise ou contato",
+    tab: "solicitacoes",
+  },
+  {
+    key: "aguardando_resposta",
+    filter: "QUOTE_AGUARDANDO",
+    label: "Aguardando resposta",
+    hint: "Proposta enviada",
+    tab: "orcamentos",
+  },
+  {
+    key: "aprovados",
+    filter: "QUOTE_APROVADO",
+    label: "Orçamentos aprovados",
+    hint: "Fechados com sucesso",
+    tab: "orcamentos",
+  },
+];
+
+/** @deprecated Prefer COMMERCIAL_KPI_CARDS no painel clínico */
 export const COMMERCIAL_STAT_CARDS: { key: string; filter: string; label: string }[] = [
-  { key: "solicitacoes_novas", filter: "LEAD_NOVO", label: "Solicitações novas" },
-  { key: "em_analise", filter: "EM_ANALISE", label: "Em análise" },
-  { key: "orcamentos_enviados", filter: "QUOTE_ENVIADO", label: "Orçamentos enviados" },
-  { key: "aguardando_resposta", filter: "QUOTE_AGUARDANDO", label: "Aguardando resposta" },
-  { key: "aprovados", filter: "QUOTE_APROVADO", label: "Aprovados" },
+  ...COMMERCIAL_KPI_CARDS.map(({ key, filter, label }) => ({ key, filter, label })),
   { key: "recusados", filter: "QUOTE_RECUSADO", label: "Recusados" },
   { key: "contatos_sem_retorno", filter: "CONTACT_NOVO", label: "Contatos sem retorno" },
 ];
@@ -99,8 +135,6 @@ export const OPEN_LEAD_STATUSES: LeadStatus[] = [
 
 export const QUOTE_REQUEST_SUBJECT = "Solicitar orçamento";
 
-export type CommercialTab = "solicitacoes" | "orcamentos" | "contatos" | "historico";
-
 export type CommercialFilters = {
   q?: string;
   card?: string;
@@ -112,6 +146,7 @@ export type CommercialFilters = {
   companyId?: string;
   service?: string;
   assignedTo?: string;
+  retorno?: string;
   tab?: CommercialTab;
   page?: number;
 };
@@ -128,6 +163,7 @@ export type LeadListItem = {
   status: LeadStatus;
   createdAt: string;
   assignedToName: string | null;
+  contactMessageId: string | null;
 };
 
 export type QuoteListItem = {
@@ -138,6 +174,7 @@ export type QuoteListItem = {
   servicesSummary: string;
   totalAmount: number | null;
   createdAt: string;
+  sentAt: string | null;
   validUntil: string | null;
   status: QuoteStatus;
 };
@@ -150,6 +187,7 @@ export type ContactListItem = {
   company: string | null;
   status: ContactMessageStatus;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type CommercialHistoryItem = {
@@ -265,8 +303,11 @@ export function buildLeadWhere(filters: CommercialFilters): Prisma.LeadWhereInpu
 
   const card = filters.card;
   if (card === "LEAD_NOVO") where.status = "NOVO";
-  if (card === "EM_ANALISE") {
-    where.OR = [{ status: "EM_ANALISE" }];
+  if (card === "EM_ANALISE" || card === "EM_NEGOCIACAO") {
+    where.status = { in: ["EM_ANALISE", "EM_CONTATO", "AGUARDANDO_RETORNO", "PROPOSTA_ENVIADA"] };
+  }
+  if (filters.retorno === "aguardando") {
+    where.status = "AGUARDANDO_RETORNO";
   }
 
   return where;
@@ -318,7 +359,9 @@ export function buildContactWhere(filters: CommercialFilters): Prisma.ContactMes
   }
   const createdAt = parseDateRange(filters.dateFrom, filters.dateTo);
   if (createdAt) where.createdAt = createdAt;
-  if (filters.card === "CONTACT_NOVO") where.status = "NOVO";
+  if (filters.card === "CONTACT_NOVO" || filters.retorno === "sem_retorno") {
+    where.status = "NOVO";
+  }
   return where;
 }
 
@@ -337,12 +380,14 @@ export function serializeLeadListItem(
     status: lead.status,
     createdAt: lead.createdAt.toISOString(),
     assignedToName: lead.assignedTo?.name ?? null,
+    contactMessageId: lead.contactMessageId ?? null,
   };
 }
 
 export function serializeQuoteListItem(
   quote: Quote & { items: Pick<QuoteItem, "serviceName">[] }
 ): QuoteListItem {
+  const draftLike = quote.status === "RASCUNHO" || quote.status === "EM_ANALISE";
   return {
     id: quote.id,
     quoteNumber: quote.quoteNumber,
@@ -351,6 +396,7 @@ export function serializeQuoteListItem(
     servicesSummary: quote.items.map((i) => i.serviceName).join(", ") || "—",
     totalAmount: quote.totalAmount,
     createdAt: quote.createdAt.toISOString(),
+    sentAt: draftLike ? null : quote.updatedAt.toISOString(),
     validUntil: quote.validUntil?.toISOString() ?? null,
     status: quote.status,
   };
@@ -365,8 +411,42 @@ export function serializeContactListItem(contact: ContactMessage): ContactListIt
     company: contact.company,
     status: contact.status,
     createdAt: contact.createdAt.toISOString(),
+    updatedAt: contact.updatedAt.toISOString(),
   };
 }
+
+/** Remove duplicatas visuais da mesma solicitação comercial. */
+export function dedupeLeadListItems(items: LeadListItem[]): LeadListItem[] {
+  const seen = new Set<string>();
+  const result: LeadListItem[] = [];
+  for (const item of items) {
+    const phone = (item.phone ?? "").replace(/\D/g, "");
+    const key = item.contactMessageId
+      ? `cm:${item.contactMessageId}`
+      : `fp:${phone}|${(item.email ?? "").toLowerCase()}|${(item.companyName ?? "").toLowerCase()}|${(item.serviceInterest ?? "").toLowerCase()}`;
+    if (key !== "fp:|||" && seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+}
+
+export const CONTACT_STATUS_LABELS: Record<ContactMessageStatus, string> = {
+  NOVO: "Sem retorno",
+  EM_ANALISE: "Em análise",
+  RESPONDIDO: "Respondido",
+  ARQUIVADO: "Arquivado",
+};
+
+export const QUOTE_STATUS_FILTER_OPTIONS = [
+  { value: "RASCUNHO", label: "Rascunho" },
+  { value: "EM_ANALISE", label: "Em análise" },
+  { value: "ENVIADO", label: "Enviado" },
+  { value: "AGUARDANDO_RESPOSTA", label: "Aguardando resposta" },
+  { value: "APROVADO", label: "Aprovado" },
+  { value: "RECUSADO", label: "Recusado" },
+  { value: "EXPIRADO", label: "Expirado" },
+] as const;
 
 export async function generateQuoteNumber(): Promise<string> {
   const year = new Date().getFullYear();

@@ -422,11 +422,6 @@ export function EncaminhamentosClient({
             </p>
           </div>
           <div className="colaboradores-empresa-header-actions">
-            <Link href="/dashboard/pre-encaminhamentos">
-              <Button variant="outline" size="sm" className="rounded-lg">
-                Solicitações recebidas
-              </Button>
-            </Link>
             {canManage && (
               <Link href="/dashboard/encaminhamentos/novo">
                 <Button variant="brand" size="sm" className="rounded-lg">

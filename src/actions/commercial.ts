@@ -22,6 +22,7 @@ import {
   serializeLeadListItem,
   serializeQuoteListItem,
   serializeContactListItem,
+  dedupeLeadListItems,
   generateQuoteNumber,
   calcQuoteTotal,
   OPEN_LEAD_STATUSES,
@@ -106,8 +107,7 @@ export async function listCommercialDashboard(filters: CommercialFilters = {}) {
 
   const [
     solicitacoesNovas,
-    emAnaliseLeads,
-    orcamentosEnviados,
+    emNegociacao,
     aguardandoResposta,
     aprovados,
     recusados,
@@ -115,9 +115,11 @@ export async function listCommercialDashboard(filters: CommercialFilters = {}) {
   ] = await Promise.all([
     prisma.lead.count({ where: { type: "ORCAMENTO", status: "NOVO" } }),
     prisma.lead.count({
-      where: { type: "ORCAMENTO", status: { in: ["EM_ANALISE", "EM_CONTATO"] } },
+      where: {
+        type: "ORCAMENTO",
+        status: { in: ["EM_ANALISE", "EM_CONTATO", "AGUARDANDO_RETORNO", "PROPOSTA_ENVIADA"] },
+      },
     }),
-    prisma.quote.count({ where: { status: "ENVIADO" } }),
     prisma.quote.count({ where: { status: "AGUARDANDO_RESPOSTA" } }),
     prisma.quote.count({ where: { status: "APROVADO" } }),
     prisma.quote.count({ where: { status: "RECUSADO" } }),
@@ -126,10 +128,11 @@ export async function listCommercialDashboard(filters: CommercialFilters = {}) {
 
   const statCounts = {
     solicitacoes_novas: solicitacoesNovas,
-    em_analise: emAnaliseLeads,
-    orcamentos_enviados: orcamentosEnviados,
+    em_negociacao: emNegociacao,
     aguardando_resposta: aguardandoResposta,
     aprovados,
+    // aliases / filtros secundários
+    em_analise: emNegociacao,
     recusados,
     contatos_sem_retorno: contatosSemRetorno,
   };
@@ -240,7 +243,7 @@ export async function listCommercialDashboard(filters: CommercialFilters = {}) {
 
   return {
     tab: "solicitacoes" as const,
-    items: items.map(serializeLeadListItem),
+    items: dedupeLeadListItems(items.map(serializeLeadListItem)),
     total,
     page,
     pageSize,

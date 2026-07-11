@@ -111,11 +111,9 @@ export async function listDocumentsForDashboard(
   const page = Math.max(1, filters.page ?? 1);
   const where = buildDocumentWhere(filters, companyScope);
   const orderBy = buildDocumentOrderBy(filters.sort);
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const baseWhere = companyScope ? { companyId: companyScope } : {};
 
-  const [items, total, pendentes, emEmissao, disponiveis, vencidos, asosPendentes, mes] =
+  const [items, total, aguardandoArquivo, emElaboracao, disponiveis, vencidos] =
     await Promise.all([
       prisma.document.findMany({
         where,
@@ -129,23 +127,32 @@ export async function listDocumentsForDashboard(
         },
       }),
       prisma.document.count({ where }),
-      prisma.document.count({ where: { status: "PENDENTE" } }),
-      prisma.document.count({
-        where: { status: { in: ["EM_EMISSAO", "EM_ELABORACAO"] } },
-      }),
-      prisma.document.count({
-        where: { status: { in: ["DISPONIVEL", "CONCLUIDO", "EM_DIA"] } },
-      }),
-      prisma.document.count({ where: { status: "VENCIDO" } }),
       prisma.document.count({
         where: {
-          type: "ASO",
-          status: { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO"] },
+          ...baseWhere,
+          OR: [
+            { status: "PENDENTE" },
+            {
+              fileUrl: null,
+              status: { notIn: ["ARQUIVADO", "CANCELADO", "VENCIDO"] },
+            },
+          ],
         },
       }),
       prisma.document.count({
-        where: { createdAt: { gte: monthStart, lte: monthEnd } },
+        where: {
+          ...baseWhere,
+          status: { in: ["EM_EMISSAO", "EM_ELABORACAO"] },
+        },
       }),
+      prisma.document.count({
+        where: {
+          ...baseWhere,
+          fileUrl: { not: null },
+          status: { in: ["DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] },
+        },
+      }),
+      prisma.document.count({ where: { ...baseWhere, status: "VENCIDO" } }),
     ]);
 
   return {
@@ -153,7 +160,15 @@ export async function listDocumentsForDashboard(
     total,
     page,
     pageSize,
-    statCounts: { pendentes, em_emissao: emEmissao, disponiveis, vencidos, asos_pendentes: asosPendentes, mes },
+    statCounts: {
+      aguardando_arquivo: aguardandoArquivo,
+      em_elaboracao: emElaboracao,
+      disponiveis,
+      vencidos,
+      // aliases legados
+      pendentes: aguardandoArquivo,
+      em_emissao: emElaboracao,
+    },
   };
 }
 

@@ -1,32 +1,57 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format, parseISO, addDays, addMonths, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns";
+import {
+  format,
+  parseISO,
+  addDays,
+  addMonths,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameDay,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Plus,
   Search,
   Loader2,
   CalendarDays,
   List,
   ChevronLeft,
   ChevronRight,
+  MoreHorizontal,
+  Eye,
+  CheckCircle2,
+  Play,
+  XCircle,
+  CalendarCheck,
+  UserCheck,
+  Stethoscope,
+  CircleCheck,
+  UserX,
+  SlidersHorizontal,
+  type LucideIcon,
 } from "lucide-react";
-import type { AppointmentStatus } from "@prisma/client";
 import type { AppointmentListItem, AppointmentDetailSerialized, AppointmentViewMode } from "@/lib/appointments";
 import {
-  APPOINTMENT_STAT_CARDS,
+  APPOINTMENT_KPI_CARDS,
   getClinicalExamLabel,
+  canClinicalAppointmentActions,
+  canReceptionAppointmentActions,
 } from "@/lib/appointments";
-import { appointmentStatCardsForEmpresa } from "@/lib/empresa-portal";
-import { getAppointmentDetail, cancelAppointment, markAppointmentNoShow } from "@/actions/appointments";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import {
+  getAppointmentDetail,
+  markAppointmentNoShow,
+  confirmAppointment,
+  startAppointmentAttendance,
+  completeAppointment,
+} from "@/actions/appointments";
 import { PageModule } from "@/components/dashboard/PageModule";
-import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { FilterBar } from "@/components/dashboard/FilterBar";
+import { FilterChips } from "@/components/dashboard/FilterChips";
+import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,18 +62,47 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AppointmentDetailContent } from "./AppointmentDetailContent";
 import {
-  NewAppointmentDialog,
-  RescheduleAppointmentDialog,
   AppointmentReasonDialog,
   AddAppointmentNoteDialog,
 } from "./AppointmentDialogs";
+import { CLINICAL_EXAM_LABELS } from "@/types";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 type CompanyOption = { id: string; name: string };
 type PatientOption = { id: string; name: string };
 type ProfessionalOption = { id: string; name: string };
+
+const STAT_ICONS: Record<string, LucideIcon> = {
+  today: CalendarCheck,
+  confirmado: UserCheck,
+  em_atendimento: Stethoscope,
+  concluido: CircleCheck,
+  faltou: UserX,
+};
+
+const STAT_TONES: Record<string, "primary" | "warning"> = {
+  today: "primary",
+  confirmado: "primary",
+  em_atendimento: "primary",
+  concluido: "primary",
+  faltou: "warning",
+};
+
+const VIEW_MODES: { value: AppointmentViewMode; label: string }[] = [
+  { value: "day", label: "Dia" },
+  { value: "week", label: "Semana" },
+  { value: "month", label: "Mês" },
+  { value: "list", label: "Lista" },
+];
 
 type AgendaClientProps = {
   initialItems: AppointmentListItem[];
@@ -60,9 +114,6 @@ type AgendaClientProps = {
   rooms: string[];
   canManage: boolean;
   userRole: string;
-  isEmpresaPortal?: boolean;
-  embedded?: boolean;
-  listPath?: string;
   filters: {
     q?: string;
     status?: string;
@@ -78,13 +129,6 @@ type AgendaClientProps = {
   };
 };
 
-const VIEW_MODES: { value: AppointmentViewMode; label: string }[] = [
-  { value: "day", label: "Dia" },
-  { value: "week", label: "Semana" },
-  { value: "month", label: "Mês" },
-  { value: "list", label: "Lista" },
-];
-
 export function AgendaClient({
   initialItems,
   initialTotal,
@@ -95,44 +139,46 @@ export function AgendaClient({
   rooms,
   canManage,
   userRole,
-  isEmpresaPortal = false,
-  embedded = false,
-  listPath: listPathProp,
   filters,
 }: AgendaClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const listPath = listPathProp ?? (embedded ? "/dashboard/encaminhamentos" : "/dashboard/agenda");
+  const listPath = "/dashboard/agenda";
 
   const [q, setQ] = useState(filters.q ?? "");
   const [companyId, setCompanyId] = useState(filters.companyId ?? "");
   const [patientId, setPatientId] = useState(filters.patientId ?? "");
   const [clinicalExamType, setClinicalExamType] = useState(filters.clinicalExamType ?? "");
+  const [statusFilter, setStatusFilter] = useState(
+    filters.status && filters.status !== "TODAY_AGENDADO" ? filters.status : ""
+  );
   const [professionalId, setProfessionalId] = useState(filters.professionalId ?? "");
   const [roomName, setRoomName] = useState(filters.roomName ?? "");
   const [dateFrom, setDateFrom] = useState(filters.dateFrom ?? "");
   const [dateTo, setDateTo] = useState(filters.dateTo ?? "");
   const [anchorDate, setAnchorDate] = useState(filters.date ?? format(new Date(), "yyyy-MM-dd"));
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(
+    Boolean(filters.patientId || filters.professionalId || filters.dateFrom || filters.dateTo)
+  );
 
-  const activeStatus = filters.status ?? "ALL";
+  const activeStatus = filters.status ?? "";
   const activeView = filters.view ?? "day";
+  const canClinical = canClinicalAppointmentActions(userRole);
+  const canReception = canReceptionAppointmentActions(userRole);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<AppointmentDetailSerialized | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const [newDialogOpen, setNewDialogOpen] = useState(false);
-  const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const [cancelOpen, setCancelOpen] = useState(false);
   const [noShowOpen, setNoShowOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
 
   const updateFilters = useCallback(
     (updates: Record<string, string | undefined>) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (embedded) params.set("tab", "agenda");
       Object.entries(updates).forEach(([key, value]) => {
         if (!value || value === "ALL") params.delete(key);
         else params.set(key, value);
@@ -141,22 +187,30 @@ export function AgendaClient({
         router.push(`${listPath}?${params.toString()}`);
       });
     },
-    [router, searchParams, embedded, listPath]
+    [router, searchParams]
   );
 
-  const handleSearch = () => {
+  const pushCurrentFilters = (extra?: Record<string, string | undefined>) => {
+    const nextStatus =
+      extra && "status" in extra
+        ? extra.status
+        : statusFilter ||
+          (activeStatus === "TODAY_AGENDADO" ? "TODAY_AGENDADO" : activeStatus) ||
+          undefined;
+
     updateFilters({
-      q,
-      companyId,
-      patientId,
-      clinicalExamType,
-      professionalId,
-      roomName,
-      dateFrom,
-      dateTo,
+      q: q || undefined,
+      companyId: companyId || undefined,
+      patientId: patientId || undefined,
+      clinicalExamType: clinicalExamType || undefined,
+      professionalId: professionalId || undefined,
+      roomName: roomName || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
       date: anchorDate,
-      status: activeStatus,
+      status: nextStatus,
       view: activeView,
+      ...extra,
     });
   };
 
@@ -165,35 +219,151 @@ export function AgendaClient({
     setCompanyId("");
     setPatientId("");
     setClinicalExamType("");
+    setStatusFilter("");
     setProfessionalId("");
     setRoomName("");
     setDateFrom("");
     setDateTo("");
     setAnchorDate(format(new Date(), "yyyy-MM-dd"));
-    startTransition(() => {
-      router.push(embedded ? `${listPath}?tab=agenda` : listPath);
-    });
+    setMoreFiltersOpen(false);
+    startTransition(() => router.push(listPath));
   };
+
+  const hasActiveFilters = useMemo(
+    () =>
+      Boolean(
+        filters.q ||
+          filters.status ||
+          filters.companyId ||
+          filters.patientId ||
+          filters.clinicalExamType ||
+          filters.professionalId ||
+          filters.roomName ||
+          filters.dateFrom ||
+          filters.dateTo
+      ),
+    [filters]
+  );
+
+  const advancedFilterCount = [
+    filters.patientId,
+    filters.professionalId,
+    filters.dateFrom,
+    filters.dateTo,
+  ].filter(Boolean).length;
+
+  const activeChips = useMemo(
+    () =>
+      buildFilterChips([
+        { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
+        {
+          key: "status",
+          value: filters.status,
+          label: (v) => {
+            const kpi = APPOINTMENT_KPI_CARDS.find((c) => c.status === v);
+            if (kpi) return kpi.label;
+            if (v === "AGENDADO") return "Status: Agendado";
+            if (v === "CONFIRMADO") return "Status: Confirmado";
+            if (v === "EM_ATENDIMENTO") return "Status: Em atendimento";
+            if (v === "CONCLUIDO") return "Status: Concluído";
+            if (v === "FALTOU") return "Status: Faltou";
+            if (v === "REAGENDADO") return "Status: Reagendado";
+            if (v === "CANCELADO") return "Status: Cancelado";
+            if (v === "TODAY_AGENDADO") return "Agendados hoje";
+            return `Status: ${v}`;
+          },
+          skip: (v) => v === "ALL",
+        },
+        {
+          key: "companyId",
+          value: filters.companyId,
+          label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}`,
+        },
+        {
+          key: "patientId",
+          value: filters.patientId,
+          label: (v) => `Colaborador: ${patients.find((p) => p.id === v)?.name ?? v}`,
+        },
+        {
+          key: "clinicalExamType",
+          value: filters.clinicalExamType,
+          label: (v) =>
+            `Exame: ${CLINICAL_EXAM_LABELS[v as keyof typeof CLINICAL_EXAM_LABELS] ?? v}`,
+        },
+        {
+          key: "professionalId",
+          value: filters.professionalId,
+          label: (v) =>
+            `Responsável: ${professionals.find((p) => p.id === v)?.name ?? v}`,
+        },
+        { key: "roomName", value: filters.roomName, label: (v) => `Unidade/sala: ${v}` },
+        {
+          key: "dateFrom",
+          value: filters.dateFrom || filters.dateTo,
+          label: () =>
+            filters.dateFrom && filters.dateTo
+              ? `Período: ${filters.dateFrom} – ${filters.dateTo}`
+              : filters.dateFrom
+                ? `Período desde ${filters.dateFrom}`
+                : `Período até ${filters.dateTo}`,
+        },
+      ]),
+    [filters, companies, patients, professionals]
+  );
+
+  const removeChip = (key: string) => {
+    if (key === "q") setQ("");
+    if (key === "companyId") setCompanyId("");
+    if (key === "patientId") setPatientId("");
+    if (key === "clinicalExamType") setClinicalExamType("");
+    if (key === "status") setStatusFilter("");
+    if (key === "professionalId") setProfessionalId("");
+    if (key === "roomName") setRoomName("");
+    if (key === "dateFrom") {
+      setDateFrom("");
+      setDateTo("");
+      updateFilters({ ...removeFilterKey(key, filters), dateTo: undefined });
+      return;
+    }
+    updateFilters(removeFilterKey(key, filters));
+  };
+
+  useEffect(() => {
+    setQ(filters.q ?? "");
+    setCompanyId(filters.companyId ?? "");
+    setPatientId(filters.patientId ?? "");
+    setClinicalExamType(filters.clinicalExamType ?? "");
+    setStatusFilter(
+      filters.status && filters.status !== "TODAY_AGENDADO" ? filters.status : ""
+    );
+    setProfessionalId(filters.professionalId ?? "");
+    setRoomName(filters.roomName ?? "");
+    setDateFrom(filters.dateFrom ?? "");
+    setDateTo(filters.dateTo ?? "");
+    setAnchorDate(filters.date ?? format(new Date(), "yyyy-MM-dd"));
+  }, [filters]);
 
   const goToday = () => {
     const today = format(new Date(), "yyyy-MM-dd");
     setAnchorDate(today);
-    updateFilters({ date: today, view: activeView, status: activeStatus });
+    updateFilters({
+      date: today,
+      view: "day",
+      dateFrom: undefined,
+      dateTo: undefined,
+      status: activeStatus || undefined,
+    });
   };
 
   const shiftDate = (direction: number) => {
     const current = parseISO(anchorDate);
     let next: Date;
-    if (activeView === "month") {
-      next = addMonths(current, direction);
-    } else if (activeView === "week") {
-      next = addDays(current, direction * 7);
-    } else {
-      next = addDays(current, direction);
-    }
+    if (activeView === "month") next = addMonths(current, direction);
+    else if (activeView === "week") next = addDays(current, direction * 7);
+    else next = addDays(current, direction);
     const nextStr = format(next, "yyyy-MM-dd");
     setAnchorDate(nextStr);
-    updateFilters({ date: nextStr, view: activeView, status: activeStatus });
+    updateFilters({ date: nextStr, view: activeView, status: activeStatus || undefined });
   };
 
   const loadDetail = useCallback(async (id: string) => {
@@ -213,7 +383,6 @@ export function AgendaClient({
     setSelectedId(id);
     loadDetail(id);
     const params = new URLSearchParams(searchParams.toString());
-    if (embedded) params.set("tab", "agenda");
     params.set("id", id);
     window.history.replaceState(null, "", `${listPath}?${params.toString()}`);
   };
@@ -222,7 +391,6 @@ export function AgendaClient({
     setSelectedId(null);
     setDetail(null);
     const params = new URLSearchParams(searchParams.toString());
-    if (embedded) params.set("tab", "agenda");
     params.delete("id");
     const qs = params.toString();
     window.history.replaceState(null, "", qs ? `${listPath}?${qs}` : listPath);
@@ -240,11 +408,25 @@ export function AgendaClient({
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (searchParams.get("new") === "1" && canManage) {
-      setNewDialogOpen(true);
+  const runRowAction = async (
+    key: string,
+    id: string,
+    fn: () => Promise<{ success: boolean; error?: string }>
+  ) => {
+    setActionLoading(`${key}:${id}`);
+    const result = await fn();
+    setActionLoading(null);
+    if (result.success) {
+      toast.success("Atualizado!");
+      router.refresh();
+      if (selectedId === id) loadDetail(id);
+    } else {
+      toast.error(result.error ?? "Erro");
     }
-  }, [searchParams, canManage]);
+  };
+
+  const isTerminal = (status: string) =>
+    ["CONCLUIDO", "CANCELADO", "REAGENDADO", "FALTOU"].includes(status);
 
   const groupedByDate = initialItems.reduce<Record<string, AppointmentListItem[]>>((acc, item) => {
     const key = format(new Date(item.scheduledAt), "yyyy-MM-dd");
@@ -253,142 +435,233 @@ export function AgendaClient({
     return acc;
   }, {});
 
-  const showDateGroups = activeView === "week" || activeView === "month" || activeView === "list";
-  const appointmentCards = isEmpresaPortal ? appointmentStatCardsForEmpresa() : APPOINTMENT_STAT_CARDS;
+  const showDateGroups = activeView === "week" || activeView === "month";
+  const isTodayActive =
+    anchorDate === format(new Date(), "yyyy-MM-dd") &&
+    activeView === "day" &&
+    !filters.dateFrom &&
+    !filters.dateTo;
 
-  const body = (
-    <>
-      {!embedded && (
-        <PageHeader
-          title="Agenda"
-          description={
-            isEmpresaPortal
-              ? "Acompanhe os agendamentos da sua equipe"
-              : "Agendamentos de atendimentos e exames ocupacionais"
-          }
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={goToday}>
-              Hoje
-            </Button>
-            {VIEW_MODES.map((v) => (
-              <Button
-                key={v.value}
-                variant={activeView === v.value ? "brand" : "outline"}
-                size="sm"
-                onClick={() => updateFilters({ view: v.value, date: anchorDate, status: activeStatus })}
-              >
-                {v.label === "Dia" && <CalendarDays className="mr-1 h-3.5 w-3.5" />}
-                {v.label === "Lista" && <List className="mr-1 h-3.5 w-3.5" />}
-                {v.label}
-              </Button>
-            ))}
-            {canManage && (
-              <Button variant="brand" onClick={() => setNewDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Novo agendamento
-              </Button>
-            )}
-          </div>
-        </PageHeader>
-      )}
+  const resultLabel =
+    initialTotal === 1
+      ? "1 atendimento agendado"
+      : `${initialTotal} atendimentos agendados`;
 
-      {embedded && (
-        <div className="exames-agenda-toolbar mb-4 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-slate-600">
-            Horários confirmados pela clínica para sua equipe.
+  return (
+    <PageModule className="atendimentos-agendados-clinica">
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Atendimentos agendados</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Acompanhe os colaboradores com data e horário confirmados.
           </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={goToday}>
-              Hoje
-            </Button>
-            {VIEW_MODES.map((v) => (
-              <Button
-                key={v.value}
-                variant={activeView === v.value ? "brand" : "outline"}
-                size="sm"
-                onClick={() => updateFilters({ view: v.value, date: anchorDate, status: activeStatus })}
-              >
-                {v.label === "Dia" && <CalendarDays className="mr-1 h-3.5 w-3.5" />}
-                {v.label === "Lista" && <List className="mr-1 h-3.5 w-3.5" />}
-                {v.label}
-              </Button>
-            ))}
-          </div>
         </div>
-      )}
-
-      <FilterMetricGrid
-        items={appointmentCards.map((card) => {
-          const isActive = activeStatus === card.status;
-          return {
-            key: card.key,
-            metaKey: `appointment:${card.key}`,
-            label: card.label,
-            value: statusCounts[card.key] ?? 0,
-            active: isActive,
-            onClick: () =>
-              updateFilters({
-                status: isActive ? "ALL" : card.status,
-                date: anchorDate,
-                view: activeView,
-              }),
-          };
-        })}
-      />
-
-      <div className={cn("referral-filters mt-6", isEmpresaPortal && "empresa-filter-panel")}>
-        <div className="referral-filters-grid">
-          <div className="referral-filter-search sm:col-span-2">
-            <Search className="referral-filter-search-icon h-4 w-4" />
-            <Input
-              placeholder={
-                isEmpresaPortal
-                  ? "Buscar por colaborador, protocolo ou exame"
-                  : "Buscar por colaborador, empresa, protocolo ou exame"
+        <div className="colaboradores-empresa-header-actions atendimentos-agendados-views">
+          <Button
+            variant={isTodayActive ? "brand" : "outline"}
+            size="sm"
+            className="rounded-lg"
+            onClick={goToday}
+          >
+            Hoje
+          </Button>
+          {VIEW_MODES.map((v) => (
+            <Button
+              key={v.value}
+              variant={activeView === v.value && !(v.value === "day" && isTodayActive) ? "brand" : "outline"}
+              size="sm"
+              className="rounded-lg"
+              onClick={() =>
+                updateFilters({
+                  view: v.value,
+                  date: anchorDate,
+                  status: activeStatus || undefined,
+                })
               }
+            >
+              {v.label === "Dia" && <CalendarDays className="mr-1 h-3.5 w-3.5" />}
+              {v.label === "Lista" && <List className="mr-1 h-3.5 w-3.5" />}
+              {v.label}
+            </Button>
+          ))}
+        </div>
+      </header>
+
+      <div className="colaboradores-empresa-stats atendimentos-agendados-stats">
+        {APPOINTMENT_KPI_CARDS.map((card) => {
+          const Icon = STAT_ICONS[card.key] ?? CalendarDays;
+          const isActive = activeStatus === card.status;
+          return (
+            <button
+              key={card.key}
+              type="button"
+              onClick={() =>
+                updateFilters({
+                  status: isActive ? undefined : card.status,
+                  date: anchorDate,
+                  view: activeView,
+                })
+              }
+              className={cn(
+                "colaboradores-empresa-stat colaboradores-empresa-stat--clickable",
+                isActive && "colaboradores-empresa-stat--active"
+              )}
+            >
+              <span
+                className={cn(
+                  "colaboradores-empresa-stat-icon",
+                  `colaboradores-empresa-stat-icon--${STAT_TONES[card.key] ?? "primary"}`
+                )}
+              >
+                <Icon className="h-4 w-4" aria-hidden />
+              </span>
+              <span className="colaboradores-empresa-stat-body">
+                <span className="colaboradores-empresa-stat-value">
+                  {statusCounts[card.key] ?? 0}
+                </span>
+                <span className="colaboradores-empresa-stat-title">{card.label}</span>
+                <span className="colaboradores-empresa-stat-hint">{card.hint}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="colaboradores-empresa-filters">
+        <div className="colaboradores-empresa-filters-row">
+          <div className="colaboradores-empresa-search">
+            <Search className="colaboradores-empresa-search-icon" aria-hidden />
+            <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-9"
+              onKeyDown={(e) => e.key === "Enter" && pushCurrentFilters()}
+              placeholder="Buscar por colaborador, empresa, CPF ou exame"
+              aria-label="Buscar atendimentos agendados"
+              className="colaboradores-empresa-search-input"
             />
           </div>
+
           <Input
             type="date"
             value={anchorDate}
-            onChange={(e) => setAnchorDate(e.target.value)}
-            title="Data"
+            onChange={(e) => {
+              const value = e.target.value;
+              setAnchorDate(value);
+              pushCurrentFilters({ date: value || undefined });
+            }}
+            aria-label="Data"
+            className="h-9 rounded-lg text-sm"
           />
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            title="Período de"
-          />
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            title="Período até"
-          />
-          {companies.length > 0 && (
-            <select
-              value={companyId}
-              onChange={(e) => setCompanyId(e.target.value)}
-              className="form-select h-9"
+
+          <select
+            value={companyId}
+            onChange={(e) => {
+              const value = e.target.value;
+              setCompanyId(value);
+              pushCurrentFilters({ companyId: value || undefined });
+            }}
+            aria-label="Empresa"
+            className="colaboradores-empresa-select"
+          >
+            <option value="">Empresa</option>
+            {companies.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              const value = e.target.value;
+              setStatusFilter(value);
+              pushCurrentFilters({ status: value || undefined });
+            }}
+            aria-label="Status"
+            className="colaboradores-empresa-select"
+          >
+            <option value="">Status</option>
+            <option value="AGENDADO">Agendado</option>
+            <option value="CONFIRMADO">Confirmado</option>
+            <option value="EM_ATENDIMENTO">Em atendimento</option>
+            <option value="CONCLUIDO">Concluído</option>
+            <option value="FALTOU">Faltou</option>
+            <option value="REAGENDADO">Reagendado</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+
+          <select
+            value={clinicalExamType}
+            onChange={(e) => {
+              const value = e.target.value;
+              setClinicalExamType(value);
+              pushCurrentFilters({ clinicalExamType: value || undefined });
+            }}
+            aria-label="Tipo de exame"
+            className="colaboradores-empresa-select"
+          >
+            <option value="">Tipo de exame</option>
+            {Object.entries(CLINICAL_EXAM_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={roomName}
+            onChange={(e) => {
+              const value = e.target.value;
+              setRoomName(value);
+              pushCurrentFilters({ roomName: value || undefined });
+            }}
+            aria-label="Unidade ou sala"
+            className="colaboradores-empresa-select"
+          >
+            <option value="">Unidade/sala</option>
+            {rooms.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="colaboradores-empresa-more-btn rounded-lg"
+            onClick={() => setMoreFiltersOpen((open) => !open)}
+            aria-expanded={moreFiltersOpen}
+          >
+            <SlidersHorizontal className="mr-2 h-4 w-4" />
+            Mais filtros
+            {advancedFilterCount > 0 && (
+              <span className="colaboradores-empresa-filter-count">{advancedFilterCount}</span>
+            )}
+          </Button>
+
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="colaboradores-empresa-clear-btn rounded-lg"
+              onClick={clearFilters}
             >
-              <option value="">Empresa</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              Limpar filtros
+            </Button>
           )}
-          {patients.length > 0 && (
+        </div>
+
+        {moreFiltersOpen && (
+          <div className="colaboradores-empresa-filters-advanced">
             <select
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
-              className="form-select h-9"
+              className="colaboradores-empresa-select"
+              aria-label="Colaborador"
             >
               <option value="">Colaborador</option>
               {patients.map((p) => (
@@ -397,84 +670,63 @@ export function AgendaClient({
                 </option>
               ))}
             </select>
-          )}
-          <select
-            value={clinicalExamType}
-            onChange={(e) => setClinicalExamType(e.target.value)}
-            className="form-select h-9"
-          >
-            <option value="">Tipo de exame</option>
-            <option value="ADMISSIONAL">Admissional</option>
-            <option value="DEMISSIONAL">Demissional</option>
-            <option value="PERIODICO">Periódico</option>
-            <option value="RETORNO_TRABALHO">Retorno ao trabalho</option>
-            <option value="MUDANCA_FUNCAO">Mudança de função</option>
-          </select>
-          <select
-            value={activeStatus === "TODAY_AGENDADO" ? "" : activeStatus}
-            onChange={(e) =>
-              updateFilters({
-                status: e.target.value || "ALL",
-                date: anchorDate,
-                view: activeView,
-              })
-            }
-            className="form-select h-9"
-          >
-            <option value="">Status</option>
-            <option value="AGENDADO">Agendado</option>
-            <option value="CONFIRMADO">Confirmado</option>
-            {!isEmpresaPortal && <option value="EM_ATENDIMENTO">Em atendimento</option>}
-            <option value="CONCLUIDO">Concluído</option>
-            <option value="FALTOU">Faltou</option>
-            <option value="REAGENDADO">Reagendado</option>
-            <option value="CANCELADO">Cancelado</option>
-          </select>
-          {professionals.length > 0 && !isEmpresaPortal && (
+
             <select
               value={professionalId}
               onChange={(e) => setProfessionalId(e.target.value)}
-              className="form-select h-9"
+              className="colaboradores-empresa-select"
+              aria-label="Responsável"
             >
-              <option value="">Profissional</option>
+              <option value="">Responsável</option>
               {professionals.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
               ))}
             </select>
-          )}
-          {rooms.length > 0 && (
-            <select
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
-              className="form-select h-9"
+
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              title="Período de"
+              aria-label="Período — início"
+              className="h-9 rounded-lg text-sm"
+            />
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              title="Período até"
+              aria-label="Período — fim"
+              className="h-9 rounded-lg text-sm"
+            />
+
+            <Button
+              type="button"
+              variant="brand"
+              size="sm"
+              className="rounded-lg"
+              onClick={() => pushCurrentFilters()}
             >
-              <option value="">Unidade/sala</option>
-              {rooms.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-        <div className="referral-filters-actions mt-3 flex gap-2">
-          <Button variant="brand" size="sm" onClick={handleSearch} disabled={isPending}>
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Filtrar"}
-          </Button>
-          <Button variant="outline" size="sm" onClick={clearFilters}>
-            Limpar filtros
-          </Button>
-        </div>
+              Aplicar
+            </Button>
+          </div>
+        )}
+
+        {activeChips.length > 0 && (
+          <div className="colaboradores-empresa-chips">
+            <FilterChips chips={activeChips} onRemove={removeChip} onClearAll={clearFilters} />
+          </div>
+        )}
       </div>
 
       {(activeView === "day" || activeView === "week" || activeView === "month") && (
-        <div className="mt-4 flex items-center justify-between">
+        <div className="atendimentos-agendados-nav">
           <Button variant="ghost" size="sm" onClick={() => shiftDate(-1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <p className="text-sm font-semibold text-[#0F3D4A]">
+          <p className="atendimentos-agendados-nav-label">
             {activeView === "day"
               ? format(parseISO(anchorDate), "EEEE, d 'de' MMMM yyyy", { locale: ptBR })
               : activeView === "week"
@@ -487,38 +739,127 @@ export function AgendaClient({
         </div>
       )}
 
-      <div className="relative mt-4">
-        {isPending && <LoadingState overlay label="Atualizando agenda..." />}
+      <div className="colaboradores-empresa-table-wrap relative">
+        {isPending && <LoadingState overlay label="Atualizando atendimentos agendados..." />}
+
+        <div className="colaboradores-empresa-result-bar">
+          <span className="text-xs text-slate-500">{resultLabel}</span>
+        </div>
 
         {initialItems.length === 0 ? (
           <EmptyState
             icon={CalendarDays}
-            title="Nenhum agendamento para o período selecionado"
-            description={
-              isEmpresaPortal
-                ? "Quando a clínica confirmar horários, eles aparecerão aqui. Você também pode ajustar os filtros."
-                : "Crie um novo agendamento ou ajuste os filtros."
-            }
-            action={
-              canManage
-                ? { label: "Novo agendamento", onClick: () => setNewDialogOpen(true) }
-                : isEmpresaPortal
-                  ? { label: "Solicitar exames", href: "/dashboard/encaminhamentos/novo" }
-                  : undefined
-            }
+            title="Nenhum atendimento agendado para este período"
+            description="Os agendamentos recebidos aparecerão aqui quando houver data e horário confirmados."
           />
+        ) : activeView === "list" ? (
+          <>
+            <div className="colaboradores-empresa-table-scroll">
+              <table className="colaboradores-empresa-table atendimentos-agendados-table">
+                <thead>
+                  <tr>
+                    <th>Horário</th>
+                    <th>Colaborador</th>
+                    <th>Empresa</th>
+                    <th>Tipo de exame</th>
+                    <th>Unidade ou sala</th>
+                    <th>Status</th>
+                    <th>Responsável</th>
+                    <th className="colaboradores-empresa-th-actions">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {initialItems.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="atendimentos-agendados-row cursor-pointer"
+                      onClick={() => openDetail(item.id)}
+                    >
+                      <td className="atendimentos-agendados-time whitespace-nowrap">
+                        {format(new Date(item.scheduledAt), "HH:mm")}
+                        <span className="atendimentos-agendados-date-meta">
+                          {format(new Date(item.scheduledAt), "dd/MM", { locale: ptBR })}
+                        </span>
+                      </td>
+                      <td className="atendimentos-agendados-primary">
+                        {item.employeeName ?? "—"}
+                      </td>
+                      <td>{item.companyName ?? "—"}</td>
+                      <td className="whitespace-nowrap">
+                        {getClinicalExamLabel(item.clinicalExamType, item.type)}
+                      </td>
+                      <td className="whitespace-nowrap">{item.roomName ?? "—"}</td>
+                      <td>
+                        <StatusBadge status={item.status} type="appointment" />
+                      </td>
+                      <td className="whitespace-nowrap">
+                        {item.professionalName ?? "—"}
+                      </td>
+                      <td
+                        className="colaboradores-empresa-td-actions"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <RowActions
+                          item={item}
+                          canManage={canManage}
+                          canClinical={canClinical}
+                          canReception={canReception}
+                          actionLoading={actionLoading}
+                          onView={() => openDetail(item.id)}
+                          onConfirm={() =>
+                            runRowAction("confirm", item.id, () => confirmAppointment(item.id))
+                          }
+                          onStart={() =>
+                            runRowAction("start", item.id, () =>
+                              startAppointmentAttendance(item.id)
+                            )
+                          }
+                          onComplete={() =>
+                            runRowAction("complete", item.id, () => completeAppointment(item.id))
+                          }
+                          onNoShow={() => {
+                            openDetail(item.id);
+                            setNoShowOpen(true);
+                          }}
+                          isTerminal={isTerminal(item.status)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="colaboradores-empresa-mobile-list">
+              {initialItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="atendimentos-agendados-mobile-card"
+                  onClick={() => openDetail(item.id)}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="atendimentos-agendados-time">
+                      {format(new Date(item.scheduledAt), "HH:mm")}
+                    </span>
+                    <StatusBadge status={item.status} type="appointment" />
+                  </div>
+                  <p className="atendimentos-agendados-primary">{item.employeeName ?? "—"}</p>
+                  <p className="text-xs text-slate-500">
+                    {item.companyName ?? "—"} ·{" "}
+                    {getClinicalExamLabel(item.clinicalExamType, item.type)}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </>
         ) : activeView === "week" ? (
           <div className="space-y-6">
-            <WeekCalendarGrid
-              anchorDate={anchorDate}
-              items={initialItems}
-              onOpen={openDetail}
-            />
+            <WeekCalendarGrid anchorDate={anchorDate} items={initialItems} onOpen={openDetail} />
             {Object.entries(groupedByDate)
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([date, items]) => (
                 <div key={date}>
-                  <h3 className="mb-3 font-semibold text-[#0F3D4A]">
+                  <h3 className="atendimentos-agendados-group-title">
                     {format(parseISO(date), "EEEE, d 'de' MMMM", { locale: ptBR })}
                   </h3>
                   <AppointmentCardGrid items={items} onOpen={openDetail} />
@@ -531,7 +872,7 @@ export function AgendaClient({
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([date, items]) => (
                 <div key={date}>
-                  <h3 className="mb-3 font-semibold text-[#0F3D4A]">
+                  <h3 className="atendimentos-agendados-group-title">
                     {format(parseISO(date), "EEEE, d 'de' MMMM", { locale: ptBR })}
                   </h3>
                   <AppointmentCardGrid items={items} onOpen={openDetail} />
@@ -544,7 +885,7 @@ export function AgendaClient({
 
         {initialTotal > initialItems.length && (
           <p className="mt-4 text-center text-xs text-slate-400">
-            Exibindo {initialItems.length} de {initialTotal} agendamentos
+            Exibindo {initialItems.length} de {initialTotal} atendimentos agendados
           </p>
         )}
       </div>
@@ -552,7 +893,7 @@ export function AgendaClient({
       <Sheet open={!!selectedId} onOpenChange={(open) => !open && closeDetail()}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>Detalhe do agendamento</SheetTitle>
+            <SheetTitle>Detalhe do atendimento</SheetTitle>
             <SheetDescription>
               {detail?.protocol ?? detail?.title ?? "Carregando..."}
             </SheetDescription>
@@ -570,9 +911,10 @@ export function AgendaClient({
               appointment={detail}
               userRole={userRole}
               canManage={canManage}
+              operationalOnly
               onRefresh={refreshDetail}
-              onReschedule={() => setRescheduleOpen(true)}
-              onCancel={() => setCancelOpen(true)}
+              onReschedule={() => undefined}
+              onCancel={() => undefined}
               onNoShow={() => setNoShowOpen(true)}
               onAddNote={() => setNoteOpen(true)}
             />
@@ -580,37 +922,13 @@ export function AgendaClient({
         </SheetContent>
       </Sheet>
 
-      <NewAppointmentDialog
-        open={newDialogOpen}
-        onOpenChange={setNewDialogOpen}
-        onSuccess={(id) => {
-          router.refresh();
-          if (id) openDetail(id);
-        }}
-      />
-
       {selectedId && (
         <>
-          <RescheduleAppointmentDialog
-            open={rescheduleOpen}
-            onOpenChange={setRescheduleOpen}
-            appointmentId={selectedId}
-            onSuccess={refreshDetail}
-          />
-          <AppointmentReasonDialog
-            open={cancelOpen}
-            onOpenChange={setCancelOpen}
-            title="Cancelar agendamento"
-            description="Esta ação será registrada no histórico. Informe o motivo."
-            confirmLabel="Confirmar cancelamento"
-            onConfirm={(notes) => cancelAppointment(selectedId, { notes })}
-            onSuccess={refreshDetail}
-          />
           <AppointmentReasonDialog
             open={noShowOpen}
             onOpenChange={setNoShowOpen}
-            title="Marcar falta"
-            description="Registre a falta do colaborador. É possível reagendar depois."
+            title="Registrar falta"
+            description="Registre a falta do colaborador neste horário."
             confirmLabel="Confirmar falta"
             onConfirm={(notes) => markAppointmentNoShow(selectedId, { notes })}
             onSuccess={refreshDetail}
@@ -623,12 +941,86 @@ export function AgendaClient({
           />
         </>
       )}
-    </>
+    </PageModule>
   );
+}
 
-  if (embedded) return body;
+function RowActions({
+  item,
+  canManage,
+  canClinical,
+  canReception,
+  actionLoading,
+  onView,
+  onConfirm,
+  onStart,
+  onComplete,
+  onNoShow,
+  isTerminal,
+}: {
+  item: AppointmentListItem;
+  canManage: boolean;
+  canClinical: boolean;
+  canReception: boolean;
+  actionLoading: string | null;
+  onView: () => void;
+  onConfirm: () => void;
+  onStart: () => void;
+  onComplete: () => void;
+  onNoShow: () => void;
+  isTerminal: boolean;
+}) {
+  const busy = actionLoading?.endsWith(`:${item.id}`);
 
-  return <PageModule>{body}</PageModule>;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" size="icon-sm" aria-label="Ações" disabled={!!busy}>
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MoreHorizontal className="h-4 w-4" />
+            )}
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={onView}>
+          <Eye className="mr-2 h-4 w-4" />
+          Ver atendimento
+        </DropdownMenuItem>
+        {canManage && !isTerminal && (
+          <>
+            {item.status === "AGENDADO" && canReception && (
+              <DropdownMenuItem onClick={onConfirm}>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Confirmar presença
+              </DropdownMenuItem>
+            )}
+            {["AGENDADO", "CONFIRMADO"].includes(item.status) && canClinical && (
+              <DropdownMenuItem onClick={onStart}>
+                <Play className="mr-2 h-4 w-4" />
+                Iniciar atendimento
+              </DropdownMenuItem>
+            )}
+            {item.status === "EM_ATENDIMENTO" && canClinical && (
+              <DropdownMenuItem onClick={onComplete}>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Concluir atendimento
+              </DropdownMenuItem>
+            )}
+            {canReception && (
+              <DropdownMenuItem onClick={onNoShow}>
+                <XCircle className="mr-2 h-4 w-4" />
+                Registrar falta
+              </DropdownMenuItem>
+            )}
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 function WeekCalendarGrid({
@@ -645,7 +1037,7 @@ function WeekCalendarGrid({
   const days = eachDayOfInterval({ start, end });
 
   return (
-    <div className="grid grid-cols-7 gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="atendimentos-agendados-week-grid">
       {days.map((day) => {
         const key = format(day, "yyyy-MM-dd");
         const dayItems = items.filter((i) => isSameDay(parseISO(i.scheduledAt), day));
@@ -654,11 +1046,16 @@ function WeekCalendarGrid({
           <div
             key={key}
             className={cn(
-              "min-h-[100px] rounded-lg border p-2",
-              isToday ? "border-[#16A085] bg-emerald-50/40" : "border-slate-100"
+              "atendimentos-agendados-week-day",
+              isToday && "atendimentos-agendados-week-day--today"
             )}
           >
-            <p className={cn("mb-2 text-xs font-semibold", isToday ? "text-[#16A085]" : "text-slate-500")}>
+            <p
+              className={cn(
+                "atendimentos-agendados-week-day-label",
+                isToday && "atendimentos-agendados-week-day-label--today"
+              )}
+            >
               {format(day, "EEE d", { locale: ptBR })}
             </p>
             <div className="space-y-1">
@@ -667,9 +1064,10 @@ function WeekCalendarGrid({
                   key={item.id}
                   type="button"
                   onClick={() => onOpen(item.id)}
-                  className="block w-full truncate rounded bg-slate-50 px-1.5 py-1 text-left text-[10px] hover:bg-slate-100"
+                  className="atendimentos-agendados-week-item"
                 >
-                  {format(parseISO(item.scheduledAt), "HH:mm")} {item.employeeName ?? item.companyName}
+                  {format(parseISO(item.scheduledAt), "HH:mm")}{" "}
+                  {item.employeeName ?? item.companyName}
                 </button>
               ))}
               {dayItems.length > 4 && (
@@ -691,7 +1089,7 @@ function AppointmentCardGrid({
   onOpen: (id: string) => void;
 }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="atendimentos-agendados-cards">
       {items.map((a) => (
         <button
           key={a.id}
@@ -722,18 +1120,10 @@ function AppointmentCardGrid({
             <span className="text-slate-400">Tipo:</span>{" "}
             {getClinicalExamLabel(a.clinicalExamType, a.type)}
           </p>
-          {a.examSummary && (
-            <p className="appointment-card-line">
-              <span className="text-slate-400">Exames:</span> {a.examSummary}
-            </p>
-          )}
           {(a.professionalName || a.roomName) && (
             <p className="appointment-card-meta">
               {[a.professionalName, a.roomName].filter(Boolean).join(" · ")}
             </p>
-          )}
-          {a.notes && (
-            <p className="appointment-card-notes line-clamp-2">{a.notes}</p>
           )}
         </button>
       ))}

@@ -45,6 +45,8 @@ type AppointmentDetailContentProps = {
   appointment: AppointmentDetailSerialized;
   userRole: string;
   canManage: boolean;
+  /** Agenda clínica: só ações operacionais (sem reagendar/cancelar). */
+  operationalOnly?: boolean;
   onRefresh: () => void;
   onReschedule: () => void;
   onCancel: () => void;
@@ -86,6 +88,7 @@ export function AppointmentDetailContent({
   appointment,
   userRole,
   canManage,
+  operationalOnly = false,
   onRefresh,
   onReschedule,
   onCancel,
@@ -153,7 +156,7 @@ export function AppointmentDetailContent({
                 onClick={() => runAction("confirm", () => confirmAppointment(appointment.id))}
               >
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                Confirmar
+                Confirmar presença
               </Button>
             )}
             {["AGENDADO", "CONFIRMADO"].includes(appointment.status) && canClinical && (
@@ -175,28 +178,32 @@ export function AppointmentDetailContent({
                 onClick={() => runAction("complete", () => completeAppointment(appointment.id))}
               >
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                Concluir
+                Concluir atendimento
               </Button>
             )}
             {canReception && !isTerminal && (
               <>
-                <Button variant="outline" size="sm" onClick={onReschedule}>
-                  <RefreshCw className="mr-1.5 h-4 w-4" />
-                  Reagendar
-                </Button>
+                {!operationalOnly && (
+                  <Button variant="outline" size="sm" onClick={onReschedule}>
+                    <RefreshCw className="mr-1.5 h-4 w-4" />
+                    Reagendar
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" onClick={onNoShow}>
                   <XCircle className="mr-1.5 h-4 w-4" />
-                  Marcar falta
+                  Registrar falta
                 </Button>
-                <Button variant="outline" size="sm" onClick={onCancel}>
-                  <XCircle className="mr-1.5 h-4 w-4" />
-                  Cancelar
-                </Button>
+                {!operationalOnly && (
+                  <Button variant="outline" size="sm" onClick={onCancel}>
+                    <XCircle className="mr-1.5 h-4 w-4" />
+                    Cancelar
+                  </Button>
+                )}
               </>
             )}
           </>
         )}
-        {whatsappUrl && (
+        {whatsappUrl && !operationalOnly && (
           <a
             href={whatsappUrl}
             target="_blank"
@@ -213,16 +220,16 @@ export function AppointmentDetailContent({
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <FileText className="mr-1.5 h-4 w-4" />
-            Ver encaminhamento
+            Ver atendimento
           </Link>
         )}
-        {canManage && onAttachDocument && (
+        {canManage && onAttachDocument && !operationalOnly && (
           <Button variant="outline" size="sm" onClick={onAttachDocument}>
             <Paperclip className="mr-1.5 h-4 w-4" />
             Anexar documento
           </Button>
         )}
-        {canManage && (
+        {canManage && !operationalOnly && (
           <Button variant="ghost" size="sm" onClick={onAddNote}>
             Adicionar observação
           </Button>

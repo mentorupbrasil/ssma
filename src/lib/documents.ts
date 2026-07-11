@@ -21,11 +21,41 @@ export type DocumentFormOptions = {
   quotes: Array<{ id: string; quoteNumber: string | null; companyName: string }>;
 };
 
+export const DOCUMENT_KPI_CARDS: {
+  key: string;
+  filter: string;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    key: "aguardando_arquivo",
+    filter: "PENDENTE",
+    label: "Aguardando arquivo",
+    hint: "Sem arquivo anexado",
+  },
+  {
+    key: "em_elaboracao",
+    filter: "EM_EMISSAO",
+    label: "Em elaboração",
+    hint: "Em produção",
+  },
+  {
+    key: "disponiveis",
+    filter: "DISPONIVEL",
+    label: "Disponíveis",
+    hint: "Com arquivo acessível",
+  },
+  {
+    key: "vencidos",
+    filter: "VENCIDO",
+    label: "Vencidos",
+    hint: "Fora da validade",
+  },
+];
+
+/** @deprecated Prefer DOCUMENT_KPI_CARDS no painel clínico */
 export const DOCUMENT_STAT_CARDS: { key: string; filter: string; label: string }[] = [
-  { key: "pendentes", filter: "PENDENTE", label: "Documentos pendentes" },
-  { key: "em_emissao", filter: "EM_EMISSAO", label: "Em emissão" },
-  { key: "disponiveis", filter: "DISPONIVEL", label: "Disponíveis" },
-  { key: "vencidos", filter: "VENCIDO", label: "Vencidos" },
+  ...DOCUMENT_KPI_CARDS.map(({ key, filter, label }) => ({ key, filter, label })),
   { key: "asos_pendentes", filter: "ASO_PENDENTE", label: "ASOs pendentes" },
   { key: "mes", filter: "MES", label: "Documentos do mês" },
 ];
@@ -50,18 +80,29 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
 };
 
 export const DOCUMENT_STATUS_LABELS: Record<string, string> = {
-  PENDENTE: "Pendente",
-  EM_EMISSAO: "Em emissão",
+  PENDENTE: "Aguardando arquivo",
+  EM_EMISSAO: "Em elaboração",
   DISPONIVEL: "Disponível",
-  ENVIADO: "Enviado",
+  ENVIADO: "Disponível",
   VENCIDO: "Vencido",
   ARQUIVADO: "Arquivado",
   CANCELADO: "Cancelado",
-  EM_ELABORACAO: "Em emissão",
+  EM_ELABORACAO: "Em elaboração",
   CONCLUIDO: "Disponível",
-  ENTREGUE: "Enviado",
+  ENTREGUE: "Disponível",
   EM_DIA: "Disponível",
 };
+
+export const DOCUMENT_STATUS_FILTER_OPTIONS = [
+  { value: "PENDENTE", label: "Aguardando arquivo" },
+  { value: "EM_EMISSAO", label: "Em elaboração" },
+  { value: "DISPONIVEL", label: "Disponível" },
+  { value: "VENCIDO", label: "Vencido" },
+  { value: "ARQUIVADO", label: "Arquivado" },
+] as const;
+
+export const LGPD_COMPACT_NOTICE =
+  "Documentos ocupacionais possuem acesso restrito e devem ser tratados conforme a LGPD.";
 
 export const DOCUMENT_HISTORY_LABELS: Record<DocumentHistoryAction, string> = {
   CREATED: "Documento criado",
@@ -178,6 +219,50 @@ export function normalizeDocumentStatus(status: DocumentStatus): string {
   return status;
 }
 
+/** Status visual: sem arquivo nunca aparece como Disponível. */
+export function getDocumentDisplayStatus(doc: {
+  status: DocumentStatus;
+  hasFile: boolean;
+}): { status: string; label: string } {
+  const normalized = normalizeDocumentStatus(doc.status);
+
+  if (normalized === "ARQUIVADO") {
+    return { status: "ARQUIVADO", label: DOCUMENT_STATUS_LABELS.ARQUIVADO };
+  }
+  if (normalized === "CANCELADO") {
+    return { status: "CANCELADO", label: DOCUMENT_STATUS_LABELS.CANCELADO };
+  }
+  if (normalized === "VENCIDO") {
+    return { status: "VENCIDO", label: DOCUMENT_STATUS_LABELS.VENCIDO };
+  }
+  if (!doc.hasFile) {
+    return { status: "PENDENTE", label: DOCUMENT_STATUS_LABELS.PENDENTE };
+  }
+  if (normalized === "EM_EMISSAO") {
+    return { status: "EM_EMISSAO", label: DOCUMENT_STATUS_LABELS.EM_EMISSAO };
+  }
+  if (normalized === "ENVIADO" || normalized === "DISPONIVEL") {
+    return { status: "DISPONIVEL", label: DOCUMENT_STATUS_LABELS.DISPONIVEL };
+  }
+  if (normalized === "PENDENTE") {
+    return { status: "PENDENTE", label: DOCUMENT_STATUS_LABELS.PENDENTE };
+  }
+  return {
+    status: normalized,
+    label: DOCUMENT_STATUS_LABELS[normalized] ?? normalized,
+  };
+}
+
+export function getDocumentLinkedToLabel(doc: {
+  patientName: string | null;
+  companyName: string | null;
+}): string {
+  if (doc.patientName && doc.companyName) {
+    return `${doc.patientName} · ${doc.companyName}`;
+  }
+  return doc.patientName ?? doc.companyName ?? "—";
+}
+
 export function computeValidityLabel(
   validUntil: Date | null,
   status: DocumentStatus
@@ -268,7 +353,10 @@ export function buildDocumentWhere(
   const card = filters.card;
   if (card === "PENDENTE") where.status = "PENDENTE";
   if (card === "EM_EMISSAO") where.status = { in: ["EM_EMISSAO", "EM_ELABORACAO"] };
-  if (card === "DISPONIVEL") where.status = { in: ["DISPONIVEL", "CONCLUIDO", "EM_DIA"] };
+  if (card === "DISPONIVEL") {
+    where.status = { in: ["DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] };
+    where.fileUrl = { not: null };
+  }
   if (card === "VENCIDO") where.status = "VENCIDO";
   if (card === "ASO_PENDENTE") {
     where.type = "ASO";

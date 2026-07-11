@@ -20,16 +20,26 @@ import { maskCpf, REFERRAL_EXAM_STATUS_LABELS } from "@/lib/referrals";
 
 export type AppointmentViewMode = "day" | "week" | "month" | "list";
 
+/** Indicadores compactos da listagem clínica (sem cancelados) */
+export const APPOINTMENT_KPI_CARDS: {
+  key: string;
+  status: AppointmentStatus | "TODAY_AGENDADO";
+  label: string;
+  hint: string;
+}[] = [
+  { key: "today", status: "TODAY_AGENDADO", label: "Agendados hoje", hint: "Com horário hoje" },
+  { key: "confirmado", status: "CONFIRMADO", label: "Confirmados", hint: "Presença confirmada" },
+  { key: "em_atendimento", status: "EM_ATENDIMENTO", label: "Em atendimento", hint: "Em execução" },
+  { key: "concluido", status: "CONCLUIDO", label: "Concluídos", hint: "Finalizados hoje" },
+  { key: "faltou", status: "FALTOU", label: "Faltas", hint: "Não compareceu" },
+];
+
 export const APPOINTMENT_STAT_CARDS: {
   key: string;
   status: AppointmentStatus | "TODAY_AGENDADO";
   label: string;
 }[] = [
-  { key: "today", status: "TODAY_AGENDADO", label: "Agendados hoje" },
-  { key: "confirmado", status: "CONFIRMADO", label: "Confirmados" },
-  { key: "em_atendimento", status: "EM_ATENDIMENTO", label: "Em atendimento" },
-  { key: "concluido", status: "CONCLUIDO", label: "Concluídos" },
-  { key: "faltou", status: "FALTOU", label: "Faltas" },
+  ...APPOINTMENT_KPI_CARDS.map(({ key, status, label }) => ({ key, status, label })),
   { key: "cancelado", status: "CANCELADO", label: "Cancelados" },
 ];
 
@@ -148,7 +158,17 @@ export function buildAppointmentWhere(
 
   if (filters.q?.trim()) {
     const q = filters.q.trim();
+    const qLower = q.toLowerCase();
     const digits = q.replace(/\D/g, "");
+    const matchingExamTypes = (
+      Object.entries(CLINICAL_EXAM_LABELS) as [ClinicalExamType, string][]
+    )
+      .filter(
+        ([value, label]) =>
+          label.toLowerCase().includes(qLower) || value.toLowerCase().includes(qLower)
+      )
+      .map(([value]) => value);
+
     where.OR = [
       { protocol: { contains: q, mode: "insensitive" } },
       { title: { contains: q, mode: "insensitive" } },
@@ -158,6 +178,9 @@ export function buildAppointmentWhere(
       { patient: { fullName: { contains: q, mode: "insensitive" } } },
       { exams: { some: { exam: { name: { contains: q, mode: "insensitive" } } } } },
       ...(digits.length >= 3 ? [{ patient: { cpf: { contains: digits } } }] : []),
+      ...(matchingExamTypes.length
+        ? [{ clinicalExamType: { in: matchingExamTypes } }]
+        : []),
     ];
   }
 

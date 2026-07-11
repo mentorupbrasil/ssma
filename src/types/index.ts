@@ -95,16 +95,16 @@ export const APPOINTMENT_STATUS_COLORS: Record<AppointmentStatus, string> = {
 };
 
 export const DOCUMENT_STATUS_LABELS: Record<DocumentStatus, string> = {
-  PENDENTE: "Pendente",
-  EM_EMISSAO: "Em emissão",
+  PENDENTE: "Aguardando arquivo",
+  EM_EMISSAO: "Em elaboração",
   DISPONIVEL: "Disponível",
-  ENVIADO: "Enviado",
+  ENVIADO: "Disponível",
   VENCIDO: "Vencido",
   ARQUIVADO: "Arquivado",
   CANCELADO: "Cancelado",
-  EM_ELABORACAO: "Em emissão",
+  EM_ELABORACAO: "Em elaboração",
   CONCLUIDO: "Disponível",
-  ENTREGUE: "Enviado",
+  ENTREGUE: "Disponível",
   EM_DIA: "Disponível",
 };
 

@@ -3996,6 +3996,584 @@
   text-underline-offset: 2px;
 }
 
+/* Atendimentos agendados — painel interno Unimetra */
+.atendimentos-agendados-clinica {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.atendimentos-agendados-views {
+  flex-wrap: wrap;
+}
+
+.atendimentos-agendados-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .atendimentos-agendados-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .atendimentos-agendados-stats {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.atendimentos-agendados-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.atendimentos-agendados-nav-label {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.atendimentos-agendados-table thead th,
+.atendimentos-agendados-table tbody td {
+  vertical-align: middle;
+}
+
+.atendimentos-agendados-table tbody td {
+  padding: 0.85rem 1rem;
+}
+
+.atendimentos-agendados-table tbody tr.atendimentos-agendados-row {
+  height: 4.25rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  transition: background-color 0.15s ease;
+}
+
+.atendimentos-agendados-table tbody tr.atendimentos-agendados-row:last-child {
+  border-bottom: 0;
+}
+
+.atendimentos-agendados-table tbody tr.atendimentos-agendados-row:hover {
+  background: rgb(248 250 252 / 0.9);
+}
+
+.atendimentos-agendados-time {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: rgb(15 23 42);
+}
+
+.atendimentos-agendados-date-meta {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: rgb(148 163 184);
+}
+
+.atendimentos-agendados-primary {
+  font-weight: 600;
+  color: rgb(15 23 42);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14rem;
+}
+
+.atendimentos-agendados-group-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  text-transform: capitalize;
+}
+
+.atendimentos-agendados-cards {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .atendimentos-agendados-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .atendimentos-agendados-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.atendimentos-agendados-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+  padding: 0.75rem;
+}
+
+.atendimentos-agendados-week-day {
+  min-height: 6.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(241 245 249);
+  padding: 0.5rem;
+}
+
+.atendimentos-agendados-week-day--today {
+  border-color: color-mix(in oklab, var(--brand-green, #0f766e) 35%, white);
+  background: color-mix(in oklab, var(--brand-green, #0f766e) 6%, white);
+}
+
+.atendimentos-agendados-week-day-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgb(100 116 139);
+  text-transform: capitalize;
+}
+
+.atendimentos-agendados-week-day-label--today {
+  color: var(--brand-green, #0f766e);
+}
+
+.atendimentos-agendados-week-item {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 0.35rem;
+  background: rgb(248 250 252);
+  padding: 0.25rem 0.35rem;
+  text-align: left;
+  font-size: 0.625rem;
+  color: rgb(51 65 85);
+}
+
+.atendimentos-agendados-week-item:hover {
+  background: rgb(241 245 249);
+}
+
+.atendimentos-agendados-mobile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+/* Documentos — painel interno Unimetra */
+.documentos-clinica {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.documentos-clinica-lgpd {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgb(237 233 254);
+  border-radius: 0.5rem;
+  background: rgb(245 243 255 / 0.7);
+  padding: 0.45rem 0.75rem;
+  color: rgb(91 33 182);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.documentos-clinica-lgpd p {
+  margin: 0;
+}
+
+.documentos-clinica-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .documentos-clinica-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.documentos-clinica-batch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252);
+  padding: 0.55rem 1rem;
+}
+
+.documentos-clinica-table thead th,
+.documentos-clinica-table tbody td {
+  vertical-align: middle;
+}
+
+.documentos-clinica-table tbody td {
+  padding: 0.85rem 1rem;
+}
+
+.documentos-clinica-table tbody tr.documentos-clinica-row {
+  height: 4.5rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  transition: background-color 0.15s ease;
+}
+
+.documentos-clinica-table tbody tr.documentos-clinica-row:last-child {
+  border-bottom: 0;
+}
+
+.documentos-clinica-table tbody tr.documentos-clinica-row:hover {
+  background: rgb(248 250 252 / 0.9);
+}
+
+.documentos-clinica-table tbody tr.documentos-clinica-row--selected {
+  background: color-mix(in oklab, var(--brand-green, #0f766e) 6%, white);
+}
+
+.documentos-clinica-th-check,
+.documentos-clinica-td-check {
+  width: 2.5rem;
+}
+
+.documentos-clinica-doc {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.documentos-clinica-doc-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.documentos-clinica-doc-type {
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+  white-space: nowrap;
+}
+
+.documentos-clinica-linked {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  color: rgb(71 85 105);
+}
+
+.documentos-clinica-protocol {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  color: rgb(100 116 139);
+}
+
+.documentos-clinica-validity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.8125rem;
+  color: rgb(71 85 105);
+}
+
+.documentos-clinica-file {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.documentos-clinica-file--ok {
+  color: rgb(4 120 87);
+}
+
+.documentos-clinica-file--wait {
+  color: rgb(180 83 9);
+}
+
+.documentos-clinica-mobile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+/* Comercial — painel interno Unimetra */
+.comercial-clinica {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.comercial-clinica-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .comercial-clinica-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.comercial-clinica-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+  border-bottom: 1px solid rgb(226 232 240);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.comercial-clinica-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.comercial-clinica-tab {
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgb(100 116 139);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.comercial-clinica-tab:hover {
+  color: rgb(51 65 85);
+}
+
+.comercial-clinica-tab--active {
+  color: rgb(37 99 235);
+  border-bottom-color: rgb(37 99 235);
+  font-weight: 650;
+}
+
+.comercial-clinica-table thead th,
+.comercial-clinica-table tbody td {
+  vertical-align: middle;
+}
+
+.comercial-clinica-table tbody td {
+  padding: 0.85rem 1rem;
+}
+
+.comercial-clinica-table tbody tr.comercial-clinica-row {
+  height: 4.35rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  transition: background-color 0.15s ease;
+}
+
+.comercial-clinica-table tbody tr.comercial-clinica-row:last-child {
+  border-bottom: 0;
+}
+
+.comercial-clinica-table tbody tr.comercial-clinica-row:hover {
+  background: rgb(248 250 252 / 0.9);
+}
+
+.comercial-clinica-primary {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.comercial-clinica-protocol {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-navy, #0e142b);
+  white-space: nowrap;
+}
+
+.comercial-clinica-truncate {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comercial-clinica-timeline {
+  margin: 0;
+  padding: 1rem 1.25rem 1.25rem;
+  list-style: none;
+}
+
+.comercial-clinica-timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1rem 1fr;
+  gap: 0.75rem;
+  padding-bottom: 1.1rem;
+}
+
+.comercial-clinica-timeline-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 0.35rem;
+  top: 1rem;
+  bottom: 0;
+  width: 1px;
+  background: rgb(226 232 240);
+}
+
+.comercial-clinica-timeline-dot {
+  margin-top: 0.35rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: var(--brand-green, #0f766e);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-green, #0f766e) 18%, white);
+}
+
+.comercial-clinica-timeline-body {
+  min-width: 0;
+}
+
+.comercial-clinica-timeline-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.comercial-clinica-timeline-head strong {
+  font-size: 0.8125rem;
+  color: rgb(15 23 42);
+}
+
+.comercial-clinica-timeline-head span,
+.comercial-clinica-timeline-meta {
+  font-size: 0.75rem;
+  color: rgb(148 163 184);
+}
+
+.comercial-clinica-timeline-body > p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: rgb(71 85 105);
+}
+
+.comercial-clinica-timeline-notes {
+  margin-top: 0.35rem !important;
+  color: rgb(100 116 139) !important;
+}
+
+.comercial-clinica-mobile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+/* Tabela de preços — painel interno Unimetra */
+.tabela-precos-clinica {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tabela-precos-clinica-stats {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .tabela-precos-clinica-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.tabela-precos-clinica-table thead th,
+.tabela-precos-clinica-table tbody td {
+  vertical-align: middle;
+}
+
+.tabela-precos-clinica-table tbody td {
+  padding: 0.85rem 1rem;
+}
+
+.tabela-precos-clinica-table tbody tr.tabela-precos-clinica-row {
+  height: 4.35rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  transition: background-color 0.15s ease;
+}
+
+.tabela-precos-clinica-table tbody tr.tabela-precos-clinica-row:last-child {
+  border-bottom: 0;
+}
+
+.tabela-precos-clinica-table tbody tr.tabela-precos-clinica-row:hover {
+  background: rgb(248 250 252 / 0.9);
+}
+
+.tabela-precos-clinica-service {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.tabela-precos-clinica-primary {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.tabela-precos-clinica-meta {
+  font-size: 0.75rem;
+  color: rgb(148 163 184);
+}
+
+.tabela-precos-clinica-value {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-navy, #0e142b);
+}
+
+.tabela-precos-clinica-mobile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
 .empresa-perfil {
   display: flex;
   flex-direction: column;

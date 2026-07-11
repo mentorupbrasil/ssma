@@ -7,7 +7,7 @@ import { requireAuthSession } from "@/lib/page-auth";
 import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
 import {
   buildAppointmentWhere,
-  APPOINTMENT_STAT_CARDS,
+  APPOINTMENT_KPI_CARDS,
   appointmentIncludeList,
   serializeAppointmentListItem,
   type AppointmentViewMode,
@@ -63,7 +63,7 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
   const todayEnd = endOfDay(new Date());
   const baseWhere = companyScope ? { companyId: companyScope } : {};
 
-  const statCards = APPOINTMENT_STAT_CARDS;
+  const statCards = APPOINTMENT_KPI_CARDS;
 
   const [total, appointments, countResults, companies, patients, professionals] =
     await Promise.all([
