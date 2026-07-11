@@ -2621,6 +2621,22 @@
   gap: 1rem;
 }
 
+.colaborador-perfil-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: fit-content;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgb(100 116 139);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.colaborador-perfil-back:hover {
+  color: var(--brand-navy, #0e142b);
+}
+
 .colaborador-perfil-header {
   display: flex;
   flex-wrap: wrap;

@@ -228,6 +228,17 @@ export function ColaboradoresEmpresaClient({
   const resultLabel =
     initialTotal === 1 ? "1 colaborador encontrado" : `${initialTotal} colaboradores encontrados`;
 
+  const listReturnTo = useMemo(() => {
+    const qs = searchParams.toString();
+    return `/dashboard/colaboradores${qs ? `?${qs}` : ""}`;
+  }, [searchParams]);
+
+  const profileHref = useCallback(
+    (id: string) =>
+      `/dashboard/colaboradores/${id}?returnTo=${encodeURIComponent(listReturnTo)}`,
+    [listReturnTo]
+  );
+
   const statCards = [
     {
       key: "colaboradores",
@@ -592,7 +603,7 @@ export function ColaboradoresEmpresaClient({
                               <div className="colaboradores-empresa-muted">Não definido</div>
                               {canManage && (
                                 <Link
-                                  href={`/dashboard/colaboradores/${c.id}`}
+                                  href={profileHref(c.id)}
                                   className="colaboradores-empresa-inline-action"
                                 >
                                   Definir periodicidade
@@ -616,8 +627,8 @@ export function ColaboradoresEmpresaClient({
                         <td className="colaboradores-empresa-td-actions">
                           <CollaboratorActionMenu
                             variant="empresa"
-                            onViewDetails={() => router.push(`/dashboard/colaboradores/${c.id}`)}
-                            onViewProfile={() => router.push(`/dashboard/colaboradores/${c.id}`)}
+                            onViewDetails={() => router.push(profileHref(c.id))}
+                            onViewProfile={() => router.push(profileHref(c.id))}
                             onSchedule={() =>
                               router.push(`/dashboard/encaminhamentos/novo?patientId=${c.id}`)
                             }
@@ -692,7 +703,7 @@ export function ColaboradoresEmpresaClient({
                     </dl>
                     <div className="colaboradores-empresa-mobile-actions">
                       <Link
-                        href={`/dashboard/colaboradores/${c.id}`}
+                        href={profileHref(c.id)}
                         className={cn(
                           buttonVariants({ variant: "outline", size: "sm" }),
                           "colaboradores-empresa-mobile-action-btn rounded-lg"
@@ -758,7 +769,7 @@ export function ColaboradoresEmpresaClient({
           if (createReferral) {
             router.push(`/dashboard/encaminhamentos/novo?patientId=${id}`);
           } else {
-            router.push(`/dashboard/colaboradores/${id}`);
+            router.push(profileHref(id));
           }
           router.refresh();
         }}

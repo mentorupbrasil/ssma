@@ -13,6 +13,7 @@ import {
   Calendar,
   Download,
   Eye,
+  ChevronLeft,
 } from "lucide-react";
 import type { DocumentStatus } from "@prisma/client";
 import type { CollaboratorDetailSerialized } from "@/lib/collaborators";
@@ -129,8 +130,19 @@ export function ColaboradorDetailClient({
 
   const scheduleHref = `/dashboard/encaminhamentos/novo?patientId=${collaborator.id}${companyId ? `&companyId=${companyId}` : ""}`;
 
+  const returnTo = searchParams.get("returnTo");
+  const backHref =
+    returnTo && returnTo.startsWith("/dashboard/colaboradores")
+      ? returnTo
+      : "/dashboard/colaboradores";
+
   return (
     <PageModule className="colaborador-perfil">
+      <Link href={backHref} className="colaborador-perfil-back">
+        <ChevronLeft className="h-4 w-4" aria-hidden />
+        Voltar para colaboradores
+      </Link>
+
       <header className="colaborador-perfil-header">
         <div className="colaborador-perfil-identity">
           <span className="colaboradores-empresa-avatar colaborador-perfil-avatar" title={collaborator.fullName}>
