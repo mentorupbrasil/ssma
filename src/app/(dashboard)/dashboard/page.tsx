@@ -11,7 +11,6 @@ import {
   FolderOpen,
   Inbox,
   Users,
-  CalendarCheck,
   LifeBuoy,
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -27,6 +26,8 @@ import { requireAuthSession } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
 import { getDashboardOverview } from "@/lib/dashboard-overview";
 import { getMetricMeta } from "@/lib/metric-cards";
+import { empresaReferralStatusLabel } from "@/lib/empresa-portal";
+import type { ReferralStatus } from "@prisma/client";
 
 export default async function DashboardPage() {
   const session = await requireAuthSession();
@@ -48,10 +49,10 @@ export default async function DashboardPage() {
           icon: FileText,
         },
         {
-          href: "/dashboard/encaminhamentos?tab=agenda",
-          label: "Agenda confirmada",
-          description: "Horários já marcados pela clínica",
-          icon: CalendarCheck,
+          href: "/dashboard/encaminhamentos",
+          label: "Acompanhar exames",
+          description: "Status dos encaminhamentos enviados",
+          icon: ClipboardList,
         },
         {
           href: "/dashboard/documentos?card=PARA_BAIXAR",
@@ -141,30 +142,6 @@ export default async function DashboardPage() {
 
         {isEmpresa ? (
           <>
-            <DashboardPanel title="Próximos agendamentos" icon={CalendarCheck}>
-              {!overview.upcomingAppointments?.length ? (
-                <InlineEmptyNote>Nenhum agendamento futuro.</InlineEmptyNote>
-              ) : (
-                <div className="dashboard-list">
-                  {overview.upcomingAppointments.map((a) => (
-                    <Link
-                      key={a.id}
-                      href="/dashboard/encaminhamentos?tab=agenda"
-                      className="dashboard-list-item dashboard-list-item-row"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[var(--brand-navy)]">{a.patientName}</p>
-                        <p className="text-xs text-[var(--dash-text-muted)]">
-                          {format(a.scheduledAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                        </p>
-                      </div>
-                      <StatusBadge status={a.status} type="appointment" />
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </DashboardPanel>
-
             <DashboardPanel title="Solicitações recentes" icon={FileText}>
               {!overview.recentReferrals?.length ? (
                 <InlineEmptyNote>Nenhuma solicitação recente.</InlineEmptyNote>
@@ -173,7 +150,7 @@ export default async function DashboardPage() {
                   {overview.recentReferrals.map((r) => (
                     <Link
                       key={r.id}
-                      href={`/dashboard/encaminhamentos?tab=solicitacoes&id=${r.id}`}
+                      href={`/dashboard/encaminhamentos?id=${r.id}`}
                       className="dashboard-list-item dashboard-list-item-row"
                     >
                       <div className="min-w-0">
@@ -183,7 +160,11 @@ export default async function DashboardPage() {
                           {format(r.createdAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
                         </p>
                       </div>
-                      <StatusBadge status={r.status} type="referral" />
+                      <StatusBadge
+                        status={r.status}
+                        type="referral"
+                        label={empresaReferralStatusLabel(r.status as ReferralStatus)}
+                      />
                     </Link>
                   ))}
                 </div>

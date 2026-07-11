@@ -26,6 +26,7 @@ type StatusBadgeProps = {
     | "company"
     | "collaborator"
     | "exam";
+  label?: string;
   className?: string;
 };
 
@@ -42,9 +43,9 @@ const LABEL_MAPS = {
   exam: EXAM_STATUS_LABELS,
 };
 
-export function StatusBadge({ status, type = "referral", className }: StatusBadgeProps) {
+export function StatusBadge({ status, type = "referral", label, className }: StatusBadgeProps) {
   const labels = LABEL_MAPS[type];
-  const label = labels[status as keyof typeof labels] ?? status;
+  const displayLabel = label ?? labels[status as keyof typeof labels] ?? status;
   const tone = getStatusTone(status);
 
   return (
@@ -53,7 +54,7 @@ export function StatusBadge({ status, type = "referral", className }: StatusBadg
       className={cn("status-badge-premium", className)}
     >
       <span className="status-badge-premium-dot" aria-hidden />
-      {label}
+      {displayLabel}
     </span>
   );
 }

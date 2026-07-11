@@ -1,8 +1,9 @@
+import type { ReferralStatus } from "@prisma/client";
 import { COLLABORATOR_STAT_CARDS } from "@/lib/collaborators";
-import { REFERRAL_STAT_CARDS } from "@/lib/referrals";
 import { APPOINTMENT_STAT_CARDS } from "@/lib/appointments";
 import { TICKET_STAT_CARDS } from "@/lib/tickets";
 import { isCompanyHr } from "@/lib/tenant";
+import { REFERRAL_STATUS_LABELS } from "@/types";
 import type { UserRole } from "@/types/roles";
 
 export function isEmpresaPortalRole(role: UserRole): boolean {
@@ -29,7 +30,34 @@ export const EMPRESA_NAV_ICON_OVERRIDES: Record<string, string> = {
 
 export const EMPRESA_EXAMES_BASE_PATH = "/dashboard/encaminhamentos";
 
-export type EmpresaExamesTab = "solicitacoes" | "agenda";
+/** Cards de status na tela Exames — visão simplificada do RH */
+export const EMPRESA_REFERRAL_STAT_CARDS: { status: ReferralStatus; label: string }[] = [
+  { status: "NOVO", label: "Encaminhados" },
+  { status: "EM_ANALISE", label: "Em andamento" },
+  { status: "EM_ATENDIMENTO", label: "Na clínica" },
+  { status: "AGUARDANDO_DOCUMENTO", label: "Aguardando ASO" },
+  { status: "ASO_DISPONIVEL", label: "ASO disponível" },
+  { status: "CONCLUIDO", label: "Concluídos" },
+  { status: "CANCELADO", label: "Cancelados" },
+];
+
+/** Rótulos amigáveis para o RH (sem jargão de agenda da clínica) */
+export const EMPRESA_REFERRAL_STATUS_LABELS: Partial<Record<ReferralStatus, string>> = {
+  NOVO: "Encaminhado",
+  EM_ANALISE: "Em andamento",
+  AGUARDANDO_AGENDAMENTO: "Autorizado",
+  AGENDADO: "Autorizado",
+  EM_ATENDIMENTO: "Na clínica",
+  AGUARDANDO_RESULTADO: "Aguardando resultado",
+  AGUARDANDO_DOCUMENTO: "Aguardando ASO",
+  ASO_DISPONIVEL: "ASO disponível",
+  CONCLUIDO: "Concluído",
+  CANCELADO: "Cancelado",
+};
+
+export function empresaReferralStatusLabel(status: ReferralStatus): string {
+  return EMPRESA_REFERRAL_STATUS_LABELS[status] ?? REFERRAL_STATUS_LABELS[status];
+}
 
 export const EMPRESA_NAV_SECTIONS = [
   { label: "Geral", hrefs: ["/dashboard"] },
@@ -59,9 +87,7 @@ export function appointmentStatCardsForEmpresa() {
 }
 
 export function referralStatCardsForEmpresa() {
-  return REFERRAL_STAT_CARDS.filter(
-    (c) => !["EM_ATENDIMENTO", "AGUARDANDO_RESULTADO"].includes(c.status)
-  );
+  return EMPRESA_REFERRAL_STAT_CARDS;
 }
 
 /** Cards da tela Documentos — portal RH (foco em download) */

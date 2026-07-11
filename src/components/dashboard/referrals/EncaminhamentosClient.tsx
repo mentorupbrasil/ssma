@@ -65,7 +65,7 @@ import {
   ReferralScheduleDialog,
   ReferralDocumentDialog,
 } from "./ReferralActionDialogs";
-import { referralStatCardsForEmpresa } from "@/lib/empresa-portal";
+import { referralStatCardsForEmpresa, empresaReferralStatusLabel } from "@/lib/empresa-portal";
 import { cn } from "@/lib/utils";
 
 type CompanyOption = { id: string; name: string };
@@ -132,17 +132,17 @@ export function EncaminhamentosClient({
   const updateFilters = useCallback(
     (updates: Record<string, string | undefined>) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (embedded) params.set("tab", "solicitacoes");
       Object.entries(updates).forEach(([key, value]) => {
         if (!value || value === "ALL") params.delete(key);
         else params.set(key, value);
       });
       if (!updates.page) params.delete("page");
+      params.delete("tab");
       startTransition(() => {
         router.push(`${listPath}?${params.toString()}`);
       });
     },
-    [router, searchParams, embedded, listPath]
+    [router, searchParams, listPath]
   );
 
   const handleSearch = () => {
@@ -156,7 +156,7 @@ export function EncaminhamentosClient({
     setDateFrom("");
     setDateTo("");
     startTransition(() => {
-      router.push(embedded ? `${listPath}?tab=solicitacoes` : listPath);
+      router.push(listPath);
     });
   };
 
@@ -164,13 +164,13 @@ export function EncaminhamentosClient({
     () =>
       buildFilterChips([
         { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
-        { key: "status", value: filters.status, label: (v) => `Status: ${v}`, skip: (v) => v === "ALL" },
+        { key: "status", value: filters.status, label: (v) => `Status: ${isEmpresa ? empresaReferralStatusLabel(v as ReferralStatus) : v}`, skip: (v) => v === "ALL" },
         { key: "companyId", value: filters.companyId, label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}` },
         { key: "clinicalExamType", value: filters.clinicalExamType, label: (v) => `Exame: ${CLINICAL_EXAM_LABELS[v as keyof typeof CLINICAL_EXAM_LABELS] ?? v}` },
         { key: "dateFrom", value: filters.dateFrom, label: (v) => `De ${v}` },
         { key: "dateTo", value: filters.dateTo, label: (v) => `Até ${v}` },
       ]),
-    [filters, companies]
+    [filters, companies, isEmpresa]
   );
 
   const removeChip = (key: string) => updateFilters(removeFilterKey(key, filters));
@@ -325,7 +325,7 @@ export function EncaminhamentosClient({
             title="Nenhum encaminhamento encontrado"
             description={
               isEmpresa
-                ? "Solicite exames para sua equipe ou ajuste os filtros."
+                ? "Encaminhe colaboradores para a clínica ou ajuste os filtros."
                 : "Crie um novo encaminhamento ou ajuste os filtros."
             }
             action={{
@@ -345,7 +345,7 @@ export function EncaminhamentosClient({
                 <TableHead className="hidden md:table-cell">Função</TableHead>
                 <TableHead className="hidden lg:table-cell">Tipo de exame</TableHead>
                 <TableHead className="hidden sm:table-cell">Solicitação</TableHead>
-                <TableHead className="hidden lg:table-cell">Agendamento</TableHead>
+                {!isEmpresa && <TableHead className="hidden lg:table-cell">Agendamento</TableHead>}
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden xl:table-cell">Responsável</TableHead>
                 <TableHead className="w-12">Ações</TableHead>
@@ -374,13 +374,21 @@ export function EncaminhamentosClient({
                     <TableCell className="hidden sm:table-cell">
                       {format(new Date(item.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {item.scheduledAt
-                        ? format(new Date(item.scheduledAt), "dd/MM/yyyy HH:mm", { locale: ptBR })
-                        : "Não agendado"}
-                    </TableCell>
+                    {!isEmpresa && (
+                      <TableCell className="hidden lg:table-cell">
+                        {item.scheduledAt
+                          ? format(new Date(item.scheduledAt), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                          : "Não agendado"}
+                      </TableCell>
+                    )}
                     <TableCell>
-                      <StatusBadge status={item.status} />
+                      <StatusBadge
+                        status={item.status}
+                        type="referral"
+                        label={
+                          isEmpresa ? empresaReferralStatusLabel(item.status) : undefined
+                        }
+                      />
                     </TableCell>
                     <TableCell className="hidden xl:table-cell">
                       {item.responsibleName ?? "—"}
@@ -459,7 +467,13 @@ export function EncaminhamentosClient({
                     : `${item.employeeName} · ${item.companyName}`
                 }
                 meta={CLINICAL_EXAM_LABELS[item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS] ?? item.clinicalExamType}
-                badge={<StatusBadge status={item.status} type="referral" />}
+                badge={
+                  <StatusBadge
+                    status={item.status}
+                    type="referral"
+                    label={isEmpresa ? empresaReferralStatusLabel(item.status) : undefined}
+                  />
+                }
                 onClick={() => openDetail(item.id)}
               />
             ))}

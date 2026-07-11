@@ -48,12 +48,6 @@ export type DashboardOverview = {
     status: string;
     createdAt: Date;
   }[];
-  upcomingAppointments?: {
-    id: string;
-    patientName: string;
-    scheduledAt: Date;
-    status: string;
-  }[];
   availableDocuments?: {
     id: string;
     title: string;
@@ -101,11 +95,9 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
     tasksToday,
     activeCollaborators,
     periodicDueCount,
-    appointmentsToday,
     docsAvailable,
     openSaasTickets,
     recentReferrals,
-    upcomingAppointments,
     availableDocuments,
     periodicDueCollaborators,
   ] = await Promise.all([
@@ -266,15 +258,6 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
         })
       : Promise.resolve(0),
     isEmpresa
-      ? prisma.appointment.count({
-          where: {
-            ...companyWhere,
-            scheduledAt: { gte: todayStart, lte: todayEnd },
-            status: { in: ["AGENDADO", "CONFIRMADO", "CONCLUIDO"] },
-          },
-        })
-      : Promise.resolve(0),
-    isEmpresa
       ? prisma.document.count({
           where: {
             ...companyWhere,
@@ -302,23 +285,6 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
             protocol: true,
             status: true,
             createdAt: true,
-            patient: { select: { fullName: true } },
-          },
-        })
-      : Promise.resolve([]),
-    isEmpresa
-      ? prisma.appointment.findMany({
-          where: {
-            ...companyWhere,
-            scheduledAt: { gte: now },
-            status: { in: ["AGENDADO", "CONFIRMADO"] },
-          },
-          orderBy: { scheduledAt: "asc" },
-          take: 5,
-          select: {
-            id: true,
-            scheduledAt: true,
-            status: true,
             patient: { select: { fullName: true } },
           },
         })
@@ -375,14 +341,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           key: "referrals_open",
           title: "Solicitações em aberto",
           value: openReferrals,
-          href: "/dashboard/encaminhamentos?tab=solicitacoes",
-          show: true,
-        },
-        {
-          key: "appointments_today",
-          title: "Agendamentos hoje",
-          value: appointmentsToday,
-          href: "/dashboard/encaminhamentos?tab=agenda",
+          href: "/dashboard/encaminhamentos",
           show: true,
         },
         {
@@ -543,14 +502,6 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           patientName: r.patient.fullName,
           status: r.status,
           createdAt: r.createdAt,
-        }))
-      : undefined,
-    upcomingAppointments: isEmpresa
-      ? upcomingAppointments.map((a) => ({
-          id: a.id,
-          patientName: a.patient?.fullName ?? "Sem colaborador",
-          scheduledAt: a.scheduledAt,
-          status: a.status,
         }))
       : undefined,
     availableDocuments: isEmpresa

@@ -12,7 +12,6 @@ import {
   serializeAppointmentListItem,
   type AppointmentViewMode,
 } from "@/lib/appointments";
-import { appointmentStatCardsForEmpresa } from "@/lib/empresa-portal";
 import { AgendaClient } from "@/components/dashboard/appointments/AgendaClient";
 import { Loader2 } from "lucide-react";
 
@@ -26,15 +25,8 @@ function getParam(params: Record<string, string | string[] | undefined>, key: st
   return value ?? "";
 }
 
-function buildEmpresaAgendaRedirect(params: Record<string, string | string[] | undefined>) {
-  const qs = new URLSearchParams();
-  qs.set("tab", "agenda");
-  for (const [key, value] of Object.entries(params)) {
-    if (key === "tab") continue;
-    const v = Array.isArray(value) ? value[0] : value;
-    if (v) qs.set(key, v);
-  }
-  return `/dashboard/encaminhamentos?${qs.toString()}`;
+function buildEmpresaAgendaRedirect() {
+  return "/dashboard/encaminhamentos";
 }
 
 async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
@@ -43,7 +35,7 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
   const isEmpresa = isEmpresaUser(session);
 
   if (isEmpresa) {
-    redirect(buildEmpresaAgendaRedirect(params));
+    redirect(buildEmpresaAgendaRedirect());
   }
 
   const companyScope = getCompanyFilter(session).companyId;
