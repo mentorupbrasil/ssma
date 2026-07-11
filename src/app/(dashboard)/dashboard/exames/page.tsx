@@ -5,6 +5,7 @@ import { hasPermission } from "@/lib/permissions";
 import { isEmpresaUser } from "@/lib/authz";
 import { listExamsForDashboard } from "@/actions/exams";
 import { ExamesClient } from "@/components/dashboard/exams/ExamesClient";
+import { EmpresaPreparosClient } from "@/components/dashboard/exams/EmpresaPreparosClient";
 import { Loader2 } from "lucide-react";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -38,6 +39,23 @@ async function ExamesContent({ searchParams }: { searchParams: SearchParams }) {
     page,
   });
 
+  if (isEmpresa) {
+    return (
+      <EmpresaPreparosClient
+        initialItems={data.items}
+        initialTotal={data.total}
+        initialPage={data.page}
+        pageSize={data.pageSize}
+        filters={{
+          q: param(sp.q),
+          category: param(sp.category),
+          preparationType: param(sp.preparationType),
+          card: param(sp.card),
+        }}
+      />
+    );
+  }
+
   return (
     <ExamesClient
       initialItems={data.items}
@@ -46,7 +64,7 @@ async function ExamesContent({ searchParams }: { searchParams: SearchParams }) {
       pageSize={data.pageSize}
       statCounts={data.statCounts}
       canManage={canManage}
-      isEmpresaPortal={isEmpresa}
+      isEmpresaPortal={false}
       filters={{
         q: param(sp.q),
         card: param(sp.card),

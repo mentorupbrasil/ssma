@@ -295,7 +295,7 @@ export function EmpresaDocumentosClient({
               <p className="colaboradores-empresa-result-count">{resultLabel}</p>
             </div>
             <div className="colaboradores-empresa-table-scroll documentos-empresa-table-scroll">
-              <table className="colaboradores-empresa-table">
+              <table className="colaboradores-empresa-table documentos-empresa-table">
                 <thead>
                   <tr>
                     <th>Documento</th>
@@ -314,7 +314,7 @@ export function EmpresaDocumentosClient({
                         <td>
                           <button
                             type="button"
-                            className="colaboradores-empresa-name text-left hover:underline"
+                            className="colaboradores-empresa-name hover:underline"
                             onClick={() => openDetail(item.id)}
                           >
                             {item.title}

@@ -69,6 +69,16 @@ const PREPARO_OBRIGATORIO_TYPES: ExamPreparationType[] = [
   "ORIENTACAO_ESPECIFICA",
 ];
 
+export function examNeedsPreparation(type: ExamPreparationType): boolean {
+  return type !== "SEM_PREPARO";
+}
+
+export function empresaPreparationBadgeLabel(type: ExamPreparationType): string {
+  return examNeedsPreparation(type) ? "Preparo necessário" : "Sem preparo específico";
+}
+
+export { PREPARO_OBRIGATORIO_TYPES };
+
 export type ExamListFilters = {
   q?: string;
   card?: string;
