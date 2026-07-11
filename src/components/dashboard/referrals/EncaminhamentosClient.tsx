@@ -108,7 +108,7 @@ export function EncaminhamentosClient({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const listPath = listPathProp ?? "/dashboard/encaminhamentos";
-  const statCards = isEmpresa ? referralStatCardsForEmpresa() : REFERRAL_STAT_CARDS;
+  const empresaStatCards = referralStatCardsForEmpresa();
 
   const [q, setQ] = useState(filters.q ?? "");
   const [companyId, setCompanyId] = useState(filters.companyId ?? "");
@@ -245,7 +245,7 @@ export function EncaminhamentosClient({
       <FilterMetricGrid
         items={
           isEmpresa
-            ? statCards.map((card) => {
+            ? empresaStatCards.map((card) => {
                 const isActive = filters.status === card.key;
                 return {
                   key: card.key,
@@ -258,7 +258,7 @@ export function EncaminhamentosClient({
                     updateFilters({ status: isActive ? undefined : card.key }),
                 };
               })
-            : statCards.map((card) => {
+            : REFERRAL_STAT_CARDS.map((card) => {
                 const isActive = filters.status === card.status;
                 return {
                   key: card.status,
