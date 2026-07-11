@@ -24,7 +24,7 @@ export function CollaboratorDetailDrawerContent({
           )}
         </div>
         <p className="collaborator-history-subtitle">
-          Linha do tempo de cadastros, encaminhamentos, exames e documentos.
+          Linha do tempo de cadastro, atendimentos, exames e documentos.
         </p>
       </div>
 

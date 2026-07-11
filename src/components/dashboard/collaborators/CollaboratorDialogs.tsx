@@ -178,8 +178,8 @@ export function NewCollaboratorDialog({
       title="Novo colaborador"
       description={
         isEmpresaPortal
-          ? "Cadastro admissional ou individual para encaminhamentos e controle de ASO."
-          : "Cadastre o colaborador vinculado à empresa para encaminhamentos e exames ocupacionais."
+          ? "Cadastro admissional ou individual para solicitações de exame e controle de ASO."
+          : "Cadastre o colaborador vinculado à empresa. Quem solicita o exame é o RH no portal."
       }
       badges={[
         { label: isEmpresaPortal ? "Portal RH" : "Cadastro", variant: "category" },
@@ -190,17 +190,35 @@ export function NewCollaboratorDialog({
           <Button variant="outline" className="collaborator-modal-btn" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button
-            variant="outline"
-            className="collaborator-modal-btn"
-            onClick={() => save(false)}
-            disabled={loading}
-          >
-            {loading ? "Salvando..." : "Salvar colaborador"}
-          </Button>
-          <Button variant="brand" className="collaborator-modal-btn" onClick={() => save(true)} disabled={loading}>
-            {loading ? "Salvando..." : "Salvar e encaminhar"}
-          </Button>
+          {isEmpresaPortal ? (
+            <>
+              <Button
+                variant="outline"
+                className="collaborator-modal-btn"
+                onClick={() => save(false)}
+                disabled={loading}
+              >
+                {loading ? "Salvando..." : "Salvar colaborador"}
+              </Button>
+              <Button
+                variant="brand"
+                className="collaborator-modal-btn"
+                onClick={() => save(true)}
+                disabled={loading}
+              >
+                {loading ? "Salvando..." : "Salvar e encaminhar"}
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="brand"
+              className="collaborator-modal-btn"
+              onClick={() => save(false)}
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : "Salvar colaborador"}
+            </Button>
+          )}
         </div>
       }
     >

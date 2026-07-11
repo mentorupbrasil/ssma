@@ -373,7 +373,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
     : [
         {
           key: "referrals_open",
-          title: "Encaminhamentos em aberto",
+          title: "Atendimentos em aberto",
           value: openReferrals,
           href: "/dashboard/encaminhamentos",
           show: true,

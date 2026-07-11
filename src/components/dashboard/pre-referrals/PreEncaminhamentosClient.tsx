@@ -18,7 +18,6 @@ import {
   ChevronRight,
   Loader2,
   AlertTriangle,
-  Plus,
 } from "lucide-react";
 import type { PreReferralStatus } from "@prisma/client";
 import type { PreReferralListItem, PreReferralDetailSerialized } from "@/lib/pre-referrals";
@@ -233,13 +232,7 @@ export function PreEncaminhamentosClient(props: Props) {
           <Link href="/dashboard/encaminhamentos">
             <Button variant="outline" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Atendimentos
-            </Button>
-          </Link>
-          <Link href="/dashboard/encaminhamentos/novo">
-            <Button variant="brand" size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Criar atendimento
+              Fila de atendimentos
             </Button>
           </Link>
         </div>
@@ -396,15 +389,11 @@ export function PreEncaminhamentosClient(props: Props) {
                 compact
                 className="border-0 bg-transparent"
                 title="Nenhuma solicitação encontrada"
-                description="As solicitações enviadas pelo formulário público aparecerão aqui para análise e conversão em encaminhamento oficial."
+                description="As solicitações enviadas pelo formulário público aparecerão aqui. Converta o lead em cadastro e ele entra na fila de atendimentos."
                 secondaryAction={{
                   label: "Ver formulário público",
                   href: "/encaminhamento-online",
                   variant: "outline",
-                }}
-                action={{
-                  label: "Criar encaminhamento manual",
-                  href: "/dashboard/encaminhamentos/novo",
                 }}
               />
             ) : (

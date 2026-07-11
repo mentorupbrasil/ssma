@@ -299,7 +299,7 @@ export function ColaboradoresClient({
         <div className="colaboradores-empresa-header-copy">
           <h1 className="colaboradores-empresa-title">Colaboradores</h1>
           <p className="colaboradores-empresa-subtitle">
-            Gerencie colaboradores, vínculos empresariais e histórico ocupacional.
+            Cadastro de colaboradores, vínculos com empresas e controle de periódicos.
           </p>
         </div>
         {canManage && (
@@ -825,7 +825,7 @@ export function ColaboradoresClient({
         }
         isEmpresaPortal={isEmpresaPortal}
         onSuccess={(id, createReferral) => {
-          if (createReferral) {
+          if (isEmpresaPortal && createReferral) {
             router.push(`/dashboard/encaminhamentos/novo?patientId=${id}`);
           } else {
             router.push(`/dashboard/colaboradores/${id}`);

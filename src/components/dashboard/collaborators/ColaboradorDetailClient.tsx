@@ -6,10 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { format, differenceInCalendarDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  FileText,
   Pencil,
-  FolderOpen,
-  LayoutDashboard,
   Calendar,
   Download,
   ChevronLeft,
@@ -36,9 +33,9 @@ import { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
 import { useBreadcrumbSegmentLabel } from "@/components/dashboard/BreadcrumbLabelProvider";
 
 const TABS = [
-  { id: "overview", label: "Visão geral", icon: LayoutDashboard },
-  { id: "referrals", label: "Encaminhamentos", icon: FileText },
-  { id: "documents", label: "Documentos", icon: FolderOpen },
+  { id: "overview", label: "Visão geral" },
+  { id: "referrals", label: "Histórico" },
+  { id: "documents", label: "Documentos" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -185,24 +182,22 @@ export function ColaboradorDetailClient({
         )}
       </header>
 
-      <div className="dash-module-tabs colaborador-perfil-tabs" role="tablist" aria-label="Seções do colaborador">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            onClick={() => setTab(tab.id)}
-            className={cn(
-              "dash-module-tab colaborador-perfil-tab",
-              activeTab === tab.id && "dash-module-tab-active colaborador-perfil-tab--active"
-            )}
-          >
-            <tab.icon className="mr-1.5 inline h-3.5 w-3.5" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <nav className="empresa-perfil-tabs" aria-label="Seções do colaborador">
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              className={cn("empresa-perfil-tab", isActive && "empresa-perfil-tab--active")}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => setTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </nav>
 
       {activeTab === "overview" && (
         <OverviewTab
@@ -393,8 +388,8 @@ function OverviewTab({
             {openReferrals > 0 && (
               <span className="colaborador-perfil-situacao-line">
                 {openReferrals === 1
-                  ? "1 encaminhamento em andamento"
-                  : `${openReferrals} encaminhamentos em andamento`}
+                  ? "1 atendimento em andamento"
+                  : `${openReferrals} atendimentos em andamento`}
               </span>
             )}
             {pendingDocsCount === 0 && openReferrals === 0 && (
@@ -460,8 +455,12 @@ function ReferralsTab({
       <EmptyState
         compact
         className="colaboradores-empresa-empty"
-        title="Nenhum encaminhamento"
-        description="Este colaborador ainda não possui encaminhamentos."
+        title="Nenhum atendimento no histórico"
+        description={
+          isEmpresaPortal
+            ? "Este colaborador ainda não possui solicitações de exame."
+            : "Os atendimentos recebidos do RH ou do site aparecerão aqui."
+        }
         action={
           canManage && isEmpresaPortal
             ? { label: "Encaminhar para exame", href: scheduleHref }
@@ -575,7 +574,7 @@ function DocumentsTab({ collaborator }: { collaborator: CollaboratorDetailSerial
                         className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
                       >
                         <Download className="mr-1.5 h-3.5 w-3.5" />
-                        Baixar
+                        Abrir
                       </a>
                     ) : (
                       <span className="colaborador-perfil-doc-awaiting">Aguardando liberação</span>
