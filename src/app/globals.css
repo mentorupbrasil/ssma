@@ -3619,6 +3619,65 @@
     color: var(--brand-green);
   }
 
+  /* Portal RH — menu fixo, sem barra de rolagem */
+  .app-shell-sidebar-inner--empresa {
+    justify-content: flex-start;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-sidebar-brand {
+    flex-shrink: 0;
+    padding: 0.7rem 0.85rem 0.6rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-sidebar-brand-link {
+    gap: 0.45rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-nav,
+  .app-shell-sidebar-inner--empresa .app-shell-nav--empresa {
+    flex: 0 0 auto;
+    overflow: hidden;
+    padding: 0.45rem 0.6rem 0.35rem;
+    scrollbar-width: none;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-nav::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-nav-link {
+    gap: 0.55rem;
+    padding: 0.42rem 0.55rem;
+    font-size: 0.8125rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-sidebar-footer {
+    flex-shrink: 0;
+    margin-top: auto;
+    padding: 0.6rem 0.7rem 0.7rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-user-card {
+    margin-bottom: 0.35rem;
+    padding: 0.45rem 0.55rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-user-avatar {
+    height: 1.65rem;
+    width: 1.65rem;
+    font-size: 0.6rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-user-meta p:first-child {
+    font-size: 0.8125rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-user-meta p:last-child {
+    font-size: 0.6875rem;
+  }
+
   .app-shell-sidebar-footer {
     border-top: 1px solid rgb(241 245 249);
     padding: 0.9rem;

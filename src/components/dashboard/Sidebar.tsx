@@ -134,65 +134,81 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
   const itemByHref = new Map(items.map((item) => [item.href, item]));
   const initials = userInitials(user.name);
 
+  const renderNavLink = (item: (typeof items)[number]) => {
+    const iconName =
+      isEmpresa && EMPRESA_NAV_ICON_OVERRIDES[item.href]
+        ? EMPRESA_NAV_ICON_OVERRIDES[item.href]
+        : item.icon;
+    const Icon = ICONS[iconName] ?? LayoutDashboard;
+    const active = isEmpresa
+      ? item.href === "/dashboard/encaminhamentos"
+        ? pathname.startsWith("/dashboard/encaminhamentos") ||
+          pathname.startsWith("/dashboard/agenda")
+        : pathname === item.href ||
+          (item.href !== "/dashboard" && pathname.startsWith(item.href))
+      : pathname === item.href ||
+        (item.href !== "/dashboard" && pathname.startsWith(item.href));
+    const label =
+      isEmpresa && EMPRESA_NAV_LABEL_OVERRIDES[item.href]
+        ? EMPRESA_NAV_LABEL_OVERRIDES[item.href]
+        : item.label;
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onNavigate}
+        className={cn("app-shell-nav-link", active && "app-shell-nav-link-active")}
+      >
+        <Icon className="h-4 w-4 shrink-0 [&_svg]:stroke-[2]" />
+        <span className="truncate">{label}</span>
+      </Link>
+    );
+  };
+
   return (
     <div className={cn("app-shell-sidebar-inner", isEmpresa && "app-shell-sidebar-inner--empresa")}>
       <div className="app-shell-sidebar-brand">
         <Link href="/dashboard" onClick={onNavigate} className="app-shell-sidebar-brand-link">
-          <BrandLogo height={28} showLink={false} className="app-shell-sidebar-logo" />
+          <BrandLogo
+            height={isEmpresa ? 22 : 28}
+            showLink={false}
+            className="app-shell-sidebar-logo"
+          />
           <div className="app-shell-sidebar-brand-copy">
             <p className="app-shell-sidebar-brand-title">Unimetra · Painel</p>
-            <p className="app-shell-sidebar-brand-role">{getRoleLabel(user.role)}</p>
+            {!isEmpresa && (
+              <p className="app-shell-sidebar-brand-role">{getRoleLabel(user.role)}</p>
+            )}
           </div>
         </Link>
       </div>
 
-      <nav className="app-shell-nav">
-        {navSections.map((section) => {
-          const sectionItems = section.hrefs
-            .map((href) => itemByHref.get(href))
-            .filter((item): item is (typeof items)[number] => Boolean(item));
+      <nav className={cn("app-shell-nav", isEmpresa && "app-shell-nav--empresa")}>
+        {isEmpresa ? (
+          <div className="app-shell-nav-flat space-y-0.5">
+            {EMPRESA_NAV_HREFS.map((href) => {
+              const item = itemByHref.get(href);
+              if (!item) return null;
+              return renderNavLink(item);
+            })}
+          </div>
+        ) : (
+          navSections.map((section) => {
+            const sectionItems = section.hrefs
+              .map((href) => itemByHref.get(href))
+              .filter((item): item is (typeof items)[number] => Boolean(item));
 
-          if (sectionItems.length === 0) return null;
+            if (sectionItems.length === 0) return null;
 
-          return (
-            <div key={section.label} className="app-shell-nav-section">
-              <p className="app-shell-nav-label">{section.label}</p>
-              <div className="space-y-0.5">
-                {sectionItems.map((item) => {
-                  const iconName =
-                    isEmpresa && EMPRESA_NAV_ICON_OVERRIDES[item.href]
-                      ? EMPRESA_NAV_ICON_OVERRIDES[item.href]
-                      : item.icon;
-                  const Icon = ICONS[iconName] ?? LayoutDashboard;
-                  const active = isEmpresa
-                    ? item.href === "/dashboard/encaminhamentos"
-                      ? pathname.startsWith("/dashboard/encaminhamentos") ||
-                        pathname.startsWith("/dashboard/agenda")
-                      : pathname === item.href ||
-                        (item.href !== "/dashboard" && pathname.startsWith(item.href))
-                    : pathname === item.href ||
-                      (item.href !== "/dashboard" && pathname.startsWith(item.href));
-                  const label =
-                    isEmpresa && EMPRESA_NAV_LABEL_OVERRIDES[item.href]
-                      ? EMPRESA_NAV_LABEL_OVERRIDES[item.href]
-                      : item.label;
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={onNavigate}
-                      className={cn("app-shell-nav-link", active && "app-shell-nav-link-active")}
-                    >
-                      <Icon className="h-4 w-4 shrink-0 [&_svg]:stroke-[2]" />
-                      <span className="truncate">{label}</span>
-                    </Link>
-                  );
-                })}
+            return (
+              <div key={section.label} className="app-shell-nav-section">
+                <p className="app-shell-nav-label">{section.label}</p>
+                <div className="space-y-0.5">{sectionItems.map(renderNavLink)}</div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </nav>
 
       <div className="app-shell-sidebar-footer">
@@ -207,7 +223,10 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
         </div>
         <Button
           variant="ghost"
-          className="w-full justify-start rounded-xl text-sm text-slate-600 hover:bg-red-50 hover:text-red-600"
+          className={cn(
+            "w-full justify-start rounded-xl text-sm text-slate-600 hover:bg-red-50 hover:text-red-600",
+            isEmpresa && "h-8 px-2"
+          )}
           onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />
@@ -220,10 +239,16 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
 
 export function Sidebar({ user }: SidebarProps) {
   const [open, setOpen] = useState(false);
+  const isEmpresa = isEmpresaPortalRole(user.role);
 
   return (
     <>
-      <aside className="app-shell-sidebar hidden lg:block">
+      <aside
+        className={cn(
+          "app-shell-sidebar hidden lg:block",
+          isEmpresa && "app-shell-sidebar--empresa"
+        )}
+      >
         <NavContent user={user} />
       </aside>
 
