@@ -3838,8 +3838,15 @@
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   gap: 0.25rem;
+}
+
+.empresa-perfil-tabs.dash-module-tabs::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .empresa-perfil-tabs .dash-module-tab,
@@ -3855,6 +3862,24 @@
 .empresa-perfil-tabs .dash-module-tab svg,
 .empresa-perfil-tabs .colaborador-perfil-tab svg {
   flex-shrink: 0;
+}
+
+.empresa-perfil-more-tab {
+  max-width: 11rem;
+}
+
+.empresa-perfil-more-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empresa-perfil-more-item--active {
+  background: rgb(239 246 255);
+}
+
+.empresa-perfil-more-item--active .collaborator-action-label {
+  color: rgb(29 78 216);
 }
 
 .empresa-perfil-overview {

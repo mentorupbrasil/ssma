@@ -27,6 +27,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   MoreHorizontal,
+  ChevronDown,
 } from "lucide-react";
 import type { CompanyDetailSerialized } from "@/lib/companies";
 import {
@@ -43,6 +44,7 @@ import {
   normalizeDocumentStatus,
 } from "@/lib/documents";
 import { CLINICAL_EXAM_LABELS } from "@/types";
+import type { DocumentStatus } from "@prisma/client";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -66,20 +68,60 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { useBreadcrumbSegmentLabel } from "@/components/dashboard/BreadcrumbLabelProvider";
 import { toast } from "sonner";
 
-const TABS = [
+const PRIMARY_TABS = [
   { id: "overview", label: "Visão geral", icon: LayoutDashboard },
   { id: "employees", label: "Colaboradores", icon: Users },
   { id: "referrals", label: "Atendimentos", icon: FileText },
   { id: "agenda", label: "Agenda", icon: Calendar },
   { id: "documents", label: "Documentos", icon: FolderOpen },
-  { id: "quotes", label: "Orçamentos", icon: DollarSign },
-  { id: "contract", label: "Contrato e preços", icon: Tags },
-  { id: "contacts", label: "Contatos", icon: Phone },
-  { id: "portal", label: "Portal", icon: Globe },
-  { id: "history", label: "Histórico", icon: History },
 ] as const;
 
+const MORE_TABS = [
+  {
+    id: "quotes",
+    label: "Orçamentos",
+    hint: "Propostas comerciais",
+    icon: DollarSign,
+    tone: "quote" as const,
+  },
+  {
+    id: "contract",
+    label: "Contrato e preços",
+    hint: "Tabela e condições",
+    icon: Tags,
+    tone: "docs" as const,
+  },
+  {
+    id: "contacts",
+    label: "Contatos",
+    hint: "Agenda de contatos",
+    icon: Phone,
+    tone: "view" as const,
+  },
+  {
+    id: "portal",
+    label: "Portal",
+    hint: "Acesso do RH da empresa",
+    icon: Globe,
+    tone: "portal" as const,
+  },
+  {
+    id: "history",
+    label: "Histórico",
+    hint: "Alterações cadastrais",
+    icon: History,
+    tone: "schedule" as const,
+  },
+] as const;
+
+const TABS = [...PRIMARY_TABS, ...MORE_TABS] as const;
+
 type TabId = (typeof TABS)[number]["id"];
+type MoreTabId = (typeof MORE_TABS)[number]["id"];
+
+function isMoreTab(tab: TabId): tab is MoreTabId {
+  return MORE_TABS.some((t) => t.id === tab);
+}
 
 type PortalState = "not_configured" | "active" | "suspended";
 
@@ -113,6 +155,7 @@ export function CompanyDetailClient({
   const [editOpen, setEditOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const displayName = company.tradeName ?? company.legalName;
   useBreadcrumbSegmentLabel(company.id, displayName);
@@ -144,6 +187,9 @@ export function CompanyDetailClient({
   };
 
   const cityLine = [company.city, company.state].filter(Boolean).join("/") || null;
+  const activeMoreTab = isMoreTab(activeTab)
+    ? MORE_TABS.find((t) => t.id === activeTab) ?? null
+    : null;
 
   return (
     <PageModule className="empresa-perfil">
@@ -295,7 +341,7 @@ export function CompanyDetailClient({
         role="tablist"
         aria-label="Seções da empresa"
       >
-        {TABS.map((tab) => (
+        {PRIMARY_TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
@@ -311,6 +357,69 @@ export function CompanyDetailClient({
             {tab.label}
           </button>
         ))}
+
+        <Popover open={moreOpen} onOpenChange={setMoreOpen}>
+          <PopoverTrigger
+            render={
+              <button
+                type="button"
+                role="tab"
+                aria-selected={Boolean(activeMoreTab)}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+                className={cn(
+                  "dash-module-tab colaborador-perfil-tab empresa-perfil-more-tab",
+                  activeMoreTab && "dash-module-tab-active colaborador-perfil-tab--active"
+                )}
+              >
+                <MoreHorizontal className="mr-1.5 inline h-3.5 w-3.5 shrink-0" aria-hidden />
+                <span className="empresa-perfil-more-label">
+                  {activeMoreTab ? activeMoreTab.label : "Mais"}
+                </span>
+                <ChevronDown className="ml-1 inline h-3 w-3 shrink-0 opacity-70" aria-hidden />
+              </button>
+            }
+          />
+          <PopoverContent
+            className="collaborator-action-menu empresa-perfil-more-menu w-60 p-1.5"
+            align="end"
+            sideOffset={6}
+          >
+            {MORE_TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="menuitem"
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "collaborator-action-item",
+                    isActive && "empresa-perfil-more-item--active"
+                  )}
+                  onClick={() => {
+                    setTab(tab.id);
+                    setMoreOpen(false);
+                  }}
+                >
+                  <span
+                    className={cn(
+                      "collaborator-action-icon",
+                      `collaborator-action-icon--${tab.tone}`
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="collaborator-action-label">{tab.label}</span>
+                    <span className="collaborator-action-hint">{tab.hint}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="colaborador-perfil-body">
@@ -428,6 +537,24 @@ function OverviewTab({
     [company.address, company.city, company.state, company.zipCode].filter(Boolean).join(", ") ||
     "—";
 
+  const now = Date.now();
+  const nextAppointment = [...company.appointments]
+    .filter((a) => new Date(a.scheduledAt).getTime() >= now)
+    .sort(
+      (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+    )[0];
+
+  const availableDocuments = company.documents.filter(
+    (d) => normalizeDocumentStatus(d.status as DocumentStatus) === "DISPONIVEL"
+  ).length;
+
+  const availableDocumentsLabel =
+    availableDocuments <= 0
+      ? "Nenhum disponível"
+      : availableDocuments === 1
+        ? "1 disponível"
+        : `${availableDocuments} disponíveis`;
+
   return (
     <div className="colaborador-perfil-overview empresa-perfil-overview">
       <div className="colaboradores-empresa-stats empresa-perfil-stats">
@@ -470,15 +597,13 @@ function OverviewTab({
           </span>
         </div>
         <div className="empresa-perfil-summary-item">
-          <span className="empresa-perfil-summary-label">Contrato</span>
+          <span className="empresa-perfil-summary-label">Próximo agendamento</span>
           <span className="empresa-perfil-summary-value">
-            {company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "—"}
-          </span>
-        </div>
-        <div className="empresa-perfil-summary-item">
-          <span className="empresa-perfil-summary-label">Portal</span>
-          <span className="empresa-perfil-summary-value">
-            {PORTAL_STATE_LABELS[portalState]}
+            {nextAppointment
+              ? format(new Date(nextAppointment.scheduledAt), "dd/MM/yyyy HH:mm", {
+                  locale: ptBR,
+                })
+              : "—"}
           </span>
         </div>
         <div className="empresa-perfil-summary-item">
@@ -486,6 +611,10 @@ function OverviewTab({
           <span className="empresa-perfil-summary-value">
             {formatCompanyPendingLabel(company.stats.pendingDocuments)}
           </span>
+        </div>
+        <div className="empresa-perfil-summary-item">
+          <span className="empresa-perfil-summary-label">Documentos disponíveis</span>
+          <span className="empresa-perfil-summary-value">{availableDocumentsLabel}</span>
         </div>
         <div className="empresa-perfil-summary-item">
           <span className="empresa-perfil-summary-label">Última atualização</span>
