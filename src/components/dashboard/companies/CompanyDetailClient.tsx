@@ -27,7 +27,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   MoreHorizontal,
-  ChevronDown,
+  PanelLeft,
 } from "lucide-react";
 import type { CompanyDetailSerialized } from "@/lib/companies";
 import {
@@ -58,6 +58,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { toggleCompanyPortal } from "@/actions/companies";
@@ -68,59 +74,47 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { useBreadcrumbSegmentLabel } from "@/components/dashboard/BreadcrumbLabelProvider";
 import { toast } from "sonner";
 
-const PRIMARY_TABS = [
-  { id: "overview", label: "Visão geral", icon: LayoutDashboard },
-  { id: "employees", label: "Colaboradores", icon: Users },
-  { id: "referrals", label: "Atendimentos", icon: FileText },
-  { id: "agenda", label: "Agenda", icon: Calendar },
-  { id: "documents", label: "Documentos", icon: FolderOpen },
-] as const;
-
-const MORE_TABS = [
+const NAV_SECTIONS = [
   {
-    id: "quotes",
-    label: "Orçamentos",
-    hint: "Propostas comerciais",
-    icon: DollarSign,
-    tone: "quote" as const,
+    id: "overview-group",
+    label: "Visão geral",
+    items: [{ id: "overview", label: "Visão geral", icon: LayoutDashboard }],
   },
   {
-    id: "contract",
-    label: "Contrato e preços",
-    hint: "Tabela e condições",
-    icon: Tags,
-    tone: "docs" as const,
+    id: "operation",
+    label: "Operação",
+    items: [
+      { id: "employees", label: "Colaboradores", icon: Users },
+      { id: "referrals", label: "Atendimentos", icon: FileText },
+      { id: "agenda", label: "Agenda", icon: Calendar },
+      { id: "documents", label: "Documentos", icon: FolderOpen },
+    ],
   },
   {
-    id: "contacts",
-    label: "Contatos",
-    hint: "Agenda de contatos",
-    icon: Phone,
-    tone: "view" as const,
+    id: "commercial",
+    label: "Comercial",
+    items: [
+      { id: "quotes", label: "Orçamentos", icon: DollarSign },
+      { id: "contract", label: "Contrato e preços", icon: Tags },
+    ],
   },
   {
-    id: "portal",
-    label: "Portal",
-    hint: "Acesso do RH da empresa",
-    icon: Globe,
-    tone: "portal" as const,
-  },
-  {
-    id: "history",
-    label: "Histórico",
-    hint: "Alterações cadastrais",
-    icon: History,
-    tone: "schedule" as const,
+    id: "relationship",
+    label: "Relacionamento",
+    items: [
+      { id: "contacts", label: "Contatos", icon: Phone },
+      { id: "portal", label: "Portal", icon: Globe },
+      { id: "history", label: "Histórico", icon: History },
+    ],
   },
 ] as const;
 
-const TABS = [...PRIMARY_TABS, ...MORE_TABS] as const;
+const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap((section) => section.items);
 
-type TabId = (typeof TABS)[number]["id"];
-type MoreTabId = (typeof MORE_TABS)[number]["id"];
+type TabId = (typeof ALL_NAV_ITEMS)[number]["id"];
 
-function isMoreTab(tab: TabId): tab is MoreTabId {
-  return MORE_TABS.some((t) => t.id === tab);
+function getNavLabel(tab: TabId): string {
+  return ALL_NAV_ITEMS.find((item) => item.id === tab)?.label ?? "Visão geral";
 }
 
 type PortalState = "not_configured" | "active" | "suspended";
@@ -155,7 +149,7 @@ export function CompanyDetailClient({
   const [editOpen, setEditOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
 
   const displayName = company.tradeName ?? company.legalName;
   useBreadcrumbSegmentLabel(company.id, displayName);
@@ -165,10 +159,15 @@ export function CompanyDetailClient({
     ? `https://wa.me/55${phone.replace(/\D/g, "")}?text=${encodeURIComponent(buildCompanyWhatsAppMessage(displayName))}`
     : null;
 
+  const resolvedTab = ALL_NAV_ITEMS.some((item) => item.id === activeTab)
+    ? activeTab
+    : ("overview" as TabId);
+
   const setTab = (tab: TabId) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
     router.replace(`/dashboard/empresas/${company.id}?${params.toString()}`);
+    setNavOpen(false);
   };
 
   const refresh = () => router.refresh();
@@ -187,9 +186,6 @@ export function CompanyDetailClient({
   };
 
   const cityLine = [company.city, company.state].filter(Boolean).join("/") || null;
-  const activeMoreTab = isMoreTab(activeTab)
-    ? MORE_TABS.find((t) => t.id === activeTab) ?? null
-    : null;
 
   return (
     <PageModule className="empresa-perfil">
@@ -336,128 +332,77 @@ export function CompanyDetailClient({
         </div>
       </header>
 
-      <div
-        className="dash-module-tabs colaborador-perfil-tabs empresa-perfil-tabs"
-        role="tablist"
-        aria-label="Seções da empresa"
-      >
-        {PRIMARY_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            onClick={() => setTab(tab.id)}
-            className={cn(
-              "dash-module-tab colaborador-perfil-tab",
-              activeTab === tab.id && "dash-module-tab-active colaborador-perfil-tab--active"
+      <div className="empresa-perfil-layout">
+        <aside className="empresa-perfil-nav" aria-label="Menu da empresa">
+          <CompanySectionNav activeTab={resolvedTab} onNavigate={setTab} />
+        </aside>
+
+        <div className="empresa-perfil-main">
+          <div className="empresa-perfil-nav-mobile-bar">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-lg empresa-perfil-nav-mobile-btn"
+              onClick={() => setNavOpen(true)}
+            >
+              <PanelLeft className="mr-2 h-4 w-4" />
+              Seções da empresa
+              <span className="empresa-perfil-nav-mobile-current">{getNavLabel(resolvedTab)}</span>
+            </Button>
+          </div>
+
+          <div className="empresa-perfil-body">
+            {resolvedTab === "overview" && (
+              <OverviewTab company={company} onNavigate={setTab} />
             )}
-          >
-            <tab.icon className="mr-1.5 inline h-3.5 w-3.5 shrink-0" aria-hidden />
-            {tab.label}
-          </button>
-        ))}
-
-        <Popover open={moreOpen} onOpenChange={setMoreOpen}>
-          <PopoverTrigger
-            render={
-              <button
-                type="button"
-                role="tab"
-                aria-selected={Boolean(activeMoreTab)}
-                aria-haspopup="menu"
-                aria-expanded={moreOpen}
-                className={cn(
-                  "dash-module-tab colaborador-perfil-tab empresa-perfil-more-tab",
-                  activeMoreTab && "dash-module-tab-active colaborador-perfil-tab--active"
-                )}
-              >
-                <MoreHorizontal className="mr-1.5 inline h-3.5 w-3.5 shrink-0" aria-hidden />
-                <span className="empresa-perfil-more-label">
-                  {activeMoreTab ? activeMoreTab.label : "Mais"}
-                </span>
-                <ChevronDown className="ml-1 inline h-3 w-3 shrink-0 opacity-70" aria-hidden />
-              </button>
-            }
-          />
-          <PopoverContent
-            className="collaborator-action-menu empresa-perfil-more-menu w-60 p-1.5"
-            align="end"
-            sideOffset={6}
-          >
-            {MORE_TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="menuitem"
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "collaborator-action-item",
-                    isActive && "empresa-perfil-more-item--active"
-                  )}
-                  onClick={() => {
-                    setTab(tab.id);
-                    setMoreOpen(false);
-                  }}
-                >
-                  <span
-                    className={cn(
-                      "collaborator-action-icon",
-                      `collaborator-action-icon--${tab.tone}`
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span>
-                    <span className="collaborator-action-label">{tab.label}</span>
-                    <span className="collaborator-action-hint">{tab.hint}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </PopoverContent>
-        </Popover>
+            {resolvedTab === "employees" && (
+              <EmployeesTab company={company} canManage={canManage} />
+            )}
+            {resolvedTab === "referrals" && (
+              <ReferralsTab company={company} canManage={canManage} />
+            )}
+            {resolvedTab === "agenda" && (
+              <AgendaTab company={company} canManage={canManage} />
+            )}
+            {resolvedTab === "documents" && <DocumentsTab company={company} />}
+            {resolvedTab === "quotes" && (
+              <QuotesTab company={company} canCommercial={canCommercial} />
+            )}
+            {resolvedTab === "contract" && (
+              <ContractTab company={company} canCommercial={canCommercial} />
+            )}
+            {resolvedTab === "contacts" && (
+              <ContactsTab
+                company={company}
+                canManage={canManage}
+                onAddContact={() => setContactOpen(true)}
+              />
+            )}
+            {resolvedTab === "portal" && (
+              <PortalTab
+                company={company}
+                canManage={canManage}
+                busy={portalBusy}
+                onToggle={handlePortalToggle}
+                onRefresh={refresh}
+              />
+            )}
+            {resolvedTab === "history" && <HistoryTab company={company} />}
+          </div>
+        </div>
       </div>
 
-      <div className="colaborador-perfil-body">
-        {activeTab === "overview" && (
-          <OverviewTab company={company} onNavigate={setTab} />
-        )}
-        {activeTab === "employees" && (
-          <EmployeesTab company={company} canManage={canManage} />
-        )}
-        {activeTab === "referrals" && (
-          <ReferralsTab company={company} canManage={canManage} />
-        )}
-        {activeTab === "agenda" && <AgendaTab company={company} canManage={canManage} />}
-        {activeTab === "documents" && <DocumentsTab company={company} />}
-        {activeTab === "quotes" && (
-          <QuotesTab company={company} canCommercial={canCommercial} />
-        )}
-        {activeTab === "contract" && (
-          <ContractTab company={company} canCommercial={canCommercial} />
-        )}
-        {activeTab === "contacts" && (
-          <ContactsTab
-            company={company}
-            canManage={canManage}
-            onAddContact={() => setContactOpen(true)}
-          />
-        )}
-        {activeTab === "portal" && (
-          <PortalTab
-            company={company}
-            canManage={canManage}
-            busy={portalBusy}
-            onToggle={handlePortalToggle}
-            onRefresh={refresh}
-          />
-        )}
-        {activeTab === "history" && <HistoryTab company={company} />}
-      </div>
+      <Sheet open={navOpen} onOpenChange={setNavOpen}>
+        <SheetContent side="left" className="empresa-perfil-nav-sheet p-0" showCloseButton>
+          <SheetHeader className="empresa-perfil-nav-sheet-header">
+            <SheetTitle>Seções da empresa</SheetTitle>
+          </SheetHeader>
+          <div className="empresa-perfil-nav-sheet-body">
+            <CompanySectionNav activeTab={resolvedTab} onNavigate={setTab} />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <EditCompanyDialog
         open={editOpen}
@@ -483,6 +428,46 @@ export function CompanyDetailClient({
         onSuccess={refresh}
       />
     </PageModule>
+  );
+}
+
+function CompanySectionNav({
+  activeTab,
+  onNavigate,
+}: {
+  activeTab: TabId;
+  onNavigate: (tab: TabId) => void;
+}) {
+  return (
+    <nav className="empresa-perfil-nav-list">
+      {NAV_SECTIONS.map((section) => (
+        <div key={section.id} className="empresa-perfil-nav-group">
+          <p className="empresa-perfil-nav-group-label">{section.label}</p>
+          <ul className="empresa-perfil-nav-items">
+            {section.items.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className={cn(
+                      "empresa-perfil-nav-item",
+                      isActive && "empresa-perfil-nav-item--active"
+                    )}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={() => onNavigate(item.id)}
+                  >
+                    <Icon className="empresa-perfil-nav-item-icon" aria-hidden />
+                    <span>{item.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </nav>
   );
 }
 
