@@ -1,10 +1,8 @@
 "use client";
 
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 import type { ReferralDetailSerialized } from "@/lib/referrals";
-import { REFERRAL_DOCUMENT_TYPE_LABELS } from "@/lib/referrals";
+import { REFERRAL_DOCUMENT_TYPE_LABELS, REFERRAL_EXAM_STATUS_LABELS } from "@/lib/referrals";
 import { CLINICAL_EXAM_LABELS, EXAM_CATEGORY_LABELS } from "@/types";
 import { empresaReferralDisplayStatus } from "@/lib/empresa-portal";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -30,7 +28,6 @@ type DocRow = {
   key: string;
   label: string;
   fileUrl: string | null;
-  fileName?: string | null;
 };
 
 function buildDocumentRows(referral: ReferralDetailSerialized): DocRow[] {
@@ -48,17 +45,11 @@ function buildDocumentRows(referral: ReferralDetailSerialized): DocRow[] {
   if (fichaLegacy) usedIds.add(fichaLegacy.id);
 
   const rows: DocRow[] = [
-    {
-      key: "aso",
-      label: "ASO",
-      fileUrl: aso?.fileUrl ?? null,
-      fileName: aso?.fileName ?? null,
-    },
+    { key: "aso", label: "ASO", fileUrl: aso?.fileUrl ?? null },
     {
       key: "ficha",
       label: "Ficha clínica",
       fileUrl: fichaDoc?.fileUrl ?? fichaLegacy?.fileUrl ?? null,
-      fileName: fichaDoc?.fileName ?? fichaLegacy?.title ?? null,
     },
   ];
 
@@ -68,7 +59,6 @@ function buildDocumentRows(referral: ReferralDetailSerialized): DocRow[] {
       key: doc.id,
       label: REFERRAL_DOCUMENT_TYPE_LABELS[doc.type] ?? doc.type,
       fileUrl: doc.fileUrl,
-      fileName: doc.fileName,
     });
   }
 
@@ -78,7 +68,6 @@ function buildDocumentRows(referral: ReferralDetailSerialized): DocRow[] {
       key: doc.id,
       label: doc.type,
       fileUrl: doc.fileUrl,
-      fileName: doc.title,
     });
   }
 
@@ -98,21 +87,27 @@ export function ReferralEmpresaDetailDialog({
     : null;
 
   const documentRows = referral ? buildDocumentRows(referral) : [];
+  const roleLine = referral
+    ? [referral.employee.jobTitle, referral.employee.department].filter(Boolean).join(" · ")
+    : "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="exam-modal referral-empresa-modal referral-empresa-modal--compact" showCloseButton>
+      <DialogContent
+        className="referral-empresa-modal"
+        showCloseButton
+      >
         {loading && (
           <div className="referral-empresa-modal-loading">
-            <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
+            <Loader2 className="h-7 w-7 animate-spin text-[var(--brand-green)]" />
           </div>
         )}
 
         {error && !loading && (
-          <div className="referral-error-state py-10">
+          <div className="referral-error-state py-8">
             <p>{error}</p>
             {onRetry && (
-              <Button variant="outline" size="sm" onClick={onRetry}>
+              <Button variant="outline" size="sm" className="rounded-lg" onClick={onRetry}>
                 Tentar novamente
               </Button>
             )}
@@ -122,96 +117,132 @@ export function ReferralEmpresaDetailDialog({
         {referral && display && !loading && !error && (
           <>
             <header className="referral-empresa-modal-head">
-              <div className="referral-empresa-modal-head-top">
-                <DialogTitle className="exam-modal-title">{referral.employee.fullName}</DialogTitle>
+              <div className="referral-empresa-modal-head-main">
+                <div className="min-w-0">
+                  <DialogTitle className="referral-empresa-modal-title">
+                    {referral.employee.fullName}
+                  </DialogTitle>
+                  <DialogDescription className="referral-empresa-modal-meta">
+                    {roleLine || "Sem função informada"}
+                    {" · "}
+                    {CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
+                  </DialogDescription>
+                </div>
                 <StatusBadge
                   status={display.toneStatus}
                   type="referral"
                   label={display.label}
+                  className="referral-empresa-modal-status"
                 />
               </div>
-              <DialogDescription className="referral-empresa-modal-subtitle">
-                {CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
-                {referral.scheduledAt
-                  ? ` · ${format(new Date(referral.scheduledAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}`
-                  : ""}
-              </DialogDescription>
             </header>
 
             <div className="referral-empresa-modal-body">
               <section className="referral-empresa-section">
                 <h2 className="referral-empresa-section-title">Exames solicitados</h2>
-                <ul className="referral-empresa-exam-list">
-                  <li className="referral-empresa-exam-item">
-                    <div className="referral-empresa-exam-copy">
-                      <p className="colaboradores-empresa-name">
-                        {CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
-                      </p>
-                      <p className="colaboradores-empresa-role">Exame clínico ocupacional</p>
-                    </div>
-                    <StatusBadge
-                      status={display.toneStatus}
-                      type="referral"
-                      label={display.label}
-                    />
-                  </li>
-                  {referral.exams.map((exam) => (
-                    <li key={exam.id} className="referral-empresa-exam-item">
-                      <div className="referral-empresa-exam-copy">
-                        <p className="colaboradores-empresa-name">{exam.examName}</p>
-                        <p className="colaboradores-empresa-role">
-                          {EXAM_CATEGORY_LABELS[exam.category] ?? exam.category}
-                        </p>
-                      </div>
-                      <StatusBadge status={exam.status} type="exam" />
-                    </li>
-                  ))}
-                </ul>
+                <div className="referral-empresa-table-wrap">
+                  <table className="referral-empresa-table">
+                    <thead>
+                      <tr>
+                        <th>Exame</th>
+                        <th>Categoria</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="referral-empresa-table-name" data-label="Exame">
+                          {CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
+                        </td>
+                        <td data-label="Categoria">Exame clínico ocupacional</td>
+                        <td data-label="Status">
+                          <StatusBadge status="PENDENTE" type="referral" label="Solicitado" />
+                        </td>
+                      </tr>
+                      {referral.exams.map((exam) => (
+                        <tr key={exam.id}>
+                          <td className="referral-empresa-table-name" data-label="Exame">
+                            {exam.examName}
+                          </td>
+                          <td data-label="Categoria">
+                            {EXAM_CATEGORY_LABELS[exam.category] ?? exam.category}
+                          </td>
+                          <td data-label="Status">
+                            <StatusBadge
+                              status={exam.status}
+                              type="referral"
+                              label={REFERRAL_EXAM_STATUS_LABELS[exam.status]}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </section>
 
               <section className="referral-empresa-section">
                 <h2 className="referral-empresa-section-title">Documentos</h2>
-                <ul className="referral-empresa-doc-list">
-                  {documentRows.map((doc) => (
-                    <li key={doc.key} className="referral-empresa-doc-item">
-                      <div className="min-w-0">
-                        <p className="colaboradores-empresa-name">{doc.label}</p>
-                        {doc.fileName ? (
-                          <p className="colaboradores-empresa-exam-date truncate">{doc.fileName}</p>
-                        ) : null}
-                      </div>
-                      {doc.fileUrl ? (
-                        <div className="referral-empresa-doc-actions">
-                          <a
-                            href={doc.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn(
-                              buttonVariants({ variant: "outline", size: "sm" }),
-                              "rounded-lg"
+                <div className="referral-empresa-table-wrap">
+                  <table className="referral-empresa-table">
+                    <thead>
+                      <tr>
+                        <th>Documento</th>
+                        <th>Status</th>
+                        <th className="referral-empresa-table-actions-col">Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {documentRows.map((doc) => (
+                        <tr key={doc.key}>
+                          <td className="referral-empresa-table-name" data-label="Documento">
+                            {doc.label}
+                          </td>
+                          <td data-label="Status">
+                            {doc.fileUrl ? (
+                              <StatusBadge status="DISPONIVEL" type="document" label="Disponível" />
+                            ) : (
+                              <span className="colaborador-perfil-doc-awaiting">
+                                Aguardando liberação
+                              </span>
                             )}
-                          >
-                            Visualizar
-                          </a>
-                          <a
-                            href={doc.fileUrl}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn(
-                              buttonVariants({ variant: "brand", size: "sm" }),
-                              "rounded-lg"
+                          </td>
+                          <td className="referral-empresa-table-actions-col" data-label="Ação">
+                            {doc.fileUrl ? (
+                              <div className="referral-empresa-doc-actions">
+                                <a
+                                  href={doc.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={cn(
+                                    buttonVariants({ variant: "outline", size: "sm" }),
+                                    "rounded-lg"
+                                  )}
+                                >
+                                  Visualizar
+                                </a>
+                                <a
+                                  href={doc.fileUrl}
+                                  download
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={cn(
+                                    buttonVariants({ variant: "brand", size: "sm" }),
+                                    "rounded-lg"
+                                  )}
+                                >
+                                  Baixar
+                                </a>
+                              </div>
+                            ) : (
+                              <span className="colaboradores-empresa-muted">—</span>
                             )}
-                          >
-                            Baixar PDF
-                          </a>
-                        </div>
-                      ) : (
-                        <span className="colaborador-perfil-doc-awaiting">Aguardando liberação</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </section>
             </div>
           </>
