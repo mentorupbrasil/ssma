@@ -15,7 +15,7 @@ type ExamFormDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   exam?: ExamDetailSerialized | null;
-  onSuccess: () => void;
+  onSuccess: (meta?: { category?: string }) => void;
 };
 
 const CATEGORIES = Object.entries(EXAM_CATEGORY_LABELS);
@@ -115,7 +115,7 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
 
     toast.success(isEdit ? "Exame atualizado." : "Exame cadastrado.");
     onOpenChange(false);
-    onSuccess();
+    onSuccess({ category: form.category });
   };
 
   return (

@@ -1,20 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useTransition, Fragment } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, Search, Pencil, Power, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Pencil, Power, ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ExamCategory, ExamStatus } from "@prisma/client";
 import type { ExamDetailSerialized, ExamListItem } from "@/lib/exams";
-import { EXAM_CATEGORY_LABELS, EXAM_STATUS_LABELS } from "@/lib/exams";
+import {
+  EXAM_CATEGORY_LABELS,
+  EXAM_STATUS_LABELS,
+  EXAM_PAGE_SIZE_OPTIONS,
+} from "@/lib/exams";
 import { getExamDetail, toggleExamStatus } from "@/actions/exams";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { SystemActionMenu, type SystemActionItem } from "@/components/dashboard/SystemActionMenu";
-import {
-  SystemModalShell,
-} from "@/components/dashboard/SystemModalShell";
+import { SystemModalShell } from "@/components/dashboard/SystemModalShell";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ExamFormDialog } from "./ExamDialogs";
 import { Button } from "@/components/ui/button";
@@ -28,10 +30,15 @@ type ExamesClientProps = {
   initialPage: number;
   pageSize: number;
   canManage: boolean;
+  categoryCounts: {
+    total: number;
+    byCategory: Partial<Record<ExamCategory, number>>;
+  };
   filters: {
     q?: string;
     category?: string;
     status?: string;
+    pageSize?: string;
   };
 };
 
@@ -43,12 +50,21 @@ function statusLabel(status: ExamStatus) {
   return EXAM_STATUS_LABELS[status] ?? status;
 }
 
+function categoryTitle(category: string | undefined, searching: boolean) {
+  if (searching) return "Resultados da busca";
+  if (!category) return "Todos os exames";
+  const label = EXAM_CATEGORY_LABELS[category as ExamCategory];
+  if (!label) return "Exames";
+  return `Exames ${label.toLowerCase()}`;
+}
+
 export function ExamesClient({
   initialItems,
   initialTotal,
   initialPage,
   pageSize,
   canManage,
+  categoryCounts,
   filters,
 }: ExamesClientProps) {
   const router = useRouter();
@@ -56,8 +72,10 @@ export function ExamesClient({
   const [isPending, startTransition] = useTransition();
 
   const [q, setQ] = useState(filters.q ?? "");
-  const [category, setCategory] = useState(filters.category ?? "");
   const [status, setStatus] = useState(filters.status ?? "");
+  const selectedCategory = filters.category ?? "";
+  const searching = Boolean(filters.q?.trim());
+  const showCategoryColumn = searching || !selectedCategory;
 
   const [formOpen, setFormOpen] = useState(false);
   const [editExam, setEditExam] = useState<ExamDetailSerialized | null>(null);
@@ -66,36 +84,32 @@ export function ExamesClient({
   const [statusLoading, setStatusLoading] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
-  const hasActiveFilters = Boolean(filters.q || filters.category || filters.status);
-  const emptyCatalog = initialItems.length === 0 && !hasActiveFilters;
-  const emptyFiltered = initialItems.length === 0 && hasActiveFilters;
+  const rangeFrom = initialTotal === 0 ? 0 : (initialPage - 1) * pageSize + 1;
+  const rangeTo = Math.min(initialPage * pageSize, initialTotal);
 
-  const grouped = useMemo(() => {
-    const map = new Map<ExamCategory, ExamListItem[]>();
-    for (const item of initialItems) {
-      const list = map.get(item.category) ?? [];
-      list.push(item);
-      map.set(item.category, list);
-    }
-    for (const [, list] of map) {
-      list.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-    }
-    return CATEGORY_ORDER.filter((key) => map.has(key)).map((key) => ({
-      category: key,
+  const navItems = useMemo(() => {
+    const items = CATEGORY_ORDER.map((key) => ({
+      key,
       label: EXAM_CATEGORY_LABELS[key],
-      items: map.get(key)!,
-    }));
-  }, [initialItems]);
+      count: categoryCounts.byCategory[key] ?? 0,
+    })).filter((item) => item.count > 0 || selectedCategory === item.key);
+
+    return [
+      { key: "", label: "Todos os exames", count: categoryCounts.total },
+      ...items,
+    ];
+  }, [categoryCounts, selectedCategory]);
 
   const updateFilters = useCallback(
-    (updates: Record<string, string | undefined>) => {
+    (updates: Record<string, string | undefined>, opts?: { resetPage?: boolean }) => {
       const params = new URLSearchParams(searchParams.toString());
       Object.entries(updates).forEach(([key, value]) => {
         if (!value) params.delete(key);
         else params.set(key, value);
       });
-      if (!("page" in updates)) params.delete("page");
-      params.set("sort", "category");
+      if (opts?.resetPage !== false && !("page" in updates)) {
+        params.delete("page");
+      }
       startTransition(() => {
         router.push(`/dashboard/exames?${params.toString()}`);
       });
@@ -105,9 +119,8 @@ export function ExamesClient({
 
   useEffect(() => {
     setQ(filters.q ?? "");
-    setCategory(filters.category ?? "");
     setStatus(filters.status ?? "");
-  }, [filters]);
+  }, [filters.q, filters.status]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -183,9 +196,29 @@ export function ExamesClient({
     return items;
   };
 
-  const resultLabel = hasActiveFilters
-    ? `${initialTotal} exame${initialTotal === 1 ? "" : "s"} encontrado${initialTotal === 1 ? "" : "s"}`
-    : `${initialTotal} exame${initialTotal === 1 ? "" : "s"} cadastrado${initialTotal === 1 ? "" : "s"}`;
+  const clearSearch = () => {
+    setQ("");
+    updateFilters({ q: undefined });
+  };
+
+  const selectCategory = (key: string) => {
+    setQ("");
+    updateFilters({
+      category: key || undefined,
+      q: undefined,
+    });
+  };
+
+  const subtitle = searching
+    ? `${initialTotal} exame${initialTotal === 1 ? "" : "s"} encontrado${initialTotal === 1 ? "" : "s"}${
+        filters.q ? ` para “${filters.q}”` : ""
+      }`
+    : `${initialTotal} exame${initialTotal === 1 ? "" : "s"}`;
+
+  const emptyNoResults = initialItems.length === 0;
+  const emptySearch = emptyNoResults && searching;
+  const emptyCategory = emptyNoResults && !searching && Boolean(selectedCategory);
+  const emptyAll = emptyNoResults && !searching && !selectedCategory && !filters.status;
 
   return (
     <PageModule className="exames-catalogo">
@@ -222,24 +255,17 @@ export function ExamesClient({
             className="exames-catalogo-search-input"
             aria-label="Buscar exame pelo nome"
           />
+          {searching && (
+            <button
+              type="button"
+              className="exames-catalogo-search-clear"
+              onClick={clearSearch}
+            >
+              <X className="h-3.5 w-3.5" aria-hidden />
+              Limpar busca
+            </button>
+          )}
         </div>
-        <select
-          className="exames-catalogo-select"
-          value={category || ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            setCategory(value);
-            updateFilters({ category: value || undefined });
-          }}
-          aria-label="Categoria"
-        >
-          <option value="">Todas as categorias</option>
-          {Object.entries(EXAM_CATEGORY_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
         <select
           className="exames-catalogo-select"
           value={status || ""}
@@ -256,161 +282,240 @@ export function ExamesClient({
         </select>
       </div>
 
-      <div className="exames-catalogo-table-shell relative">
-        {isPending && <LoadingState overlay label="Atualizando..." />}
+      <div className="exames-catalogo-layout">
+        <aside className="exames-catalogo-nav" aria-label="Categorias de exames">
+          <nav className="exames-catalogo-nav-list">
+            {navItems.map((item) => {
+              const active = !searching && selectedCategory === item.key;
+              return (
+                <button
+                  key={item.key || "all"}
+                  type="button"
+                  className={cn(
+                    "exames-catalogo-nav-item",
+                    active && "exames-catalogo-nav-item--active"
+                  )}
+                  onClick={() => selectCategory(item.key)}
+                >
+                  <span className="exames-catalogo-nav-label truncate">{item.label}</span>
+                  <span className="exames-catalogo-nav-count">{item.count}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
 
-        <div className="exames-catalogo-result-bar">
-          <p>{resultLabel}</p>
+        <div className="exames-catalogo-mobile-nav md:hidden">
+          <label className="sr-only" htmlFor="exames-categoria-mobile">
+            Categoria
+          </label>
+          <select
+            id="exames-categoria-mobile"
+            className="exames-catalogo-select"
+            value={selectedCategory}
+            onChange={(e) => selectCategory(e.target.value)}
+            disabled={searching}
+          >
+            {navItems.map((item) => (
+              <option key={item.key || "all"} value={item.key}>
+                {item.label} ({item.count})
+              </option>
+            ))}
+          </select>
         </div>
 
-        {emptyCatalog ? (
-          <EmptyState
-            compact
-            className="border-0 bg-transparent shadow-none"
-            title="Nenhum exame cadastrado"
-            description="Cadastre os exames oferecidos pela Unimetra para utilizá-los nos atendimentos e contratos."
-            action={
-              canManage
-                ? { label: "Novo exame", onClick: openCreate }
-                : undefined
-            }
-          />
-        ) : emptyFiltered ? (
-          <EmptyState
-            compact
-            className="border-0 bg-transparent shadow-none"
-            title="Nenhum exame encontrado"
-            description="Ajuste a busca ou os filtros utilizados."
-          />
-        ) : (
-          <>
-            <div className="exames-catalogo-table-scroll hidden md:block">
-              <table className="exames-catalogo-table">
-                <colgroup>
-                  <col className="exames-catalogo-col-name" />
-                  <col className="exames-catalogo-col-status" />
-                  <col className="exames-catalogo-col-date" />
-                  <col className="exames-catalogo-col-actions" />
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th>Exame</th>
-                    <th>Status</th>
-                    <th className="hidden lg:table-cell">Atualizado em</th>
-                    <th className="exames-catalogo-th-actions">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {grouped.map((group) => (
-                    <Fragment key={group.category}>
-                      <tr className="exames-catalogo-group-row">
-                        <td colSpan={4}>
-                          <span className="exames-catalogo-group-label">
-                            {group.label.toUpperCase()}
-                          </span>
-                          <span className="exames-catalogo-group-count">
-                            {" "}
-                            · {group.items.length} exame
-                            {group.items.length === 1 ? "" : "s"}
-                          </span>
-                        </td>
-                      </tr>
-                      {group.items.map((item) => (
-                        <tr key={item.id} className="exames-catalogo-row">
-                          <td>
-                            <span className="exames-catalogo-name" title={item.name}>
-                              {item.name}
-                            </span>
-                          </td>
-                          <td>
-                            <span
-                              className={cn(
-                                "exames-catalogo-status",
-                                item.status === "ATIVO"
-                                  ? "exames-catalogo-status--active"
-                                  : "exames-catalogo-status--inactive"
-                              )}
-                            >
-                              <span className="exames-catalogo-status-dot" aria-hidden />
-                              {statusLabel(item.status)}
-                            </span>
-                          </td>
-                          <td className="exames-catalogo-date hidden lg:table-cell">
-                            {format(new Date(item.updatedAt), "dd/MM/yyyy", { locale: ptBR })}
-                          </td>
-                          <td className="exames-catalogo-td-actions">
-                            {canManage && <SystemActionMenu items={buildActions(item)} />}
-                          </td>
-                        </tr>
-                      ))}
-                    </Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        <section className="exames-catalogo-main relative">
+          {isPending && <LoadingState overlay label="Atualizando..." />}
 
-            <div className="exames-catalogo-mobile md:hidden">
-              {grouped.map((group) => (
-                <div key={group.category} className="exames-catalogo-mobile-group">
-                  <p className="exames-catalogo-mobile-group-title">
-                    {group.label.toUpperCase()} · {group.items.length} exame
-                    {group.items.length === 1 ? "" : "s"}
-                  </p>
-                  {group.items.map((item) => (
-                    <div key={item.id} className="exames-catalogo-mobile-card">
-                      <div className="min-w-0 flex-1">
-                        <p className="exames-catalogo-name" title={item.name}>
-                          {item.name}
-                        </p>
-                        <p className="exames-catalogo-mobile-meta">{group.label}</p>
-                        <span
-                          className={cn(
-                            "exames-catalogo-status mt-1.5",
-                            item.status === "ATIVO"
-                              ? "exames-catalogo-status--active"
-                              : "exames-catalogo-status--inactive"
-                          )}
-                        >
-                          <span className="exames-catalogo-status-dot" aria-hidden />
-                          {statusLabel(item.status)}
-                        </span>
-                      </div>
-                      {canManage && <SystemActionMenu items={buildActions(item)} />}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {initialTotal > pageSize && (
-          <div className="exames-catalogo-pagination">
-            <p className="text-sm text-slate-500">
-              Página {initialPage} de {totalPages}
-            </p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={initialPage <= 1 || isPending}
-                onClick={() => updateFilters({ page: String(initialPage - 1) })}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={initialPage >= totalPages || isPending}
-                onClick={() => updateFilters({ page: String(initialPage + 1) })}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+          <div className="exames-catalogo-panel-head">
+            <div>
+              <h2 className="exames-catalogo-panel-title">
+                {categoryTitle(selectedCategory, searching)}
+              </h2>
+              <p className="exames-catalogo-panel-subtitle">{subtitle}</p>
             </div>
           </div>
-        )}
+
+          {emptySearch ? (
+            <EmptyState
+              compact
+              className="border-0 bg-transparent shadow-none"
+              title="Nenhum exame encontrado"
+              description="Verifique o nome pesquisado ou ajuste o status selecionado."
+              action={{ label: "Limpar busca", onClick: clearSearch, variant: "outline" }}
+            />
+          ) : emptyCategory ? (
+            <EmptyState
+              compact
+              className="border-0 bg-transparent shadow-none"
+              title="Nenhum exame nesta categoria"
+              description="Cadastre um exame ou selecione outra categoria."
+              action={
+                canManage
+                  ? { label: "Novo exame", onClick: openCreate }
+                  : undefined
+              }
+            />
+          ) : emptyAll ? (
+            <EmptyState
+              compact
+              className="border-0 bg-transparent shadow-none"
+              title="Nenhum exame cadastrado"
+              description="Cadastre os exames oferecidos pela Unimetra para utilizá-los nos atendimentos e contratos."
+              action={
+                canManage
+                  ? { label: "Novo exame", onClick: openCreate }
+                  : undefined
+              }
+            />
+          ) : emptyNoResults ? (
+            <EmptyState
+              compact
+              className="border-0 bg-transparent shadow-none"
+              title="Nenhum exame encontrado"
+              description="Ajuste o filtro de status ou selecione outra categoria."
+            />
+          ) : (
+            <>
+              <div className="exames-catalogo-table-scroll hidden md:block">
+                <table
+                  className={cn(
+                    "exames-catalogo-table",
+                    showCategoryColumn
+                      ? "exames-catalogo-table--with-category"
+                      : "exames-catalogo-table--category-hidden"
+                  )}
+                >
+                  <thead>
+                    <tr>
+                      <th>Exame</th>
+                      {showCategoryColumn && <th>Categoria</th>}
+                      <th>Status</th>
+                      <th className="hidden lg:table-cell">Atualizado em</th>
+                      <th className="exames-catalogo-th-actions">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {initialItems.map((item) => (
+                      <tr key={item.id} className="exames-catalogo-row">
+                        <td>
+                          <span className="exames-catalogo-name" title={item.name}>
+                            {item.name}
+                          </span>
+                        </td>
+                        {showCategoryColumn && (
+                          <td className="exames-catalogo-category">
+                            {EXAM_CATEGORY_LABELS[item.category]}
+                          </td>
+                        )}
+                        <td>
+                          <span
+                            className={cn(
+                              "exames-catalogo-status",
+                              item.status === "ATIVO"
+                                ? "exames-catalogo-status--active"
+                                : "exames-catalogo-status--inactive"
+                            )}
+                          >
+                            <span className="exames-catalogo-status-dot" aria-hidden />
+                            {statusLabel(item.status)}
+                          </span>
+                        </td>
+                        <td className="exames-catalogo-date hidden lg:table-cell">
+                          {format(new Date(item.updatedAt), "dd/MM/yyyy", { locale: ptBR })}
+                        </td>
+                        <td className="exames-catalogo-td-actions">
+                          {canManage && <SystemActionMenu items={buildActions(item)} />}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="exames-catalogo-mobile md:hidden">
+                {initialItems.map((item) => (
+                  <div key={item.id} className="exames-catalogo-mobile-card">
+                    <div className="min-w-0 flex-1">
+                      <p className="exames-catalogo-name" title={item.name}>
+                        {item.name}
+                      </p>
+                      {(showCategoryColumn || selectedCategory) && (
+                        <p className="exames-catalogo-mobile-meta">
+                          {EXAM_CATEGORY_LABELS[item.category]}
+                        </p>
+                      )}
+                      <span
+                        className={cn(
+                          "exames-catalogo-status mt-1.5",
+                          item.status === "ATIVO"
+                            ? "exames-catalogo-status--active"
+                            : "exames-catalogo-status--inactive"
+                        )}
+                      >
+                        <span className="exames-catalogo-status-dot" aria-hidden />
+                        {statusLabel(item.status)}
+                      </span>
+                    </div>
+                    {canManage && <SystemActionMenu items={buildActions(item)} />}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {initialTotal > 0 && (
+            <div className="exames-catalogo-pagination">
+              <div className="exames-catalogo-pagination-left">
+                <label className="exames-catalogo-page-size">
+                  <span>Linhas por página</span>
+                  <select
+                    value={String(pageSize)}
+                    onChange={(e) =>
+                      updateFilters({ pageSize: e.target.value, page: undefined })
+                    }
+                    aria-label="Linhas por página"
+                  >
+                    {EXAM_PAGE_SIZE_OPTIONS.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="exames-catalogo-range">
+                  {rangeFrom}–{rangeTo} de {initialTotal}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={initialPage <= 1 || isPending}
+                  onClick={() =>
+                    updateFilters({ page: String(initialPage - 1) }, { resetPage: false })
+                  }
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Anterior
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={initialPage >= totalPages || isPending}
+                  onClick={() =>
+                    updateFilters({ page: String(initialPage + 1) }, { resetPage: false })
+                  }
+                >
+                  Próxima
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </section>
       </div>
 
       <ExamFormDialog
@@ -420,7 +525,17 @@ export function ExamesClient({
           if (!open) setEditExam(null);
         }}
         exam={editExam}
-        onSuccess={() => router.refresh()}
+        onSuccess={(meta) => {
+          if (meta?.category) {
+            updateFilters({
+              category: meta.category,
+              q: undefined,
+              page: undefined,
+            });
+          } else {
+            router.refresh();
+          }
+        }}
       />
 
       <SystemModalShell

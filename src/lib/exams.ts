@@ -90,7 +90,17 @@ export type ExamListFilters = {
   deadline?: string;
   sort?: string;
   page?: number;
+  pageSize?: number;
 };
+
+export const EXAM_PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+export const EXAM_DEFAULT_PAGE_SIZE = 25;
+
+export function resolveExamPageSize(value?: number | string): number {
+  const n = typeof value === "string" ? parseInt(value, 10) : value;
+  if (n && (EXAM_PAGE_SIZE_OPTIONS as readonly number[]).includes(n)) return n;
+  return EXAM_DEFAULT_PAGE_SIZE;
+}
 
 export type ExamListItem = {
   id: string;
@@ -142,6 +152,7 @@ export type ExamSelectOption = {
 
 const PAGE_SIZE = 15;
 
+/** @deprecated Prefer resolveExamPageSize for o catálogo clínico */
 export function getExamPageSize() {
   return PAGE_SIZE;
 }

@@ -9,6 +9,7 @@ import {
   buildExamListWhere,
   buildExamOrderBy,
   getExamPageSize,
+  resolveExamPageSize,
   serializeExamDetail,
   serializeExamListItem,
   slugifyExamName,
@@ -23,6 +24,7 @@ import {
 } from "@/lib/exams";
 import type { ExamGuide } from "@/data/exams";
 import { examFormSchema, examStatusToggleSchema } from "@/schemas";
+import type { ExamCategory } from "@prisma/client";
 
 type ActionResult<T extends Record<string, unknown> = Record<string, unknown>> =
   | ({ success: true } & T)
@@ -51,7 +53,8 @@ export async function listExamsForDashboard(filters: ExamListFilters = {}): Prom
   pageSize: number;
   statCounts: Record<string, number>;
 }> {
-  const pageSize = getExamPageSize();
+  const pageSize =
+    filters.pageSize != null ? resolveExamPageSize(filters.pageSize) : getExamPageSize();
   const page = Math.max(1, filters.page ?? 1);
   const where = buildExamListWhere(filters);
   const orderBy = buildExamOrderBy(filters.sort);
@@ -107,6 +110,31 @@ export async function listExamsForDashboard(filters: ExamListFilters = {}): Prom
       no_site: noSite,
     },
   };
+}
+
+/** Contagens por categoria para a navegação do catálogo clínico (respeita filtro de status). */
+export async function getExamCategoryNavCounts(status?: string): Promise<{
+  total: number;
+  byCategory: Partial<Record<ExamCategory, number>>;
+}> {
+  const statusWhere =
+    status === "ATIVO" || status === "INATIVO" ? { status: status as ExamStatus } : {};
+
+  const [total, grouped] = await Promise.all([
+    prisma.exam.count({ where: statusWhere }),
+    prisma.exam.groupBy({
+      by: ["category"],
+      where: statusWhere,
+      _count: { _all: true },
+    }),
+  ]);
+
+  const byCategory: Partial<Record<ExamCategory, number>> = {};
+  for (const row of grouped) {
+    byCategory[row.category] = row._count._all;
+  }
+
+  return { total, byCategory };
 }
 
 export async function getExamDetail(

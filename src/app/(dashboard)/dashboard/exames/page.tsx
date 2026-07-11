@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { isEmpresaUser } from "@/lib/authz";
-import { listExamsForDashboard } from "@/actions/exams";
+import { listExamsForDashboard, getExamCategoryNavCounts } from "@/actions/exams";
+import { resolveExamPageSize } from "@/lib/exams";
 import { ExamesClient } from "@/components/dashboard/exams/ExamesClient";
 import { EmpresaPreparosClient } from "@/components/dashboard/exams/EmpresaPreparosClient";
 import { Loader2 } from "lucide-react";
@@ -51,13 +52,23 @@ async function ExamesContent({ searchParams }: { searchParams: SearchParams }) {
     );
   }
 
-  const data = await listExamsForDashboard({
-    q: param(sp.q),
-    category: param(sp.category),
-    status: param(sp.status),
-    sort: "category",
-    page,
-  });
+  const q = param(sp.q)?.trim() || undefined;
+  const category = param(sp.category);
+  const status = param(sp.status);
+  const pageSize = resolveExamPageSize(param(sp.pageSize));
+  const listCategory = q ? undefined : category;
+
+  const [data, categoryCounts] = await Promise.all([
+    listExamsForDashboard({
+      q,
+      category: listCategory,
+      status,
+      sort: listCategory ? "name" : "category",
+      page,
+      pageSize,
+    }),
+    getExamCategoryNavCounts(status),
+  ]);
 
   return (
     <ExamesClient
@@ -66,10 +77,12 @@ async function ExamesContent({ searchParams }: { searchParams: SearchParams }) {
       initialPage={data.page}
       pageSize={data.pageSize}
       canManage={canManage}
+      categoryCounts={categoryCounts}
       filters={{
-        q: param(sp.q),
-        category: param(sp.category),
-        status: param(sp.status),
+        q,
+        category,
+        status,
+        pageSize: String(pageSize),
       }}
     />
   );
