@@ -46,7 +46,9 @@ export const EMPRESA_NAV_SECTIONS = [
 ] as const;
 
 /** Whitelist de rotas visíveis no menu do RH */
-export const EMPRESA_NAV_HREFS = EMPRESA_NAV_SECTIONS.flatMap((section) => section.hrefs);
+export const EMPRESA_NAV_HREFS: readonly string[] = EMPRESA_NAV_SECTIONS.flatMap(
+  (section) => section.hrefs
+);
 
 export function collaboratorStatCardsForEmpresa() {
   return COLLABORATOR_STAT_CARDS.filter((c) => c.key !== "sem_empresa");
