@@ -3494,7 +3494,8 @@
   /* App shell — organização visual do painel */
   .app-shell {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     background:
       radial-gradient(circle at top right, rgb(46 103 255 / 0.05), transparent 28%),
       var(--brand-bg);
@@ -3506,6 +3507,23 @@
     border-right: 1px solid rgb(226 232 240 / 0.9);
     background: rgb(255 255 255 / 0.92);
     backdrop-filter: blur(10px);
+  }
+
+  @media (min-width: 1024px) {
+    .app-shell-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 40;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app-shell-main {
+      margin-left: 17.5rem;
+      height: 100vh;
+      overflow-y: auto;
+    }
   }
 
   .app-shell-sidebar-inner {
@@ -5369,6 +5387,24 @@
 
 .referral-filters {
   padding: 1rem;
+}
+
+.empresa-filter-panel {
+  margin-top: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.empresa-filter-panel .referral-filters-grid {
+  gap: 0.875rem;
+}
+
+@media (min-width: 1024px) {
+  .empresa-filter-panel .referral-filters-grid {
+    grid-template-columns: 2fr repeat(3, minmax(0, 1fr));
+  }
 }
 
 .referral-filters-grid {

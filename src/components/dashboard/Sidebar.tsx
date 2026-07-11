@@ -28,6 +28,11 @@ import {
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/types/roles";
 import { DASHBOARD_NAV, hasPermission, getRoleLabel } from "@/lib/permissions";
+import {
+  EMPRESA_HIDDEN_NAV_HREFS,
+  EMPRESA_NAV_SECTIONS,
+  isEmpresaPortalRole,
+} from "@/lib/empresa-portal";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -111,7 +116,13 @@ function userInitials(name: string) {
 
 function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNavigate?: () => void }) {
   const pathname = usePathname();
-  const items = DASHBOARD_NAV.filter((item) => hasPermission(user.role, item.permission));
+  const isEmpresa = isEmpresaPortalRole(user.role);
+  const items = DASHBOARD_NAV.filter((item) => {
+    if (!hasPermission(user.role, item.permission)) return false;
+    if (isEmpresa && EMPRESA_HIDDEN_NAV_HREFS.includes(item.href)) return false;
+    return true;
+  });
+  const navSections = isEmpresa ? EMPRESA_NAV_SECTIONS : NAV_SECTIONS;
   const itemByHref = new Map(items.map((item) => [item.href, item]));
   const initials = userInitials(user.name);
 
@@ -128,7 +139,7 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
       </div>
 
       <nav className="app-shell-nav">
-        {NAV_SECTIONS.map((section) => {
+        {navSections.map((section) => {
           const sectionItems = section.hrefs
             .map((href) => itemByHref.get(href))
             .filter((item): item is (typeof items)[number] => Boolean(item));

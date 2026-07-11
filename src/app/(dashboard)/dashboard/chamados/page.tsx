@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { isEmpresaUser } from "@/lib/authz";
 import { scopedWhere } from "@/lib/scoped-db";
 import { prisma } from "@/lib/prisma";
 import { listTicketsDashboard } from "@/actions/tickets";
@@ -13,6 +14,7 @@ export default async function ChamadosPage({
 }) {
   const params = await searchParams;
   const session = await auth();
+  const isEmpresa = session?.user ? isEmpresaUser(session as never) : false;
   const scope = session?.user ? scopedWhere({ user: session.user as never }) : {};
 
   const [dashboard, users] = await Promise.all([
@@ -24,13 +26,15 @@ export default async function ChamadosPage({
         card: params.card,
         page: params.page ? parseInt(params.page, 10) : 1,
       },
-      "CLINIC"
+      isEmpresa ? "SAAS" : "CLINIC"
     ),
-    prisma.user.findMany({
-      where: { ...scope, status: "ACTIVE", role: { not: "SUPER_ADMIN" } },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
+    isEmpresa
+      ? Promise.resolve([])
+      : prisma.user.findMany({
+          where: { ...scope, status: "ACTIVE", role: { not: "SUPER_ADMIN" } },
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+        }),
   ]);
 
   return (
@@ -40,6 +44,7 @@ export default async function ChamadosPage({
       statCounts={dashboard.statCounts}
       users={users}
       filters={{ q: params.q, status: params.status, priority: params.priority, card: params.card }}
+      isEmpresaPortal={isEmpresa}
     />
   );
 }

@@ -411,3 +411,73 @@ export async function convertPreReferralToReferral(
   const { convertPreReferralWithOptions } = await import("@/actions/pre-referrals");
   return convertPreReferralWithOptions(preReferralId, {});
 }
+
+export async function submitBulkReferrals(input: {
+  authorizerName: string;
+  entries: { patientId: string; clinicalExamType: ClinicalExamType }[];
+}): Promise<ActionResult<{ count: number; protocols: string[] }>> {
+  try {
+    const session = await requirePermission("referrals.manage");
+    if (!isEmpresaUser(session) || !session.user.companyId) {
+      return { success: false, error: "Fluxo disponível apenas para o portal da empresa." };
+    }
+
+    if (!input.entries.length) {
+      return { success: false, error: "Selecione ao menos um colaborador." };
+    }
+
+    const company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
+    });
+    if (!company) return { success: false, error: "Empresa não encontrada." };
+
+    const protocols: string[] = [];
+
+    for (const entry of input.entries) {
+      const patient = await prisma.patient.findFirst({
+        where: { id: entry.patientId, companyId: company.id },
+      });
+      if (!patient) {
+        return { success: false, error: "Colaborador inválido para esta empresa." };
+      }
+
+      const protocol = await generateProtocol();
+      await prisma.referral.create({
+        data: {
+          protocol,
+          companyId: company.id,
+          patientId: patient.id,
+          clinicalExamType: entry.clinicalExamType,
+          status: "NOVO",
+          authorizerName: input.authorizerName.trim() || company.responsibleName || session.user.name,
+          companyPhone: company.phone ?? "",
+          companyEmail: company.email ?? "",
+          consentAccepted: true,
+          source: "PORTAL",
+          assignedToId: session.user.id,
+          statusHistory: {
+            create: {
+              toStatus: "NOVO",
+              notes: "Encaminhamento criado pelo portal da empresa",
+              changedById: session.user.id,
+            },
+          },
+        },
+      });
+      protocols.push(protocol);
+    }
+
+    await createAuditLog({
+      userId: session.user.id,
+      action: "CREATE",
+      entity: "Referral",
+      details: `Encaminhamentos em massa: ${protocols.length}`,
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/encaminhamentos");
+    return { success: true, count: protocols.length, protocols };
+  } catch (error) {
+    return { success: false, error: actionError(error, "Erro ao enviar encaminhamentos.") };
+  }
+}

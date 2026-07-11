@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
+import { isEmpresaUser } from "@/lib/authz";
 import { listExamsForDashboard } from "@/actions/exams";
 import { ExamesClient } from "@/components/dashboard/exams/ExamesClient";
 import { Loader2 } from "lucide-react";
@@ -20,6 +21,7 @@ async function ExamesContent({ searchParams }: { searchParams: SearchParams }) {
   if (!canView) redirect("/dashboard");
 
   const canManage = hasPermission(session.user.role, "exams.manage");
+  const isEmpresa = isEmpresaUser(session);
   const sp = await searchParams;
   const page = Math.max(1, parseInt(param(sp.page) ?? "1", 10) || 1);
 
@@ -44,6 +46,7 @@ async function ExamesContent({ searchParams }: { searchParams: SearchParams }) {
       pageSize={data.pageSize}
       statCounts={data.statCounts}
       canManage={canManage}
+      isEmpresaPortal={isEmpresa}
       filters={{
         q: param(sp.q),
         card: param(sp.card),

@@ -10,6 +10,9 @@ import {
   ClipboardList,
   FolderOpen,
   Inbox,
+  Users,
+  CalendarCheck,
+  LifeBuoy,
 } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageShell } from "@/components/dashboard/PageShell";
@@ -32,9 +35,36 @@ export default async function DashboardPage() {
 
   const quickActions = isEmpresa
     ? [
-        { href: "/dashboard/encaminhamentos/novo", label: "Novo encaminhamento", description: "Solicitar exame ocupacional", icon: FileText },
-        { href: "/dashboard/documentos", label: "Ver documentos", description: "ASOs e laudos da empresa", icon: FolderOpen },
-        { href: "/dashboard/chamados", label: "Abrir chamado", description: "Falar com a clínica", icon: Inbox },
+        {
+          href: "/dashboard/colaboradores?new=1",
+          label: "Novo colaborador",
+          description: "Cadastrar admissional ou individual",
+          icon: Users,
+        },
+        {
+          href: "/dashboard/encaminhamentos/novo",
+          label: "Novo encaminhamento",
+          description: "Solicitar exames em massa",
+          icon: FileText,
+        },
+        {
+          href: "/dashboard/agenda",
+          label: "Ver agenda",
+          description: "Acompanhar exames agendados",
+          icon: CalendarCheck,
+        },
+        {
+          href: "/dashboard/documentos?card=disponiveis",
+          label: "Documentos",
+          description: "ASOs e laudos disponíveis",
+          icon: FolderOpen,
+        },
+        {
+          href: "/dashboard/chamados",
+          label: "Suporte Unimetra",
+          description: "Ajuda com o portal empresarial",
+          icon: LifeBuoy,
+        },
       ]
     : [
         { href: "/dashboard/empresas/novo", label: "Nova empresa", description: "Cadastrar cliente corporativo", icon: Building2 },
@@ -52,12 +82,12 @@ export default async function DashboardPage() {
         title="Visão geral"
         description={
           isEmpresa
-            ? "Documentos, encaminhamentos e solicitações da sua empresa em um só lugar."
+            ? "Colaboradores, encaminhamentos, agenda e documentos da sua empresa."
             : "Pendências, produção e ações prioritárias da clínica — atualizado em tempo real."
         }
       />
 
-      <PlatformPositioningBanner />
+      {!isEmpresa && <PlatformPositioningBanner />}
 
       <section>
         <h2 className="section-label">Atalhos rápidos</h2>
@@ -67,31 +97,36 @@ export default async function DashboardPage() {
       <section>
         <h2 className="section-label">Indicadores</h2>
         <MetricGrid>
-          {overview.stats
-            .filter((stat) => stat.show)
-            .map((stat) => {
-              const meta = getMetricMeta(`overview:${stat.key}`);
-              return (
-                <Link key={stat.key} href={stat.href} className="block h-full">
-                  <MetricCard
-                    label={stat.title}
-                    value={stat.value}
-                    icon={meta.icon}
-                    description={meta.description}
-                    variant={meta.tone}
-                    badge={meta.badge}
-                    className="h-full"
-                  />
-                </Link>
-              );
-            })}
+          {overview.stats.map((stat) => {
+            const meta = getMetricMeta(`overview:${stat.key}`);
+            return (
+              <Link key={stat.key} href={stat.href} className="block h-full">
+                <MetricCard
+                  label={stat.title}
+                  value={stat.value}
+                  icon={meta.icon}
+                  description={meta.description}
+                  variant={meta.tone}
+                  badge={meta.badge}
+                  className="h-full"
+                />
+              </Link>
+            );
+          })}
         </MetricGrid>
       </section>
 
       <div className="dashboard-panels-grid">
-        <DashboardPanel title="Precisa de ação agora" icon={AlertTriangle}>
+        <DashboardPanel
+          title={isEmpresa ? "Atenção necessária" : "Precisa de ação agora"}
+          icon={AlertTriangle}
+        >
           {overview.pendingActions.length === 0 ? (
-            <InlineEmptyNote>Nenhuma pendência crítica no momento. Operação em dia.</InlineEmptyNote>
+            <InlineEmptyNote>
+              {isEmpresa
+                ? "Nenhuma pendência crítica. Sua operação está em dia."
+                : "Nenhuma pendência crítica no momento. Operação em dia."}
+            </InlineEmptyNote>
           ) : (
             <div className="dashboard-list">
               {overview.pendingActions.map((item) => (
@@ -104,79 +139,156 @@ export default async function DashboardPage() {
           )}
         </DashboardPanel>
 
-        {!isEmpresa && (
-          <DashboardPanel title="Atividades recentes" description="Pré-encaminhamentos recebidos" icon={FileText}>
-            {overview.recentPreReferrals.length === 0 ? (
-              <InlineEmptyNote>Nenhum pré-encaminhamento recente.</InlineEmptyNote>
-            ) : (
-              <div className="dashboard-list">
-                {overview.recentPreReferrals.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/dashboard/pre-encaminhamentos/${p.id}`}
-                    className="dashboard-list-item dashboard-list-item-row"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[var(--brand-navy)]">{p.protocol}</p>
-                      <p className="text-xs text-[var(--dash-text-muted)]">
-                        {p.employeeName} — {p.companyName}
-                      </p>
-                      <p className="text-xs text-[var(--dash-text-subtle)]">
-                        {format(p.createdAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                      </p>
-                    </div>
-                    <StatusBadge status={p.status} type="preReferral" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </DashboardPanel>
-        )}
+        {isEmpresa ? (
+          <>
+            <DashboardPanel title="Próximos agendamentos" icon={CalendarCheck}>
+              {!overview.upcomingAppointments?.length ? (
+                <InlineEmptyNote>Nenhum agendamento futuro.</InlineEmptyNote>
+              ) : (
+                <div className="dashboard-list">
+                  {overview.upcomingAppointments.map((a) => (
+                    <Link
+                      key={a.id}
+                      href="/dashboard/agenda"
+                      className="dashboard-list-item dashboard-list-item-row"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[var(--brand-navy)]">{a.patientName}</p>
+                        <p className="text-xs text-[var(--dash-text-muted)]">
+                          {format(a.scheduledAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <StatusBadge status={a.status} type="appointment" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </DashboardPanel>
 
-        <DashboardPanel title="Documentos pendentes" icon={FolderOpen}>
-          {overview.pendingDocuments.length === 0 ? (
-            <InlineEmptyNote>Nenhum documento pendente.</InlineEmptyNote>
-          ) : (
-            <div className="dashboard-list">
-              {overview.pendingDocuments.map((d) => (
-                <Link key={d.id} href="/dashboard/documentos" className="dashboard-list-item dashboard-list-item-row">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--brand-navy)]">{d.title}</p>
-                    {d.companyName && (
-                      <p className="text-xs text-[var(--dash-text-muted)]">{d.companyName}</p>
-                    )}
-                  </div>
-                  <StatusBadge status={d.status} type="document" />
-                </Link>
-              ))}
-            </div>
-          )}
-        </DashboardPanel>
+            <DashboardPanel title="Encaminhamentos recentes" icon={FileText}>
+              {!overview.recentReferrals?.length ? (
+                <InlineEmptyNote>Nenhum encaminhamento recente.</InlineEmptyNote>
+              ) : (
+                <div className="dashboard-list">
+                  {overview.recentReferrals.map((r) => (
+                    <Link
+                      key={r.id}
+                      href={`/dashboard/encaminhamentos/${r.id}`}
+                      className="dashboard-list-item dashboard-list-item-row"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[var(--brand-navy)]">{r.protocol}</p>
+                        <p className="text-xs text-[var(--dash-text-muted)]">{r.patientName}</p>
+                        <p className="text-xs text-[var(--dash-text-subtle)]">
+                          {format(r.createdAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <StatusBadge status={r.status} type="referral" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </DashboardPanel>
 
-        {!isEmpresa && (
-          <DashboardPanel title="Orçamentos em negociação" icon={DollarSign}>
-            {overview.negotiatingQuotes.length === 0 ? (
-              <InlineEmptyNote>Nenhum orçamento em negociação.</InlineEmptyNote>
-            ) : (
-              <div className="dashboard-list">
-                {overview.negotiatingQuotes.map((q) => (
-                  <Link
-                    key={q.id}
-                    href={`/dashboard/orcamentos?tab=orcamentos&id=${q.id}`}
-                    className="dashboard-list-item dashboard-list-item-row"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[var(--brand-navy)]">
-                        {q.quoteNumber ?? "Sem número"}
-                      </p>
-                      <p className="text-xs text-[var(--dash-text-muted)]">{q.companyName}</p>
-                    </div>
-                    <StatusBadge status={q.status} type="quote" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </DashboardPanel>
+            <DashboardPanel title="Documentos disponíveis" icon={FolderOpen}>
+              {!overview.availableDocuments?.length ? (
+                <InlineEmptyNote>Nenhum documento disponível ainda.</InlineEmptyNote>
+              ) : (
+                <div className="dashboard-list">
+                  {overview.availableDocuments.map((d) => (
+                    <Link
+                      key={d.id}
+                      href="/dashboard/documentos?card=disponiveis"
+                      className="dashboard-list-item dashboard-list-item-row"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[var(--brand-navy)]">{d.title}</p>
+                        {d.patientName && (
+                          <p className="text-xs text-[var(--dash-text-muted)]">{d.patientName}</p>
+                        )}
+                        <p className="text-xs text-[var(--dash-text-subtle)]">
+                          {format(d.updatedAt, "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </DashboardPanel>
+          </>
+        ) : (
+          <>
+            <DashboardPanel title="Atividades recentes" description="Pré-encaminhamentos recebidos" icon={FileText}>
+              {overview.recentPreReferrals.length === 0 ? (
+                <InlineEmptyNote>Nenhum pré-encaminhamento recente.</InlineEmptyNote>
+              ) : (
+                <div className="dashboard-list">
+                  {overview.recentPreReferrals.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/dashboard/pre-encaminhamentos/${p.id}`}
+                      className="dashboard-list-item dashboard-list-item-row"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[var(--brand-navy)]">{p.protocol}</p>
+                        <p className="text-xs text-[var(--dash-text-muted)]">
+                          {p.employeeName} — {p.companyName}
+                        </p>
+                        <p className="text-xs text-[var(--dash-text-subtle)]">
+                          {format(p.createdAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <StatusBadge status={p.status} type="preReferral" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </DashboardPanel>
+
+            <DashboardPanel title="Documentos pendentes" icon={FolderOpen}>
+              {overview.pendingDocuments.length === 0 ? (
+                <InlineEmptyNote>Nenhum documento pendente.</InlineEmptyNote>
+              ) : (
+                <div className="dashboard-list">
+                  {overview.pendingDocuments.map((d) => (
+                    <Link key={d.id} href="/dashboard/documentos" className="dashboard-list-item dashboard-list-item-row">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[var(--brand-navy)]">{d.title}</p>
+                        {d.companyName && (
+                          <p className="text-xs text-[var(--dash-text-muted)]">{d.companyName}</p>
+                        )}
+                      </div>
+                      <StatusBadge status={d.status} type="document" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </DashboardPanel>
+
+            <DashboardPanel title="Orçamentos em negociação" icon={DollarSign}>
+              {overview.negotiatingQuotes.length === 0 ? (
+                <InlineEmptyNote>Nenhum orçamento em negociação.</InlineEmptyNote>
+              ) : (
+                <div className="dashboard-list">
+                  {overview.negotiatingQuotes.map((q) => (
+                    <Link
+                      key={q.id}
+                      href={`/dashboard/orcamentos?tab=orcamentos&id=${q.id}`}
+                      className="dashboard-list-item dashboard-list-item-row"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[var(--brand-navy)]">
+                          {q.quoteNumber ?? "Sem número"}
+                        </p>
+                        <p className="text-xs text-[var(--dash-text-muted)]">{q.companyName}</p>
+                      </div>
+                      <StatusBadge status={q.status} type="quote" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </DashboardPanel>
+          </>
         )}
       </div>
     </PageShell>

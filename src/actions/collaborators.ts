@@ -382,3 +382,119 @@ export async function getCollaboratorFormCompanies() {
     return { success: false as const, error: "Erro ao carregar empresas." };
   }
 }
+
+type ImportRow = {
+  fullName: string;
+  cpf: string;
+  birthDate?: string;
+  gender?: string;
+  phone?: string;
+  jobTitle: string;
+  department?: string;
+  rg?: string;
+};
+
+function parseCollaboratorCsv(csvText: string): ImportRow[] {
+  const lines = csvText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length < 2) return [];
+
+  const delimiter = lines[0].includes(";") ? ";" : ",";
+  const header = lines[0].toLowerCase().split(delimiter).map((h) => h.trim());
+
+  const idx = (name: string) => header.findIndex((h) => h.includes(name));
+
+  const rows: ImportRow[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(delimiter).map((c) => c.trim());
+    const fullName = cols[idx("nome")] ?? cols[0];
+    const cpf = (cols[idx("cpf")] ?? cols[1] ?? "").replace(/\D/g, "");
+    if (!fullName || cpf.length !== 11) continue;
+
+    rows.push({
+      fullName,
+      cpf,
+      birthDate: cols[idx("nascimento")] ?? cols[idx("data_nascimento")] ?? undefined,
+      gender: cols[idx("sexo")] ?? undefined,
+      phone: cols[idx("telefone")] ?? cols[idx("phone")] ?? undefined,
+      jobTitle: cols[idx("funcao")] ?? cols[idx("função")] ?? cols[5] ?? "Colaborador",
+      department: cols[idx("setor")] ?? undefined,
+      rg: cols[idx("rg")] ?? undefined,
+    });
+  }
+  return rows;
+}
+
+export async function importCollaboratorsCsv(
+  csvText: string
+): Promise<ActionResult<{ created: number; updated: number; skipped: number }>> {
+  try {
+    const session = await requirePermission("patients.manage");
+    if (!isEmpresaUser(session) || !session.user.companyId) {
+      return { success: false, error: "Importação em massa disponível apenas para o portal da empresa." };
+    }
+
+    const rows = parseCollaboratorCsv(csvText);
+    if (rows.length === 0) {
+      return { success: false, error: "Planilha vazia ou formato inválido. Use o modelo disponível na tela." };
+    }
+
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+    const companyId = session.user.companyId;
+
+    for (const row of rows) {
+      const existing = await prisma.patient.findUnique({ where: { cpf: row.cpf } });
+      if (existing) {
+        if (existing.companyId && existing.companyId !== companyId) {
+          skipped++;
+          continue;
+        }
+        await prisma.patient.update({
+          where: { id: existing.id },
+          data: {
+            fullName: row.fullName,
+            companyId,
+            jobTitle: row.jobTitle,
+            department: row.department ?? existing.department,
+            phone: row.phone ?? existing.phone,
+            birthDate: row.birthDate ? new Date(row.birthDate) : existing.birthDate,
+            gender: row.gender ?? existing.gender,
+            rg: row.rg ?? existing.rg,
+            status: "ATIVO",
+          },
+        });
+        updated++;
+        continue;
+      }
+
+      await prisma.patient.create({
+        data: {
+          fullName: row.fullName,
+          cpf: row.cpf,
+          companyId,
+          jobTitle: row.jobTitle,
+          department: row.department ?? null,
+          phone: row.phone ?? null,
+          birthDate: row.birthDate ? new Date(row.birthDate) : undefined,
+          gender: row.gender ?? undefined,
+          rg: row.rg ?? null,
+          status: "ATIVO",
+        },
+      });
+      created++;
+    }
+
+    await createAuditLog({
+      userId: session.user.id,
+      action: "CREATE",
+      entity: "Patient",
+      details: `Importação CSV: ${created} criados, ${updated} atualizados`,
+    });
+
+    revalidatePath("/dashboard/colaboradores");
+    return { success: true, created, updated, skipped };
+  } catch (error) {
+    return { success: false, error: actionError(error, "Erro ao importar colaboradores.") };
+  }
+}

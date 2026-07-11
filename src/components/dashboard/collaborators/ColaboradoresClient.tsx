@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import type { CollaboratorListItem } from "@/lib/collaborators";
 import { COLLABORATOR_STAT_CARDS, getPeriodicExamBadge } from "@/lib/collaborators";
+import { collaboratorStatCardsForEmpresa } from "@/lib/empresa-portal";
+import { CollaboratorBulkImport } from "./CollaboratorBulkImport";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
@@ -64,6 +66,7 @@ type ColaboradoresClientProps = {
   statCounts: Record<string, number>;
   companies: { id: string; name: string }[];
   canManage: boolean;
+  isEmpresaPortal?: boolean;
   filters: Record<string, string | undefined>;
 };
 
@@ -75,6 +78,7 @@ export function ColaboradoresClient({
   statCounts,
   companies,
   canManage,
+  isEmpresaPortal = false,
   filters,
 }: ColaboradoresClientProps) {
   const router = useRouter();
@@ -177,11 +181,17 @@ export function ColaboradoresClient({
     if (searchParams.get("new") === "1" && canManage) setNewDialogOpen(true);
   }, [searchParams, canManage]);
 
+  const statCards = isEmpresaPortal ? collaboratorStatCardsForEmpresa() : COLLABORATOR_STAT_CARDS;
+
   return (
     <PageModule>
       <PageHeader
         title="Colaboradores"
-        description="Colaboradores cadastrados e histórico ocupacional"
+        description={
+          isEmpresaPortal
+            ? "Equipe da empresa, validade de ASO e cadastros para encaminhamento"
+            : "Colaboradores cadastrados e histórico ocupacional"
+        }
       >
         {canManage && (
           <Button variant="brand" onClick={() => setNewDialogOpen(true)}>
@@ -190,8 +200,10 @@ export function ColaboradoresClient({
         )}
       </PageHeader>
 
+      {isEmpresaPortal && <CollaboratorBulkImport />}
+
       <FilterMetricGrid
-        items={COLLABORATOR_STAT_CARDS.map((card) => {
+        items={statCards.map((card) => {
           const isActive = activeStatus === card.filter;
           return {
             key: card.key,
@@ -215,13 +227,18 @@ export function ColaboradoresClient({
         <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
-              placeholder="Buscar por nome, CPF, empresa, função ou protocolo"
+              placeholder={
+                isEmpresaPortal
+                  ? "Buscar por nome, CPF, função ou protocolo"
+                  : "Buscar por nome, CPF, empresa, função ou protocolo"
+              }
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               className="pl-9"
             />
           </div>
+          {!isEmpresaPortal && (
           <select
             value={companyId}
             onChange={(e) => setCompanyId(e.target.value)}
@@ -234,6 +251,7 @@ export function ColaboradoresClient({
               </option>
             ))}
           </select>
+          )}
           <select
             value={activeStatus === "ALL" ? "" : activeStatus}
             onChange={(e) => updateFilters({ status: e.target.value || "ALL" })}
@@ -318,7 +336,7 @@ export function ColaboradoresClient({
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>CPF</TableHead>
-                  <TableHead>Empresa</TableHead>
+                  {!isEmpresaPortal && <TableHead>Empresa</TableHead>}
                   <TableHead className="hidden md:table-cell">Função</TableHead>
                   <TableHead className="hidden lg:table-cell">Setor</TableHead>
                   <TableHead className="hidden sm:table-cell">Último exame</TableHead>
@@ -347,6 +365,7 @@ export function ColaboradoresClient({
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">{c.cpfMasked}</TableCell>
+                    {!isEmpresaPortal && (
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       {c.companyId ? (
                         <Link
@@ -359,6 +378,7 @@ export function ColaboradoresClient({
                         "—"
                       )}
                     </TableCell>
+                    )}
                     <TableCell className="hidden text-sm md:table-cell">{c.jobTitle ?? "—"}</TableCell>
                     <TableCell className="hidden text-sm lg:table-cell">{c.department ?? "—"}</TableCell>
                     <TableCell className="hidden text-sm sm:table-cell">

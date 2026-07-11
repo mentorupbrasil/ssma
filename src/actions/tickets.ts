@@ -7,7 +7,7 @@ import { requirePermission, requireSession, actionError } from "@/lib/authz";
 import { createAuditLog } from "@/lib/server";
 import { resolveClinicId, scopedWhere, withClinicId } from "@/lib/scoped-db";
 import { createNotification } from "@/lib/notifications";
-import { isSuperAdmin } from "@/lib/tenant";
+import { isSuperAdmin, isCompanyHr } from "@/lib/tenant";
 import { buildTicketWhere, getTicketPageSize, type TicketFilters } from "@/lib/tickets";
 
 type Result = { success: true; id: string } | { success: false; error: string };
@@ -17,14 +17,24 @@ export async function listTicketsDashboard(
   scope: TicketScope = "CLINIC"
 ) {
   const session = await requireSession();
-  if (scope === "CLINIC") await requirePermission("tickets.manage");
+  const isEmpresa = isCompanyHr(session.user.role);
+  const effectiveScope: TicketScope = isEmpresa ? "SAAS" : scope;
+
+  if (effectiveScope === "CLINIC") {
+    await requirePermission("tickets.manage");
+  } else if (!isEmpresa && !isSuperAdmin(session.user.role)) {
+    throw new Error("FORBIDDEN");
+  }
+
   const baseScope =
-    scope === "SAAS" && isSuperAdmin(session.user.role)
+    effectiveScope === "SAAS" && isSuperAdmin(session.user.role)
       ? { scope: "SAAS" as const }
-      : scopedWhere(session, { scope });
+      : effectiveScope === "SAAS" && isEmpresa
+        ? { scope: "SAAS" as const, companyId: session.user.companyId ?? undefined }
+        : scopedWhere(session, { scope: effectiveScope });
   const pageSize = getTicketPageSize();
   const page = Math.max(1, filters.page ?? 1);
-  const where = { ...baseScope, ...buildTicketWhere(filters, scope) };
+  const where = { ...baseScope, ...buildTicketWhere(filters, effectiveScope) };
 
   const [items, total, statCounts] = await Promise.all([
     prisma.ticket.findMany({
@@ -87,7 +97,11 @@ export async function listTicketsDashboard(
 
 export async function getTicketDetail(id: string) {
   const session = await requireSession();
-  const where = isSuperAdmin(session.user.role) ? { id } : scopedWhere(session, { id });
+  const where = isSuperAdmin(session.user.role)
+    ? { id }
+    : isCompanyHr(session.user.role)
+      ? { id, scope: "SAAS" as const, companyId: session.user.companyId ?? undefined }
+      : scopedWhere(session, { id });
   const ticket = await prisma.ticket.findFirst({
     where,
     include: {
@@ -135,11 +149,15 @@ export async function createTicket(input: {
 }): Promise<Result> {
   try {
     const session = await requireSession();
-    const canManage = isSuperAdmin(session.user.role) || input.scope !== "SAAS";
-    if (!canManage && !session.user.role) {
-      return { success: false, error: "Sem permissão." };
+    const isEmpresa = isCompanyHr(session.user.role);
+    const scope: TicketScope = isEmpresa ? "SAAS" : (input.scope ?? "CLINIC");
+
+    if (scope === "CLINIC") {
+      await requirePermission("tickets.manage");
     }
-    const clinicId = input.scope === "SAAS" ? null : await resolveClinicId(session);
+
+    const clinicId = scope === "SAAS" ? null : await resolveClinicId(session);
+    const companyId = isEmpresa ? session.user.companyId ?? null : input.companyId || null;
     const ticket = await prisma.ticket.create({
       data: withClinicId(
         {
@@ -147,8 +165,8 @@ export async function createTicket(input: {
           description: input.description.trim(),
           priority: input.priority ?? "MEDIA",
           category: input.category?.trim() || null,
-          scope: input.scope ?? "CLINIC",
-          companyId: input.companyId || null,
+          scope,
+          companyId,
           createdByUserId: session.user.id,
         },
         clinicId
@@ -166,6 +184,9 @@ export async function createTicket(input: {
 export async function updateTicketStatus(id: string, status: TicketStatus): Promise<Result> {
   try {
     const session = await requireSession();
+    if (isCompanyHr(session.user.role)) {
+      return { success: false, error: "Sem permissão para alterar status." };
+    }
     const where = isSuperAdmin(session.user.role)
       ? { id }
       : scopedWhere(session, { id, scope: "CLINIC" as const });
@@ -220,7 +241,9 @@ export async function addTicketComment(ticketId: string, content: string): Promi
     if (!content.trim()) return { success: false, error: "Mensagem obrigatória." };
     const where = isSuperAdmin(session.user.role)
       ? { id: ticketId }
-      : scopedWhere(session, { id: ticketId });
+      : isCompanyHr(session.user.role)
+        ? { id: ticketId, scope: "SAAS" as const, companyId: session.user.companyId ?? undefined }
+        : scopedWhere(session, { id: ticketId });
     const ticket = await prisma.ticket.findFirst({ where });
     if (!ticket) return { success: false, error: "Chamado não encontrado." };
     await prisma.ticketComment.create({

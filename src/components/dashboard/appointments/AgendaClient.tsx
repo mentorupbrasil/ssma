@@ -19,6 +19,7 @@ import {
   APPOINTMENT_STAT_CARDS,
   getClinicalExamLabel,
 } from "@/lib/appointments";
+import { appointmentStatCardsForEmpresa } from "@/lib/empresa-portal";
 import { getAppointmentDetail, cancelAppointment, markAppointmentNoShow } from "@/actions/appointments";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
@@ -59,6 +60,7 @@ type AgendaClientProps = {
   rooms: string[];
   canManage: boolean;
   userRole: string;
+  isEmpresaPortal?: boolean;
   filters: {
     q?: string;
     status?: string;
@@ -91,6 +93,7 @@ export function AgendaClient({
   rooms,
   canManage,
   userRole,
+  isEmpresaPortal = false,
   filters,
 }: AgendaClientProps) {
   const router = useRouter();
@@ -243,12 +246,17 @@ export function AgendaClient({
   }, {});
 
   const showDateGroups = activeView === "week" || activeView === "month" || activeView === "list";
+  const appointmentCards = isEmpresaPortal ? appointmentStatCardsForEmpresa() : APPOINTMENT_STAT_CARDS;
 
   return (
     <PageModule>
       <PageHeader
         title="Agenda"
-        description="Agendamentos de atendimentos e exames ocupacionais"
+        description={
+          isEmpresaPortal
+            ? "Acompanhe os agendamentos da sua equipe"
+            : "Agendamentos de atendimentos e exames ocupacionais"
+        }
       >
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={goToday}>
@@ -275,7 +283,7 @@ export function AgendaClient({
       </PageHeader>
 
       <FilterMetricGrid
-        items={APPOINTMENT_STAT_CARDS.map((card) => {
+        items={appointmentCards.map((card) => {
           const isActive = activeStatus === card.status;
           return {
             key: card.key,
@@ -293,12 +301,16 @@ export function AgendaClient({
         })}
       />
 
-      <div className="referral-filters mt-6">
+      <div className={cn("referral-filters mt-6", isEmpresaPortal && "empresa-filter-panel")}>
         <div className="referral-filters-grid">
-          <div className="referral-filter-search">
+          <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
-              placeholder="Buscar por colaborador, empresa, protocolo ou exame"
+              placeholder={
+                isEmpresaPortal
+                  ? "Buscar por colaborador, protocolo ou exame"
+                  : "Buscar por colaborador, empresa, protocolo ou exame"
+              }
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -377,13 +389,13 @@ export function AgendaClient({
             <option value="">Status</option>
             <option value="AGENDADO">Agendado</option>
             <option value="CONFIRMADO">Confirmado</option>
-            <option value="EM_ATENDIMENTO">Em atendimento</option>
+            {!isEmpresaPortal && <option value="EM_ATENDIMENTO">Em atendimento</option>}
             <option value="CONCLUIDO">Concluído</option>
             <option value="FALTOU">Faltou</option>
             <option value="REAGENDADO">Reagendado</option>
             <option value="CANCELADO">Cancelado</option>
           </select>
-          {professionals.length > 0 && (
+          {professionals.length > 0 && !isEmpresaPortal && (
             <select
               value={professionalId}
               onChange={(e) => setProfessionalId(e.target.value)}

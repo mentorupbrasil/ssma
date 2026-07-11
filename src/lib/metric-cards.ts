@@ -303,6 +303,32 @@ export const METRIC_META: Record<string, MetricMeta> = {
     icon: FileCheck,
     description: "Documentos liberados no mês",
   },
+  "overview:collaborators_active": {
+    tone: "success",
+    icon: Users,
+    description: "Colaboradores ativos na empresa",
+  },
+  "overview:referrals_open": {
+    tone: "info",
+    icon: FileText,
+    description: "Encaminhamentos em andamento",
+  },
+  "overview:appointments_today": {
+    tone: "info",
+    icon: CalendarCheck,
+    description: "Exames agendados para hoje",
+  },
+  "overview:docs_available": {
+    tone: "success",
+    icon: FolderOpen,
+    description: "Documentos já disponíveis no portal",
+  },
+  "overview:periodic_due": {
+    tone: "warning",
+    icon: Clock,
+    description: "Colaboradores com periódico próximo",
+    badge: "Ação",
+  },
 
   // Financeiro
   "finance:receivable_month": {

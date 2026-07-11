@@ -11,6 +11,7 @@ import {
   serializeAppointmentListItem,
   type AppointmentViewMode,
 } from "@/lib/appointments";
+import { appointmentStatCardsForEmpresa } from "@/lib/empresa-portal";
 import { AgendaClient } from "@/components/dashboard/appointments/AgendaClient";
 import { Loader2 } from "lucide-react";
 
@@ -53,6 +54,8 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
   const todayEnd = endOfDay(new Date());
   const baseWhere = companyScope ? { companyId: companyScope } : {};
 
+  const statCards = isEmpresa ? appointmentStatCardsForEmpresa() : APPOINTMENT_STAT_CARDS;
+
   const [total, appointments, countResults, companies, patients, professionals] =
     await Promise.all([
       prisma.appointment.count({ where }),
@@ -63,7 +66,7 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
         take: PAGE_SIZE,
       }),
       Promise.all(
-        APPOINTMENT_STAT_CARDS.map(async (card) => {
+        statCards.map(async (card) => {
           if (card.status === "TODAY_AGENDADO") {
             return {
               key: card.key,
@@ -132,6 +135,7 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
       rooms={["Sala 1", "Sala 2", "Sala 3", "Unidade Centro", "Unidade Norte"]}
       canManage={canManage && session.user.role !== "FINANCEIRO"}
       userRole={session.user.role}
+      isEmpresaPortal={isEmpresa}
       filters={filters}
     />
   );

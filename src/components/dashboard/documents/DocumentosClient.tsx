@@ -31,6 +31,7 @@ import {
   buildDocumentWhatsAppMessage,
   normalizeDocumentStatus,
 } from "@/lib/documents";
+import { documentStatCardsForEmpresa } from "@/lib/empresa-portal";
 import {
   getDocumentDetail,
   updateDocumentStatus,
@@ -100,6 +101,7 @@ type DocumentosClientProps = {
   canManage: boolean;
   formOptions: FormOptions;
   filters: Record<string, string | undefined>;
+  isEmpresaPortal?: boolean;
 };
 
 const STATUS_ACTIONS: DocumentStatus[] = [
@@ -132,6 +134,7 @@ export function DocumentosClient({
   canManage,
   formOptions,
   filters,
+  isEmpresaPortal = false,
 }: DocumentosClientProps) {
   const router = useRouter();
   const { confirm, ConfirmDialogHost } = useConfirmDialog();
@@ -392,7 +395,7 @@ export function DocumentosClient({
       </div>
 
       <FilterMetricGrid
-        items={DOCUMENT_STAT_CARDS.map((card) => {
+        items={(isEmpresaPortal ? documentStatCardsForEmpresa() : DOCUMENT_STAT_CARDS).map((card) => {
           const isActive = activeCard === card.filter;
           return {
             key: card.key,
@@ -446,6 +449,7 @@ export function DocumentosClient({
                 </option>
               ))}
           </select>
+          {!isEmpresaPortal && (
           <select
             className="referral-filter-select"
             value={companyId || "ALL"}
@@ -458,6 +462,7 @@ export function DocumentosClient({
               </option>
             ))}
           </select>
+          )}
           <select
             className="referral-filter-select"
             value={patientId || "ALL"}
@@ -586,7 +591,7 @@ export function DocumentosClient({
                 <TableHead>Documento</TableHead>
                 <TableHead className="hidden md:table-cell">Tipo</TableHead>
                 <TableHead className="hidden lg:table-cell">Vínculo</TableHead>
-                <TableHead className="hidden sm:table-cell">Empresa</TableHead>
+                {!isEmpresaPortal && <TableHead className="hidden sm:table-cell">Empresa</TableHead>}
                 <TableHead className="hidden xl:table-cell">Colaborador</TableHead>
                 <TableHead className="hidden lg:table-cell">Protocolo</TableHead>
                 <TableHead className="hidden sm:table-cell">Data</TableHead>
@@ -649,9 +654,11 @@ export function DocumentosClient({
                     <TableCell className="hidden lg:table-cell text-sm text-slate-600">
                       {item.linkLabel}
                     </TableCell>
+                    {!isEmpresaPortal && (
                     <TableCell className="hidden sm:table-cell text-sm text-slate-600">
                       {item.companyName ?? "—"}
                     </TableCell>
+                    )}
                     <TableCell className="hidden xl:table-cell text-sm text-slate-600">
                       {item.patientName ?? "—"}
                     </TableCell>

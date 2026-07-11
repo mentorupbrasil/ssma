@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
-import { getCompanyFilter } from "@/lib/authz";
+import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
 import {
   listDocumentsForDashboard,
   getDocumentFormOptions,
@@ -24,6 +24,7 @@ async function DocumentosContent({ searchParams }: { searchParams: SearchParams 
   if (!canView) redirect("/dashboard");
 
   const companyFilter = getCompanyFilter(session);
+  const isEmpresa = isEmpresaUser(session);
   const sp = await searchParams;
   const page = Math.max(1, parseInt(param(sp.page) ?? "1", 10) || 1);
 
@@ -72,6 +73,7 @@ async function DocumentosContent({ searchParams }: { searchParams: SearchParams 
         sensitive: param(sp.sensitive),
         sort: param(sp.sort),
       }}
+      isEmpresaPortal={isEmpresa}
     />
   );
 }

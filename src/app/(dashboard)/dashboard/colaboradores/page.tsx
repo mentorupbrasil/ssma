@@ -9,6 +9,7 @@ import {
   COLLABORATOR_STAT_CARDS,
   serializeCollaboratorListItem,
 } from "@/lib/collaborators";
+import { collaboratorStatCardsForEmpresa } from "@/lib/empresa-portal";
 import { ColaboradoresClient } from "@/components/dashboard/collaborators/ColaboradoresClient";
 import { Loader2 } from "lucide-react";
 
@@ -45,6 +46,9 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
   const skip = (page - 1) * PAGE_SIZE;
   const in30 = addDays(new Date(), 30);
 
+  const isEmpresa = isEmpresaUser(session);
+  const statCardDefs = isEmpresa ? collaboratorStatCardsForEmpresa() : COLLABORATOR_STAT_CARDS;
+
   const [total, patients, countResults, companies] = await Promise.all([
     prisma.patient.count({ where }),
     prisma.patient.findMany({
@@ -62,7 +66,7 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
       take: PAGE_SIZE,
     }),
     Promise.all(
-      COLLABORATOR_STAT_CARDS.map(async (card) => {
+      statCardDefs.map(async (card) => {
         if (card.filter === "ATIVO" || card.filter === "INATIVO") {
           return {
             key: card.key,
@@ -144,6 +148,7 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
         name: c.tradeName ?? c.legalName,
       }))}
       canManage={canManage || session.user.role === "EMPRESA"}
+      isEmpresaPortal={isEmpresa}
       filters={filters}
     />
   );

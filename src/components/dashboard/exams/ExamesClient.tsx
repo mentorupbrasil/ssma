@@ -25,7 +25,9 @@ import {
   EXAM_PREPARATION_LABELS,
   EXAM_STATUS_LABELS,
   EXAM_DEADLINE_TYPE_LABELS,
+  examToGuide,
 } from "@/lib/exams";
+import { ExamPreparationDrawer } from "@/components/public/ExamPreparationDrawer";
 import { getExamDetail, toggleExamStatus, duplicateExam } from "@/actions/exams";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
@@ -69,6 +71,7 @@ type ExamesClientProps = {
   pageSize: number;
   statCounts: Record<string, number>;
   canManage: boolean;
+  isEmpresaPortal?: boolean;
   filters: {
     q?: string;
     card?: string;
@@ -110,6 +113,7 @@ export function ExamesClient({
   pageSize,
   statCounts,
   canManage,
+  isEmpresaPortal = false,
   filters,
 }: ExamesClientProps) {
   const router = useRouter();
@@ -128,9 +132,11 @@ export function ExamesClient({
   const [formOpen, setFormOpen] = useState(false);
   const [editExam, setEditExam] = useState<ExamDetailSerialized | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [prepDrawerOpen, setPrepDrawerOpen] = useState(false);
   const [detailExam, setDetailExam] = useState<ExamDetailSerialized | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [loadingExamId, setLoadingExamId] = useState<string | null>(null);
 
   const activeCard = filters.card ?? "ALL";
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
@@ -177,17 +183,20 @@ export function ExamesClient({
   };
 
   const openDetail = async (id: string) => {
-    setDrawerOpen(true);
-    setDetailLoading(true);
+    setLoadingExamId(id);
     setDetailExam(null);
     const result = await getExamDetail(id);
-    setDetailLoading(false);
+    setLoadingExamId(null);
     if (!result.success) {
       toast.error(result.error);
-      setDrawerOpen(false);
       return;
     }
     setDetailExam(result.exam);
+    if (isEmpresaPortal) {
+      setPrepDrawerOpen(true);
+    } else {
+      setDrawerOpen(true);
+    }
   };
 
   const openEdit = async (id: string) => {
@@ -240,7 +249,14 @@ export function ExamesClient({
 
   return (
     <PageModule>
-      <PageHeader title="Exames" description="Catálogo de exames, preparos e prazos">
+      <PageHeader
+        title="Exames e preparos"
+        description={
+          isEmpresaPortal
+            ? "Consulte orientações de preparo para orientar colaboradores"
+            : "Catálogo de exames, preparos e prazos"
+        }
+      >
         {canManage && (
           <Button
             variant="brand"
@@ -254,6 +270,7 @@ export function ExamesClient({
         )}
       </PageHeader>
 
+      {!isEmpresaPortal && (
       <FilterMetricGrid
         items={EXAM_STAT_CARDS.map((card) => {
           const isActive = activeCard === card.filter;
@@ -267,12 +284,17 @@ export function ExamesClient({
           };
         })}
       />
+      )}
 
       <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
         <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
             <Input
-              placeholder="Buscar por nome do exame, categoria ou preparo"
+              placeholder={
+                isEmpresaPortal
+                  ? "Buscar exame ou categoria"
+                  : "Buscar por nome do exame, categoria ou preparo"
+              }
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -291,6 +313,8 @@ export function ExamesClient({
               </option>
             ))}
           </select>
+          {!isEmpresaPortal && (
+          <>
           <select
             className="referral-filter-select"
             value={status || "ALL"}
@@ -351,15 +375,33 @@ export function ExamesClient({
               </option>
             ))}
           </select>
+          </>
+          )}
+          {isEmpresaPortal && (
+          <select
+            className="referral-filter-select"
+            value={preparationType || "ALL"}
+            onChange={(e) =>
+              setPreparationType(e.target.value === "ALL" ? "" : e.target.value)
+            }
+          >
+            <option value="ALL">Tipo de preparo</option>
+            {Object.entries(EXAM_PREPARATION_LABELS).map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+          )}
           <select
             className="referral-filter-select"
             value={sort}
             onChange={(e) => setSort(e.target.value)}
           >
             <option value="name">Ordenar: Nome</option>
-            <option value="category">Ordenar: Categoria</option>
-            <option value="status">Ordenar: Status</option>
-            <option value="displayOrder">Ordenar: Ordem de exibição</option>
+            {!isEmpresaPortal && <option value="category">Ordenar: Categoria</option>}
+            {!isEmpresaPortal && <option value="status">Ordenar: Status</option>}
+            {!isEmpresaPortal && <option value="displayOrder">Ordenar: Ordem de exibição</option>}
           </select>
       </FilterBar>
 
@@ -390,17 +432,25 @@ export function ExamesClient({
                 <TableHead>Exame</TableHead>
                 <TableHead className="hidden md:table-cell">Categoria</TableHead>
                 <TableHead className="hidden lg:table-cell">Tipo de preparo</TableHead>
-                <TableHead className="hidden sm:table-cell">Prazo médio</TableHead>
-                <TableHead className="hidden lg:table-cell">Exibir no site</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden xl:table-cell">Atualizado em</TableHead>
-                <TableHead className="w-12" />
+                {!isEmpresaPortal && (
+                  <>
+                    <TableHead className="hidden sm:table-cell">Prazo médio</TableHead>
+                    <TableHead className="hidden lg:table-cell">Exibir no site</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden xl:table-cell">Atualizado em</TableHead>
+                    <TableHead className="w-12" />
+                  </>
+                )}
+                {isEmpresaPortal && <TableHead className="text-right">Ver detalhes</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {initialItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-10 text-center text-slate-500">
+                  <TableCell
+                    colSpan={isEmpresaPortal ? 4 : 8}
+                    className="py-10 text-center text-slate-500"
+                  >
                     Nenhum exame encontrado com os filtros aplicados.
                   </TableCell>
                 </TableRow>
@@ -408,16 +458,14 @@ export function ExamesClient({
                 initialItems.map((item) => (
                   <TableRow
                     key={item.id}
-                    className="cursor-pointer hover:bg-slate-50/80"
-                    onClick={() => openDetail(item.id)}
+                    className={cn(
+                      "hover:bg-slate-50/80",
+                      !isEmpresaPortal && "cursor-pointer"
+                    )}
+                    onClick={!isEmpresaPortal ? () => openDetail(item.id) : undefined}
                   >
                     <TableCell>
                       <div className="font-medium text-slate-900">{item.name}</div>
-                      {item.shortDescription && (
-                        <div className="mt-0.5 line-clamp-1 text-xs text-slate-500">
-                          {item.shortDescription}
-                        </div>
-                      )}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge variant="outline" className="rounded-full font-normal">
@@ -427,6 +475,8 @@ export function ExamesClient({
                     <TableCell className="hidden lg:table-cell">
                       <PreparationBadge type={item.preparationType} />
                     </TableCell>
+                    {!isEmpresaPortal && (
+                      <>
                     <TableCell className="hidden sm:table-cell text-sm text-slate-600">
                       {item.averageDeadline ?? "—"}
                     </TableCell>
@@ -494,6 +544,26 @@ export function ExamesClient({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
+                      </>
+                    )}
+                    {isEmpresaPortal && (
+                      <TableCell className="text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full"
+                          disabled={loadingExamId === item.id}
+                          onClick={() => openDetail(item.id)}
+                        >
+                          {loadingExamId === item.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Eye className="mr-2 h-4 w-4" />
+                          )}
+                          Ver detalhes
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
@@ -572,6 +642,17 @@ export function ExamesClient({
           </div>
         </SheetContent>
       </Sheet>
+
+      {isEmpresaPortal && (
+        <ExamPreparationDrawer
+          exam={detailExam ? examToGuide(detailExam) : null}
+          open={prepDrawerOpen}
+          onOpenChange={(open) => {
+            setPrepDrawerOpen(open);
+            if (!open) setDetailExam(null);
+          }}
+        />
+      )}
 
       {canManage && (
         <ExamFormDialog
