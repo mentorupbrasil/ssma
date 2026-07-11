@@ -5251,7 +5251,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgb(100 116 139);
-  text-align: left;
+  text-align: center;
   white-space: nowrap;
   vertical-align: middle;
   overflow: hidden;
@@ -5263,6 +5263,7 @@
   padding: 0.4rem 0.55rem;
   border-bottom: 1px solid rgb(241 245 249);
   vertical-align: middle;
+  text-align: center;
   font-size: 0.8125rem;
   color: rgb(51 65 85);
   overflow: hidden;
