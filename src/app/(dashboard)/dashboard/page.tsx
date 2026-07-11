@@ -97,12 +97,42 @@ export default async function DashboardPage() {
         },
       ]
     : [
-        { href: "/dashboard/empresas/novo", label: "Nova empresa", description: "Cadastrar cliente corporativo", icon: Building2 },
-        { href: "/dashboard/encaminhamentos/novo", label: "Novo encaminhamento", description: "Registrar encaminhamento oficial", icon: FileText },
-        { href: "/dashboard/documentos?new=1", label: "Anexar documento", description: "ASO, laudo ou proposta", icon: FolderOpen },
-        { href: "/dashboard/fechamento-mensal", label: "Importar produção", description: "Fechamento mensal da clínica", icon: Upload },
-        { href: "/dashboard/orcamentos?tab=orcamentos", label: "Novo orçamento", description: "Proposta comercial", icon: DollarSign },
-        { href: "/dashboard/tarefas", label: "Nova tarefa", description: "Pendência interna", icon: ClipboardList },
+        {
+          href: "/dashboard/encaminhamentos?status=RECEBIDOS",
+          label: "Fila de atendimentos",
+          description: "Pedidos do RH e do site para confirmar",
+          icon: FileText,
+        },
+        {
+          href: "/dashboard/documentos",
+          label: "Liberar documentos",
+          description: "Anexar ASO e disponibilizar para a empresa",
+          icon: FolderOpen,
+        },
+        {
+          href: "/dashboard/empresas",
+          label: "Empresas",
+          description: "Cadastro e portal dos clientes",
+          icon: Building2,
+        },
+        {
+          href: "/dashboard/fechamento-mensal",
+          label: "Importar produção",
+          description: "Fechamento mensal da clínica",
+          icon: Upload,
+        },
+        {
+          href: "/dashboard/orcamentos?tab=orcamentos",
+          label: "Novo orçamento",
+          description: "Proposta comercial",
+          icon: DollarSign,
+        },
+        {
+          href: "/dashboard/tarefas",
+          label: "Nova tarefa",
+          description: "Pendência interna",
+          icon: ClipboardList,
+        },
       ];
 
   if (isEmpresa) {

@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  updateReferralStatusWithNotes,
-  scheduleReferralAppointment,
-  attachReferralDocument,
-} from "@/actions/referrals";
+import { updateReferralStatusWithNotes, scheduleReferralAppointment, attachReferralDocument } from "@/actions/referrals";
 import { REFERRAL_STATUS_LABELS } from "@/types";
-import { REFERRAL_DOCUMENT_TYPE_LABELS } from "@/lib/referrals";
+import {
+  REFERRAL_DOCUMENT_TYPE_LABELS,
+  CLINIC_OPERATIONAL_STATUSES,
+  CLINIC_STATUS_CHANGE_OPTIONS,
+} from "@/lib/referrals";
 import {
   Dialog,
   DialogContent,
@@ -36,21 +36,31 @@ export function ReferralStatusDialog({
   referralId,
   currentStatus,
   onSuccess,
-}: StatusDialogProps) {
+  clinicMode = false,
+}: StatusDialogProps & { clinicMode?: boolean }) {
   const [status, setStatus] = useState(currentStatus);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setStatus(currentStatus);
+      const initial = clinicMode
+        ? CLINIC_OPERATIONAL_STATUSES.includes(currentStatus as (typeof CLINIC_OPERATIONAL_STATUSES)[number])
+          ? currentStatus
+          : "AGENDADO"
+        : currentStatus;
+      setStatus(initial);
       setNotes("");
     }
-  }, [open, currentStatus]);
+  }, [open, currentStatus, clinicMode]);
 
   const handleSave = async () => {
     if (status === currentStatus) {
       onOpenChange(false);
+      return;
+    }
+    if (status === "CANCELADO" && !notes.trim()) {
+      toast.error("Informe o motivo do cancelamento para a empresa.");
       return;
     }
     setLoading(true);
@@ -66,13 +76,22 @@ export function ReferralStatusDialog({
     }
   };
 
+  const statusOptions = clinicMode
+    ? CLINIC_STATUS_CHANGE_OPTIONS
+    : Object.entries(REFERRAL_STATUS_LABELS).map(([value, label]) => ({
+        value,
+        label,
+      }));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Alterar status</DialogTitle>
           <DialogDescription>
-            A alteração será registrada no histórico do encaminhamento.
+            {clinicMode
+              ? "A empresa acompanha esta mudança no portal. No cancelamento, o motivo é obrigatório."
+              : "A alteração será registrada no histórico do encaminhamento."}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
@@ -84,21 +103,28 @@ export function ReferralStatusDialog({
               onChange={(e) => setStatus(e.target.value)}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
-              {Object.entries(REFERRAL_STATUS_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes">Observação (opcional)</Label>
+            <Label htmlFor="notes">
+              {status === "CANCELADO" ? "Motivo do cancelamento" : "Observação (opcional)"}
+            </Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Motivo ou detalhes da alteração"
+              placeholder={
+                status === "CANCELADO"
+                  ? "Explique o motivo para a empresa visualizar"
+                  : "Motivo ou detalhes da alteração"
+              }
               rows={3}
+              required={status === "CANCELADO"}
             />
           </div>
         </div>

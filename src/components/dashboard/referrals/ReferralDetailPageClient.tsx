@@ -4,11 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ReferralDetailSerialized } from "@/lib/referrals";
 import { ReferralDetailContent } from "./ReferralDetailContent";
-import {
-  ReferralStatusDialog,
-  ReferralScheduleDialog,
-  ReferralDocumentDialog,
-} from "./ReferralActionDialogs";
+import { ReferralStatusDialog } from "./ReferralActionDialogs";
 
 export function ReferralDetailPageClient({
   referral: initialReferral,
@@ -18,10 +14,8 @@ export function ReferralDetailPageClient({
   canManage: boolean;
 }) {
   const router = useRouter();
-  const [referral, setReferral] = useState(initialReferral);
+  const [referral] = useState(initialReferral);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
 
   const refresh = () => {
     router.refresh();
@@ -34,8 +28,6 @@ export function ReferralDetailPageClient({
         canManage={canManage}
         onRefresh={refresh}
         onOpenStatus={() => setStatusDialogOpen(true)}
-        onOpenSchedule={() => setScheduleDialogOpen(true)}
-        onOpenDocument={() => setDocumentDialogOpen(true)}
       />
 
       <ReferralStatusDialog
@@ -44,18 +36,7 @@ export function ReferralDetailPageClient({
         referralId={referral.id}
         currentStatus={referral.status}
         onSuccess={refresh}
-      />
-      <ReferralScheduleDialog
-        open={scheduleDialogOpen}
-        onOpenChange={setScheduleDialogOpen}
-        referralId={referral.id}
-        onSuccess={refresh}
-      />
-      <ReferralDocumentDialog
-        open={documentDialogOpen}
-        onOpenChange={setDocumentDialogOpen}
-        referralId={referral.id}
-        onSuccess={refresh}
+        clinicMode
       />
     </>
   );

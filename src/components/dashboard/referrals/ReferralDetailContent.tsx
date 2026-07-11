@@ -4,24 +4,20 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Calendar,
   FileText,
-  MessageCircle,
   Paperclip,
   RefreshCw,
   User,
   Building2,
   Stethoscope,
   History,
-  XCircle,
-  CheckCircle2,
 } from "lucide-react";
 import type { ReferralDetailSerialized } from "@/lib/referrals";
 import {
   REFERRAL_SOURCE_LABELS,
   REFERRAL_EXAM_STATUS_LABELS,
   REFERRAL_DOCUMENT_TYPE_LABELS,
-  buildReferralWhatsAppMessage,
+  getClinicReferralStatusLabel,
   maskCpf,
 } from "@/lib/referrals";
 import { CLINICAL_EXAM_LABELS, EXAM_CATEGORY_LABELS, REFERRAL_STATUS_LABELS } from "@/types";
@@ -31,7 +27,7 @@ import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { Separator } from "@/components/ui/separator";
 import { formatCNPJ, formatCPF, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
-import { cancelReferralAppointment, deleteReferralDocument, updateReferralStatusWithNotes } from "@/actions/referrals";
+import { deleteReferralDocument } from "@/actions/referrals";
 import { toast } from "sonner";
 
 type ReferralDetailContentProps = {
@@ -39,8 +35,6 @@ type ReferralDetailContentProps = {
   canManage: boolean;
   onRefresh: () => void;
   onOpenStatus: () => void;
-  onOpenSchedule: () => void;
-  onOpenDocument: () => void;
 };
 
 function DetailSection({
@@ -77,8 +71,6 @@ export function ReferralDetailContent({
   canManage,
   onRefresh,
   onOpenStatus,
-  onOpenSchedule,
-  onOpenDocument,
 }: ReferralDetailContentProps) {
   const { confirm, ConfirmDialogHost } = useConfirmDialog();
   const phone =
@@ -86,46 +78,6 @@ export function ReferralDetailContent({
     referral.company.phone ??
     referral.companyPhone ??
     "";
-
-  const hasAso =
-    referral.status === "ASO_DISPONIVEL" ||
-    referral.documents.some((d) => d.type === "ASO");
-
-  const whatsappMessage = buildReferralWhatsAppMessage({
-    protocol: referral.protocol,
-    companyName: referral.company.tradeName ?? referral.company.legalName,
-    employeeName: referral.employee.fullName,
-    clinicalExamType: referral.clinicalExamType,
-    status: referral.status,
-    scheduledAt: referral.scheduledAt ? new Date(referral.scheduledAt) : null,
-    hasAso,
-  });
-
-  const whatsappUrl = phone
-    ? `https://wa.me/55${phone.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappMessage)}`
-    : null;
-
-  const activeAppointment = referral.appointments.find(
-    (a) => !["CANCELADO", "REAGENDADO", "FALTOU"].includes(a.status)
-  );
-
-  const handleCancelAppointment = async () => {
-    if (!activeAppointment) return;
-    const ok = await confirm({
-      title: "Cancelar agendamento",
-      description: "Deseja cancelar este agendamento?",
-      confirmLabel: "Cancelar agendamento",
-      variant: "destructive",
-    });
-    if (!ok) return;
-    const result = await cancelReferralAppointment(referral.id, activeAppointment.id);
-    if (result.success) {
-      toast.success("Agendamento cancelado.");
-      onRefresh();
-    } else {
-      toast.error(result.error);
-    }
-  };
 
   const handleDeleteDocument = async (docId: string, fileName: string) => {
     const ok = await confirm({
@@ -144,102 +96,46 @@ export function ReferralDetailContent({
     }
   };
 
-  const handleMarkComplete = async () => {
-    const ok = await confirm({
-      title: "Concluir encaminhamento",
-      description: "Marcar este encaminhamento como concluído?",
-      confirmLabel: "Concluir",
-    });
-    if (!ok) return;
-    const result = await updateReferralStatusWithNotes(referral.id, "CONCLUIDO", "Encaminhamento concluído");
-    if (result.success) {
-      toast.success("Encaminhamento concluído!");
-      onRefresh();
-    } else {
-      toast.error(result.error);
-    }
-  };
-
   return (
     <div className="referral-detail-content">
-      <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50/80 px-4 py-3 text-sm text-slate-700">
-        <strong>Acompanhamento operacional:</strong> este encaminhamento organiza solicitação,
-        documentos e comunicação com a empresa. O atendimento clínico ocorre no sistema da clínica.
+      <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+        Registro operacional da fila. A liberação do ASO é feita em{" "}
+        <Link
+          href="/dashboard/documentos"
+          className="font-medium text-[var(--brand-green)] underline-offset-2 hover:underline"
+        >
+          Documentos
+        </Link>
+        .
         {referral.externalSystemReference && (
           <p className="mt-1 text-xs text-slate-500">
-            Ref. sistema clínico: <span className="font-mono">{referral.externalSystemReference}</span>
+            Ref. sistema clínico:{" "}
+            <span className="font-mono">{referral.externalSystemReference}</span>
           </p>
         )}
       </div>
+
       <div className="referral-detail-actions">
         {canManage && (
-          <>
-            <Button variant="brand" size="sm" onClick={onOpenSchedule}>
-              <Calendar className="mr-1.5 h-4 w-4" />
-              {activeAppointment ? "Reagendar" : "Agendar atendimento"}
-            </Button>
-            <Button variant="outline" size="sm" onClick={onOpenStatus}>
-              <RefreshCw className="mr-1.5 h-4 w-4" />
-              Alterar status
-            </Button>
-            <Button variant="outline" size="sm" onClick={onOpenDocument}>
-              <Paperclip className="mr-1.5 h-4 w-4" />
-              Anexar documento
-            </Button>
-          </>
-        )}
-        {whatsappUrl && (
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            <MessageCircle className="mr-1.5 h-4 w-4" />
-            WhatsApp
-          </a>
-        )}
-        {canManage && referral.status !== "CONCLUIDO" && referral.status !== "CANCELADO" && (
-          <>
-            <Button variant="outline" size="sm" onClick={handleMarkComplete}>
-              <CheckCircle2 className="mr-1.5 h-4 w-4" />
-              Concluir
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600"
-              onClick={async () => {
-                const ok = await confirm({
-                  title: "Cancelar encaminhamento",
-                  description: "Deseja cancelar este encaminhamento?",
-                  confirmLabel: "Cancelar encaminhamento",
-                  variant: "destructive",
-                });
-                if (!ok) return;
-                const result = await updateReferralStatusWithNotes(
-                  referral.id,
-                  "CANCELADO",
-                  "Encaminhamento cancelado"
-                );
-                if (result.success) {
-                  toast.success("Encaminhamento cancelado.");
-                  onRefresh();
-                } else {
-                  toast.error(result.error);
-                }
-              }}
-            >
-              <XCircle className="mr-1.5 h-4 w-4" />
-              Cancelar
-            </Button>
-          </>
+          <Button variant="brand" size="sm" onClick={onOpenStatus}>
+            <RefreshCw className="mr-1.5 h-4 w-4" />
+            Alterar status
+          </Button>
         )}
       </div>
 
       <DetailSection title="Resumo" icon={FileText}>
         <DetailRow label="Protocolo" value={<strong>{referral.protocol}</strong>} />
-        <DetailRow label="Status" value={<StatusBadge status={referral.status} />} />
+        <DetailRow
+          label="Status"
+          value={
+            <StatusBadge
+              status={referral.status}
+              label={getClinicReferralStatusLabel(referral.status)}
+            />
+          }
+        />
+        <DetailRow label="Origem" value={REFERRAL_SOURCE_LABELS[referral.source]} />
         <DetailRow
           label="Empresa"
           value={referral.company.tradeName ?? referral.company.legalName}
@@ -250,24 +146,20 @@ export function ReferralDetailContent({
           value={CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
         />
         <DetailRow
-          label="Data da solicitação"
+          label="Recebido em"
           value={format(new Date(referral.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
         />
-        <DetailRow
-          label="Agendamento"
-          value={
-            referral.scheduledAt
-              ? format(new Date(referral.scheduledAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
-              : "Não agendado"
-          }
-        />
-        {referral.assignedTo && (
-          <DetailRow label="Responsável" value={referral.assignedTo.name} />
-        )}
         {referral.preReferral && (
           <DetailRow
             label="Solicitação recebida"
-            value={referral.preReferral.protocol}
+            value={
+              <Link
+                href={`/dashboard/pre-encaminhamentos?id=${referral.preReferral.id}`}
+                className="text-[var(--brand-green)] underline-offset-2 hover:underline"
+              >
+                {referral.preReferral.protocol}
+              </Link>
+            }
           />
         )}
       </DetailSection>
@@ -291,10 +183,7 @@ export function ReferralDetailContent({
           label="Responsável"
           value={referral.company.responsibleName ?? referral.authorizerName ?? "—"}
         />
-        <DetailRow
-          label="WhatsApp"
-          value={phone ? formatPhone(phone) : "—"}
-        />
+        <DetailRow label="Telefone" value={phone ? formatPhone(phone) : "—"} />
         <DetailRow label="E-mail" value={referral.company.email ?? referral.companyEmail ?? "—"} />
       </DetailSection>
 
@@ -310,10 +199,7 @@ export function ReferralDetailContent({
       </DetailSection>
 
       <DetailSection title="Exame clínico" icon={Stethoscope}>
-        <DetailRow
-          label="Tipo"
-          value={CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
-        />
+        <DetailRow label="Tipo" value={CLINICAL_EXAM_LABELS[referral.clinicalExamType]} />
       </DetailSection>
 
       {referral.exams.length > 0 && (
@@ -338,7 +224,9 @@ export function ReferralDetailContent({
 
       <DetailSection title="Documentos" icon={Paperclip}>
         {referral.documents.length === 0 && referral.legacyDocuments.length === 0 ? (
-          <p className="text-sm text-slate-500">Nenhum documento anexado.</p>
+          <p className="text-sm text-slate-500">
+            Nenhum documento neste registro. Use o menu Documentos para anexar e liberar ASO.
+          </p>
         ) : (
           <ul className="space-y-2">
             {referral.documents.map((doc) => (
@@ -363,13 +251,6 @@ export function ReferralDetailContent({
                     className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
                   >
                     Ver
-                  </a>
-                  <a
-                    href={doc.fileUrl}
-                    download
-                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-                  >
-                    Baixar
                   </a>
                   {canManage && (
                     <Button
@@ -404,44 +285,13 @@ export function ReferralDetailContent({
             ))}
           </ul>
         )}
-        {canManage && (
-          <Button variant="outline" size="sm" className="mt-3" onClick={onOpenDocument}>
-            <Paperclip className="mr-1.5 h-4 w-4" />
-            Anexar documento
-          </Button>
-        )}
+        <Link
+          href="/dashboard/documentos"
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-3 inline-flex")}
+        >
+          Ir para Documentos
+        </Link>
       </DetailSection>
-
-      {activeAppointment && canManage && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-medium text-slate-800">Agendamento ativo</p>
-          <p className="text-sm text-slate-600">
-            {format(new Date(activeAppointment.scheduledAt), "dd/MM/yyyy 'às' HH:mm", {
-              locale: ptBR,
-            })}
-          </p>
-          {activeAppointment.notes && (
-            <p className="mt-1 text-xs text-slate-500">{activeAppointment.notes}</p>
-          )}
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Link
-              href={`/dashboard/agenda?id=${activeAppointment.id}`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
-              Ver na agenda
-            </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600"
-              onClick={handleCancelAppointment}
-            >
-              <XCircle className="mr-1.5 h-4 w-4" />
-              Cancelar agendamento
-            </Button>
-          </div>
-        </div>
-      )}
 
       <DetailSection title="Histórico" icon={History}>
         {referral.statusHistory.length === 0 ? (
@@ -457,9 +307,7 @@ export function ReferralDetailContent({
                       ? `${REFERRAL_STATUS_LABELS[entry.fromStatus]} → ${REFERRAL_STATUS_LABELS[entry.toStatus]}`
                       : REFERRAL_STATUS_LABELS[entry.toStatus]}
                   </p>
-                  {entry.notes && (
-                    <p className="text-sm text-slate-600">{entry.notes}</p>
-                  )}
+                  {entry.notes && <p className="text-sm text-slate-600">{entry.notes}</p>}
                   <p className="text-xs text-slate-500">
                     {entry.changedByName ?? "Sistema"} ·{" "}
                     {format(new Date(entry.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}

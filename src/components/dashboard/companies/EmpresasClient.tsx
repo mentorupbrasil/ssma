@@ -515,14 +515,6 @@ export function EmpresasClient({
                     >
                       <CompanyActionMenu
                         onViewDetails={() => router.push(`/dashboard/empresas/${c.id}`)}
-                        onCreateAttendance={
-                          canManage
-                            ? () =>
-                                router.push(
-                                  `/dashboard/encaminhamentos/novo?companyId=${c.id}`
-                                )
-                            : undefined
-                        }
                         onNewQuote={
                           canManage && canCommercial
                             ? () => router.push(`/dashboard/orcamentos?companyId=${c.id}`)

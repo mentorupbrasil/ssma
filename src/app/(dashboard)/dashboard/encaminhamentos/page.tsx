@@ -137,6 +137,7 @@ async function loadReferralsForPage(
     requestedDate: r.requestedDate.toISOString(),
     scheduledAt: r.scheduledAt?.toISOString() ?? null,
     status: r.status,
+    source: r.source,
     responsibleName: r.assignedTo?.name ?? null,
     authorizerName: r.authorizerName,
     companyPhone: r.companyPhone ?? r.company.phone,

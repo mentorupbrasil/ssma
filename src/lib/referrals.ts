@@ -22,7 +22,58 @@ export const REFERRAL_STATUS_TABS: { value: ReferralStatus | "ALL"; label: strin
   { value: "CANCELADO", label: "Cancelado" },
 ];
 
-/** 4 indicadores compactos da listagem clínica */
+/** Status que a clínica pode definir na fila operacional */
+export const CLINIC_OPERATIONAL_STATUSES: ReferralStatus[] = [
+  "AGENDADO",
+  "EM_ATENDIMENTO",
+  "CONCLUIDO",
+  "CANCELADO",
+];
+
+/** Pedidos ainda sem confirmação da clínica */
+export const CLINIC_PENDING_CONFIRMATION_STATUSES: ReferralStatus[] = [
+  "NOVO",
+  "EM_ANALISE",
+  "AGUARDANDO_AGENDAMENTO",
+];
+
+/** Atendimento já feito (ASO pode seguir em Documentos) */
+export const CLINIC_DONE_STATUSES: ReferralStatus[] = [
+  "CONCLUIDO",
+  "AGUARDANDO_RESULTADO",
+  "AGUARDANDO_DOCUMENTO",
+  "ASO_DISPONIVEL",
+];
+
+/** Filtros de status da fila clínica (agrupados) */
+export const CLINIC_STATUS_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: "RECEBIDOS", label: "Aguardando confirmação" },
+  { value: "AGENDADO", label: "Agendado" },
+  { value: "EM_ATENDIMENTO", label: "Em atendimento" },
+  { value: "CONCLUIDOS", label: "Concluído" },
+  { value: "CANCELADO", label: "Cancelado" },
+];
+
+/** Status que a clínica escolhe ao alterar */
+export const CLINIC_STATUS_CHANGE_OPTIONS: { value: ReferralStatus; label: string }[] = [
+  { value: "AGENDADO", label: "Agendado — clínica confirmou e vai atender" },
+  { value: "EM_ATENDIMENTO", label: "Em atendimento" },
+  { value: "CONCLUIDO", label: "Concluído" },
+  { value: "CANCELADO", label: "Cancelado" },
+];
+
+export function getClinicReferralStatusLabel(status: ReferralStatus): string {
+  if (CLINIC_PENDING_CONFIRMATION_STATUSES.includes(status)) {
+    return "Aguardando confirmação";
+  }
+  if (status === "AGENDADO") return "Agendado";
+  if (status === "EM_ATENDIMENTO") return "Em atendimento";
+  if (CLINIC_DONE_STATUSES.includes(status)) return "Concluído";
+  if (status === "CANCELADO") return "Cancelado";
+  return REFERRAL_STATUS_LABELS[status] ?? status;
+}
+
+/** 4 indicadores da fila operacional da clínica */
 export const REFERRAL_KPI_CARDS: {
   key: string;
   label: string;
@@ -31,32 +82,32 @@ export const REFERRAL_KPI_CARDS: {
   statuses: ReferralStatus[];
 }[] = [
   {
-    key: "novos",
-    label: "Novos",
-    hint: "Recém-recebidos",
-    filter: "NOVO",
-    statuses: ["NOVO"],
+    key: "recebidos",
+    label: "Aguardando confirmação",
+    hint: "Chegaram do RH ou do site",
+    filter: "RECEBIDOS",
+    statuses: CLINIC_PENDING_CONFIRMATION_STATUSES,
   },
   {
-    key: "aguardando_agendamento",
-    label: "Aguardando agendamento",
-    hint: "Sem data marcada",
-    filter: "AGUARDANDO_AGENDAMENTO",
-    statuses: ["AGUARDANDO_AGENDAMENTO"],
+    key: "agendados",
+    label: "Agendados",
+    hint: "Confirmados pela clínica",
+    filter: "AGENDADO",
+    statuses: ["AGENDADO"],
   },
   {
     key: "em_atendimento",
     label: "Em atendimento",
-    hint: "Em execução clínica",
+    hint: "Colaborador na clínica",
     filter: "EM_ATENDIMENTO",
     statuses: ["EM_ATENDIMENTO"],
   },
   {
-    key: "pendencias",
-    label: "Com pendências",
-    hint: "Resultado ou documento",
-    filter: "PENDENCIAS",
-    statuses: ["AGUARDANDO_RESULTADO", "AGUARDANDO_DOCUMENTO"],
+    key: "concluidos",
+    label: "Concluídos",
+    hint: "Atendimento finalizado",
+    filter: "CONCLUIDOS",
+    statuses: CLINIC_DONE_STATUSES,
   },
 ];
 
@@ -78,6 +129,14 @@ export const REFERRAL_SOURCE_LABELS: Record<ReferralSource, string> = {
   ADMIN: "Painel administrativo",
   PRE_REFERRAL: "Solicitação recebida",
   SITE: "Site público",
+};
+
+/** Rótulos curtos para a coluna Origem na fila */
+export const REFERRAL_SOURCE_SHORT_LABELS: Record<ReferralSource, string> = {
+  PORTAL: "Portal RH",
+  ADMIN: "Manual",
+  PRE_REFERRAL: "Site",
+  SITE: "Site",
 };
 
 export const REFERRAL_EXAM_STATUS_LABELS = {
@@ -174,6 +233,10 @@ export function buildReferralWhere(
   if (filters.status && filters.status !== "ALL") {
     if (filters.status === "PENDENCIAS") {
       where.status = { in: ["AGUARDANDO_RESULTADO", "AGUARDANDO_DOCUMENTO"] };
+    } else if (filters.status === "RECEBIDOS") {
+      where.status = { in: CLINIC_PENDING_CONFIRMATION_STATUSES };
+    } else if (filters.status === "CONCLUIDOS") {
+      where.status = { in: CLINIC_DONE_STATUSES };
     } else {
       where.status = filters.status as ReferralStatus;
     }
@@ -269,6 +332,7 @@ export type ReferralListItem = {
   requestedDate: string;
   scheduledAt: string | null;
   status: ReferralStatus;
+  source: ReferralSource;
   responsibleName: string | null;
   authorizerName: string | null;
   companyPhone: string | null;

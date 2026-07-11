@@ -3906,7 +3906,87 @@
 .atendimentos-clinica {
   display: flex;
   flex-direction: column;
+  gap: 0.85rem;
+}
+
+.sys-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 1rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.sys-page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: rgb(15 23 42);
+}
+
+.sys-page-subtitle {
+  margin: 0.25rem 0 0;
+  max-width: 42rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgb(100 116 139);
+}
+
+.sys-toolbar {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.375rem;
+  background: rgb(248 250 252);
+}
+
+.sys-table-panel {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.375rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.sys-data-table thead th {
+  background: rgb(248 250 252);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+}
+
+.sys-origin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.25rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgb(51 65 85);
+  white-space: nowrap;
+}
+
+.sys-origin-badge--portal {
+  border-color: rgb(191 219 254);
+  background: rgb(239 246 255);
+  color: rgb(29 78 216);
+}
+
+.sys-origin-badge--pre_referral,
+.sys-origin-badge--site {
+  border-color: rgb(187 247 208);
+  background: rgb(240 253 244);
+  color: rgb(21 128 61);
+}
+
+.sys-origin-badge--admin {
+  border-color: rgb(226 232 240);
+  background: rgb(241 245 249);
+  color: rgb(71 85 105);
 }
 
 .atendimentos-clinica-stats {
@@ -3925,13 +4005,13 @@
 }
 
 .atendimentos-clinica-table tbody td {
-  padding: 0.85rem 1rem;
+  padding: 0.65rem 0.85rem;
 }
 
 .atendimentos-clinica-table tbody tr.atendimentos-clinica-row {
-  height: 4.6rem;
+  height: auto;
+  min-height: 3.25rem;
   border-bottom: 1px solid rgb(241 245 249);
-  transition: background-color 0.15s ease;
 }
 
 .atendimentos-clinica-table tbody tr.atendimentos-clinica-row:last-child {
@@ -3939,7 +4019,7 @@
 }
 
 .atendimentos-clinica-table tbody tr.atendimentos-clinica-row:hover {
-  background: rgb(248 250 252 / 0.9);
+  background: rgb(248 250 252);
 }
 
 .atendimentos-clinica-stack {

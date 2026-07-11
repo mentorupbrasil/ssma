@@ -1,19 +1,17 @@
 "use client";
 
-import { DollarSign, Eye, FileText, Globe, MoreHorizontal } from "lucide-react";
+import { DollarSign, Eye, Globe, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type CompanyActionMenuProps = {
   onViewDetails: () => void;
-  onCreateAttendance?: () => void;
   onNewQuote?: () => void;
   onManagePortal: () => void;
 };
 
 export function CompanyActionMenu({
   onViewDetails,
-  onCreateAttendance,
   onNewQuote,
   onManagePortal,
 }: CompanyActionMenuProps) {
@@ -47,18 +45,6 @@ export function CompanyActionMenu({
             <span className="collaborator-action-hint">Perfil completo da empresa</span>
           </span>
         </button>
-
-        {onCreateAttendance && (
-          <button type="button" className="collaborator-action-item" onClick={onCreateAttendance}>
-            <span className="collaborator-action-icon collaborator-action-icon--schedule">
-              <FileText className="h-4 w-4" />
-            </span>
-            <span>
-              <span className="collaborator-action-label">Criar atendimento</span>
-              <span className="collaborator-action-hint">Novo exame ocupacional</span>
-            </span>
-          </button>
-        )}
 
         {onNewQuote && (
           <button type="button" className="collaborator-action-item" onClick={onNewQuote}>

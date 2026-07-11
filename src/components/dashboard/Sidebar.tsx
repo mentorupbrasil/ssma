@@ -75,7 +75,6 @@ const NAV_SECTIONS = [
       "/dashboard/empresas",
       "/dashboard/colaboradores",
       "/dashboard/encaminhamentos",
-      "/dashboard/agenda",
       "/dashboard/documentos",
       "/dashboard/exames",
     ],

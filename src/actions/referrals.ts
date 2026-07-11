@@ -121,6 +121,7 @@ export async function listReferrals(filters: ReferralListFilters = {}) {
       requestedDate: r.requestedDate.toISOString(),
       scheduledAt: r.scheduledAt?.toISOString() ?? null,
       status: r.status,
+      source: r.source,
       responsibleName: r.assignedTo?.name ?? null,
       authorizerName: r.authorizerName,
       companyPhone: r.companyPhone ?? r.company.phone,
@@ -185,6 +186,13 @@ export async function updateReferralStatusWithNotes(
 
     if (current.status === statusParsed.data) {
       return { success: true };
+    }
+
+    if (statusParsed.data === "CANCELADO" && !notes?.trim()) {
+      return {
+        success: false,
+        error: "Informe o motivo do cancelamento para a empresa.",
+      };
     }
 
     await prisma.$transaction([

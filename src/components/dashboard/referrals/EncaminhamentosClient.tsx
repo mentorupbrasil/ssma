@@ -6,32 +6,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Plus,
   Search,
-  MoreHorizontal,
-  Eye,
-  Calendar,
   RefreshCw,
-  MessageCircle,
-  Paperclip,
   ChevronLeft,
   ChevronRight,
-  Loader2,
   FileText,
   Inbox,
-  Clock3,
+  CheckCircle2,
   Stethoscope,
-  FileWarning,
-  SlidersHorizontal,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 import type { ReferralListItem, ReferralDetailSerialized } from "@/lib/referrals";
 import {
   REFERRAL_KPI_CARDS,
-  REFERRAL_STATUS_TABS,
-  buildReferralWhatsAppMessage,
+  CLINIC_STATUS_FILTER_OPTIONS,
+  REFERRAL_SOURCE_SHORT_LABELS,
+  getClinicReferralStatusLabel,
 } from "@/lib/referrals";
-import { CLINICAL_EXAM_LABELS, REFERRAL_STATUS_LABELS } from "@/types";
+import { CLINICAL_EXAM_LABELS } from "@/types";
 import { getReferralDetail } from "@/actions/referrals";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -42,27 +35,9 @@ import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ReferralEmpresaDetailDialog } from "./ReferralEmpresaDetailDialog";
 import { ExamesEmpresaListSection } from "./ExamesEmpresaListSection";
-import { ReferralDetailContent } from "./ReferralDetailContent";
-import {
-  ReferralStatusDialog,
-  ReferralScheduleDialog,
-  ReferralDocumentDialog,
-} from "./ReferralActionDialogs";
+import { ReferralStatusDialog } from "./ReferralActionDialogs";
 import { EMPRESA_EXAMES_STATUS_FILTER_OPTIONS } from "@/lib/empresa-portal";
 import { cn } from "@/lib/utils";
 
@@ -70,17 +45,17 @@ type CompanyOption = { id: string; name: string };
 type ResponsibleOption = { id: string; name: string };
 
 const STAT_ICONS: Record<string, LucideIcon> = {
-  novos: Inbox,
-  aguardando_agendamento: Clock3,
+  recebidos: Inbox,
+  agendados: CheckCircle2,
   em_atendimento: Stethoscope,
-  pendencias: FileWarning,
+  concluidos: ClipboardCheck,
 };
 
 const STAT_TONES: Record<string, "primary" | "warning"> = {
-  novos: "primary",
-  aguardando_agendamento: "warning",
+  recebidos: "warning",
+  agendados: "primary",
   em_atendimento: "primary",
-  pendencias: "warning",
+  concluidos: "primary",
 };
 
 type EncaminhamentosClientProps = {
@@ -110,11 +85,6 @@ type EncaminhamentosClientProps = {
   };
 };
 
-function formatScheduleLabel(scheduledAt: string | null) {
-  if (!scheduledAt) return "Não agendado";
-  return format(new Date(scheduledAt), "dd/MM/yyyy HH:mm", { locale: ptBR });
-}
-
 export function EncaminhamentosClient({
   initialItems,
   initialTotal,
@@ -122,7 +92,7 @@ export function EncaminhamentosClient({
   pageSize,
   statusCounts,
   companies,
-  responsibles = [],
+  responsibles: _responsibles = [],
   isEmpresa,
   canManage,
   embedded = false,
@@ -138,35 +108,16 @@ export function EncaminhamentosClient({
   const [companyId, setCompanyId] = useState(filters.companyId ?? "");
   const [clinicalExamType, setClinicalExamType] = useState(filters.clinicalExamType ?? "");
   const [statusFilter, setStatusFilter] = useState(filters.status ?? "");
-  const [dateFrom, setDateFrom] = useState(filters.dateFrom ?? "");
-  const [dateTo, setDateTo] = useState(filters.dateTo ?? "");
-  const [assignedToId, setAssignedToId] = useState(filters.assignedToId ?? "");
-  const [scheduledFrom, setScheduledFrom] = useState(filters.scheduledFrom ?? "");
-  const [scheduledTo, setScheduledTo] = useState(filters.scheduledTo ?? "");
-  const [pending, setPending] = useState(filters.pending ?? "");
-  const [documentSituation, setDocumentSituation] = useState(filters.documentSituation ?? "");
-  const [moreFiltersOpen, setMoreFiltersOpen] = useState(
-    Boolean(
-      filters.assignedToId ||
-        filters.dateFrom ||
-        filters.dateTo ||
-        filters.scheduledFrom ||
-        filters.scheduledTo ||
-        filters.pending ||
-        filters.documentSituation
-    )
-  );
 
   const activeStatus = filters.status ?? "";
+
+  const [statusTarget, setStatusTarget] = useState<ReferralListItem | null>(null);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<ReferralDetailSerialized | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
-
-  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
-  const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
 
@@ -192,13 +143,6 @@ export function EncaminhamentosClient({
       companyId: companyId || undefined,
       clinicalExamType: clinicalExamType || undefined,
       status: statusFilter || undefined,
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-      assignedToId: assignedToId || undefined,
-      scheduledFrom: scheduledFrom || undefined,
-      scheduledTo: scheduledTo || undefined,
-      pending: pending || undefined,
-      documentSituation: documentSituation || undefined,
       ...extra,
     });
   };
@@ -208,14 +152,6 @@ export function EncaminhamentosClient({
     setCompanyId("");
     setClinicalExamType("");
     setStatusFilter("");
-    setDateFrom("");
-    setDateTo("");
-    setAssignedToId("");
-    setScheduledFrom("");
-    setScheduledTo("");
-    setPending("");
-    setDocumentSituation("");
-    setMoreFiltersOpen(false);
     startTransition(() => {
       router.push(listPath, { scroll: false });
     });
@@ -223,31 +159,9 @@ export function EncaminhamentosClient({
 
   const hasActiveFilters = useMemo(
     () =>
-      Boolean(
-        filters.q ||
-          filters.status ||
-          filters.companyId ||
-          filters.clinicalExamType ||
-          filters.dateFrom ||
-          filters.dateTo ||
-          filters.assignedToId ||
-          filters.scheduledFrom ||
-          filters.scheduledTo ||
-          filters.pending ||
-          filters.documentSituation
-      ),
+      Boolean(filters.q || filters.status || filters.companyId || filters.clinicalExamType),
     [filters]
   );
-
-  const advancedFilterCount = [
-    filters.assignedToId,
-    filters.dateFrom,
-    filters.dateTo,
-    filters.scheduledFrom,
-    filters.scheduledTo,
-    filters.pending,
-    filters.documentSituation,
-  ].filter(Boolean).length;
 
   const activeChips = useMemo(
     () =>
@@ -259,10 +173,8 @@ export function EncaminhamentosClient({
           label: (v) => {
             const kpi = REFERRAL_KPI_CARDS.find((c) => c.filter === v);
             if (kpi) return kpi.label;
-            const tab = REFERRAL_STATUS_TABS.find((t) => t.value === v);
-            if (tab) return `Status: ${tab.label}`;
-            if (v === "PENDENCIAS") return "Com pendências";
             return (
+              CLINIC_STATUS_FILTER_OPTIONS.find((o) => o.value === v)?.label ??
               EMPRESA_EXAMES_STATUS_FILTER_OPTIONS.find((o) => o.value === v)?.label ??
               `Status: ${v}`
             );
@@ -281,45 +193,8 @@ export function EncaminhamentosClient({
           label: (v) =>
             `Exame: ${CLINICAL_EXAM_LABELS[v as keyof typeof CLINICAL_EXAM_LABELS] ?? v}`,
         },
-        {
-          key: "assignedToId",
-          value: filters.assignedToId,
-          label: (v) =>
-            `Responsável: ${responsibles.find((r) => r.id === v)?.name ?? v}`,
-        },
-        {
-          key: "dateFrom",
-          value: filters.dateFrom || filters.dateTo,
-          label: () =>
-            filters.dateFrom && filters.dateTo
-              ? `Solicitação: ${filters.dateFrom} – ${filters.dateTo}`
-              : filters.dateFrom
-                ? `Solicitação desde ${filters.dateFrom}`
-                : `Solicitação até ${filters.dateTo}`,
-        },
-        {
-          key: "scheduledFrom",
-          value: filters.scheduledFrom || filters.scheduledTo,
-          label: () =>
-            filters.scheduledFrom && filters.scheduledTo
-              ? `Agendamento: ${filters.scheduledFrom} – ${filters.scheduledTo}`
-              : filters.scheduledFrom
-                ? `Agendamento desde ${filters.scheduledFrom}`
-                : `Agendamento até ${filters.scheduledTo}`,
-        },
-        {
-          key: "pending",
-          value: filters.pending,
-          label: () => "Com pendência",
-        },
-        {
-          key: "documentSituation",
-          value: filters.documentSituation,
-          label: (v) =>
-            `Documento: ${REFERRAL_STATUS_LABELS[v as keyof typeof REFERRAL_STATUS_LABELS] ?? v}`,
-        },
       ]),
-    [filters, companies, responsibles, isEmpresa]
+    [filters, companies, isEmpresa]
   );
 
   const removeChip = (key: string) => {
@@ -327,24 +202,6 @@ export function EncaminhamentosClient({
     if (key === "companyId") setCompanyId("");
     if (key === "clinicalExamType") setClinicalExamType("");
     if (key === "status") setStatusFilter("");
-    if (key === "assignedToId") setAssignedToId("");
-    if (key === "pending") setPending("");
-    if (key === "documentSituation") setDocumentSituation("");
-    if (key === "dateFrom") {
-      setDateFrom("");
-      setDateTo("");
-      updateFilters({ ...removeFilterKey(key, filters), dateTo: undefined });
-      return;
-    }
-    if (key === "scheduledFrom") {
-      setScheduledFrom("");
-      setScheduledTo("");
-      updateFilters({
-        ...removeFilterKey(key, filters),
-        scheduledTo: undefined,
-      });
-      return;
-    }
     updateFilters(removeFilterKey(key, filters));
   };
 
@@ -366,8 +223,13 @@ export function EncaminhamentosClient({
     loadDetail(id);
   };
 
-  const refreshDetail = () => {
-    if (selectedId) loadDetail(selectedId);
+  const openStatusDialog = (item: ReferralListItem) => {
+    setStatusTarget(item);
+    setStatusDialogOpen(true);
+  };
+
+  const refreshAfterStatus = () => {
+    setStatusTarget(null);
     router.refresh();
   };
 
@@ -376,60 +238,30 @@ export function EncaminhamentosClient({
     setCompanyId(filters.companyId ?? "");
     setClinicalExamType(filters.clinicalExamType ?? "");
     setStatusFilter(filters.status ?? "");
-    setDateFrom(filters.dateFrom ?? "");
-    setDateTo(filters.dateTo ?? "");
-    setAssignedToId(filters.assignedToId ?? "");
-    setScheduledFrom(filters.scheduledFrom ?? "");
-    setScheduledTo(filters.scheduledTo ?? "");
-    setPending(filters.pending ?? "");
-    setDocumentSituation(filters.documentSituation ?? "");
   }, [filters]);
 
   useEffect(() => {
     const idFromUrl = searchParams.get("id");
-    if (idFromUrl && idFromUrl !== selectedId) {
+    if (idFromUrl && isEmpresa && idFromUrl !== selectedId) {
       openDetail(idFromUrl);
     }
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const getWhatsAppUrl = (item: ReferralListItem) => {
-    const phone = item.companyWhatsapp ?? item.companyPhone;
-    if (!phone) return null;
-    const message = buildReferralWhatsAppMessage({
-      protocol: item.protocol,
-      companyName: item.companyName,
-      employeeName: item.employeeName,
-      clinicalExamType: item.clinicalExamType,
-      status: item.status,
-      scheduledAt: item.scheduledAt ? new Date(item.scheduledAt) : null,
-    });
-    return `https://wa.me/55${phone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
-  };
+  }, [searchParams, isEmpresa]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resultLabel =
     initialTotal === 1
-      ? "1 atendimento encontrado"
-      : `${initialTotal} atendimentos encontrados`;
+      ? "1 registro na fila"
+      : `${initialTotal} registros na fila`;
 
   const clinicBody = (
     <>
       {!embedded && (
-        <header className="colaboradores-empresa-header">
-          <div className="colaboradores-empresa-header-copy">
-            <h1 className="colaboradores-empresa-title">Atendimentos</h1>
-            <p className="colaboradores-empresa-subtitle">
-              Gerencie exames ocupacionais, agendamentos e andamento dos atendimentos.
+        <header className="sys-page-header">
+          <div>
+            <h1 className="sys-page-title">Fila de atendimentos</h1>
+            <p className="sys-page-subtitle">
+              Pedidos recebidos do portal RH e do site. Confirme, atenda e conclua — o ASO é
+              liberado em Documentos.
             </p>
-          </div>
-          <div className="colaboradores-empresa-header-actions">
-            {canManage && (
-              <Link href="/dashboard/encaminhamentos/novo">
-                <Button variant="brand" size="sm" className="rounded-lg">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Criar atendimento
-                </Button>
-              </Link>
-            )}
           </div>
         </header>
       )}
@@ -445,8 +277,6 @@ export function EncaminhamentosClient({
               onClick={() =>
                 updateFilters({
                   status: isActive ? undefined : card.filter,
-                  pending: undefined,
-                  documentSituation: undefined,
                 })
               }
               className={cn(
@@ -474,7 +304,7 @@ export function EncaminhamentosClient({
         })}
       </div>
 
-      <div className="colaboradores-empresa-filters">
+      <div className="sys-toolbar colaboradores-empresa-filters">
         <div className="colaboradores-empresa-filters-row">
           <div className="colaboradores-empresa-search">
             <Search className="colaboradores-empresa-search-icon" aria-hidden />
@@ -482,8 +312,8 @@ export function EncaminhamentosClient({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && pushCurrentFilters()}
-              placeholder="Buscar por protocolo, empresa, colaborador ou CPF"
-              aria-label="Buscar atendimentos"
+              placeholder="Protocolo, empresa, colaborador ou CPF"
+              aria-label="Buscar na fila"
               className="colaboradores-empresa-search-input"
             />
           </div>
@@ -508,28 +338,22 @@ export function EncaminhamentosClient({
 
           <select
             value={
-              REFERRAL_STATUS_TABS.some((t) => t.value === statusFilter && t.value !== "ALL")
+              CLINIC_STATUS_FILTER_OPTIONS.some((o) => o.value === statusFilter)
                 ? statusFilter
                 : ""
             }
             onChange={(e) => {
               const value = e.target.value;
               setStatusFilter(value);
-              setPending("");
-              setDocumentSituation("");
-              pushCurrentFilters({
-                status: value || undefined,
-                pending: undefined,
-                documentSituation: undefined,
-              });
+              pushCurrentFilters({ status: value || undefined });
             }}
             aria-label="Filtrar por status"
             className="colaboradores-empresa-select"
           >
             <option value="">Status</option>
-            {REFERRAL_STATUS_TABS.filter((t) => t.value !== "ALL").map((tab) => (
-              <option key={tab.value} value={tab.value}>
-                {tab.label}
+            {CLINIC_STATUS_FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </select>
@@ -552,126 +376,18 @@ export function EncaminhamentosClient({
             ))}
           </select>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="colaboradores-empresa-more-btn rounded-lg"
-            onClick={() => setMoreFiltersOpen((open) => !open)}
-            aria-expanded={moreFiltersOpen}
-          >
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Mais filtros
-            {advancedFilterCount > 0 && (
-              <span className="colaboradores-empresa-filter-count">{advancedFilterCount}</span>
-            )}
-          </Button>
-
           {hasActiveFilters && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="colaboradores-empresa-clear-btn rounded-lg"
+              className="colaboradores-empresa-clear-btn rounded-md"
               onClick={clearFilters}
             >
-              Limpar filtros
+              Limpar
             </Button>
           )}
         </div>
-
-        {moreFiltersOpen && (
-          <div className="colaboradores-empresa-filters-advanced">
-            <select
-              value={assignedToId}
-              onChange={(e) => setAssignedToId(e.target.value)}
-              className="colaboradores-empresa-select"
-              aria-label="Responsável"
-            >
-              <option value="">Responsável</option>
-              {responsibles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
-
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              title="Solicitação de"
-              aria-label="Período da solicitação — início"
-              className="h-9 rounded-lg text-sm"
-            />
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              title="Solicitação até"
-              aria-label="Período da solicitação — fim"
-              className="h-9 rounded-lg text-sm"
-            />
-
-            <Input
-              type="date"
-              value={scheduledFrom}
-              onChange={(e) => setScheduledFrom(e.target.value)}
-              title="Agendamento de"
-              aria-label="Data do agendamento — início"
-              className="h-9 rounded-lg text-sm"
-            />
-            <Input
-              type="date"
-              value={scheduledTo}
-              onChange={(e) => setScheduledTo(e.target.value)}
-              title="Agendamento até"
-              aria-label="Data do agendamento — fim"
-              className="h-9 rounded-lg text-sm"
-            />
-
-            <select
-              value={pending}
-              onChange={(e) => setPending(e.target.value)}
-              className="colaboradores-empresa-select"
-              aria-label="Pendência"
-            >
-              <option value="">Pendência</option>
-              <option value="true">Com pendência</option>
-            </select>
-
-            <select
-              value={documentSituation}
-              onChange={(e) => setDocumentSituation(e.target.value)}
-              className="colaboradores-empresa-select"
-              aria-label="Situação do documento"
-            >
-              <option value="">Situação do documento</option>
-              <option value="AGUARDANDO_RESULTADO">Aguardando resultado</option>
-              <option value="AGUARDANDO_DOCUMENTO">Aguardando documento</option>
-              <option value="ASO_DISPONIVEL">ASO disponível</option>
-            </select>
-
-            <Button
-              type="button"
-              variant="brand"
-              size="sm"
-              className="rounded-lg"
-              onClick={() => {
-                const nextStatus =
-                  documentSituation ||
-                  (pending === "true" ? "PENDENCIAS" : statusFilter || undefined);
-                pushCurrentFilters({
-                  status: nextStatus,
-                  pending: documentSituation ? undefined : pending || undefined,
-                  documentSituation: documentSituation || undefined,
-                });
-              }}
-            >
-              Aplicar
-            </Button>
-          </div>
-        )}
 
         {activeChips.length > 0 && (
           <div className="colaboradores-empresa-chips">
@@ -680,8 +396,8 @@ export function EncaminhamentosClient({
         )}
       </div>
 
-      <div className="colaboradores-empresa-table-wrap relative">
-        {isPending && <LoadingState overlay label="Atualizando atendimentos..." />}
+      <div className="colaboradores-empresa-table-wrap relative sys-table-panel">
+        {isPending && <LoadingState overlay label="Atualizando fila..." />}
 
         <div className="colaboradores-empresa-result-bar">
           <span className="text-xs text-slate-500">{resultLabel}</span>
@@ -690,160 +406,94 @@ export function EncaminhamentosClient({
         {initialItems.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title="Nenhum atendimento encontrado"
-            description="Crie um atendimento ou ajuste os filtros."
-            action={
-              canManage
-                ? { label: "Criar atendimento", href: "/dashboard/encaminhamentos/novo" }
-                : undefined
-            }
+            title="Nenhum pedido na fila"
+            description="Quando o RH ou o site enviarem um encaminhamento, ele aparece aqui."
           />
         ) : (
           <>
             <div className="colaboradores-empresa-table-scroll hidden md:block">
-              <table className="colaboradores-empresa-table atendimentos-clinica-table">
+              <table className="colaboradores-empresa-table atendimentos-clinica-table sys-data-table">
                 <thead>
                   <tr>
-                    <th>Protocolo</th>
+                    <th>Origem</th>
                     <th>Colaborador</th>
                     <th>Empresa</th>
-                    <th>Atendimento</th>
-                    <th>Agendamento</th>
+                    <th>Exame</th>
+                    <th>Recebido em</th>
                     <th>Status</th>
-                    <th>Responsável</th>
-                    <th className="colaboradores-empresa-th-actions">Ações</th>
+                    {canManage && <th className="colaboradores-empresa-th-actions">Ação</th>}
                   </tr>
                 </thead>
                 <tbody>
-                  {initialItems.map((item) => {
-                    const waUrl = getWhatsAppUrl(item);
-                    return (
-                      <tr
-                        key={item.id}
-                        className="atendimentos-clinica-row cursor-pointer"
-                        onClick={() => openDetail(item.id)}
-                      >
-                        <td className="atendimentos-clinica-protocol">
-                          <Link
-                            href={`/dashboard/encaminhamentos?id=${item.id}`}
-                            className="atendimentos-clinica-link"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              openDetail(item.id);
-                            }}
-                          >
-                            {item.protocol}
-                          </Link>
-                        </td>
-                        <td>
-                          <div className="atendimentos-clinica-stack">
-                            <Link
-                              href={`/dashboard/colaboradores/${item.patientId}`}
-                              className="atendimentos-clinica-link atendimentos-clinica-primary-text"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {item.employeeName}
-                            </Link>
-                            <span className="atendimentos-clinica-meta">
-                              {item.jobTitle ?? "Sem função"}
-                            </span>
-                            <span className="atendimentos-clinica-cpf">{item.employeeCpf}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <Link
-                            href={`/dashboard/empresas/${item.companyId}`}
-                            className="atendimentos-clinica-link"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {item.companyName}
-                          </Link>
-                        </td>
-                        <td>
-                          <div className="atendimentos-clinica-stack">
-                            <span className="atendimentos-clinica-primary-text">
-                              {CLINICAL_EXAM_LABELS[item.clinicalExamType]}
-                            </span>
-                            <span className="atendimentos-clinica-meta">
-                              {format(new Date(item.requestedDate), "dd/MM/yyyy", {
-                                locale: ptBR,
-                              })}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="atendimentos-clinica-schedule whitespace-nowrap">
-                          {formatScheduleLabel(item.scheduledAt)}
-                        </td>
-                        <td>
-                          <StatusBadge status={item.status} type="referral" />
-                        </td>
-                        <td className="whitespace-nowrap">
-                          {item.responsibleName ?? "—"}
-                        </td>
-                        <td
-                          className="colaboradores-empresa-td-actions"
-                          onClick={(e) => e.stopPropagation()}
+                  {initialItems.map((item) => (
+                    <tr key={item.id} className="atendimentos-clinica-row">
+                      <td>
+                        <span
+                          className={cn(
+                            "sys-origin-badge",
+                            `sys-origin-badge--${item.source.toLowerCase()}`
+                          )}
+                          title={REFERRAL_SOURCE_SHORT_LABELS[item.source]}
                         >
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button variant="ghost" size="icon-sm" aria-label="Ações">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              }
-                            />
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openDetail(item.id)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                Ver detalhes
-                              </DropdownMenuItem>
-                              {canManage && (
-                                <>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      openDetail(item.id);
-                                      setScheduleDialogOpen(true);
-                                    }}
-                                  >
-                                    <Calendar className="mr-2 h-4 w-4" />
-                                    Agendar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      openDetail(item.id);
-                                      setStatusDialogOpen(true);
-                                    }}
-                                  >
-                                    <RefreshCw className="mr-2 h-4 w-4" />
-                                    Alterar status
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      openDetail(item.id);
-                                      setDocumentDialogOpen(true);
-                                    }}
-                                  >
-                                    <Paperclip className="mr-2 h-4 w-4" />
-                                    Anexar documento
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                              {waUrl && (
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    window.open(waUrl, "_blank", "noopener,noreferrer")
-                                  }
-                                >
-                                  <MessageCircle className="mr-2 h-4 w-4" />
-                                  Enviar WhatsApp
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {REFERRAL_SOURCE_SHORT_LABELS[item.source]}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="atendimentos-clinica-stack">
+                          <Link
+                            href={`/dashboard/colaboradores/${item.patientId}`}
+                            className="atendimentos-clinica-link atendimentos-clinica-primary-text"
+                          >
+                            {item.employeeName}
+                          </Link>
+                          <span className="atendimentos-clinica-meta">
+                            {item.jobTitle ?? "Sem função"}
+                          </span>
+                          <span className="atendimentos-clinica-cpf">{item.employeeCpf}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <Link
+                          href={`/dashboard/empresas/${item.companyId}`}
+                          className="atendimentos-clinica-link"
+                        >
+                          {item.companyName}
+                        </Link>
+                      </td>
+                      <td>
+                        <span className="atendimentos-clinica-primary-text">
+                          {CLINICAL_EXAM_LABELS[item.clinicalExamType]}
+                        </span>
+                        <span className="atendimentos-clinica-meta block font-mono text-[11px] text-slate-400">
+                          {item.protocol}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap tabular-nums text-sm text-slate-600">
+                        {format(new Date(item.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
+                      </td>
+                      <td>
+                        <StatusBadge
+                          status={item.status}
+                          type="referral"
+                          label={getClinicReferralStatusLabel(item.status)}
+                        />
+                      </td>
+                      {canManage && (
+                        <td className="colaboradores-empresa-td-actions">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="rounded-md"
+                            onClick={() => openStatusDialog(item)}
+                          >
+                            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                            Status
+                          </Button>
                         </td>
-                      </tr>
-                    );
-                  })}
+                      )}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -853,11 +503,17 @@ export function EncaminhamentosClient({
                 <MobileListCard
                   key={item.id}
                   icon={FileText}
-                  title={item.protocol}
-                  subtitle={`${item.employeeName} · ${item.companyName}`}
+                  title={item.employeeName}
+                  subtitle={`${item.companyName} · ${REFERRAL_SOURCE_SHORT_LABELS[item.source]}`}
                   meta={CLINICAL_EXAM_LABELS[item.clinicalExamType]}
-                  badge={<StatusBadge status={item.status} type="referral" />}
-                  onClick={() => openDetail(item.id)}
+                  badge={
+                    <StatusBadge
+                      status={item.status}
+                      type="referral"
+                      label={getClinicReferralStatusLabel(item.status)}
+                    />
+                  }
+                  onClick={canManage ? () => openStatusDialog(item) : undefined}
                 />
               ))}
             </div>
@@ -924,7 +580,7 @@ export function EncaminhamentosClient({
     <>
       {isEmpresa ? empresaBody : clinicBody}
 
-      {isEmpresa ? (
+      {isEmpresa && (
         <ReferralEmpresaDetailDialog
           referral={detail}
           open={!!selectedId}
@@ -933,76 +589,20 @@ export function EncaminhamentosClient({
           onOpenChange={(open) => !open && setSelectedId(null)}
           onRetry={() => selectedId && loadDetail(selectedId)}
         />
-      ) : (
-        <Sheet open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
-          <SheetContent
-            side="right"
-            className="referral-detail-sheet w-full overflow-y-auto sm:max-w-2xl lg:max-w-3xl"
-          >
-            <SheetHeader className="border-b pb-4">
-              <SheetTitle>{detail?.protocol ?? "Atendimento"}</SheetTitle>
-              <SheetDescription>
-                {detail
-                  ? `${detail.company.tradeName ?? detail.company.legalName} · ${detail.employee.fullName}`
-                  : "Carregando detalhes..."}
-              </SheetDescription>
-            </SheetHeader>
-
-            {detailLoading && (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-green)]" />
-              </div>
-            )}
-
-            {detailError && (
-              <div className="referral-error-state">
-                <p>{detailError}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => selectedId && loadDetail(selectedId)}
-                >
-                  Tentar novamente
-                </Button>
-              </div>
-            )}
-
-            {detail && !detailLoading && (
-              <ReferralDetailContent
-                referral={detail}
-                canManage={canManage}
-                onRefresh={refreshDetail}
-                onOpenStatus={() => setStatusDialogOpen(true)}
-                onOpenSchedule={() => setScheduleDialogOpen(true)}
-                onOpenDocument={() => setDocumentDialogOpen(true)}
-              />
-            )}
-          </SheetContent>
-        </Sheet>
       )}
 
-      {!isEmpresa && selectedId && detail && (
-        <>
-          <ReferralStatusDialog
-            open={statusDialogOpen}
-            onOpenChange={setStatusDialogOpen}
-            referralId={selectedId}
-            currentStatus={detail.status}
-            onSuccess={refreshDetail}
-          />
-          <ReferralScheduleDialog
-            open={scheduleDialogOpen}
-            onOpenChange={setScheduleDialogOpen}
-            referralId={selectedId}
-            onSuccess={refreshDetail}
-          />
-          <ReferralDocumentDialog
-            open={documentDialogOpen}
-            onOpenChange={setDocumentDialogOpen}
-            referralId={selectedId}
-            onSuccess={refreshDetail}
-          />
-        </>
+      {!isEmpresa && statusTarget && (
+        <ReferralStatusDialog
+          open={statusDialogOpen}
+          onOpenChange={(open) => {
+            setStatusDialogOpen(open);
+            if (!open) setStatusTarget(null);
+          }}
+          referralId={statusTarget.id}
+          currentStatus={statusTarget.status}
+          onSuccess={refreshAfterStatus}
+          clinicMode
+        />
       )}
     </>
   );
