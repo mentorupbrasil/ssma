@@ -15,7 +15,10 @@ export type DocumentFormOptions = {
   referrals: Array<{
     id: string;
     protocol: string;
+    companyId: string;
+    patientId: string;
     patient: { fullName: string } | null;
+    clinicalExamType: string;
   }>;
   exams: Array<{ id: string; name: string }>;
   quotes: Array<{ id: string; quoteNumber: string | null; companyName: string }>;
@@ -28,34 +31,26 @@ export const DOCUMENT_KPI_CARDS: {
   hint: string;
 }[] = [
   {
-    key: "aguardando_arquivo",
-    filter: "PENDENTE",
-    label: "Aguardando arquivo",
-    hint: "Sem arquivo anexado",
+    key: "pendentes_liberacao",
+    filter: "PENDENTES_LIBERACAO",
+    label: "Pendentes de liberação",
+    hint: "ASO ainda não liberado para a empresa",
   },
   {
-    key: "em_elaboracao",
-    filter: "EM_EMISSAO",
-    label: "Em elaboração",
-    hint: "Em produção",
-  },
-  {
-    key: "disponiveis",
-    filter: "DISPONIVEL",
-    label: "Disponíveis",
-    hint: "Com arquivo acessível",
-  },
-  {
-    key: "vencidos",
-    filter: "VENCIDO",
-    label: "Vencidos",
-    hint: "Fora da validade",
+    key: "liberados",
+    filter: "LIBERADOS",
+    label: "Liberados",
+    hint: "Empresa já pode baixar no portal",
   },
 ];
 
 /** @deprecated Prefer DOCUMENT_KPI_CARDS no painel clínico */
 export const DOCUMENT_STAT_CARDS: { key: string; filter: string; label: string }[] = [
   ...DOCUMENT_KPI_CARDS.map(({ key, filter, label }) => ({ key, filter, label })),
+  { key: "aguardando_arquivo", filter: "PENDENTE", label: "Aguardando arquivo" },
+  { key: "em_elaboracao", filter: "EM_EMISSAO", label: "Em elaboração" },
+  { key: "disponiveis", filter: "DISPONIVEL", label: "Disponíveis" },
+  { key: "vencidos", filter: "VENCIDO", label: "Vencidos" },
   { key: "asos_pendentes", filter: "ASO_PENDENTE", label: "ASOs pendentes" },
   { key: "mes", filter: "MES", label: "Documentos do mês" },
 ];
@@ -362,8 +357,33 @@ export function buildDocumentWhere(
     where.type = "ASO";
     where.status = { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO"] };
   }
+  if (card === "PENDENTES_LIBERACAO") {
+    where.type = "ASO";
+    where.status = { notIn: ["ARQUIVADO", "CANCELADO"] };
+    const pendingClause: Prisma.DocumentWhereInput = {
+      OR: [
+        { fileUrl: null },
+        {
+          status: {
+            notIn: ["DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"],
+          },
+        },
+      ],
+    };
+    where.AND = [...(where.AND ? (Array.isArray(where.AND) ? where.AND : [where.AND]) : []), pendingClause];
+  }
+  if (card === "LIBERADOS") {
+    where.type = "ASO";
+    where.fileUrl = { not: null };
+    where.status = { in: ["DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] };
+  }
   if (card === "MES") {
     where.createdAt = { gte: startOfMonth(new Date()), lte: endOfMonth(new Date()) };
+  }
+
+  // Visão clínica padrão: foco em ASO quando nenhum tipo foi escolhido
+  if (!filters.type && !card) {
+    where.type = "ASO";
   }
 
   return where;

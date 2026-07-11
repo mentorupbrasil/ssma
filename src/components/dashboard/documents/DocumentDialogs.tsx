@@ -10,6 +10,7 @@ import {
   ASO_CLINICAL_TYPE_LABELS,
   CLINICAL_DOCUMENT_TYPES,
 } from "@/lib/documents";
+import { CLINICAL_EXAM_LABELS } from "@/types";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,8 @@ type DocumentFormDialogProps = {
   document?: DocumentDetailSerialized | null;
   formOptions: FormOptions;
   attachOnly?: boolean;
+  asoReleaseMode?: boolean;
+  prefillReferralId?: string;
   onSuccess: (documentId?: string) => void;
 };
 
@@ -42,11 +45,7 @@ const DOCUMENT_TYPES = Object.entries(DOCUMENT_TYPE_LABELS).filter(
   ([k]) => !["LAUDO", "PROPOSTA", "ENCAMINHAMENTO"].includes(k)
 ) as [DocumentType, string][];
 
-const INITIAL_STATUSES: DocumentStatus[] = [
-  "PENDENTE",
-  "EM_EMISSAO",
-  "DISPONIVEL",
-];
+const INITIAL_STATUSES: DocumentStatus[] = ["PENDENTE", "EM_EMISSAO", "DISPONIVEL"];
 
 const ASO_TYPES = Object.entries(ASO_CLINICAL_TYPE_LABELS);
 
@@ -56,8 +55,8 @@ const defaultForm = {
   status: "PENDENTE" as DocumentStatus,
   issuedAt: "",
   validUntil: "",
-  sensitive: false,
-  availableOnPortal: false,
+  sensitive: true,
+  availableOnPortal: true,
   companyId: "",
   patientId: "",
   referralId: "",
@@ -94,6 +93,8 @@ export function DocumentFormDialog({
   document,
   formOptions,
   attachOnly = false,
+  asoReleaseMode = false,
+  prefillReferralId,
   onSuccess,
 }: DocumentFormDialogProps) {
   const isEdit = !!document;
@@ -127,16 +128,51 @@ export function DocumentFormDialog({
         asoExamDate: document.asoExamDate ? document.asoExamDate.slice(0, 10) : "",
         asoProfessionalName: document.asoProfessionalName ?? "",
       });
-    } else {
-      setForm({ ...defaultForm, sensitive: false });
+      return;
     }
-  }, [open, document]);
+
+    const referral = prefillReferralId
+      ? formOptions.referrals.find((r) => r.id === prefillReferralId)
+      : undefined;
+
+    const patientName = referral?.patient?.fullName ?? "";
+    const examLabel = referral
+      ? CLINICAL_EXAM_LABELS[referral.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS] ??
+        referral.clinicalExamType
+      : "";
+
+    setForm({
+      ...defaultForm,
+      type: "ASO",
+      sensitive: true,
+      availableOnPortal: true,
+      companyId: referral?.companyId ?? "",
+      patientId: referral?.patientId ?? "",
+      referralId: referral?.id ?? "",
+      asoClinicalType: referral?.clinicalExamType ?? "",
+      title: patientName
+        ? `ASO — ${patientName}${examLabel ? ` (${examLabel})` : ""}`
+        : "",
+    });
+  }, [open, document, prefillReferralId, formOptions.referrals]);
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm((prev) => {
       const next = { ...prev, [key]: value };
       if (key === "type" && CLINICAL_DOCUMENT_TYPES.includes(value as DocumentType)) {
         next.sensitive = true;
+      }
+      if (key === "referralId" && asoReleaseMode) {
+        const referral = formOptions.referrals.find((r) => r.id === value);
+        if (referral) {
+          next.companyId = referral.companyId;
+          next.patientId = referral.patientId;
+          next.asoClinicalType = referral.clinicalExamType;
+          const examLabel =
+            CLINICAL_EXAM_LABELS[referral.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS] ??
+            referral.clinicalExamType;
+          next.title = `ASO — ${referral.patient?.fullName ?? "Colaborador"} (${examLabel})`;
+        }
       }
       return next;
     });
@@ -148,20 +184,22 @@ export function DocumentFormDialog({
 
   const buildPayload = (makeAvailable: boolean) => ({
     title: form.title,
-    type: form.type,
-    status: makeAvailable ? "DISPONIVEL" as DocumentStatus : form.status,
+    type: asoReleaseMode ? ("ASO" as DocumentType) : form.type,
+    status: makeAvailable ? ("DISPONIVEL" as DocumentStatus) : form.status,
     issuedAt: form.issuedAt || null,
     validUntil: form.validUntil || null,
-    sensitive: form.sensitive,
-    availableOnPortal: form.availableOnPortal,
+    sensitive: asoReleaseMode ? true : form.sensitive,
+    availableOnPortal: makeAvailable ? true : form.availableOnPortal,
     companyId: form.companyId || null,
     patientId: form.patientId || null,
     referralId: form.referralId || null,
-    examId: form.examId || null,
-    quoteId: form.quoteId || null,
+    examId: asoReleaseMode ? null : form.examId || null,
+    quoteId: asoReleaseMode ? null : form.quoteId || null,
     notes: form.notes,
     clientNotes: form.clientNotes,
-    asoClinicalType: (form.asoClinicalType || null) as import("@prisma/client").ClinicalExamType | null,
+    asoClinicalType: (form.asoClinicalType || null) as
+      | import("@prisma/client").ClinicalExamType
+      | null,
     asoExamDate: form.asoExamDate || null,
     asoProfessionalName: form.asoProfessionalName,
     makeAvailable,
@@ -172,8 +210,16 @@ export function DocumentFormDialog({
       toast.error("Informe o título do documento.");
       return;
     }
-    if (attachOnly && !file && !isEdit) {
-      toast.error("Selecione um arquivo para anexar.");
+    if (asoReleaseMode && !form.companyId) {
+      toast.error("Selecione a empresa.");
+      return;
+    }
+    if (asoReleaseMode && !form.referralId) {
+      toast.error("Selecione o atendimento vinculado.");
+      return;
+    }
+    if ((attachOnly || asoReleaseMode) && !file && !document?.hasFile) {
+      toast.error("Selecione o arquivo do ASO.");
       return;
     }
 
@@ -186,13 +232,9 @@ export function DocumentFormDialog({
           return;
         }
         if (file) {
-          await uploadFile(
-            file,
-            { documentId: document!.id },
-            makeAvailable
-          );
+          await uploadFile(file, { documentId: document!.id }, makeAvailable);
         }
-        toast.success("Documento atualizado.");
+        toast.success(makeAvailable ? "ASO liberado para a empresa." : "Documento atualizado.");
         onOpenChange(false);
         onSuccess(document!.id);
         return;
@@ -205,7 +247,7 @@ export function DocumentFormDialog({
           return;
         }
         await uploadFile(file, { documentId: createResult.documentId }, makeAvailable);
-        toast.success(makeAvailable ? "Documento disponibilizado." : "Documento salvo.");
+        toast.success(makeAvailable ? "ASO anexado e liberado." : "Documento salvo.");
         onOpenChange(false);
         onSuccess(createResult.documentId);
         return;
@@ -225,6 +267,128 @@ export function DocumentFormDialog({
       setLoading(false);
     }
   };
+
+  if (asoReleaseMode) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{isEdit ? "Anexar / liberar ASO" : "Anexar e liberar ASO"}</DialogTitle>
+            <DialogDescription>
+              Vincule ao atendimento, anexe o arquivo e libere para a empresa baixar no portal.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>Atendimento</Label>
+              <select
+                className="mt-1 flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+                value={form.referralId}
+                onChange={(e) => set("referralId", e.target.value)}
+                disabled={isEdit}
+              >
+                <option value="">Selecione o atendimento</option>
+                {formOptions.referrals.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.protocol}
+                    {r.patient?.fullName ? ` — ${r.patient.fullName}` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label>Empresa</Label>
+                <select
+                  className="mt-1 flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+                  value={form.companyId}
+                  onChange={(e) => set("companyId", e.target.value)}
+                >
+                  <option value="">Selecione</option>
+                  {formOptions.companies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.tradeName ?? c.legalName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label>Colaborador</Label>
+                <select
+                  className="mt-1 flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+                  value={form.patientId}
+                  onChange={(e) => set("patientId", e.target.value)}
+                >
+                  <option value="">Selecione</option>
+                  {filteredPatients.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.fullName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label>Título</Label>
+              <Input
+                value={form.title}
+                onChange={(e) => set("title", e.target.value)}
+                placeholder="ASO — Nome do colaborador"
+              />
+            </div>
+
+            <div>
+              <Label>Arquivo do ASO</Label>
+              <input
+                ref={fileRef}
+                type="file"
+                className="hidden"
+                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="mt-1 flex w-full flex-col items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center hover:border-[var(--brand-green)]/50"
+              >
+                {file ? (
+                  <>
+                    <FileText className="h-7 w-7 text-[var(--brand-green)]" />
+                    <p className="mt-2 text-sm font-medium text-slate-800">{file.name}</p>
+                  </>
+                ) : document?.hasFile ? (
+                  <>
+                    <FileText className="h-7 w-7 text-slate-400" />
+                    <p className="mt-2 text-sm text-slate-600">
+                      Já existe arquivo. Clique para substituir.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-7 w-7 text-slate-400" />
+                    <p className="mt-2 text-sm font-medium text-slate-700">Selecionar PDF ou imagem</p>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              Cancelar
+            </Button>
+            <Button variant="brand" onClick={() => handleSave(true)} disabled={loading}>
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Anexar e liberar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -392,7 +556,7 @@ export function DocumentFormDialog({
                   ))}
                 </select>
               </div>
-              <div>
+              <div className="sm:col-span-2">
                 <Label>Encaminhamento</Label>
                 <select
                   className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
@@ -403,37 +567,7 @@ export function DocumentFormDialog({
                   {formOptions.referrals.map((r) => (
                     <option key={r.id} value={r.id}>
                       {r.protocol}
-                      {r.patient ? ` — ${r.patient.fullName}` : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label>Exame</Label>
-                <select
-                  className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                  value={form.examId}
-                  onChange={(e) => set("examId", e.target.value)}
-                >
-                  <option value="">Nenhum</option>
-                  {formOptions.exams.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Orçamento</Label>
-                <select
-                  className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                  value={form.quoteId}
-                  onChange={(e) => set("quoteId", e.target.value)}
-                >
-                  <option value="">Nenhum</option>
-                  {formOptions.quotes.map((q) => (
-                    <option key={q.id} value={q.id}>
-                      {q.quoteNumber} — {q.companyName}
+                      {r.patient?.fullName ? ` — ${r.patient.fullName}` : ""}
                     </option>
                   ))}
                 </select>
@@ -459,9 +593,6 @@ export function DocumentFormDialog({
                 <>
                   <FileText className="h-8 w-8 text-[#16A085]" />
                   <p className="mt-2 text-sm font-medium text-slate-800">{file.name}</p>
-                  <p className="text-xs text-slate-500">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB · Clique para trocar
-                  </p>
                 </>
               ) : (
                 <>
@@ -469,7 +600,6 @@ export function DocumentFormDialog({
                   <p className="mt-2 text-sm font-medium text-slate-700">
                     {attachOnly ? "Selecione o arquivo" : "Anexar arquivo (opcional)"}
                   </p>
-                  <p className="text-xs text-slate-500">PDF, imagens ou documentos · máx. 15 MB</p>
                 </>
               )}
             </button>

@@ -77,7 +77,7 @@ async function maybeUpdateReferralOnAso(referralId: string | null, userId: strin
     where: { id: referralId },
     select: { status: true },
   });
-  if (!referral || referral.status === "ASO_DISPONIVEL" || referral.status === "CONCLUIDO") return;
+  if (!referral || referral.status === "ASO_DISPONIVEL") return;
 
   await prisma.$transaction([
     prisma.referral.update({
@@ -89,7 +89,7 @@ async function maybeUpdateReferralOnAso(referralId: string | null, userId: strin
         referralId,
         fromStatus: referral.status,
         toStatus: "ASO_DISPONIVEL",
-        notes: "ASO disponibilizado via módulo Documentos",
+        notes: "ASO liberado para a empresa via Documentos",
         changedById: userId,
       },
     }),
@@ -113,47 +113,43 @@ export async function listDocumentsForDashboard(
   const orderBy = buildDocumentOrderBy(filters.sort);
   const baseWhere = companyScope ? { companyId: companyScope } : {};
 
-  const [items, total, aguardandoArquivo, emElaboracao, disponiveis, vencidos] =
-    await Promise.all([
-      prisma.document.findMany({
-        where,
-        orderBy,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        include: {
-          company: { select: { legalName: true, tradeName: true, whatsapp: true, phone: true } },
-          patient: { select: { fullName: true } },
-          referral: { select: { protocol: true } },
-        },
-      }),
-      prisma.document.count({ where }),
-      prisma.document.count({
-        where: {
-          ...baseWhere,
-          OR: [
-            { status: "PENDENTE" },
-            {
-              fileUrl: null,
-              status: { notIn: ["ARQUIVADO", "CANCELADO", "VENCIDO"] },
+  const [items, total, pendentesLiberacao, liberados] = await Promise.all([
+    prisma.document.findMany({
+      where,
+      orderBy,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        company: { select: { legalName: true, tradeName: true, whatsapp: true, phone: true } },
+        patient: { select: { fullName: true } },
+        referral: { select: { protocol: true } },
+      },
+    }),
+    prisma.document.count({ where }),
+    prisma.document.count({
+      where: {
+        ...baseWhere,
+        type: "ASO",
+        status: { notIn: ["ARQUIVADO", "CANCELADO"] },
+        OR: [
+          { fileUrl: null },
+          {
+            status: {
+              notIn: ["DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"],
             },
-          ],
-        },
-      }),
-      prisma.document.count({
-        where: {
-          ...baseWhere,
-          status: { in: ["EM_EMISSAO", "EM_ELABORACAO"] },
-        },
-      }),
-      prisma.document.count({
-        where: {
-          ...baseWhere,
-          fileUrl: { not: null },
-          status: { in: ["DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] },
-        },
-      }),
-      prisma.document.count({ where: { ...baseWhere, status: "VENCIDO" } }),
-    ]);
+          },
+        ],
+      },
+    }),
+    prisma.document.count({
+      where: {
+        ...baseWhere,
+        type: "ASO",
+        fileUrl: { not: null },
+        status: { in: ["DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] },
+      },
+    }),
+  ]);
 
   return {
     items: items.map(serializeDocumentListItem),
@@ -161,13 +157,15 @@ export async function listDocumentsForDashboard(
     page,
     pageSize,
     statCounts: {
-      aguardando_arquivo: aguardandoArquivo,
-      em_elaboracao: emElaboracao,
-      disponiveis,
-      vencidos,
-      // aliases legados
-      pendentes: aguardandoArquivo,
-      em_emissao: emElaboracao,
+      pendentes_liberacao: pendentesLiberacao,
+      liberados,
+      // aliases legados (evita UI quebrada se algum deep-link antigo ainda existir)
+      aguardando_arquivo: pendentesLiberacao,
+      em_elaboracao: 0,
+      disponiveis: liberados,
+      vencidos: 0,
+      pendentes: pendentesLiberacao,
+      em_emissao: 0,
     },
   };
 }
@@ -344,7 +342,7 @@ export async function createDocument(
           issuedAt: raw.issuedAt ? new Date(raw.issuedAt) : null,
           validUntil: raw.validUntil ? new Date(raw.validUntil) : null,
           sensitive,
-          availableOnPortal: raw.availableOnPortal ?? false,
+          availableOnPortal: raw.makeAvailable ? true : (raw.availableOnPortal ?? false),
           companyId: raw.companyId || null,
           patientId: raw.patientId || null,
           referralId: raw.referralId || null,
@@ -481,7 +479,13 @@ export async function updateDocumentStatus(
     const existing = await prisma.document.findUnique({ where: { id: documentId } });
     if (!existing) return { success: false, error: "Documento não encontrado." };
 
-    await prisma.document.update({ where: { id: documentId }, data: { status } });
+    await prisma.document.update({
+      where: { id: documentId },
+      data: {
+        status,
+        ...(status === "DISPONIVEL" ? { availableOnPortal: true } : {}),
+      },
+    });
     const action: DocumentHistoryAction = status === "ARQUIVADO" ? "ARCHIVED" : "STATUS_CHANGED";
     await recordDocHistory(documentId, action, session.user.id, `${existing.status} → ${status}`);
 
@@ -583,9 +587,27 @@ export async function getDocumentFormOptions(): Promise<DocumentFormOptions> {
       take: 500,
     }),
     prisma.referral.findMany({
-      select: { id: true, protocol: true, patient: { select: { fullName: true } } },
+      where: {
+        status: {
+          in: [
+            "AGUARDANDO_DOCUMENTO",
+            "CONCLUIDO",
+            "EM_ATENDIMENTO",
+            "AGENDADO",
+            "AGUARDANDO_RESULTADO",
+          ],
+        },
+      },
+      select: {
+        id: true,
+        protocol: true,
+        companyId: true,
+        patientId: true,
+        clinicalExamType: true,
+        patient: { select: { fullName: true } },
+      },
       orderBy: { createdAt: "desc" },
-      take: 200,
+      take: 300,
     }),
     prisma.exam.findMany({
       where: { status: "ATIVO" },
