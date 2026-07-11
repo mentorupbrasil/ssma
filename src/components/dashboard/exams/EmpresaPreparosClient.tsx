@@ -14,15 +14,16 @@ import {
   EXAM_CATEGORY_LABELS,
   examNeedsPreparation,
   empresaPreparationBadgeLabel,
+  examToGuide,
 } from "@/lib/exams";
 import { getExamDetail } from "@/actions/exams";
+import { ExamPreparationDrawer } from "@/components/public/ExamPreparationDrawer";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { useBreadcrumbSegmentLabel } from "@/components/dashboard/BreadcrumbLabelProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
-import { PreparoDetailDialog } from "./PreparoDetailDialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -325,8 +326,8 @@ export function EmpresaPreparosClient({
         </div>
       )}
 
-      <PreparoDetailDialog
-        exam={detail}
+      <ExamPreparationDrawer
+        exam={detail ? examToGuide(detail) : null}
         open={detailOpen}
         onOpenChange={(open) => {
           setDetailOpen(open);
