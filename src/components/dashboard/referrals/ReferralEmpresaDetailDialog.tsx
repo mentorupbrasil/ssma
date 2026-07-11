@@ -4,15 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FileText, Loader2, Paperclip, Stethoscope, User } from "lucide-react";
+import { FileText, Loader2, Paperclip, Stethoscope, LayoutDashboard } from "lucide-react";
 import type { ReferralDetailSerialized } from "@/lib/referrals";
-import {
-  REFERRAL_DOCUMENT_TYPE_LABELS,
-  REFERRAL_EXAM_STATUS_LABELS,
-  maskCpf,
-} from "@/lib/referrals";
+import { REFERRAL_DOCUMENT_TYPE_LABELS } from "@/lib/referrals";
 import { CLINICAL_EXAM_LABELS, EXAM_CATEGORY_LABELS } from "@/types";
-import { empresaReferralStatusLabel } from "@/lib/empresa-portal";
+import {
+  empresaReferralStatusLabel,
+  empresaReferralStatusGuidance,
+} from "@/lib/empresa-portal";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -22,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 type ReferralEmpresaDetailDialogProps = {
   referral: ReferralDetailSerialized | null;
@@ -32,19 +32,19 @@ type ReferralEmpresaDetailDialogProps = {
   onRetry?: () => void;
 };
 
-type TabId = "geral" | "exames" | "documentos";
+type TabId = "resumo" | "exames" | "documentos";
 
-const TABS: { id: TabId; label: string; icon: typeof User }[] = [
-  { id: "geral", label: "Geral", icon: User },
-  { id: "exames", label: "Exames", icon: Stethoscope },
+const TABS: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
+  { id: "resumo", label: "Resumo", icon: LayoutDashboard },
+  { id: "exames", label: "Exames solicitados", icon: Stethoscope },
   { id: "documentos", label: "Documentos", icon: Paperclip },
 ];
 
-function ModalField({ label, value }: { label: string; value: React.ReactNode }) {
+function ResumoField({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="exam-modal-item">
-      <p className="exam-modal-item-label">{label}</p>
-      <div className="exam-modal-item-text">{value}</div>
+    <div>
+      <dt className="colaborador-perfil-field-label">{label}</dt>
+      <dd className="colaborador-perfil-field-value">{value}</dd>
     </div>
   );
 }
@@ -57,14 +57,16 @@ export function ReferralEmpresaDetailDialog({
   onOpenChange,
   onRetry,
 }: ReferralEmpresaDetailDialogProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("geral");
+  const [activeTab, setActiveTab] = useState<TabId>("resumo");
 
   const handleOpenChange = (next: boolean) => {
-    if (!next) setActiveTab("geral");
+    if (!next) setActiveTab("resumo");
     onOpenChange(next);
   };
 
   const asoDoc = referral?.documents.find((d) => d.type === "ASO");
+  const hasDocuments =
+    (referral?.documents.length ?? 0) > 0 || (referral?.legacyDocuments.length ?? 0) > 0;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -88,38 +90,35 @@ export function ReferralEmpresaDetailDialog({
 
         {referral && !loading && !error && (
           <>
-            <header className="exam-modal-head">
-              <div className="exam-modal-head-top">
-                <div className="exam-drawer-badges">
-                  <span className="exam-drawer-badge exam-drawer-badge--category">
-                    {CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
-                  </span>
-                  <StatusBadge
-                    status={referral.status}
-                    type="referral"
-                    label={empresaReferralStatusLabel(referral.status)}
-                  />
-                </div>
+            <header className="referral-empresa-modal-head">
+              <div className="referral-empresa-modal-head-top">
+                <span className="referral-empresa-modal-protocol">{referral.protocol}</span>
+                <StatusBadge
+                  status={referral.status}
+                  type="referral"
+                  label={empresaReferralStatusLabel(referral.status)}
+                />
               </div>
               <DialogTitle className="exam-modal-title">{referral.employee.fullName}</DialogTitle>
-              <DialogDescription className="collaborator-modal-subtitle">
-                Solicitado em{" "}
-                {format(new Date(referral.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
+              <DialogDescription className="referral-empresa-modal-subtitle">
+                {CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
                 {referral.employee.jobTitle ? ` · ${referral.employee.jobTitle}` : ""}
               </DialogDescription>
             </header>
 
-            <div className="dash-module-tabs referral-empresa-modal-tabs">
+            <div className="dash-module-tabs referral-empresa-modal-tabs colaborador-perfil-tabs">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "dash-module-tab",
-                      activeTab === tab.id && "dash-module-tab-active"
+                      "dash-module-tab colaborador-perfil-tab",
+                      activeTab === tab.id && "dash-module-tab-active colaborador-perfil-tab--active"
                     )}
                   >
                     <Icon className="mr-1.5 inline h-3.5 w-3.5" />
@@ -129,48 +128,78 @@ export function ReferralEmpresaDetailDialog({
               })}
             </div>
 
-            {activeTab === "geral" && (
-              <div className="exam-modal-grid referral-empresa-modal-grid">
-                <ModalField label="Colaborador" value={referral.employee.fullName} />
-                <ModalField label="CPF" value={maskCpf(referral.employee.cpf)} />
-                <ModalField label="Função" value={referral.employee.jobTitle ?? "—"} />
-                <ModalField label="Setor" value={referral.employee.department ?? "—"} />
-                <ModalField
-                  label="Tipo de exame"
-                  value={CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
-                />
-                <ModalField
-                  label="Data da solicitação"
-                  value={format(new Date(referral.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
-                />
-                {(referral.employee.notes || referral.internalNotes) && (
-                  <div className="exam-modal-item exam-modal-item--wide">
-                    <p className="exam-modal-item-label">Observações</p>
-                    <p className="exam-modal-item-text">
-                      {referral.employee.notes ?? referral.internalNotes}
-                    </p>
-                  </div>
-                )}
+            {activeTab === "resumo" && (
+              <div className="referral-empresa-modal-panel">
+                <section className="colaborador-perfil-block">
+                  <h2 className="colaborador-perfil-block-title">Dados do colaborador</h2>
+                  <dl className="colaborador-perfil-fields">
+                    <ResumoField label="Colaborador" value={referral.employee.fullName} />
+                    <ResumoField label="Função" value={referral.employee.jobTitle ?? "—"} />
+                    <ResumoField label="Setor" value={referral.employee.department ?? "—"} />
+                  </dl>
+                </section>
+
+                <section className="colaborador-perfil-block">
+                  <h2 className="colaborador-perfil-block-title">Solicitação</h2>
+                  <dl className="colaborador-perfil-fields">
+                    <ResumoField
+                      label="Tipo de exame"
+                      value={CLINICAL_EXAM_LABELS[referral.clinicalExamType]}
+                    />
+                    <ResumoField
+                      label="Data da solicitação"
+                      value={format(new Date(referral.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
+                    />
+                    <ResumoField label="Responsável" value={referral.authorizerName ?? "—"} />
+                  </dl>
+                </section>
+
+                <section className="colaborador-perfil-block">
+                  <h2 className="colaborador-perfil-block-title">Agendamento</h2>
+                  <dl className="colaborador-perfil-fields">
+                    <ResumoField
+                      label="Data e horário"
+                      value={
+                        referral.scheduledAt
+                          ? format(new Date(referral.scheduledAt), "dd/MM/yyyy · HH:mm", {
+                              locale: ptBR,
+                            })
+                          : "Ainda não agendado"
+                      }
+                    />
+                    <ResumoField
+                      label="Situação"
+                      value={
+                        <StatusBadge
+                          status={referral.status}
+                          type="referral"
+                          label={empresaReferralStatusLabel(referral.status)}
+                        />
+                      }
+                    />
+                  </dl>
+                  <p className="referral-empresa-modal-guidance">
+                    {empresaReferralStatusGuidance(referral.status, referral.scheduledAt)}
+                  </p>
+                </section>
               </div>
             )}
 
             {activeTab === "exames" && (
               <div className="referral-empresa-modal-panel">
                 {referral.exams.length === 0 ? (
-                  <p className="text-sm text-slate-500">Nenhum exame complementar neste encaminhamento.</p>
+                  <p className="text-sm text-slate-500">Nenhum exame complementar nesta solicitação.</p>
                 ) : (
-                  <ul className="space-y-2">
+                  <ul className="referral-empresa-exam-list">
                     {referral.exams.map((exam) => (
-                      <li key={exam.id} className="referral-exam-item">
-                        <div>
-                          <span className="text-xs text-slate-500">
+                      <li key={exam.id} className="referral-empresa-exam-item">
+                        <div className="referral-empresa-exam-copy">
+                          <p className="colaboradores-empresa-name">{exam.examName}</p>
+                          <p className="colaboradores-empresa-role">
                             {EXAM_CATEGORY_LABELS[exam.category] ?? exam.category}
-                          </span>
-                          <p className="font-medium text-slate-800">{exam.examName}</p>
+                          </p>
                         </div>
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
-                          {REFERRAL_EXAM_STATUS_LABELS[exam.status]}
-                        </span>
+                        <StatusBadge status={exam.status} type="exam" />
                       </li>
                     ))}
                   </ul>
@@ -180,86 +209,92 @@ export function ReferralEmpresaDetailDialog({
 
             {activeTab === "documentos" && (
               <div className="referral-empresa-modal-panel">
-                {referral.documents.length === 0 && referral.legacyDocuments.length === 0 ? (
-                  <p className="text-sm text-slate-500">
-                    A clínica ainda não anexou documentos. Quando o ASO estiver pronto, ele aparecerá
-                    aqui e em ASOs e documentos.
-                  </p>
+                {!hasDocuments ? (
+                  <>
+                    <EmptyState
+                      compact
+                      className="colaboradores-empresa-empty"
+                      title="Nenhum documento disponível"
+                      description="Quando a clínica liberar o ASO ou outros documentos, eles aparecerão aqui para download."
+                    />
+                    <footer className="referral-empresa-modal-footer">
+                      <Link
+                        href="/dashboard/documentos"
+                        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
+                      >
+                        Ver ASOs e documentos
+                      </Link>
+                    </footer>
+                  </>
                 ) : (
-                  <ul className="space-y-2">
-                    {referral.documents.map((doc) => (
-                      <li key={doc.id} className="referral-doc-item">
-                        <div>
-                          <span className="text-xs font-medium text-[var(--brand-green)]">
-                            {REFERRAL_DOCUMENT_TYPE_LABELS[doc.type]}
-                          </span>
-                          <p className="text-sm font-medium">{doc.fileName}</p>
-                          {doc.uploadedByName && (
-                            <p className="text-xs text-slate-500">
-                              {format(new Date(doc.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                  <>
+                    <ul className="referral-empresa-doc-list">
+                      {referral.documents.map((doc) => (
+                        <li key={doc.id} className="referral-empresa-doc-item">
+                          <div>
+                            <span className="referral-empresa-doc-type">
+                              {REFERRAL_DOCUMENT_TYPE_LABELS[doc.type]}
+                            </span>
+                            <p className="colaboradores-empresa-name">{doc.fileName}</p>
+                            <p className="colaboradores-empresa-exam-date">
+                              {format(new Date(doc.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                             </p>
+                          </div>
+                          {doc.fileUrl && (
+                            <a
+                              href={doc.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
+                            >
+                              Baixar
+                            </a>
                           )}
-                        </div>
-                        <div className="flex shrink-0 gap-1">
-                          <a
-                            href={doc.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                          >
-                            Baixar
-                          </a>
-                        </div>
-                      </li>
-                    ))}
-                    {referral.legacyDocuments.map((doc) => (
-                      <li key={doc.id} className="referral-doc-item">
-                        <div>
-                          <span className="text-xs text-slate-500">{doc.type}</span>
-                          <p className="text-sm font-medium">{doc.title}</p>
-                        </div>
-                        {doc.fileUrl && (
-                          <a
-                            href={doc.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                          >
-                            Baixar
-                          </a>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                        </li>
+                      ))}
+                      {referral.legacyDocuments.map((doc) => (
+                        <li key={doc.id} className="referral-empresa-doc-item">
+                          <div>
+                            <span className="referral-empresa-doc-type">{doc.type}</span>
+                            <p className="colaboradores-empresa-name">{doc.title}</p>
+                          </div>
+                          {doc.fileUrl && (
+                            <a
+                              href={doc.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
+                            >
+                              Baixar
+                            </a>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                    <footer className="referral-empresa-modal-footer">
+                      {asoDoc?.fileUrl ? (
+                        <a
+                          href={asoDoc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          Baixar ASO
+                        </a>
+                      ) : (
+                        <Link
+                          href="/dashboard/documentos"
+                          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
+                        >
+                          Ver ASOs e documentos
+                        </Link>
+                      )}
+                    </footer>
+                  </>
                 )}
               </div>
             )}
-
-            <p className="exam-modal-notice">
-              O colaborador comparece à clínica quando puder. A Unimetra anexa o ASO quando o exame
-              for concluído.
-            </p>
-
-            <footer className="exam-modal-footer referral-empresa-modal-footer">
-              {asoDoc?.fileUrl ? (
-                <a
-                  href={asoDoc.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-xl")}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Baixar ASO
-                </a>
-              ) : (
-                <Link
-                  href="/dashboard/documentos"
-                  className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl")}
-                >
-                  Ver ASOs e documentos
-                </Link>
-              )}
-            </footer>
           </>
         )}
       </DialogContent>

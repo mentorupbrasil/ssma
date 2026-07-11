@@ -173,7 +173,7 @@ export function ColaboradorDetailClient({
           <div className="colaboradores-empresa-header-actions">
             <Link href={scheduleHref} className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}>
               <Calendar className="mr-2 h-4 w-4" />
-              Agendar exame
+              Solicitar exame
             </Link>
             <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setEditOpen(true)}>
               <Pencil className="mr-2 h-4 w-4" />
@@ -454,7 +454,7 @@ function ReferralsTab({
         title="Nenhum encaminhamento"
         description="Este colaborador ainda não possui encaminhamentos."
         action={
-          canManage ? { label: "Agendar exame", href: scheduleHref } : undefined
+          canManage ? { label: "Solicitar exame", href: scheduleHref } : undefined
         }
       />
     );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Check, ChevronLeft, ChevronRight, Send, User, Stethoscope } from "lucide-react";
 
@@ -9,14 +9,13 @@ import { submitBulkReferrals } from "@/actions/referrals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import type { ClinicalExamType } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
   { title: "Colaboradores", icon: User },
-  { title: "Exames", icon: Stethoscope },
+  { title: "Tipo de exame", icon: Stethoscope },
   { title: "Revisão", icon: Check },
 ] as const;
 
@@ -34,20 +33,24 @@ type ReferralWizardEmpresaProps = {
   patients: EmpresaReferralPatient[];
   companyName: string;
   authorizerName: string;
+  initialPatientId?: string;
 };
 
 export function ReferralWizardEmpresa({
   patients,
   companyName,
   authorizerName,
+  initialPatientId,
 }: ReferralWizardEmpresaProps) {
-  const router = useRouter();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(() =>
+    initialPatientId && patients.some((p) => p.id === initialPatientId) ? [initialPatientId] : []
+  );
   const [examByPatient, setExamByPatient] = useState<Record<string, ClinicalExamType>>({});
   const [bulkExam, setBulkExam] = useState<ClinicalExamType | "">("");
+  const [submitted, setSubmitted] = useState<{ count: number; protocols: string[] } | null>(null);
 
   const filteredPatients = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -61,6 +64,7 @@ export function ReferralWizardEmpresa({
   }, [patients, search]);
 
   const selectedPatients = patients.filter((p) => selectedIds.includes(p.id));
+  const examTypesUsed = [...new Set(selectedIds.map((id) => examByPatient[id]).filter(Boolean))];
 
   const togglePatient = (id: string) => {
     setSelectedIds((prev) =>
@@ -85,7 +89,7 @@ export function ReferralWizardEmpresa({
       next[id] = bulkExam;
     });
     setExamByPatient(next);
-    toast.success("Tipo de exame aplicado em massa.");
+    toast.success("Tipo de exame aplicado aos selecionados.");
   };
 
   const canGoNext = () => {
@@ -111,88 +115,115 @@ export function ReferralWizardEmpresa({
       return;
     }
 
-    toast.success(`${result.count} encaminhamento(s) enviado(s) com sucesso.`);
-    router.push("/dashboard/encaminhamentos");
-    router.refresh();
+    setSubmitted({ count: result.count, protocols: result.protocols });
   };
 
-  const progress = ((step + 1) / STEPS.length) * 100;
-
-  return (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-sm">
-          <span className="font-medium text-slate-600">
-            Etapa {step + 1} de {STEPS.length}
-          </span>
-          <span className="font-semibold text-[var(--brand-green)]">{Math.round(progress)}%</span>
+  if (submitted) {
+    return (
+      <div className="exames-solicitacao-success">
+        <div className="exames-solicitacao-success-icon" aria-hidden>
+          <Check className="h-7 w-7" />
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-[var(--brand-green)] to-emerald-400 transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
+        <h2 className="colaboradores-empresa-title">Solicitação enviada</h2>
+        <p className="exames-solicitacao-success-text">
+          {submitted.count === 1
+            ? "1 solicitação registrada com sucesso."
+            : `${submitted.count} solicitações registradas com sucesso.`}
+        </p>
+        <div className="exames-solicitacao-protocols">
+          <p className="colaborador-perfil-field-label">Protocolo(s)</p>
+          <p className="colaborador-perfil-field-value">{submitted.protocols.join(" · ")}</p>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={s.title}
-                className={cn(
-                  "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium",
-                  i === step && "bg-[var(--brand-navy)] text-white",
-                  i < step && "bg-[var(--brand-green-light)] text-[var(--brand-navy)]",
-                  i > step && "bg-slate-100 text-slate-500"
-                )}
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{s.title}</span>
-              </div>
-            );
-          })}
+        <div className="exames-solicitacao-success-actions">
+          <Link href="/dashboard/encaminhamentos">
+            <Button variant="brand" size="sm" className="rounded-lg">
+              Ver solicitações
+            </Button>
+          </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-lg"
+            onClick={() => {
+              setSubmitted(null);
+              setStep(0);
+              setSearch("");
+              setSelectedIds(
+                initialPatientId && patients.some((p) => p.id === initialPatientId)
+                  ? [initialPatientId]
+                  : []
+              );
+              setExamByPatient({});
+              setBulkExam("");
+            }}
+          >
+            Nova solicitação
+          </Button>
         </div>
       </div>
+    );
+  }
 
-      <Card className="premium-card overflow-hidden border-slate-200/80 shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b border-slate-100 bg-slate-50/50">
-          <CardTitle className="text-xl text-[var(--brand-navy)]">{STEPS[step].title}</CardTitle>
-          <CardDescription>
+  return (
+    <div className="exames-empresa-wizard">
+      <div className="exames-empresa-wizard-steps">
+        {STEPS.map((s, i) => {
+          const Icon = s.icon;
+          return (
+            <div
+              key={s.title}
+              className={cn(
+                "exames-empresa-wizard-step",
+                i === step && "exames-empresa-wizard-step--active",
+                i < step && "exames-empresa-wizard-step--done"
+              )}
+            >
+              <span className="exames-empresa-wizard-step-num">{i + 1}</span>
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <span>{s.title}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="exames-empresa-wizard-card">
+        <header className="exames-empresa-wizard-card-head">
+          <h2 className="colaboradores-empresa-title">{STEPS[step].title}</h2>
+          <p className="colaboradores-empresa-subtitle">
             {step === 0 && "Selecione um ou mais colaboradores já cadastrados."}
-            {step === 1 && "Defina o tipo de exame para cada colaborador ou aplique em massa."}
-            {step === 2 && "Confira os dados antes de enviar para a clínica."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-6">
+            {step === 1 && "Defina o tipo de exame para cada colaborador."}
+            {step === 2 && "Revise os dados antes de enviar a solicitação."}
+          </p>
+        </header>
+
+        <div className="exames-empresa-wizard-body">
           {step === 0 && (
             <>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="exames-empresa-wizard-toolbar">
                 <Input
                   placeholder="Buscar por nome, CPF ou função..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="max-w-md"
+                  className="colaboradores-empresa-search-input max-w-md"
                 />
-                <Button type="button" variant="outline" className="rounded-xl" onClick={toggleAllVisible}>
+                <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={toggleAllVisible}>
                   {filteredPatients.every((p) => selectedIds.includes(p.id)) && filteredPatients.length > 0
-                    ? "Desmarcar visíveis"
-                    : "Selecionar visíveis"}
+                    ? "Desmarcar todos"
+                    : "Selecionar todos"}
                 </Button>
               </div>
-              <div className="max-h-[22rem] space-y-2 overflow-y-auto rounded-xl border border-slate-200 p-2">
+              <div className="exames-empresa-wizard-list">
                 {filteredPatients.length === 0 ? (
                   <p className="px-3 py-6 text-center text-sm text-slate-500">
-                    Nenhum colaborador encontrado. Cadastre a equipe antes de encaminhar.
+                    Nenhum colaborador encontrado. Cadastre a equipe antes de solicitar exames.
                   </p>
                 ) : (
                   filteredPatients.map((patient) => (
                     <label
                       key={patient.id}
                       className={cn(
-                        "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition",
-                        selectedIds.includes(patient.id)
-                          ? "border-[var(--brand-green)] bg-[var(--brand-green-light)]/40"
-                          : "border-slate-200 hover:bg-slate-50"
+                        "exames-empresa-wizard-patient",
+                        selectedIds.includes(patient.id) && "exames-empresa-wizard-patient--selected"
                       )}
                     >
                       <Checkbox
@@ -201,57 +232,45 @@ export function ReferralWizardEmpresa({
                         className="mt-0.5"
                       />
                       <span className="min-w-0">
-                        <span className="block text-sm font-semibold text-[var(--brand-navy)]">
-                          {patient.fullName}
-                        </span>
-                        <span className="mt-0.5 block text-xs text-slate-500">
+                        <span className="colaboradores-empresa-name">{patient.fullName}</span>
+                        <span className="colaboradores-empresa-role block">
                           CPF {patient.cpfMasked}
                           {patient.jobTitle ? ` · ${patient.jobTitle}` : ""}
-                          {patient.department ? ` · ${patient.department}` : ""}
                         </span>
                       </span>
                     </label>
                   ))
                 )}
               </div>
-              <p className="text-xs text-slate-500">{selectedIds.length} colaborador(es) selecionado(s)</p>
+              <p className="colaboradores-empresa-exam-date">{selectedIds.length} colaborador(es) selecionado(s)</p>
             </>
           )}
 
           {step === 1 && (
             <>
-              <div className="flex flex-col gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-3 sm:flex-row sm:items-end">
-                <div className="flex-1">
-                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Aplicar em massa
-                  </p>
-                  <select
-                    value={bulkExam}
-                    onChange={(e) => setBulkExam(e.target.value as ClinicalExamType | "")}
-                    className="form-select w-full"
-                  >
-                    <option value="">Selecione o tipo de exame</option>
-                    {CLINICAL_OPTIONS.map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <Button type="button" variant="brand" className="rounded-xl" onClick={applyBulkExam} disabled={!bulkExam}>
-                  Aplicar aos selecionados
+              <div className="exames-empresa-wizard-bulk">
+                <select
+                  value={bulkExam}
+                  onChange={(e) => setBulkExam(e.target.value as ClinicalExamType | "")}
+                  className="colaboradores-empresa-select flex-1"
+                >
+                  <option value="">Aplicar tipo a todos</option>
+                  {CLINICAL_OPTIONS.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <Button type="button" variant="brand" size="sm" className="rounded-lg" onClick={applyBulkExam} disabled={!bulkExam}>
+                  Aplicar
                 </Button>
               </div>
-
-              <div className="space-y-2">
+              <div className="exames-empresa-wizard-exam-rows">
                 {selectedPatients.map((patient) => (
-                  <div
-                    key={patient.id}
-                    className="grid gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-[1fr_14rem]"
-                  >
+                  <div key={patient.id} className="exames-empresa-wizard-exam-row">
                     <div>
-                      <p className="text-sm font-semibold text-[var(--brand-navy)]">{patient.fullName}</p>
-                      <p className="text-xs text-slate-500">{patient.jobTitle ?? "Sem função informada"}</p>
+                      <p className="colaboradores-empresa-name">{patient.fullName}</p>
+                      <p className="colaboradores-empresa-role">{patient.jobTitle ?? "Sem função informada"}</p>
                     </div>
                     <select
                       value={examByPatient[patient.id] ?? ""}
@@ -261,7 +280,7 @@ export function ReferralWizardEmpresa({
                           [patient.id]: e.target.value as ClinicalExamType,
                         }))
                       }
-                      className="form-select"
+                      className="colaboradores-empresa-select"
                     >
                       <option value="">Tipo de exame *</option>
                       {CLINICAL_OPTIONS.map(([value, label]) => (
@@ -277,48 +296,61 @@ export function ReferralWizardEmpresa({
           )}
 
           {step === 2 && (
-            <div className="space-y-3">
-              <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 text-sm">
-                <p>
-                  <span className="font-semibold text-[var(--brand-navy)]">Empresa:</span> {companyName}
-                </p>
-                <p className="mt-1">
-                  <span className="font-semibold text-[var(--brand-navy)]">Responsável:</span> {authorizerName}
-                </p>
+            <div className="exames-empresa-wizard-review">
+              <div className="colaborador-perfil-grid colaborador-perfil-grid--3">
+                <div className="colaborador-perfil-highlight">
+                  <span className="colaborador-perfil-highlight-label">Empresa</span>
+                  <span className="colaborador-perfil-highlight-value">{companyName}</span>
+                </div>
+                <div className="colaborador-perfil-highlight">
+                  <span className="colaborador-perfil-highlight-label">Colaboradores</span>
+                  <span className="colaborador-perfil-highlight-value">{selectedIds.length}</span>
+                </div>
+                <div className="colaborador-perfil-highlight">
+                  <span className="colaborador-perfil-highlight-label">Tipos de exame</span>
+                  <span className="colaborador-perfil-highlight-value">
+                    {examTypesUsed.length === 1
+                      ? CLINICAL_EXAM_LABELS[examTypesUsed[0]]
+                      : `${examTypesUsed.length} tipos`}
+                  </span>
+                </div>
               </div>
-              <div className="overflow-hidden rounded-xl border border-slate-200">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3">Colaborador</th>
-                      <th className="px-4 py-3">Exame</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedPatients.map((patient) => (
-                      <tr key={patient.id} className="border-t border-slate-100">
-                        <td className="px-4 py-3 font-medium text-[var(--brand-navy)]">{patient.fullName}</td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {CLINICAL_EXAM_LABELS[examByPatient[patient.id]]}
-                        </td>
+
+              <div className="colaboradores-empresa-table-wrap">
+                <div className="colaboradores-empresa-table-scroll">
+                  <table className="colaboradores-empresa-table">
+                    <thead>
+                      <tr>
+                        <th>Colaborador</th>
+                        <th>Tipo de exame</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {selectedPatients.map((patient) => (
+                        <tr key={patient.id} className="colaboradores-empresa-row">
+                          <td className="colaboradores-empresa-name">{patient.fullName}</td>
+                          <td>{CLINICAL_EXAM_LABELS[examByPatient[patient.id]]}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <p className="text-xs text-slate-500">
-                A Unimetra definirá os exames complementares e laboratoriais conforme o PCMSO da empresa.
+
+              <p className="referral-empresa-modal-guidance">
+                A clínica processará a solicitação e atualizará o status em Exames. Você será avisado quando o documento estiver disponível.
               </p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <div className="flex flex-wrap justify-between gap-3">
+      <div className="exames-empresa-wizard-actions">
         <Button
           type="button"
           variant="outline"
-          className="rounded-xl"
+          size="sm"
+          className="rounded-lg"
           disabled={step === 0 || loading}
           onClick={() => setStep((s) => Math.max(0, s - 1))}
         >
@@ -329,7 +361,8 @@ export function ReferralWizardEmpresa({
           <Button
             type="button"
             variant="brand"
-            className="rounded-xl"
+            size="sm"
+            className="rounded-lg"
             disabled={!canGoNext()}
             onClick={() => setStep((s) => s + 1)}
           >
@@ -340,12 +373,13 @@ export function ReferralWizardEmpresa({
           <Button
             type="button"
             variant="brand"
-            className="rounded-xl"
+            size="sm"
+            className="rounded-lg"
             disabled={loading || !canGoNext()}
             onClick={handleSubmit}
           >
             <Send className="mr-2 h-4 w-4" />
-            {loading ? "Enviando..." : "Confirmar encaminhamento"}
+            {loading ? "Enviando..." : "Enviar solicitação"}
           </Button>
         )}
       </div>

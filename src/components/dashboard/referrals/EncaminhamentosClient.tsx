@@ -60,13 +60,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ReferralEmpresaDetailDialog } from "./ReferralEmpresaDetailDialog";
+import { ExamesEmpresaListSection } from "./ExamesEmpresaListSection";
 import { ReferralDetailContent } from "./ReferralDetailContent";
 import {
   ReferralStatusDialog,
   ReferralScheduleDialog,
   ReferralDocumentDialog,
 } from "./ReferralActionDialogs";
-import { empresaReferralStatusLabel } from "@/lib/empresa-portal";
+import { empresaReferralStatusLabel, EMPRESA_EXAMES_STATUS_FILTER_OPTIONS } from "@/lib/empresa-portal";
 import { cn } from "@/lib/utils";
 
 type CompanyOption = { id: string; name: string };
@@ -167,18 +168,44 @@ export function EncaminhamentosClient({
         {
           key: "status",
           value: filters.status,
-          label: (v) => `Status: ${v}`,
-          skip: (v) => v === "ALL" || isEmpresa,
+          label: (v) =>
+            `Status: ${
+              EMPRESA_EXAMES_STATUS_FILTER_OPTIONS.find((o) => o.value === v)?.label ?? v
+            }`,
+          skip: (v) => v === "ALL" || (!isEmpresa && false),
         },
-        { key: "companyId", value: filters.companyId, label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}` },
-        { key: "clinicalExamType", value: filters.clinicalExamType, label: (v) => `Exame: ${CLINICAL_EXAM_LABELS[v as keyof typeof CLINICAL_EXAM_LABELS] ?? v}` },
-        { key: "dateFrom", value: filters.dateFrom, label: (v) => `De ${v}` },
-        { key: "dateTo", value: filters.dateTo, label: (v) => `Até ${v}` },
+        {
+          key: "companyId",
+          value: filters.companyId,
+          label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}`,
+          skip: () => isEmpresa,
+        },
+        {
+          key: "clinicalExamType",
+          value: filters.clinicalExamType,
+          label: (v) => `Exame: ${CLINICAL_EXAM_LABELS[v as keyof typeof CLINICAL_EXAM_LABELS] ?? v}`,
+        },
+        {
+          key: "dateFrom",
+          value: filters.dateFrom || filters.dateTo,
+          label: () =>
+            filters.dateFrom && filters.dateTo
+              ? `Período: ${filters.dateFrom} – ${filters.dateTo}`
+              : filters.dateFrom
+                ? `Período desde ${filters.dateFrom}`
+                : `Período até ${filters.dateTo}`,
+        },
       ]),
     [filters, companies, isEmpresa]
   );
 
-  const removeChip = (key: string) => updateFilters(removeFilterKey(key, filters));
+  const removeChip = (key: string) => {
+    if (key === "dateFrom") {
+      updateFilters({ ...removeFilterKey(key, filters), dateTo: undefined });
+      return;
+    }
+    updateFilters(removeFilterKey(key, filters));
+  };
 
   const loadDetail = useCallback(async (id: string) => {
     setDetailLoading(true);
@@ -264,6 +291,33 @@ export function EncaminhamentosClient({
       />
       )}
 
+      {isEmpresa ? (
+        <ExamesEmpresaListSection
+          items={initialItems}
+          total={initialTotal}
+          page={initialPage}
+          pageSize={pageSize}
+          isPending={isPending}
+          filters={filters}
+          onSearch={(values) =>
+            updateFilters({
+              q: values.q.trim() || undefined,
+              status: values.status || undefined,
+              clinicalExamType: values.clinicalExamType || undefined,
+              dateFrom: values.dateFrom || undefined,
+              dateTo: values.dateTo || undefined,
+            })
+          }
+          onClear={clearFilters}
+          onPageChange={(nextPage) => updateFilters({ page: String(nextPage) })}
+          onOpenDetail={openDetail}
+          detailLoading={detailLoading}
+          selectedId={selectedId}
+          activeChips={activeChips}
+          onRemoveChip={removeChip}
+        />
+      ) : (
+      <>
       <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending} activeChips={activeChips} onRemoveChip={removeChip} onClearChips={clearFilters}>
         <div className="relative col-span-full sm:col-span-2">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -545,6 +599,8 @@ export function EncaminhamentosClient({
             </Button>
           </div>
         </div>
+      )}
+      </>
       )}
 
       {isEmpresa ? (

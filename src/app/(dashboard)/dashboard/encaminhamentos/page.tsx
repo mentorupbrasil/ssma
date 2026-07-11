@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuthSession } from "@/lib/page-auth";
 import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
 import { buildReferralWhere, REFERRAL_STAT_CARDS, type ReferralListItem } from "@/lib/referrals";
+import { applyEmpresaReferralStatusFilter } from "@/lib/empresa-portal";
 import { EncaminhamentosClient } from "@/components/dashboard/referrals/EncaminhamentosClient";
 import { ExamesOperacaoEmpresaClient } from "@/components/dashboard/referrals/ExamesOperacaoEmpresaClient";
 import { Loader2 } from "lucide-react";
@@ -25,9 +26,11 @@ async function loadReferralsForPage(
   const isEmpresa = isEmpresaUser(session);
   const companyScope = getCompanyFilter(session).companyId;
 
+  const statusParam = getParam(params, "status") || undefined;
+
   const filters = {
     q: getParam(params, "q") || undefined,
-    status: isEmpresa ? undefined : getParam(params, "status") || undefined,
+    status: isEmpresa ? statusParam : statusParam || undefined,
     companyId: getParam(params, "companyId") || undefined,
     clinicalExamType: getParam(params, "clinicalExamType") || undefined,
     dateFrom: getParam(params, "dateFrom") || undefined,
@@ -35,7 +38,16 @@ async function loadReferralsForPage(
   };
 
   const page = Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1);
-  const where = buildReferralWhere(filters, companyScope);
+  let where = buildReferralWhere(
+    isEmpresa && statusParam && !["CONCLUIDO", "CANCELADO"].includes(statusParam)
+      ? { ...filters, status: undefined }
+      : filters,
+    companyScope
+  );
+
+  if (isEmpresa && statusParam && !["CONCLUIDO", "CANCELADO"].includes(statusParam)) {
+    where = applyEmpresaReferralStatusFilter(where, statusParam);
+  }
   const skip = (page - 1) * REFERRAL_PAGE_SIZE;
 
   const baseWhere = companyScope ? { companyId: companyScope } : {};

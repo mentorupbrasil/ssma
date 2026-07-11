@@ -1,17 +1,30 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ReferralWizardEmpresa } from "@/components/forms/ReferralWizardEmpresa";
 import { ReferralWizard } from "@/components/forms/ReferralWizard";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { NovoExameEmpresaShell } from "@/components/dashboard/referrals/NovoExameEmpresaShell";
 import { getEmpresaPrefill } from "@/actions";
 import { getReferralCatalogExams } from "@/actions/exams";
 import { requireAuthSession } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { maskCpf } from "@/lib/collaborators";
+import Link from "next/link";
 
-export default async function NovoEncaminhamentoPage() {
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function getParam(params: Record<string, string | string[] | undefined>, key: string): string {
+  const v = params[key];
+  if (Array.isArray(v)) return v[0] ?? "";
+  return v ?? "";
+}
+
+export default async function NovoEncaminhamentoPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const params = await searchParams;
   const session = await requireAuthSession();
   const isEmpresa = isEmpresaUser(session);
 
@@ -37,26 +50,31 @@ export default async function NovoEncaminhamentoPage() {
       orderBy: { fullName: "asc" },
     });
 
+    const initialPatientId = getParam(params, "patientId") || undefined;
+
     return (
-      <div>
-        <PageHeader
-          title="Novo encaminhamento"
-          description="Selecione colaboradores e o tipo de exame. A clínica cuida dos complementares conforme o PCMSO."
+      <NovoExameEmpresaShell>
+        <header className="colaboradores-empresa-header">
+          <div className="colaboradores-empresa-header-copy">
+            <h1 className="colaboradores-empresa-title">Nova solicitação de exames</h1>
+            <p className="colaboradores-empresa-subtitle">
+              Selecione colaboradores e o tipo de exame. A clínica processará a solicitação.
+            </p>
+          </div>
+        </header>
+        <ReferralWizardEmpresa
+          patients={patients.map((p) => ({
+            id: p.id,
+            fullName: p.fullName,
+            cpfMasked: maskCpf(p.cpf),
+            jobTitle: p.jobTitle,
+            department: p.department,
+          }))}
+          companyName={company?.tradeName ?? company?.legalName ?? prefill.companyName}
+          authorizerName={prefill.authorizerName}
+          initialPatientId={initialPatientId}
         />
-        <div className="max-w-3xl">
-          <ReferralWizardEmpresa
-            patients={patients.map((p) => ({
-              id: p.id,
-              fullName: p.fullName,
-              cpfMasked: maskCpf(p.cpf),
-              jobTitle: p.jobTitle,
-              department: p.department,
-            }))}
-            companyName={company?.tradeName ?? company?.legalName ?? prefill.companyName}
-            authorizerName={prefill.authorizerName}
-          />
-        </div>
-      </div>
+      </NovoExameEmpresaShell>
     );
   }
 
@@ -71,7 +89,6 @@ export default async function NovoEncaminhamentoPage() {
 
   return (
     <div>
-      <PageHeader title="Novo encaminhamento" description="Cadastro interno de encaminhamento" />
       <div className="max-w-3xl">
         <ReferralWizard
           mode="dashboard"

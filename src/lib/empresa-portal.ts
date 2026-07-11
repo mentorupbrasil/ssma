@@ -115,6 +115,46 @@ export function empresaReferralStatusLabel(status: ReferralStatus): string {
   return EMPRESA_REFERRAL_STATUS_LABELS[status] ?? REFERRAL_STATUS_LABELS[status];
 }
 
+/** Orientação objetiva para o RH conforme o status do encaminhamento */
+export function empresaReferralStatusGuidance(
+  status: ReferralStatus,
+  scheduledAt: string | null
+): string {
+  if (status === "CANCELADO") {
+    return "Esta solicitação foi cancelada. Abra uma nova solicitação se necessário.";
+  }
+  if (status === "ASO_DISPONIVEL" || status === "CONCLUIDO") {
+    return "O documento está disponível. Baixe o ASO na aba Documentos ou em ASOs e documentos.";
+  }
+  if (status === "AGUARDANDO_DOCUMENTO") {
+    return "O exame foi realizado. Aguarde a clínica anexar o ASO — você será notificado quando estiver disponível.";
+  }
+  if (status === "AGENDADO" || status === "EM_ATENDIMENTO") {
+    if (scheduledAt) {
+      return "Exame agendado. Oriente o colaborador a comparecer na data e horário indicados com documento de identidade.";
+    }
+    return "Exame em andamento na clínica. Acompanhe até a liberação do documento.";
+  }
+  if (
+    status === "NOVO" ||
+    status === "EM_ANALISE" ||
+    status === "AGUARDANDO_AGENDAMENTO" ||
+    status === "AGUARDANDO_RESULTADO"
+  ) {
+    return "Solicitação registrada. A clínica processará o atendimento e atualizará o status aqui.";
+  }
+  return "Acompanhe o andamento nesta tela até a liberação do documento.";
+}
+
+export const EMPRESA_EXAMES_STATUS_FILTER_OPTIONS = [
+  { value: "", label: "Status" },
+  { value: "AGENDADOS", label: "Agendado" },
+  { value: "AGUARDANDO_DOCUMENTO", label: "Aguardando documento" },
+  { value: "ASO_DISPONIVEL", label: "ASO disponível" },
+  { value: "CONCLUIDO", label: "Concluído" },
+  { value: "CANCELADO", label: "Cancelado" },
+] as const;
+
 export const EMPRESA_NAV_SECTIONS = [
   { label: "Geral", hrefs: ["/dashboard"] },
   {
