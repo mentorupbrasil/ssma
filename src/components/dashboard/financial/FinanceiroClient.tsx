@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Plus, Wallet } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageShell } from "@/components/dashboard/PageShell";
 import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
 import { MetricCard } from "@/components/dashboard/MetricCard";
@@ -17,16 +16,13 @@ import { DataTable } from "@/components/dashboard/DataTable";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { DetailDrawer } from "@/components/dashboard/DetailDrawer";
 import { MobileListCard } from "@/components/dashboard/MobileListCard";
+import {
+  SystemModalField,
+  SystemModalShell,
+} from "@/components/dashboard/SystemModalShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -138,27 +134,20 @@ export function FinanceiroClient({
 
   return (
     <PageShell width="wide">
-      <PageHeader
-        eyebrow="Comercial e financeiro"
-        title="Financeiro"
-        description="Central de contas a receber — fechamentos, orçamentos e lançamentos avulsos."
-        actions={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger render={<Button variant="brand"><Plus className="mr-2 h-4 w-4" />Nova conta a receber</Button>} />
-            <DialogContent className="max-w-lg">
-              <DialogHeader><DialogTitle>Registrar conta a receber</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <Input placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
-                <Input type="number" step="0.01" placeholder="Valor" value={amount} onChange={(e) => setAmount(e.target.value)} />
-                <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                <Button onClick={handleCreate} disabled={pending || !description || !amount || !dueDate} className="w-full" variant="brand">
-                  Salvar
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        }
-      />
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Financeiro</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Central de contas a receber — fechamentos, orçamentos e lançamentos avulsos.
+          </p>
+        </div>
+        <div className="colaboradores-empresa-header-actions">
+          <Button variant="brand" size="sm" className="rounded-lg" onClick={() => setOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova conta a receber
+          </Button>
+        </div>
+      </header>
 
       <PlatformPositioningBanner compact />
 
@@ -246,57 +235,61 @@ export function FinanceiroClient({
       ) : (
         <>
           <div className="hidden md:block">
-            <DataTable>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Origem</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-28" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((item) => (
-                    <TableRow
-                      key={item.id}
-                      className="cursor-pointer"
-                      onClick={() => setSelected(item)}
-                    >
-                      <TableCell>{item.company?.tradeName ?? item.company?.legalName ?? "Não informado"}</TableCell>
-                      <TableCell>{SOURCE_LABELS[item.source] ?? item.source}</TableCell>
-                      <TableCell>{item.description}</TableCell>
-                      <TableCell>{format(item.dueDate, "dd/MM/yyyy", { locale: ptBR })}</TableCell>
-                      <TableCell className={cn("financial-value text-right", item.status === "ATRASADO" && "financial-value--overdue", item.status === "PAGO" && "financial-value--paid")}>
-                        {formatCurrency(item.amount)}
-                      </TableCell>
-                      <TableCell><StatusBadge status={item.status} /></TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        {item.status !== "PAGO" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={pending}
-                            onClick={() =>
-                              startTransition(async () => {
-                                await updateFinancialEntryStatus(item.id, "PAGO");
-                                toast.success("Pagamento registrado.");
-                                router.refresh();
-                              })
-                            }
-                          >
-                            Marcar pago
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </DataTable>
+            <div className="colaboradores-empresa-table-wrap">
+              <div className="colaboradores-empresa-table-scroll">
+                <DataTable>
+                  <Table className="colaboradores-empresa-table">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead>Origem</TableHead>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead>Vencimento</TableHead>
+                        <TableHead className="text-right">Valor</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="w-28" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map((item) => (
+                        <TableRow
+                          key={item.id}
+                          className="cursor-pointer"
+                          onClick={() => setSelected(item)}
+                        >
+                          <TableCell>{item.company?.tradeName ?? item.company?.legalName ?? "Não informado"}</TableCell>
+                          <TableCell>{SOURCE_LABELS[item.source] ?? item.source}</TableCell>
+                          <TableCell>{item.description}</TableCell>
+                          <TableCell>{format(item.dueDate, "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                          <TableCell className={cn("financial-value text-right", item.status === "ATRASADO" && "financial-value--overdue", item.status === "PAGO" && "financial-value--paid")}>
+                            {formatCurrency(item.amount)}
+                          </TableCell>
+                          <TableCell><StatusBadge status={item.status} /></TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            {item.status !== "PAGO" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={pending}
+                                onClick={() =>
+                                  startTransition(async () => {
+                                    await updateFinancialEntryStatus(item.id, "PAGO");
+                                    toast.success("Pagamento registrado.");
+                                    router.refresh();
+                                  })
+                                }
+                              >
+                                Marcar pago
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </DataTable>
+              </div>
+            </div>
           </div>
 
           <div className="grid gap-3 md:hidden">
@@ -314,6 +307,62 @@ export function FinanceiroClient({
           </div>
         </>
       )}
+
+      <SystemModalShell
+        open={open}
+        onOpenChange={setOpen}
+        title="Registrar conta a receber"
+        description="Lance um valor avulso fora de fechamentos ou orçamentos."
+        badges={[
+          { label: "Financeiro", variant: "category" },
+          { label: "Nova conta", variant: "status" },
+        ]}
+        className="max-w-lg"
+        footer={
+          <div className="collaborator-modal-actions">
+            <Button
+              variant="outline"
+              className="collaborator-modal-btn"
+              onClick={() => setOpen(false)}
+              disabled={pending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="brand"
+              className="collaborator-modal-btn"
+              onClick={handleCreate}
+              disabled={pending || !description || !amount || !dueDate}
+            >
+              Salvar
+            </Button>
+          </div>
+        }
+      >
+        <SystemModalField label="Descrição" required wide>
+          <input
+            placeholder="Descrição"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </SystemModalField>
+        <SystemModalField label="Valor" required>
+          <input
+            type="number"
+            step="0.01"
+            placeholder="0,00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </SystemModalField>
+        <SystemModalField label="Vencimento" required>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+        </SystemModalField>
+      </SystemModalShell>
 
       <DetailDrawer
         open={!!selected}

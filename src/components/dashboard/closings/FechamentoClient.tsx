@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calculator, FileSpreadsheet, Plus, Upload } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageShell } from "@/components/dashboard/PageShell";
 import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
 import { MetricCard } from "@/components/dashboard/MetricCard";
@@ -17,16 +16,12 @@ import { DataTable } from "@/components/dashboard/DataTable";
 import { DetailDrawer } from "@/components/dashboard/DetailDrawer";
 import { MobileListCard } from "@/components/dashboard/MobileListCard";
 import { ClosingPipeline } from "@/components/dashboard/closings/ClosingPipeline";
+import {
+  SystemModalField,
+  SystemModalShell,
+} from "@/components/dashboard/SystemModalShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -149,54 +144,24 @@ export function FechamentoClient({
 
   return (
     <PageShell width="wide">
-      <PageHeader
-        eyebrow="Comercial e financeiro"
-        title="Fechamento mensal"
-        description="Importe a produção do sistema clínico, cruze com a tabela de preços e gere cobranças."
-        actions={
-          <div className="flex flex-wrap gap-2">
-            <Dialog open={importOpen} onOpenChange={setImportOpen}>
-              <DialogTrigger render={<Button variant="brand"><Upload className="mr-2 h-4 w-4" />Importar produção</Button>} />
-              <DialogContent className="max-w-lg">
-                <DialogHeader><DialogTitle>Importar produção (CSV)</DialogTitle></DialogHeader>
-                <div className="space-y-3">
-                  <p className="text-sm text-[var(--dash-text-muted)]">
-                    Colunas: empresa, CNPJ, colaborador, CPF, data, tipo_exame, protocolo, valor.
-                  </p>
-                  <div>
-                    <Label htmlFor="import-month">Competência</Label>
-                    <Input id="import-month" type="month" className="mt-1" onChange={(e) => setImportMonth(e.target.value)} />
-                  </div>
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept=".csv,.txt"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleImportFile(file);
-                    }}
-                  />
-                  <Button className="w-full" variant="outline" onClick={() => fileRef.current?.click()} disabled={pending}>
-                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    Selecionar planilha
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-            <Dialog open={manualOpen} onOpenChange={setManualOpen}>
-              <DialogTrigger render={<Button variant="outline"><Plus className="mr-2 h-4 w-4" />Fechamento manual</Button>} />
-              <DialogContent className="max-w-md">
-                <DialogHeader><DialogTitle>Novo fechamento manual</DialogTitle></DialogHeader>
-                <Input type="month" onChange={(e) => setReferenceMonth(e.target.value + "-01")} />
-                <Button className="mt-3 w-full" variant="brand" onClick={handleManualCreate} disabled={pending || !referenceMonth}>
-                  Criar
-                </Button>
-              </DialogContent>
-            </Dialog>
-          </div>
-        }
-      />
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Fechamento mensal</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Importe a produção do sistema clínico, cruze com a tabela de preços e gere cobranças.
+          </p>
+        </div>
+        <div className="colaboradores-empresa-header-actions">
+          <Button variant="brand" size="sm" className="rounded-lg" onClick={() => setImportOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" />
+            Importar produção
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setManualOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Fechamento manual
+          </Button>
+        </div>
+      </header>
 
       <PlatformPositioningBanner compact />
 
@@ -261,43 +226,47 @@ export function FechamentoClient({
         <section className="space-y-3">
           <h2 className="section-label">Importações recentes</h2>
           <div className="hidden md:block">
-            <DataTable>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Competência</TableHead>
-                    <TableHead>Arquivo</TableHead>
-                    <TableHead>Registros</TableHead>
-                    <TableHead>Prontos</TableHead>
-                    <TableHead>Pendências</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {imports.map((imp) => (
-                    <TableRow key={imp.id} className="cursor-pointer" onClick={() => setSelectedImport(imp)}>
-                      <TableCell>{format(imp.referenceMonth, "MMMM yyyy", { locale: ptBR })}</TableCell>
-                      <TableCell>{imp.fileName ?? "Importação manual"}</TableCell>
-                      <TableCell>{imp.totalRows}</TableCell>
-                      <TableCell>{imp.recognizedRows}</TableCell>
-                      <TableCell className="text-xs text-[var(--dash-text-muted)]">
-                        {imp.withoutCompany > 0 && `${imp.withoutCompany} sem empresa · `}
-                        {imp.withoutPrice > 0 && `${imp.withoutPrice} sem preço · `}
-                        {imp.divergences > 0 && `${imp.divergences} divergências`}
-                        {imp.withoutCompany === 0 && imp.withoutPrice === 0 && imp.divergences === 0 && "—"}
-                      </TableCell>
-                      <TableCell><StatusBadge status={imp.status} /></TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Button size="sm" variant="outline" onClick={() => handleGenerateClosing(imp.id)} disabled={pending}>
-                          Gerar fechamento
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </DataTable>
+            <div className="colaboradores-empresa-table-wrap">
+              <div className="colaboradores-empresa-table-scroll">
+                <DataTable>
+                  <Table className="colaboradores-empresa-table">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Competência</TableHead>
+                        <TableHead>Arquivo</TableHead>
+                        <TableHead>Registros</TableHead>
+                        <TableHead>Prontos</TableHead>
+                        <TableHead>Pendências</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {imports.map((imp) => (
+                        <TableRow key={imp.id} className="cursor-pointer" onClick={() => setSelectedImport(imp)}>
+                          <TableCell>{format(imp.referenceMonth, "MMMM yyyy", { locale: ptBR })}</TableCell>
+                          <TableCell>{imp.fileName ?? "Importação manual"}</TableCell>
+                          <TableCell>{imp.totalRows}</TableCell>
+                          <TableCell>{imp.recognizedRows}</TableCell>
+                          <TableCell className="text-xs text-[var(--dash-text-muted)]">
+                            {imp.withoutCompany > 0 && `${imp.withoutCompany} sem empresa · `}
+                            {imp.withoutPrice > 0 && `${imp.withoutPrice} sem preço · `}
+                            {imp.divergences > 0 && `${imp.divergences} divergências`}
+                            {imp.withoutCompany === 0 && imp.withoutPrice === 0 && imp.divergences === 0 && "—"}
+                          </TableCell>
+                          <TableCell><StatusBadge status={imp.status} /></TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <Button size="sm" variant="outline" onClick={() => handleGenerateClosing(imp.id)} disabled={pending}>
+                              Gerar fechamento
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </DataTable>
+              </div>
+            </div>
           </div>
           <div className="grid gap-3 md:hidden">
             {imports.map((imp) => (
@@ -327,51 +296,55 @@ export function FechamentoClient({
         <section className="space-y-3">
           <h2 className="section-label">Fechamentos</h2>
           <div className="hidden md:block">
-            <DataTable>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Competência</TableHead>
-                    <TableHead>Empresa</TableHead>
-                    <TableHead>Itens</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.id} className="cursor-pointer" onClick={() => setSelectedClosing(item)}>
-                      <TableCell>{format(item.referenceMonth, "MMMM yyyy", { locale: ptBR })}</TableCell>
-                      <TableCell>{item.company?.tradeName ?? item.company?.legalName ?? "Consolidado"}</TableCell>
-                      <TableCell>{item.importedCount || "—"}</TableCell>
-                      <TableCell className="financial-value text-right">
-                        {item.totalAmount != null ? formatCurrency(item.totalAmount) : "—"}
-                      </TableCell>
-                      <TableCell><StatusBadge status={item.status} /></TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        {item.status !== "FECHADO" && item.status !== "FATURADO" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={pending}
-                            onClick={() =>
-                              startTransition(async () => {
-                                await updateMonthlyClosingStatus(item.id, "FECHADO");
-                                toast.success("Fechamento concluído.");
-                                router.refresh();
-                              })
-                            }
-                          >
-                            Fechar
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </DataTable>
+            <div className="colaboradores-empresa-table-wrap">
+              <div className="colaboradores-empresa-table-scroll">
+                <DataTable>
+                  <Table className="colaboradores-empresa-table">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Competência</TableHead>
+                        <TableHead>Empresa</TableHead>
+                        <TableHead>Itens</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((item) => (
+                        <TableRow key={item.id} className="cursor-pointer" onClick={() => setSelectedClosing(item)}>
+                          <TableCell>{format(item.referenceMonth, "MMMM yyyy", { locale: ptBR })}</TableCell>
+                          <TableCell>{item.company?.tradeName ?? item.company?.legalName ?? "Consolidado"}</TableCell>
+                          <TableCell>{item.importedCount || "—"}</TableCell>
+                          <TableCell className="financial-value text-right">
+                            {item.totalAmount != null ? formatCurrency(item.totalAmount) : "—"}
+                          </TableCell>
+                          <TableCell><StatusBadge status={item.status} /></TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            {item.status !== "FECHADO" && item.status !== "FATURADO" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={pending}
+                                onClick={() =>
+                                  startTransition(async () => {
+                                    await updateMonthlyClosingStatus(item.id, "FECHADO");
+                                    toast.success("Fechamento concluído.");
+                                    router.refresh();
+                                  })
+                                }
+                              >
+                                Fechar
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </DataTable>
+              </div>
+            </div>
           </div>
           <div className="grid gap-3 md:hidden">
             {items.map((item) => (
@@ -388,6 +361,93 @@ export function FechamentoClient({
           </div>
         </section>
       )}
+
+      <SystemModalShell
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        title="Importar produção (CSV)"
+        description="Colunas: empresa, CNPJ, colaborador, CPF, data, tipo_exame, protocolo, valor."
+        badges={[
+          { label: "Fechamento", variant: "category" },
+          { label: "Importação", variant: "status" },
+        ]}
+        className="max-w-lg"
+        footer={
+          <div className="collaborator-modal-actions">
+            <Button
+              variant="outline"
+              className="collaborator-modal-btn"
+              onClick={() => setImportOpen(false)}
+              disabled={pending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="brand"
+              className="collaborator-modal-btn"
+              onClick={() => fileRef.current?.click()}
+              disabled={pending}
+            >
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Selecionar planilha
+            </Button>
+          </div>
+        }
+      >
+        <SystemModalField label="Competência" required wide>
+          <Input
+            id="import-month"
+            type="month"
+            onChange={(e) => setImportMonth(e.target.value)}
+          />
+        </SystemModalField>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,.txt"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleImportFile(file);
+          }}
+        />
+      </SystemModalShell>
+
+      <SystemModalShell
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        title="Novo fechamento manual"
+        description="Crie um fechamento sem importação de produção."
+        badges={[
+          { label: "Fechamento", variant: "category" },
+          { label: "Manual", variant: "status" },
+        ]}
+        className="max-w-md"
+        footer={
+          <div className="collaborator-modal-actions">
+            <Button
+              variant="outline"
+              className="collaborator-modal-btn"
+              onClick={() => setManualOpen(false)}
+              disabled={pending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="brand"
+              className="collaborator-modal-btn"
+              onClick={handleManualCreate}
+              disabled={pending || !referenceMonth}
+            >
+              Criar
+            </Button>
+          </div>
+        }
+      >
+        <SystemModalField label="Competência" required wide>
+          <Input type="month" onChange={(e) => setReferenceMonth(e.target.value + "-01")} />
+        </SystemModalField>
+      </SystemModalShell>
 
       <DetailDrawer
         open={!!selectedImport}

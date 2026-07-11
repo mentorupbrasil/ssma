@@ -7,7 +7,6 @@ import { ptBR } from "date-fns/locale";
 import {
   Plus,
   Search,
-  MoreHorizontal,
   Eye,
   MessageCircle,
   FileText,
@@ -78,11 +77,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  SystemActionMenu,
+  type SystemActionItem,
+} from "@/components/dashboard/SystemActionMenu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatPhone } from "@/lib/helpers";
 import { toast } from "sonner";
@@ -880,37 +877,52 @@ export function OrcamentosClient({
                           className="colaboradores-empresa-td-actions"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <RowMenu>
-                            <DropdownMenuItem onClick={() => openLead(item.id)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Ver detalhes
-                            </DropdownMenuItem>
-                            {item.phone && (
-                              <DropdownMenuItem onClick={() => handleWhatsAppLead(item)}>
-                                <MessageCircle className="mr-2 h-4 w-4" />
-                                WhatsApp
-                              </DropdownMenuItem>
-                            )}
-                            {canManage && (
-                              <DropdownMenuItem
-                                onClick={() => handleCreateQuoteFromLead(item)}
-                              >
-                                <FileText className="mr-2 h-4 w-4" />
-                                Criar orçamento
-                              </DropdownMenuItem>
-                            )}
-                            {canManage && (
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  await updateLeadStatusCommercial(item.id, "ARQUIVADO");
-                                  router.refresh();
-                                }}
-                              >
-                                <Archive className="mr-2 h-4 w-4" />
-                                Arquivar
-                              </DropdownMenuItem>
-                            )}
-                          </RowMenu>
+                          <SystemActionMenu
+                            items={
+                              [
+                                {
+                                  label: "Ver detalhes",
+                                  hint: "Abrir solicitação",
+                                  icon: Eye,
+                                  iconTone: "view",
+                                  onClick: () => openLead(item.id),
+                                },
+                                item.phone
+                                  ? {
+                                      label: "WhatsApp",
+                                      hint: "Contatar lead",
+                                      icon: MessageCircle,
+                                      iconTone: "schedule",
+                                      onClick: () => handleWhatsAppLead(item),
+                                    }
+                                  : null,
+                                canManage
+                                  ? {
+                                      label: "Criar orçamento",
+                                      hint: "Nova proposta",
+                                      icon: FileText,
+                                      iconTone: "quote",
+                                      onClick: () => handleCreateQuoteFromLead(item),
+                                    }
+                                  : null,
+                                canManage
+                                  ? {
+                                      label: "Arquivar",
+                                      hint: "Encerrar solicitação",
+                                      icon: Archive,
+                                      iconTone: "cancel",
+                                      onClick: async () => {
+                                        await updateLeadStatusCommercial(
+                                          item.id,
+                                          "ARQUIVADO"
+                                        );
+                                        router.refresh();
+                                      },
+                                    }
+                                  : null,
+                              ].filter(Boolean) as SystemActionItem[]
+                            }
+                          />
                         </td>
                       </tr>
                     ))}
@@ -949,59 +961,72 @@ export function OrcamentosClient({
                           className="colaboradores-empresa-td-actions"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <RowMenu>
-                            <DropdownMenuItem onClick={() => openQuote(item.id)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Ver orçamento
-                            </DropdownMenuItem>
-                            {canManage && (
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  const r = await getQuoteDetail(item.id);
-                                  if (r.success) {
-                                    setEditQuote(r.quote);
-                                    setQuoteFormOpen(true);
-                                  }
-                                }}
-                              >
-                                <FileText className="mr-2 h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                            )}
-                            {canManage && item.status !== "APROVADO" && (
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  await updateQuoteStatusCommercial(item.id, "APROVADO");
-                                  router.refresh();
-                                }}
-                              >
-                                <Check className="mr-2 h-4 w-4" />
-                                Aprovar
-                              </DropdownMenuItem>
-                            )}
-                            {canManage && item.status !== "RECUSADO" && (
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setRejectQuoteId(item.id);
-                                  setRejectOpen(true);
-                                }}
-                              >
-                                <X className="mr-2 h-4 w-4" />
-                                Recusar
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              onClick={() =>
-                                window.open(
-                                  `/dashboard/orcamentos/orcamento/${item.id}/imprimir`,
-                                  "_blank"
-                                )
-                              }
-                            >
-                              <Printer className="mr-2 h-4 w-4" />
-                              Gerar PDF
-                            </DropdownMenuItem>
-                          </RowMenu>
+                          <SystemActionMenu
+                            items={
+                              [
+                                {
+                                  label: "Ver orçamento",
+                                  hint: "Abrir proposta",
+                                  icon: Eye,
+                                  iconTone: "view",
+                                  onClick: () => openQuote(item.id),
+                                },
+                                canManage
+                                  ? {
+                                      label: "Editar",
+                                      hint: "Alterar proposta",
+                                      icon: FileText,
+                                      iconTone: "docs",
+                                      onClick: async () => {
+                                        const r = await getQuoteDetail(item.id);
+                                        if (r.success) {
+                                          setEditQuote(r.quote);
+                                          setQuoteFormOpen(true);
+                                        }
+                                      },
+                                    }
+                                  : null,
+                                canManage && item.status !== "APROVADO"
+                                  ? {
+                                      label: "Aprovar",
+                                      hint: "Marcar como aprovado",
+                                      icon: Check,
+                                      iconTone: "done",
+                                      onClick: async () => {
+                                        await updateQuoteStatusCommercial(
+                                          item.id,
+                                          "APROVADO"
+                                        );
+                                        router.refresh();
+                                      },
+                                    }
+                                  : null,
+                                canManage && item.status !== "RECUSADO"
+                                  ? {
+                                      label: "Recusar",
+                                      hint: "Registrar recusa",
+                                      icon: X,
+                                      iconTone: "cancel",
+                                      onClick: () => {
+                                        setRejectQuoteId(item.id);
+                                        setRejectOpen(true);
+                                      },
+                                    }
+                                  : null,
+                                {
+                                  label: "Gerar PDF",
+                                  hint: "Imprimir proposta",
+                                  icon: Printer,
+                                  iconTone: "docs",
+                                  onClick: () =>
+                                    window.open(
+                                      `/dashboard/orcamentos/orcamento/${item.id}/imprimir`,
+                                      "_blank"
+                                    ),
+                                },
+                              ].filter(Boolean) as SystemActionItem[]
+                            }
+                          />
                         </td>
                       </tr>
                     ))}
@@ -1034,32 +1059,46 @@ export function OrcamentosClient({
                           className="colaboradores-empresa-td-actions"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <RowMenu>
-                            <DropdownMenuItem onClick={() => openContact(item.id)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Ver mensagem
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                window.open(waUrl(item.phone, `Olá ${item.name}!`), "_blank")
-                              }
-                            >
-                              <MessageCircle className="mr-2 h-4 w-4" />
-                              WhatsApp
-                            </DropdownMenuItem>
-                            {canManage && (
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  const r = await createCommercialLeadFromContact(item.id);
-                                  if (r.success) toast.success("Solicitação criada.");
-                                  router.refresh();
-                                }}
-                              >
-                                <FileText className="mr-2 h-4 w-4" />
-                                Criar solicitação
-                              </DropdownMenuItem>
-                            )}
-                          </RowMenu>
+                          <SystemActionMenu
+                            items={
+                              [
+                                {
+                                  label: "Ver mensagem",
+                                  hint: "Abrir contato",
+                                  icon: Eye,
+                                  iconTone: "view",
+                                  onClick: () => openContact(item.id),
+                                },
+                                {
+                                  label: "WhatsApp",
+                                  hint: "Contatar lead",
+                                  icon: MessageCircle,
+                                  iconTone: "schedule",
+                                  onClick: () =>
+                                    window.open(
+                                      waUrl(item.phone, `Olá ${item.name}!`),
+                                      "_blank"
+                                    ),
+                                },
+                                canManage
+                                  ? {
+                                      label: "Criar solicitação",
+                                      hint: "Novo lead comercial",
+                                      icon: FileText,
+                                      iconTone: "quote",
+                                      onClick: async () => {
+                                        const r = await createCommercialLeadFromContact(
+                                          item.id
+                                        );
+                                        if (r.success)
+                                          toast.success("Solicitação criada.");
+                                        router.refresh();
+                                      },
+                                    }
+                                  : null,
+                              ].filter(Boolean) as SystemActionItem[]
+                            }
+                          />
                         </td>
                       </tr>
                     ))}
@@ -1305,17 +1344,3 @@ export function OrcamentosClient({
   );
 }
 
-function RowMenu({ children }: { children: React.ReactNode }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="ghost" size="icon-sm" aria-label="Ações">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        }
-      />
-      <DropdownMenuContent align="end">{children}</DropdownMenuContent>
-    </DropdownMenu>
-  );
-}

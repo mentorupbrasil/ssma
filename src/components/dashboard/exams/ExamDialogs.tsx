@@ -10,17 +10,10 @@ import {
   EXAM_STATUS_LABELS,
 } from "@/lib/exams";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  SystemModalShell,
+  SystemModalField,
+} from "@/components/dashboard/SystemModalShell";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
@@ -57,6 +50,33 @@ const defaultForm = {
   displayOrder: "" as string,
   internalTags: "",
 };
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="exam-modal-item exam-modal-item--wide border-0 bg-transparent px-0 py-1">
+      <p className="exam-modal-item-label mb-0">{children}</p>
+    </div>
+  );
+}
+
+function CheckboxWide({
+  checked,
+  onCheckedChange,
+  label,
+}: {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  label: string;
+}) {
+  return (
+    <div className="exam-modal-item exam-modal-item--wide">
+      <label className="flex items-center gap-2 text-sm text-slate-700">
+        <Checkbox checked={checked} onCheckedChange={(c) => onCheckedChange(c === true)} />
+        {label}
+      </label>
+    </div>
+  );
+}
 
 export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamFormDialogProps) {
   const isEdit = !!exam;
@@ -127,222 +147,200 @@ export function ExamFormDialog({ open, onOpenChange, exam, onSuccess }: ExamForm
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Editar exame" : "Novo exame"}</DialogTitle>
-          <DialogDescription>
-            Cadastre exames para alimentar encaminhamentos, agenda e página pública de preparos.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6 py-2">
-          <div className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Dados principais
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Label>Nome do exame</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  placeholder="Ex.: Audiometria"
-                />
-              </div>
-              <div>
-                <Label>Categoria</Label>
-                <select
-                  className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                  value={form.category}
-                  onChange={(e) => set("category", e.target.value)}
-                >
-                  {CATEGORIES.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label>Status</Label>
-                <select
-                  className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                  value={form.status}
-                  onChange={(e) => set("status", e.target.value)}
-                >
-                  {STATUSES.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Descrição curta</Label>
-                <Textarea
-                  value={form.shortDescription}
-                  onChange={(e) => set("shortDescription", e.target.value)}
-                  rows={2}
-                />
-              </div>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={form.showOnWebsite}
-                  onCheckedChange={(c) => set("showOnWebsite", c === true)}
-                />
-                Exibir no site
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={form.availableOnPublicForm}
-                  onCheckedChange={(c) => set("availableOnPublicForm", c === true)}
-                />
-                Disponível no formulário público
-              </label>
-              <label className="flex items-center gap-2 text-sm sm:col-span-2">
-                <Checkbox
-                  checked={form.availableOnCompanyPortal}
-                  onCheckedChange={(c) => set("availableOnCompanyPortal", c === true)}
-                />
-                Disponível no portal empresarial
-              </label>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Preparo</p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Label>Tipo de preparo</Label>
-                <select
-                  className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                  value={form.preparationType}
-                  onChange={(e) => set("preparationType", e.target.value)}
-                >
-                  {PREPARATION_TYPES.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Preparo antes do exame</Label>
-                <Textarea
-                  value={form.preparationBefore}
-                  onChange={(e) => set("preparationBefore", e.target.value)}
-                  rows={3}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Orientações no dia do exame</Label>
-                <Textarea
-                  value={form.instructionsOnDay}
-                  onChange={(e) => set("instructionsOnDay", e.target.value)}
-                  rows={2}
-                />
-              </div>
-              <div>
-                <Label>Prazo médio</Label>
-                <Input
-                  value={form.averageDeadline}
-                  onChange={(e) => set("averageDeadline", e.target.value)}
-                  placeholder="Ex.: No dia do exame"
-                />
-              </div>
-              <div>
-                <Label>Unidade de prazo</Label>
-                <select
-                  className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                  value={form.deadlineType}
-                  onChange={(e) => set("deadlineType", e.target.value)}
-                >
-                  <option value="">Automático</option>
-                  {DEADLINE_TYPES.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Observações importantes</Label>
-                <Textarea
-                  value={form.observations}
-                  onChange={(e) => set("observations", e.target.value)}
-                  rows={2}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Quando informar a clínica</Label>
-                <Textarea
-                  value={form.whenToNotifyClinic}
-                  onChange={(e) => set("whenToNotifyClinic", e.target.value)}
-                  rows={2}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Operacional
-            </p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={form.requiresAppointment}
-                  onCheckedChange={(c) => set("requiresAppointment", c === true)}
-                />
-                Requer agendamento
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={form.requiresProfessional}
-                  onCheckedChange={(c) => set("requiresProfessional", c === true)}
-                />
-                Requer profissional específico
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={form.requiresAttachment}
-                  onCheckedChange={(c) => set("requiresAttachment", c === true)}
-                />
-                Requer anexos/documentos
-              </label>
-              <div>
-                <Label>Ordem de exibição</Label>
-                <Input
-                  type="number"
-                  value={form.displayOrder}
-                  onChange={(e) => set("displayOrder", e.target.value)}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Tags internas</Label>
-                <Input
-                  value={form.internalTags}
-                  onChange={(e) => set("internalTags", e.target.value)}
-                  placeholder="Separadas por vírgula"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+    <SystemModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEdit ? "Editar exame" : "Novo exame"}
+      description="Catálogo de exames e preparos para o portal e o site."
+      badges={[
+        { label: isEdit ? "Edição" : "Cadastro", variant: "category" },
+        {
+          label: EXAM_STATUS_LABELS[form.status as keyof typeof EXAM_STATUS_LABELS] ?? form.status,
+          variant: "status",
+        },
+      ]}
+      footer={
+        <div className="collaborator-modal-actions">
+          <Button
+            variant="outline"
+            className="collaborator-modal-btn"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
             Cancelar
           </Button>
-          <Button variant="brand" onClick={() => handleSave(false)} disabled={loading}>
-            Salvar exame
+          <Button
+            variant="brand"
+            className="collaborator-modal-btn"
+            onClick={() => handleSave(false)}
+            disabled={loading}
+          >
+            {loading ? "Salvando..." : "Salvar exame"}
           </Button>
-          <Button variant="brand" onClick={() => handleSave(true)} disabled={loading}>
-            Salvar e publicar no site
+          <Button
+            variant="brand"
+            className="collaborator-modal-btn"
+            onClick={() => handleSave(true)}
+            disabled={loading}
+          >
+            {loading ? "Salvando..." : "Salvar e publicar no site"}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      }
+    >
+      <SectionLabel>Dados principais</SectionLabel>
+
+      <SystemModalField label="Nome do exame" required wide>
+        <input
+          value={form.name}
+          onChange={(e) => set("name", e.target.value)}
+          placeholder="Ex.: Audiometria"
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Categoria">
+        <select value={form.category} onChange={(e) => set("category", e.target.value)}>
+          {CATEGORIES.map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </SystemModalField>
+
+      <SystemModalField label="Status">
+        <select value={form.status} onChange={(e) => set("status", e.target.value)}>
+          {STATUSES.map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </SystemModalField>
+
+      <SystemModalField label="Descrição curta" wide>
+        <textarea
+          value={form.shortDescription}
+          onChange={(e) => set("shortDescription", e.target.value)}
+          rows={2}
+        />
+      </SystemModalField>
+
+      <CheckboxWide
+        checked={form.showOnWebsite}
+        onCheckedChange={(c) => set("showOnWebsite", c)}
+        label="Exibir no site"
+      />
+      <CheckboxWide
+        checked={form.availableOnPublicForm}
+        onCheckedChange={(c) => set("availableOnPublicForm", c)}
+        label="Disponível no formulário público"
+      />
+      <CheckboxWide
+        checked={form.availableOnCompanyPortal}
+        onCheckedChange={(c) => set("availableOnCompanyPortal", c)}
+        label="Disponível no portal empresarial"
+      />
+
+      <SectionLabel>Preparo</SectionLabel>
+
+      <SystemModalField label="Tipo de preparo" wide>
+        <select
+          value={form.preparationType}
+          onChange={(e) => set("preparationType", e.target.value)}
+        >
+          {PREPARATION_TYPES.map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </SystemModalField>
+
+      <SystemModalField label="Preparo antes do exame" wide>
+        <textarea
+          value={form.preparationBefore}
+          onChange={(e) => set("preparationBefore", e.target.value)}
+          rows={3}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Orientações no dia do exame" wide>
+        <textarea
+          value={form.instructionsOnDay}
+          onChange={(e) => set("instructionsOnDay", e.target.value)}
+          rows={2}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Prazo médio">
+        <input
+          value={form.averageDeadline}
+          onChange={(e) => set("averageDeadline", e.target.value)}
+          placeholder="Ex.: No dia do exame"
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Unidade de prazo">
+        <select value={form.deadlineType} onChange={(e) => set("deadlineType", e.target.value)}>
+          <option value="">Automático</option>
+          {DEADLINE_TYPES.map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </SystemModalField>
+
+      <SystemModalField label="Observações importantes" wide>
+        <textarea
+          value={form.observations}
+          onChange={(e) => set("observations", e.target.value)}
+          rows={2}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Quando informar a clínica" wide>
+        <textarea
+          value={form.whenToNotifyClinic}
+          onChange={(e) => set("whenToNotifyClinic", e.target.value)}
+          rows={2}
+        />
+      </SystemModalField>
+
+      <SectionLabel>Operacional</SectionLabel>
+
+      <CheckboxWide
+        checked={form.requiresAppointment}
+        onCheckedChange={(c) => set("requiresAppointment", c)}
+        label="Requer agendamento"
+      />
+      <CheckboxWide
+        checked={form.requiresProfessional}
+        onCheckedChange={(c) => set("requiresProfessional", c)}
+        label="Requer profissional específico"
+      />
+      <CheckboxWide
+        checked={form.requiresAttachment}
+        onCheckedChange={(c) => set("requiresAttachment", c)}
+        label="Requer anexos/documentos"
+      />
+
+      <SystemModalField label="Ordem de exibição">
+        <input
+          type="number"
+          value={form.displayOrder}
+          onChange={(e) => set("displayOrder", e.target.value)}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Tags internas" wide>
+        <input
+          value={form.internalTags}
+          onChange={(e) => set("internalTags", e.target.value)}
+          placeholder="Separadas por vírgula"
+        />
+      </SystemModalField>
+    </SystemModalShell>
   );
 }

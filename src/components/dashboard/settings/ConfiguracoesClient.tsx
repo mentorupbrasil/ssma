@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,10 +47,14 @@ export function ConfiguracoesClient({
 
   return (
     <div>
-      <PageHeader
-        title="Configurações"
-        description="Parâmetros institucionais, operacionais e LGPD"
-      />
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Configurações</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Parâmetros institucionais, operacionais e LGPD
+          </p>
+        </div>
+      </header>
 
       <Card className="mb-6">
         <CardHeader>

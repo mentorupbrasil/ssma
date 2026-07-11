@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterBar } from "@/components/dashboard/FilterBar";
@@ -68,7 +67,14 @@ export function AuditoriaClient({
 
   return (
     <PageModule>
-      <PageHeader title="Logs de auditoria" description="Registro de ações críticas no sistema" />
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Logs de auditoria</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Registro de ações críticas no sistema
+          </p>
+        </div>
+      </header>
 
       <form action={applyFilters} className="mb-4">
         <FilterBar
@@ -106,47 +112,49 @@ export function AuditoriaClient({
         <EmptyState title="Nenhum registro" description="Ajuste os filtros ou aguarde novas ações no sistema." />
       ) : (
         <>
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data/Hora</TableHead>
-                  <TableHead>Usuário</TableHead>
-                  <TableHead>Ação</TableHead>
-                  <TableHead>Entidade</TableHead>
-                  <TableHead>Detalhes</TableHead>
-                  <TableHead>IP</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {logs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell className="whitespace-nowrap text-sm">
-                      {format(new Date(log.createdAt), "dd/MM/yy HH:mm", { locale: ptBR })}
-                    </TableCell>
-                    <TableCell>{log.userName ?? "Sistema"}</TableCell>
-                    <TableCell>
-                      <span className={cn(
-                        "rounded px-2 py-0.5 text-xs font-medium",
-                        isCriticalAudit(log.entity, log.action)
-                          ? "bg-red-50 text-red-700"
-                          : "bg-slate-100 text-slate-700"
-                      )}>
-                        {translateAction(log.action)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span title={log.entity}>{translateEntity(log.entity)}</span>
-                      {log.entityId && (
-                        <span className="block text-xs text-slate-400 truncate max-w-[120px]">{log.entityId}</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate text-sm text-slate-500">{log.details ?? "—"}</TableCell>
-                    <TableCell className="text-xs text-slate-400">{log.ipAddress ?? "—"}</TableCell>
+          <div className="colaboradores-empresa-table-wrap">
+            <div className="colaboradores-empresa-table-scroll">
+              <Table className="colaboradores-empresa-table">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data/Hora</TableHead>
+                    <TableHead>Usuário</TableHead>
+                    <TableHead>Ação</TableHead>
+                    <TableHead>Entidade</TableHead>
+                    <TableHead>Detalhes</TableHead>
+                    <TableHead>IP</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {logs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {format(new Date(log.createdAt), "dd/MM/yy HH:mm", { locale: ptBR })}
+                      </TableCell>
+                      <TableCell>{log.userName ?? "Sistema"}</TableCell>
+                      <TableCell>
+                        <span className={cn(
+                          "rounded px-2 py-0.5 text-xs font-medium",
+                          isCriticalAudit(log.entity, log.action)
+                            ? "bg-red-50 text-red-700"
+                            : "bg-slate-100 text-slate-700"
+                        )}>
+                          {translateAction(log.action)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span title={log.entity}>{translateEntity(log.entity)}</span>
+                        {log.entityId && (
+                          <span className="block text-xs text-slate-400 truncate max-w-[120px]">{log.entityId}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate text-sm text-slate-500">{log.details ?? "—"}</TableCell>
+                      <TableCell className="text-xs text-slate-400">{log.ipAddress ?? "—"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-slate-500">
             <span>{logs.length} de {total} registros</span>

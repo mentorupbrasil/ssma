@@ -8,7 +8,6 @@ import {
   Sparkles,
   Shield,
 } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageShell } from "@/components/dashboard/PageShell";
 import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
 import { QuickActionGrid } from "@/components/dashboard/QuickActionGrid";
@@ -74,11 +73,14 @@ export function AssistenteSstClient({ companies }: { companies: CompanyOption[] 
 
   return (
     <PageShell>
-      <PageHeader
-        eyebrow="Ferramenta técnica"
-        title="Assistente SST"
-        description="Geração guiada de documentos ocupacionais com modelos estruturados — revisão profissional obrigatória."
-      />
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Assistente SST</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Geração guiada de documentos ocupacionais com modelos estruturados — revisão profissional obrigatória.
+          </p>
+        </div>
+      </header>
 
       <PlatformPositioningBanner compact />
 

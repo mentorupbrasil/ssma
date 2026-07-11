@@ -1,24 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { createQuote, updateQuote } from "@/actions/commercial";
 import { listPricesForQuote } from "@/actions/pricing";
 import type { QuoteDetailSerialized } from "@/lib/commercial";
 import { SUGGESTED_QUOTE_SERVICES } from "@/lib/commercial";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  SystemModalField,
+  SystemModalShell,
+} from "@/components/dashboard/SystemModalShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 type CompanyOption = {
@@ -231,189 +224,222 @@ export function QuoteFormDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Editar orçamento" : "Novo orçamento"}</DialogTitle>
-          <DialogDescription>Preencha os dados da proposta comercial.</DialogDescription>
-        </DialogHeader>
+    <SystemModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEdit ? "Editar orçamento" : "Novo orçamento"}
+      description="Preencha os dados da proposta comercial para a empresa."
+      badges={[
+        { label: "Comercial", variant: "category" },
+        { label: isEdit ? "Edição" : "Nova proposta", variant: "status" },
+      ]}
+      className="max-w-3xl"
+      footer={
+        <div className="collaborator-modal-actions">
+          <Button
+            variant="outline"
+            className="collaborator-modal-btn"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="brand"
+            className="collaborator-modal-btn"
+            onClick={() => handleSave(false)}
+            disabled={loading}
+          >
+            Salvar rascunho
+          </Button>
+          <Button
+            variant="brand"
+            className="collaborator-modal-btn"
+            onClick={() => handleSave(true)}
+            disabled={loading}
+          >
+            Salvar e enviar
+          </Button>
+        </div>
+      }
+    >
+      <SystemModalField label="Empresa existente" wide>
+        <select value={companyId} onChange={(e) => onCompanySelect(e.target.value)}>
+          <option value="">Nova empresa / digitar manualmente</option>
+          {companies.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.tradeName ?? c.legalName}
+            </option>
+          ))}
+        </select>
+      </SystemModalField>
 
-        <div className="space-y-6 py-2">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <Label>Empresa existente</Label>
+      <SystemModalField label="Nome da empresa" required wide>
+        <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+      </SystemModalField>
+
+      <SystemModalField label="Responsável">
+        <input
+          value={responsibleName}
+          onChange={(e) => setResponsibleName(e.target.value)}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="WhatsApp">
+        <input value={phone} onChange={(e) => setPhone(e.target.value)} />
+      </SystemModalField>
+
+      <SystemModalField label="E-mail">
+        <input value={email} onChange={(e) => setEmail(e.target.value)} />
+      </SystemModalField>
+
+      <SystemModalField label="CNPJ">
+        <input value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+      </SystemModalField>
+
+      <SystemModalField label="Cidade">
+        <input value={city} onChange={(e) => setCity(e.target.value)} />
+      </SystemModalField>
+
+      <SystemModalField label="UF">
+        <input
+          value={state}
+          onChange={(e) => setState(e.target.value)}
+          maxLength={2}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Itens do orçamento" wide>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {priceCatalog.length > 0 && (
               <select
-                className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                value={companyId}
-                onChange={(e) => onCompanySelect(e.target.value)}
+                className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
+                defaultValue=""
+                onChange={(e) => {
+                  const opt = priceCatalog.find((p) => p.name === e.target.value);
+                  if (opt) addFromCatalog(opt.name, opt.price, opt.category);
+                  e.target.value = "";
+                }}
               >
-                <option value="">Nova empresa / digitar manualmente</option>
-                {companies.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.tradeName ?? c.legalName}
+                <option value="">+ Da tabela de preços</option>
+                {priceCatalog.map((p) => (
+                  <option key={p.name} value={p.name}>
+                    {p.name} — R$ {p.price.toFixed(2)}
                   </option>
                 ))}
               </select>
-            </div>
-            <div className="sm:col-span-2">
-              <Label>Nome da empresa *</Label>
-              <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
-            </div>
-            <div>
-              <Label>Responsável</Label>
-              <Input value={responsibleName} onChange={(e) => setResponsibleName(e.target.value)} />
-            </div>
-            <div>
-              <Label>WhatsApp</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
-            <div>
-              <Label>E-mail</Label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div>
-              <Label>CNPJ</Label>
-              <Input value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
-            </div>
-            <div>
-              <Label>Cidade</Label>
-              <Input value={city} onChange={(e) => setCity(e.target.value)} />
-            </div>
-            <div>
-              <Label>UF</Label>
-              <Input value={state} onChange={(e) => setState(e.target.value)} maxLength={2} />
-            </div>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setItems((p) => [...p, emptyItem()])}
+            >
+              <Plus className="mr-1 h-4 w-4" /> Item
+            </Button>
           </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Itens do orçamento</Label>
+          {items.map((item, idx) => (
+            <div key={idx} className="space-y-2 rounded-xl border border-slate-200 p-3">
               <div className="flex gap-2">
-                {priceCatalog.length > 0 && (
-                  <select
-                    className="h-9 rounded-lg border border-slate-200 px-2 text-xs"
-                    defaultValue=""
-                    onChange={(e) => {
-                      const opt = priceCatalog.find((p) => p.name === e.target.value);
-                      if (opt) addFromCatalog(opt.name, opt.price, opt.category);
-                      e.target.value = "";
-                    }}
+                <Input
+                  list="quote-services"
+                  placeholder="Serviço"
+                  value={item.serviceName}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[idx] = { ...item, serviceName: e.target.value };
+                    setItems(next);
+                  }}
+                  onBlur={(e) => applyPriceToItem(idx, e.target.value)}
+                  className="flex-1"
+                />
+                {items.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setItems((p) => p.filter((_, i) => i !== idx))}
                   >
-                    <option value="">+ Da tabela de preços</option>
-                    {priceCatalog.map((p) => (
-                      <option key={p.name} value={p.name}>
-                        {p.name} — R$ {p.price.toFixed(2)}
-                      </option>
-                    ))}
-                  </select>
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
                 )}
-                <Button type="button" variant="outline" size="sm" onClick={() => setItems((p) => [...p, emptyItem()])}>
-                  <Plus className="mr-1 h-4 w-4" /> Item
-                </Button>
+              </div>
+              <datalist id="quote-services">
+                {priceCatalog.map((p) => (
+                  <option key={p.name} value={p.name} />
+                ))}
+                {SUGGESTED_QUOTE_SERVICES.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+              <div className="grid grid-cols-3 gap-2">
+                <Input
+                  placeholder="Qtd"
+                  type="number"
+                  min={1}
+                  value={item.quantity}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[idx] = { ...item, quantity: e.target.value };
+                    setItems(next);
+                  }}
+                />
+                <Input
+                  placeholder="Valor unit."
+                  value={item.unitPrice}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[idx] = { ...item, unitPrice: e.target.value };
+                    setItems(next);
+                  }}
+                />
+                <Input
+                  placeholder="Obs. item"
+                  value={item.notes}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[idx] = { ...item, notes: e.target.value };
+                    setItems(next);
+                  }}
+                />
               </div>
             </div>
-            {items.map((item, idx) => (
-              <div key={idx} className="rounded-xl border border-slate-200 p-3 space-y-2">
-                <div className="flex gap-2">
-                  <Input
-                    list="quote-services"
-                    placeholder="Serviço"
-                    value={item.serviceName}
-                    onChange={(e) => {
-                      const next = [...items];
-                      next[idx] = { ...item, serviceName: e.target.value };
-                      setItems(next);
-                    }}
-                    onBlur={(e) => applyPriceToItem(idx, e.target.value)}
-                    className="flex-1"
-                  />
-                  {items.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setItems((p) => p.filter((_, i) => i !== idx))}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  )}
-                </div>
-                <datalist id="quote-services">
-                  {priceCatalog.map((p) => (
-                    <option key={p.name} value={p.name} />
-                  ))}
-                  {SUGGESTED_QUOTE_SERVICES.map((s) => (
-                    <option key={s} value={s} />
-                  ))}
-                </datalist>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input
-                    placeholder="Qtd"
-                    type="number"
-                    min={1}
-                    value={item.quantity}
-                    onChange={(e) => {
-                      const next = [...items];
-                      next[idx] = { ...item, quantity: e.target.value };
-                      setItems(next);
-                    }}
-                  />
-                  <Input
-                    placeholder="Valor unit."
-                    value={item.unitPrice}
-                    onChange={(e) => {
-                      const next = [...items];
-                      next[idx] = { ...item, unitPrice: e.target.value };
-                      setItems(next);
-                    }}
-                  />
-                  <Input
-                    placeholder="Obs. item"
-                    value={item.notes}
-                    onChange={(e) => {
-                      const next = [...items];
-                      next[idx] = { ...item, notes: e.target.value };
-                      setItems(next);
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label>Validade da proposta</Label>
-              <Input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
-            </div>
-            <div>
-              <Label>Condição de pagamento</Label>
-              <Input value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} />
-            </div>
-            <div className="sm:col-span-2">
-              <Label>Observações para o cliente</Label>
-              <Textarea value={clientNotes} onChange={(e) => setClientNotes(e.target.value)} rows={2} />
-            </div>
-            <div className="sm:col-span-2">
-              <Label>Observações internas</Label>
-              <Textarea value={internalNotes} onChange={(e) => setInternalNotes(e.target.value)} rows={2} />
-            </div>
-          </div>
+          ))}
         </div>
+      </SystemModalField>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Cancelar
-          </Button>
-          <Button variant="brand" onClick={() => handleSave(false)} disabled={loading}>
-            Salvar rascunho
-          </Button>
-          <Button variant="brand" onClick={() => handleSave(true)} disabled={loading}>
-            Salvar e enviar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <SystemModalField label="Validade da proposta">
+        <input
+          type="date"
+          value={validUntil}
+          onChange={(e) => setValidUntil(e.target.value)}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Condição de pagamento">
+        <input
+          value={paymentTerms}
+          onChange={(e) => setPaymentTerms(e.target.value)}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Observações para o cliente" wide>
+        <textarea
+          value={clientNotes}
+          onChange={(e) => setClientNotes(e.target.value)}
+          rows={2}
+        />
+      </SystemModalField>
+
+      <SystemModalField label="Observações internas" wide>
+        <textarea
+          value={internalNotes}
+          onChange={(e) => setInternalNotes(e.target.value)}
+          rows={2}
+        />
+      </SystemModalField>
+    </SystemModalShell>
   );
 }
 
@@ -450,36 +476,48 @@ export function RejectQuoteDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Recusar orçamento</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label>Motivo</Label>
-            <select
-              className="mt-1 flex h-10 w-full rounded-lg border border-slate-200 px-3 text-sm"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            >
-              <option value="VALOR">Valor</option>
-              <option value="SEM_RESPOSTA">Cliente não respondeu</option>
-              <option value="OUTRO_FORNECEDOR">Contratou outro fornecedor</option>
-              <option value="SEM_INTERESSE">Sem interesse no momento</option>
-              <option value="OUTRO">Outro</option>
-            </select>
-          </div>
-          <div>
-            <Label>Observação</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
-          </div>
+    <SystemModalShell
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Recusar orçamento"
+      description="Informe o motivo da recusa para o histórico comercial."
+      badges={[
+        { label: "Comercial", variant: "category" },
+        { label: "Recusa", variant: "status" },
+      ]}
+      footer={
+        <div className="collaborator-modal-actions">
+          <Button
+            variant="outline"
+            className="collaborator-modal-btn"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            className="collaborator-modal-btn"
+            onClick={handleReject}
+            disabled={loading}
+          >
+            Confirmar recusa
+          </Button>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button variant="destructive" onClick={handleReject} disabled={loading}>Confirmar recusa</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      }
+    >
+      <SystemModalField label="Motivo" required wide>
+        <select value={reason} onChange={(e) => setReason(e.target.value)}>
+          <option value="VALOR">Valor</option>
+          <option value="SEM_RESPOSTA">Cliente não respondeu</option>
+          <option value="OUTRO_FORNECEDOR">Contratou outro fornecedor</option>
+          <option value="SEM_INTERESSE">Sem interesse no momento</option>
+          <option value="OUTRO">Outro</option>
+        </select>
+      </SystemModalField>
+
+      <SystemModalField label="Observação" wide>
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+      </SystemModalField>
+    </SystemModalShell>
   );
 }

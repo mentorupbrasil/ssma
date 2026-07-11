@@ -4,23 +4,23 @@ import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, LayoutGrid, List, Trash2, GripVertical } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { Plus, LayoutGrid, List, Trash2, GripVertical, CheckCircle2 } from "lucide-react";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { FilterBar } from "@/components/dashboard/FilterBar";
+import {
+  SystemActionMenu,
+  type SystemActionItem,
+} from "@/components/dashboard/SystemActionMenu";
+import {
+  SystemModalField,
+  SystemModalShell,
+} from "@/components/dashboard/SystemModalShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -36,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { createTask, deleteTask, updateTask, updateTaskStatus } from "@/actions/tasks";
+import { createTask, deleteTask, updateTaskStatus } from "@/actions/tasks";
 import {
   TASK_STAT_CARDS,
   TASK_STATUS_LABELS,
@@ -120,56 +120,60 @@ export function TarefasClient({
     tasks: items.filter((t) => t.status === status),
   }));
 
+  function buildListActions(item: TaskItem): SystemActionItem[] {
+    const actions: SystemActionItem[] = [];
+    if (item.status !== "CONCLUIDA") {
+      actions.push({
+        label: "Concluir",
+        hint: "Marcar como concluída",
+        icon: CheckCircle2,
+        iconTone: "done",
+        onClick: () =>
+          startTransition(async () => {
+            await updateTaskStatus(item.id, "CONCLUIDA");
+            router.refresh();
+          }),
+      });
+    }
+    actions.push({
+      label: "Excluir",
+      hint: "Remover tarefa",
+      icon: Trash2,
+      iconTone: "cancel",
+      onClick: () =>
+        startTransition(async () => {
+          await deleteTask(item.id);
+          router.refresh();
+        }),
+    });
+    return actions;
+  }
+
   return (
     <PageModule>
-      <PageHeader
-        title="Tarefas"
-        description="Organize pendências internas da clínica"
-        actions={
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setView(view === "kanban" ? "list" : "kanban")}>
-              {view === "kanban" ? <List className="mr-1 h-4 w-4" /> : <LayoutGrid className="mr-1 h-4 w-4" />}
-              {view === "kanban" ? "Lista" : "Kanban"}
-            </Button>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger render={<Button><Plus className="mr-2 h-4 w-4" />Nova tarefa</Button>} />
-              <DialogContent>
-                <DialogHeader><DialogTitle>Nova tarefa</DialogTitle></DialogHeader>
-                <div className="space-y-3">
-                  <Input placeholder="Título *" value={title} onChange={(e) => setTitle(e.target.value)} />
-                  <Textarea placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
-                  <Select value={priority} onValueChange={(v) => setPriority(v ?? "MEDIA")}>
-                    <SelectTrigger><SelectValue placeholder="Prioridade" /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(TASK_PRIORITY_LABELS).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                  <Select value={assignedToUserId} onValueChange={(v) => setAssignedToUserId(v ?? "")}>
-                    <SelectTrigger><SelectValue placeholder="Responsável" /></SelectTrigger>
-                    <SelectContent>
-                      {users.map((u) => (
-                        <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={companyId} onValueChange={(v) => setCompanyId(v ?? "")}>
-                    <SelectTrigger><SelectValue placeholder="Empresa (opcional)" /></SelectTrigger>
-                    <SelectContent>
-                      {companies.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={handleCreate} disabled={pending || !title.trim()}>Salvar</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        }
-      />
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Tarefas</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Organize pendências internas da clínica
+          </p>
+        </div>
+        <div className="colaboradores-empresa-header-actions">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-lg"
+            onClick={() => setView(view === "kanban" ? "list" : "kanban")}
+          >
+            {view === "kanban" ? <List className="mr-1 h-4 w-4" /> : <LayoutGrid className="mr-1 h-4 w-4" />}
+            {view === "kanban" ? "Lista" : "Kanban"}
+          </Button>
+          <Button variant="brand" size="sm" className="rounded-lg" onClick={() => setOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova tarefa
+          </Button>
+        </div>
+      </header>
 
       <FilterMetricGrid
         items={TASK_STAT_CARDS.map((card) => ({
@@ -244,50 +248,123 @@ export function TarefasClient({
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Prioridade</TableHead>
-                <TableHead>Prazo</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Empresa</TableHead>
-                <TableHead className="w-28" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <p className="font-medium">{item.title}</p>
-                    {item.description && <p className="text-xs text-slate-500">{item.description}</p>}
-                  </TableCell>
-                  <TableCell><StatusBadge status={item.status} /></TableCell>
-                  <TableCell>{TASK_PRIORITY_LABELS[item.priority as keyof typeof TASK_PRIORITY_LABELS] ?? item.priority}</TableCell>
-                  <TableCell>{item.dueDate ? format(new Date(item.dueDate), "dd/MM/yyyy", { locale: ptBR }) : "—"}</TableCell>
-                  <TableCell>{item.assignedTo?.name ?? "—"}</TableCell>
-                  <TableCell>{item.companyName ?? "—"}</TableCell>
-                  <TableCell className="space-x-1">
-                    {item.status !== "CONCLUIDA" && (
-                      <Button size="sm" variant="outline" onClick={() => startTransition(async () => {
-                        await updateTaskStatus(item.id, "CONCLUIDA");
-                        router.refresh();
-                      })}>Concluir</Button>
-                    )}
-                    <Button size="icon" variant="ghost" onClick={() => startTransition(async () => {
-                      await deleteTask(item.id);
-                      router.refresh();
-                    })}><Trash2 className="h-4 w-4" /></Button>
-                  </TableCell>
+        <div className="colaboradores-empresa-table-wrap">
+          <div className="colaboradores-empresa-table-scroll">
+            <Table className="colaboradores-empresa-table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Prioridade</TableHead>
+                  <TableHead>Prazo</TableHead>
+                  <TableHead>Responsável</TableHead>
+                  <TableHead>Empresa</TableHead>
+                  <TableHead className="colaboradores-empresa-th-actions">Ações</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <p className="font-medium">{item.title}</p>
+                      {item.description && <p className="text-xs text-slate-500">{item.description}</p>}
+                    </TableCell>
+                    <TableCell><StatusBadge status={item.status} /></TableCell>
+                    <TableCell>{TASK_PRIORITY_LABELS[item.priority as keyof typeof TASK_PRIORITY_LABELS] ?? item.priority}</TableCell>
+                    <TableCell>{item.dueDate ? format(new Date(item.dueDate), "dd/MM/yyyy", { locale: ptBR }) : "—"}</TableCell>
+                    <TableCell>{item.assignedTo?.name ?? "—"}</TableCell>
+                    <TableCell>{item.companyName ?? "—"}</TableCell>
+                    <TableCell>
+                      <SystemActionMenu items={buildListActions(item)} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
           <p className="border-t px-4 py-2 text-xs text-slate-500">{items.length} de {total} tarefas</p>
         </div>
       )}
+
+      <SystemModalShell
+        open={open}
+        onOpenChange={setOpen}
+        title="Nova tarefa"
+        description="Cadastre uma pendência interna para a equipe."
+        badges={[
+          { label: "Tarefas", variant: "category" },
+          { label: "Nova", variant: "status" },
+        ]}
+        className="max-w-lg"
+        footer={
+          <div className="collaborator-modal-actions">
+            <Button
+              variant="outline"
+              className="collaborator-modal-btn"
+              onClick={() => setOpen(false)}
+              disabled={pending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="brand"
+              className="collaborator-modal-btn"
+              onClick={handleCreate}
+              disabled={pending || !title.trim()}
+            >
+              Salvar
+            </Button>
+          </div>
+        }
+      >
+        <SystemModalField label="Título" required wide>
+          <input
+            placeholder="Título"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </SystemModalField>
+        <SystemModalField label="Descrição" wide>
+          <Textarea
+            placeholder="Descrição"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </SystemModalField>
+        <SystemModalField label="Prioridade">
+          <Select value={priority} onValueChange={(v) => setPriority(v ?? "MEDIA")}>
+            <SelectTrigger><SelectValue placeholder="Prioridade" /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(TASK_PRIORITY_LABELS).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SystemModalField>
+        <SystemModalField label="Prazo">
+          <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+        </SystemModalField>
+        <SystemModalField label="Responsável" wide>
+          <Select value={assignedToUserId} onValueChange={(v) => setAssignedToUserId(v ?? "")}>
+            <SelectTrigger><SelectValue placeholder="Responsável" /></SelectTrigger>
+            <SelectContent>
+              {users.map((u) => (
+                <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SystemModalField>
+        <SystemModalField label="Empresa" wide>
+          <Select value={companyId} onValueChange={(v) => setCompanyId(v ?? "")}>
+            <SelectTrigger><SelectValue placeholder="Empresa (opcional)" /></SelectTrigger>
+            <SelectContent>
+              {companies.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SystemModalField>
+      </SystemModalShell>
     </PageModule>
   );
 }

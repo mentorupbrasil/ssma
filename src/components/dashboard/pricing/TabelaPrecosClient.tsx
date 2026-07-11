@@ -12,7 +12,6 @@ import {
   Building2,
   CircleSlash,
   SlidersHorizontal,
-  MoreHorizontal,
   Eye,
   Pencil,
   Copy,
@@ -23,16 +22,16 @@ import {
 import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
+import {
+  SystemActionMenu,
+  type SystemActionItem,
+} from "@/components/dashboard/SystemActionMenu";
+import {
+  SystemModalField,
+  SystemModalShell,
+} from "@/components/dashboard/SystemModalShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -47,12 +46,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   createPriceItem,
   deletePriceItem,
@@ -628,43 +621,51 @@ export function TabelaPrecosClient({
                         />
                       </td>
                       <td className="colaboradores-empresa-td-actions">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button variant="ghost" size="icon-sm" aria-label="Ações">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            }
-                          />
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setDetailItem(item)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Ver detalhes
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openEdit(item)}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Editar preço
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openDuplicateForCompany(item)}>
-                              <Copy className="mr-2 h-4 w-4" />
-                              Duplicar para empresa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleToggleStatus(item)}
-                              disabled={pending}
-                            >
-                              <Power className="mr-2 h-4 w-4" />
-                              {item.status === "ATIVA" ? "Inativar" : "Ativar"}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <SystemActionMenu
+                          items={
+                            [
+                              {
+                                label: "Ver detalhes",
+                                hint: "Abrir preço",
+                                icon: Eye,
+                                iconTone: "view",
+                                onClick: () => setDetailItem(item),
+                              },
+                              {
+                                label: "Editar preço",
+                                hint: "Alterar valores",
+                                icon: Pencil,
+                                iconTone: "docs",
+                                onClick: () => openEdit(item),
+                              },
+                              {
+                                label: "Duplicar para empresa",
+                                hint: "Criar preço negociado",
+                                icon: Copy,
+                                iconTone: "quote",
+                                onClick: () => openDuplicateForCompany(item),
+                              },
+                              {
+                                label: item.status === "ATIVA" ? "Inativar" : "Ativar",
+                                hint:
+                                  item.status === "ATIVA"
+                                    ? "Desativar preço"
+                                    : "Reativar preço",
+                                icon: Power,
+                                iconTone: "progress",
+                                onClick: () => handleToggleStatus(item),
+                                disabled: pending,
+                              },
+                              {
+                                label: "Excluir",
+                                hint: "Remover da tabela",
+                                icon: Trash2,
+                                iconTone: "cancel",
+                                onClick: () => handleDelete(item.id),
+                              },
+                            ] satisfies SystemActionItem[]
+                          }
+                        />
                       </td>
                     </tr>
                   ))}
@@ -770,193 +771,195 @@ export function TabelaPrecosClient({
         </SheetContent>
       </Sheet>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Editar preço" : "Adicionar preço"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="price-name">Serviço / exame</Label>
-              <Input
-                id="price-name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="price-code">Código</Label>
-                <Input
-                  id="price-code"
-                  value={form.code ?? ""}
-                  onChange={(e) => setForm({ ...form, code: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Categoria</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(v) =>
-                    v && setForm({ ...form, category: v as PriceListItemInput["category"] })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PRICE_CATEGORY_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <Label>Tipo de cobrança</Label>
-                <Select
-                  value={form.chargeType}
-                  onValueChange={(v) =>
-                    v &&
-                    setForm({ ...form, chargeType: v as PriceListItemInput["chargeType"] })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PRICE_CHARGE_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Status</Label>
-                <Select
-                  value={form.status}
-                  onValueChange={(v) =>
-                    v && setForm({ ...form, status: v as PriceListItemInput["status"] })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PRICE_STATUS_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="price-default">Preço padrão (R$)</Label>
-                <Input
-                  id="price-default"
-                  type="number"
-                  step="0.01"
-                  value={form.defaultPrice || ""}
-                  onChange={(e) =>
-                    setForm({ ...form, defaultPrice: parseFloat(e.target.value) || 0 })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Empresa específica</Label>
-                <Select
-                  value={form.companyId ?? "none"}
-                  onValueChange={(v) =>
-                    setForm({
-                      ...form,
-                      companyId: v === "none" ? null : v,
-                      negotiatedPrice: v === "none" ? null : form.negotiatedPrice,
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Padrão" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Preço padrão</SelectItem>
-                    {companies.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {form.companyId && (
-              <div>
-                <Label htmlFor="price-negotiated">Preço negociado (R$)</Label>
-                <Input
-                  id="price-negotiated"
-                  type="number"
-                  step="0.01"
-                  value={form.negotiatedPrice ?? ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      negotiatedPrice: e.target.value ? parseFloat(e.target.value) : null,
-                    })
-                  }
-                />
-              </div>
-            )}
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="price-valid-from">Vigência — início</Label>
-                <Input
-                  id="price-valid-from"
-                  type="date"
-                  value={form.validFrom ?? ""}
-                  onChange={(e) =>
-                    setForm({ ...form, validFrom: e.target.value || null })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="price-valid-until">Vigência — fim</Label>
-                <Input
-                  id="price-valid-until"
-                  type="date"
-                  value={form.validUntil ?? ""}
-                  onChange={(e) =>
-                    setForm({ ...form, validUntil: e.target.value || null })
-                  }
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="price-notes">Observações comerciais</Label>
-              <Textarea
-                id="price-notes"
-                rows={3}
-                value={form.notes ?? ""}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              />
-            </div>
+      <SystemModalShell
+        open={open}
+        onOpenChange={setOpen}
+        title={editing ? "Editar preço" : "Adicionar preço"}
+        description="Defina valores padrão ou negociados por empresa."
+        badges={[
+          { label: "Tabela de preços", variant: "category" },
+          { label: editing ? "Edição" : "Novo item", variant: "status" },
+        ]}
+        className="max-w-lg"
+        footer={
+          <div className="collaborator-modal-actions">
             <Button
-              className="w-full"
+              variant="outline"
+              className="collaborator-modal-btn"
+              onClick={() => setOpen(false)}
+              disabled={pending}
+            >
+              Cancelar
+            </Button>
+            <Button
               variant="brand"
+              className="collaborator-modal-btn"
               onClick={handleSave}
               disabled={pending || !form.name.trim()}
             >
               Salvar
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        }
+      >
+        <SystemModalField label="Serviço / exame" required wide>
+          <input
+            id="price-name"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+        </SystemModalField>
+
+        <SystemModalField label="Código">
+          <input
+            id="price-code"
+            value={form.code ?? ""}
+            onChange={(e) => setForm({ ...form, code: e.target.value })}
+          />
+        </SystemModalField>
+
+        <SystemModalField label="Categoria">
+          <Select
+            value={form.category}
+            onValueChange={(v) =>
+              v && setForm({ ...form, category: v as PriceListItemInput["category"] })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(PRICE_CATEGORY_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SystemModalField>
+
+        <SystemModalField label="Tipo de cobrança">
+          <Select
+            value={form.chargeType}
+            onValueChange={(v) =>
+              v &&
+              setForm({ ...form, chargeType: v as PriceListItemInput["chargeType"] })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(PRICE_CHARGE_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SystemModalField>
+
+        <SystemModalField label="Status">
+          <Select
+            value={form.status}
+            onValueChange={(v) =>
+              v && setForm({ ...form, status: v as PriceListItemInput["status"] })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(PRICE_STATUS_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SystemModalField>
+
+        <SystemModalField label="Preço padrão (R$)">
+          <input
+            id="price-default"
+            type="number"
+            step="0.01"
+            value={form.defaultPrice || ""}
+            onChange={(e) =>
+              setForm({ ...form, defaultPrice: parseFloat(e.target.value) || 0 })
+            }
+          />
+        </SystemModalField>
+
+        <SystemModalField label="Empresa específica">
+          <Select
+            value={form.companyId ?? "none"}
+            onValueChange={(v) =>
+              setForm({
+                ...form,
+                companyId: v === "none" ? null : v,
+                negotiatedPrice: v === "none" ? null : form.negotiatedPrice,
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Padrão" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Preço padrão</SelectItem>
+              {companies.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SystemModalField>
+
+        {form.companyId && (
+          <SystemModalField label="Preço negociado (R$)" wide>
+            <input
+              id="price-negotiated"
+              type="number"
+              step="0.01"
+              value={form.negotiatedPrice ?? ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  negotiatedPrice: e.target.value ? parseFloat(e.target.value) : null,
+                })
+              }
+            />
+          </SystemModalField>
+        )}
+
+        <SystemModalField label="Vigência — início">
+          <input
+            id="price-valid-from"
+            type="date"
+            value={form.validFrom ?? ""}
+            onChange={(e) => setForm({ ...form, validFrom: e.target.value || null })}
+          />
+        </SystemModalField>
+
+        <SystemModalField label="Vigência — fim">
+          <input
+            id="price-valid-until"
+            type="date"
+            value={form.validUntil ?? ""}
+            onChange={(e) => setForm({ ...form, validUntil: e.target.value || null })}
+          />
+        </SystemModalField>
+
+        <SystemModalField label="Observações comerciais" wide>
+          <textarea
+            id="price-notes"
+            rows={3}
+            value={form.notes ?? ""}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+          />
+        </SystemModalField>
+      </SystemModalShell>
     </PageModule>
   );
 }

@@ -13,25 +13,19 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { FilterBar } from "@/components/dashboard/FilterBar";
+import {
+  SystemModalField,
+  SystemModalShell,
+} from "@/components/dashboard/SystemModalShell";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -189,86 +183,26 @@ export function ChamadosClient({
 
   return (
     <PageModule>
-      <PageHeader
-        title={saasMode ? "Chamados SaaS" : "Chamados"}
-        description={
-          isEmpresaPortal
-            ? "Suporte da plataforma Unimetra — dúvidas técnicas, acesso e portal empresarial"
-            : saasMode
-              ? "Suporte entre clínicas e plataforma"
-              : "Suporte interno e solicitações de empresas"
-        }
-        actions={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger
-              render={
-                <Button variant="brand">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Abrir chamado
-                </Button>
-              }
-            />
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Novo chamado</DialogTitle>
-                <DialogDescription>
-                  {isEmpresaPortal
-                    ? "Descreva o problema. O time Unimetra responderá pelo portal."
-                    : "Registre uma solicitação de suporte."}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Input
-                  placeholder="Assunto *"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                />
-                <Select value={category} onValueChange={(v) => setCategory(v ?? "")}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {!isEmpresaPortal && (
-                  <Select value={priority} onValueChange={(v) => setPriority(v ?? "MEDIA")}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Prioridade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(TICKET_PRIORITY_LABELS).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>
-                          {v}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <Textarea
-                  placeholder="Descreva o problema ou dúvida *"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={5}
-                />
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="brand"
-                  onClick={handleCreate}
-                  disabled={pending || !subject.trim() || !description.trim()}
-                >
-                  Enviar chamado
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
-      />
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">
+            {saasMode ? "Chamados SaaS" : "Chamados"}
+          </h1>
+          <p className="colaboradores-empresa-subtitle">
+            {isEmpresaPortal
+              ? "Suporte da plataforma Unimetra — dúvidas técnicas, acesso e portal empresarial"
+              : saasMode
+                ? "Suporte entre clínicas e plataforma"
+                : "Suporte interno e solicitações de empresas"}
+          </p>
+        </div>
+        <div className="colaboradores-empresa-header-actions">
+          <Button variant="brand" size="sm" className="rounded-lg" onClick={() => setOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Abrir chamado
+          </Button>
+        </div>
+      </header>
 
       <FilterMetricGrid
         items={statCards.map((card) => ({
@@ -333,84 +267,86 @@ export function ChamadosClient({
           action={{ label: "Abrir chamado", onClick: () => setOpen(true) }}
         />
       ) : (
-        <div className="relative mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="colaboradores-empresa-table-wrap relative mt-6">
           {pending && <LoadingState overlay label="Atualizando chamados..." />}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Assunto</TableHead>
-                <TableHead>Status</TableHead>
-                {!isEmpresaPortal && <TableHead>Prioridade</TableHead>}
-                <TableHead className="hidden md:table-cell">Categoria</TableHead>
-                <TableHead className="hidden sm:table-cell">Data</TableHead>
-                <TableHead className="hidden lg:table-cell">Mensagens</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => {
-                const sla = getTicketSlaStatus({
-                  priority: item.priority as "BAIXA" | "MEDIA" | "ALTA",
-                  status: item.status as keyof typeof TICKET_STATUS_LABELS,
-                  createdAt: new Date(item.createdAt),
-                });
-                return (
-                  <TableRow
-                    key={item.id}
-                    className="cursor-pointer hover:bg-slate-50/80"
-                    onClick={() => loadDetail(item.id)}
-                  >
-                    <TableCell>
-                      <p className="font-medium text-slate-900">{item.subject}</p>
-                      <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
-                        {item.description}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={item.status} />
-                    </TableCell>
-                    {!isEmpresaPortal && (
-                      <TableCell className="text-sm text-slate-600">
-                        {TICKET_PRIORITY_LABELS[item.priority as keyof typeof TICKET_PRIORITY_LABELS]}
-                        <span
-                          className={cn(
-                            "ml-2 text-xs font-medium",
-                            sla === "breached" && "text-red-600",
-                            sla === "warning" && "text-amber-600",
-                            sla === "ok" && "text-emerald-600",
-                            sla === "closed" && "text-slate-400"
-                          )}
-                        >
-                          {sla === "breached"
-                            ? "SLA vencido"
-                            : sla === "warning"
-                              ? "SLA próximo"
-                              : sla === "closed"
-                                ? ""
-                                : "No prazo"}
-                        </span>
+          <div className="colaboradores-empresa-table-scroll">
+            <Table className="colaboradores-empresa-table">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Assunto</TableHead>
+                  <TableHead>Status</TableHead>
+                  {!isEmpresaPortal && <TableHead>Prioridade</TableHead>}
+                  <TableHead className="hidden md:table-cell">Categoria</TableHead>
+                  <TableHead className="hidden sm:table-cell">Data</TableHead>
+                  <TableHead className="hidden lg:table-cell">Mensagens</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => {
+                  const sla = getTicketSlaStatus({
+                    priority: item.priority as "BAIXA" | "MEDIA" | "ALTA",
+                    status: item.status as keyof typeof TICKET_STATUS_LABELS,
+                    createdAt: new Date(item.createdAt),
+                  });
+                  return (
+                    <TableRow
+                      key={item.id}
+                      className="cursor-pointer hover:bg-slate-50/80"
+                      onClick={() => loadDetail(item.id)}
+                    >
+                      <TableCell>
+                        <p className="font-medium text-slate-900">{item.subject}</p>
+                        <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
+                          {item.description}
+                        </p>
                       </TableCell>
-                    )}
-                    <TableCell className="hidden md:table-cell text-sm text-slate-600">
-                      {item.category ?? "—"}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm text-slate-500">
-                      {format(new Date(item.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {item.commentCount > 0 ? (
-                        <span className="inline-flex items-center text-xs text-slate-500">
-                          <MessageSquare className="mr-1 h-3.5 w-3.5" />
-                          {item.commentCount}
-                        </span>
-                      ) : (
-                        "—"
+                      <TableCell>
+                        <StatusBadge status={item.status} />
+                      </TableCell>
+                      {!isEmpresaPortal && (
+                        <TableCell className="text-sm text-slate-600">
+                          {TICKET_PRIORITY_LABELS[item.priority as keyof typeof TICKET_PRIORITY_LABELS]}
+                          <span
+                            className={cn(
+                              "ml-2 text-xs font-medium",
+                              sla === "breached" && "text-red-600",
+                              sla === "warning" && "text-amber-600",
+                              sla === "ok" && "text-emerald-600",
+                              sla === "closed" && "text-slate-400"
+                            )}
+                          >
+                            {sla === "breached"
+                              ? "SLA vencido"
+                              : sla === "warning"
+                                ? "SLA próximo"
+                                : sla === "closed"
+                                  ? ""
+                                  : "No prazo"}
+                          </span>
+                        </TableCell>
                       )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      <TableCell className="hidden md:table-cell text-sm text-slate-600">
+                        {item.category ?? "—"}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell text-sm text-slate-500">
+                        {format(new Date(item.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {item.commentCount > 0 ? (
+                          <span className="inline-flex items-center text-xs text-slate-500">
+                            <MessageSquare className="mr-1 h-3.5 w-3.5" />
+                            {item.commentCount}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
           <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
             <p className="text-sm text-slate-500">
               {items.length} de {total} chamado{total !== 1 ? "s" : ""}
@@ -426,6 +362,88 @@ export function ChamadosClient({
           </div>
         </div>
       )}
+
+      <SystemModalShell
+        open={open}
+        onOpenChange={setOpen}
+        title="Novo chamado"
+        description={
+          isEmpresaPortal
+            ? "Descreva o problema. O time Unimetra responderá pelo portal."
+            : "Registre uma solicitação de suporte."
+        }
+        badges={[
+          { label: "Chamados", variant: "category" },
+          { label: "Novo", variant: "status" },
+        ]}
+        className="sm:max-w-lg"
+        footer={
+          <div className="collaborator-modal-actions">
+            <Button
+              variant="outline"
+              className="collaborator-modal-btn"
+              onClick={() => setOpen(false)}
+              disabled={pending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="brand"
+              className="collaborator-modal-btn"
+              onClick={handleCreate}
+              disabled={pending || !subject.trim() || !description.trim()}
+            >
+              Enviar chamado
+            </Button>
+          </div>
+        }
+      >
+        <SystemModalField label="Assunto" required wide>
+          <input
+            placeholder="Assunto"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
+        </SystemModalField>
+        <SystemModalField label="Categoria" wide>
+          <Select value={category} onValueChange={(v) => setCategory(v ?? "")}>
+            <SelectTrigger>
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SystemModalField>
+        {!isEmpresaPortal && (
+          <SystemModalField label="Prioridade">
+            <Select value={priority} onValueChange={(v) => setPriority(v ?? "MEDIA")}>
+              <SelectTrigger>
+                <SelectValue placeholder="Prioridade" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(TICKET_PRIORITY_LABELS).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>
+                    {v}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </SystemModalField>
+        )}
+        <SystemModalField label="Descrição" required wide>
+          <Textarea
+            placeholder="Descreva o problema ou dúvida"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={5}
+          />
+        </SystemModalField>
+      </SystemModalShell>
 
       <Sheet open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">

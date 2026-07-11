@@ -1,13 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Plus,
   Search,
-  MoreHorizontal,
   Eye,
   Pencil,
   Copy,
@@ -18,6 +17,12 @@ import {
   ChevronRight,
   Stethoscope,
   X,
+  CheckCircle2,
+  Ban,
+  ClipboardList,
+  FlaskConical,
+  Globe,
+  type LucideIcon,
 } from "lucide-react";
 import type { ExamDetailSerialized, ExamListItem } from "@/lib/exams";
 import {
@@ -32,30 +37,14 @@ import { ExamPreparationDrawer } from "@/components/public/ExamPreparationDrawer
 import { getExamDetail, toggleExamStatus, duplicateExam } from "@/actions/exams";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
-import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { FilterBar } from "@/components/dashboard/FilterBar";
+import { SystemActionMenu, type SystemActionItem } from "@/components/dashboard/SystemActionMenu";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ExamDetailContent } from "./ExamDetailContent";
 import { ExamFormDialog } from "./ExamDialogs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -64,6 +53,24 @@ import {
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+
+const STAT_ICONS: Record<string, LucideIcon> = {
+  ativos: CheckCircle2,
+  inativos: Ban,
+  sem_preparo: ClipboardList,
+  preparo_obrigatorio: ClipboardList,
+  laboratoriais: FlaskConical,
+  no_site: Globe,
+};
+
+const STAT_TONES: Record<string, "primary" | "warning"> = {
+  ativos: "primary",
+  inativos: "primary",
+  sem_preparo: "primary",
+  preparo_obrigatorio: "warning",
+  laboratoriais: "primary",
+  no_site: "primary",
+};
 
 type ExamesClientProps = {
   initialItems: ExamListItem[];
@@ -183,6 +190,22 @@ export function ExamesClient({
     startTransition(() => router.push("/dashboard/exames"));
   };
 
+  const hasActiveFilters = useMemo(
+    () =>
+      Boolean(
+        filters.q ||
+          (filters.card && filters.card !== "ALL") ||
+          filters.category ||
+          filters.status ||
+          filters.preparationType ||
+          filters.showOnWebsite ||
+          filters.requiresAppointment ||
+          filters.deadline ||
+          (filters.sort && filters.sort !== "name")
+      ),
+    [filters]
+  );
+
   const openDetail = async (id: string) => {
     setLoadingExamId(id);
     setDetailExam(null);
@@ -239,6 +262,54 @@ export function ExamesClient({
     if (result.examId) openDetail(result.examId);
   };
 
+  const buildExamActions = (item: ExamListItem): SystemActionItem[] => {
+    const items: SystemActionItem[] = [
+      {
+        label: "Ver detalhes",
+        icon: Eye,
+        iconTone: "view",
+        onClick: () => openDetail(item.id),
+      },
+    ];
+
+    if (canManage) {
+      items.push(
+        {
+          label: "Editar",
+          icon: Pencil,
+          iconTone: "docs",
+          onClick: () => openEdit(item.id),
+        },
+        {
+          label: "Duplicar",
+          icon: Copy,
+          iconTone: "schedule",
+          onClick: () => handleDuplicate(item.id),
+          disabled: actionLoading === item.id,
+        },
+        {
+          label: item.status === "ATIVO" ? "Desativar" : "Ativar",
+          icon: Power,
+          iconTone: item.status === "ATIVO" ? "cancel" : "progress",
+          onClick: () => handleToggleStatus(item),
+          disabled: actionLoading === item.id,
+        }
+      );
+    }
+
+    if (item.showOnWebsite) {
+      items.push({
+        label: "Ver no site",
+        icon: ExternalLink,
+        iconTone: "portal",
+        onClick: () =>
+          window.open(`/exames?exame=${item.slug}`, "_blank", "noopener,noreferrer"),
+      });
+    }
+
+    return items;
+  };
+
   useEffect(() => {
     if (searchParams.get("new") === "1" && canManage) {
       setEditExam(null);
@@ -258,50 +329,55 @@ export function ExamesClient({
     return () => window.clearTimeout(timer);
   }, [q, isEmpresaPortal, searchParams, updateFilters]);
 
+  useEffect(() => {
+    if (isEmpresaPortal) return;
+    setQ(filters.q ?? "");
+    setCategory(filters.category ?? "");
+    setStatus(filters.status ?? "");
+    setPreparationType(filters.preparationType ?? "");
+    setShowOnWebsite(filters.showOnWebsite ?? "");
+    setRequiresAppointment(filters.requiresAppointment ?? "");
+    setDeadline(filters.deadline ?? "");
+    setSort(filters.sort ?? "name");
+  }, [filters, isEmpresaPortal]);
+
   const clearEmpresaSearch = () => {
     setQ("");
     updateFilters({ q: undefined });
   };
 
-  const empty = initialItems.length === 0 && !filters.q && activeCard === "ALL";
+  const empty = initialItems.length === 0 && !hasActiveFilters;
+  const resultLabel =
+    initialTotal === 1 ? "1 exame no catálogo" : `${initialTotal} exames no catálogo`;
+
+  const openNewExam = () => {
+    setEditExam(null);
+    setFormOpen(true);
+  };
 
   return (
     <PageModule>
-      <PageHeader
-        title={isEmpresaPortal ? "Preparos" : "Exames e preparos"}
-        description={
-          isEmpresaPortal
-            ? "Orientações de preparo para orientar colaboradores antes dos exames"
-            : "Catálogo de exames, preparos e prazos"
-        }
-      >
-        {canManage && (
-          <Button
-            variant="brand"
-            onClick={() => {
-              setEditExam(null);
-              setFormOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" /> Novo exame
-          </Button>
-        )}
-      </PageHeader>
-
-      {!isEmpresaPortal && (
-      <FilterMetricGrid
-        items={EXAM_STAT_CARDS.map((card) => {
-          const isActive = activeCard === card.filter;
-          return {
-            key: card.key,
-            metaKey: `exam:${card.key}`,
-            label: card.label,
-            value: statCounts[card.key] ?? 0,
-            active: isActive,
-            onClick: () => updateFilters({ card: isActive ? "ALL" : card.filter }),
-          };
-        })}
-      />
+      {isEmpresaPortal ? (
+        <PageHeader
+          title="Preparos"
+          description="Orientações de preparo para orientar colaboradores antes dos exames"
+        />
+      ) : (
+        <header className="colaboradores-empresa-header">
+          <div className="colaboradores-empresa-header-copy">
+            <h1 className="colaboradores-empresa-title">Exames e preparos</h1>
+            <p className="colaboradores-empresa-subtitle">
+              Catálogo de exames, preparos e prazos
+            </p>
+          </div>
+          <div className="colaboradores-empresa-header-actions">
+            {canManage && (
+              <Button variant="brand" size="sm" onClick={openNewExam}>
+                <Plus className="mr-2 h-4 w-4" /> Novo exame
+              </Button>
+            )}
+          </div>
+        </header>
       )}
 
       {isEmpresaPortal ? (
@@ -424,319 +500,359 @@ export function ExamesClient({
           )}
         </div>
       ) : (
-      <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
-        <div className="referral-filter-search sm:col-span-2">
-            <Search className="referral-filter-search-icon h-4 w-4" />
-            <Input
-              placeholder={
-                isEmpresaPortal
-                  ? "Buscar exame ou categoria"
-                  : "Buscar por nome do exame, categoria ou preparo"
-              }
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-9"
-            />
-          </div>
-          <select
-            className="referral-filter-select"
-            value={category || "ALL"}
-            onChange={(e) => setCategory(e.target.value === "ALL" ? "" : e.target.value)}
-          >
-            <option value="ALL">Categoria</option>
-            {Object.entries(EXAM_CATEGORY_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-          {!isEmpresaPortal && (
-          <>
-          <select
-            className="referral-filter-select"
-            value={status || "ALL"}
-            onChange={(e) => setStatus(e.target.value === "ALL" ? "" : e.target.value)}
-          >
-            <option value="ALL">Status</option>
-            {Object.entries(EXAM_STATUS_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-          <select
-            className="referral-filter-select"
-            value={preparationType || "ALL"}
-            onChange={(e) =>
-              setPreparationType(e.target.value === "ALL" ? "" : e.target.value)
-            }
-          >
-            <option value="ALL">Tipo de preparo</option>
-            {Object.entries(EXAM_PREPARATION_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-          <select
-            className="referral-filter-select"
-            value={showOnWebsite || "ALL"}
-            onChange={(e) =>
-              setShowOnWebsite(e.target.value === "ALL" ? "" : e.target.value)
-            }
-          >
-            <option value="ALL">Exibir no site</option>
-            <option value="true">Sim</option>
-            <option value="false">Não</option>
-          </select>
-          <select
-            className="referral-filter-select"
-            value={requiresAppointment || "ALL"}
-            onChange={(e) =>
-              setRequiresAppointment(e.target.value === "ALL" ? "" : e.target.value)
-            }
-          >
-            <option value="ALL">Exigir agendamento</option>
-            <option value="true">Sim</option>
-            <option value="false">Não</option>
-          </select>
-          <select
-            className="referral-filter-select"
-            value={deadline || "ALL"}
-            onChange={(e) => setDeadline(e.target.value === "ALL" ? "" : e.target.value)}
-          >
-            <option value="ALL">Prazo de entrega</option>
-            {Object.entries(EXAM_DEADLINE_TYPE_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-          </>
-          )}
-          {isEmpresaPortal && (
-          <select
-            className="referral-filter-select"
-            value={preparationType || "ALL"}
-            onChange={(e) =>
-              setPreparationType(e.target.value === "ALL" ? "" : e.target.value)
-            }
-          >
-            <option value="ALL">Tipo de preparo</option>
-            {Object.entries(EXAM_PREPARATION_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-          )}
-          <select
-            className="referral-filter-select"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            <option value="name">Ordenar: Nome</option>
-            {!isEmpresaPortal && <option value="category">Ordenar: Categoria</option>}
-            {!isEmpresaPortal && <option value="status">Ordenar: Status</option>}
-            {!isEmpresaPortal && <option value="displayOrder">Ordenar: Ordem de exibição</option>}
-          </select>
-      </FilterBar>
-      )}
-
-      {!isEmpresaPortal && empty ? (
-        <EmptyState
-          icon={Stethoscope}
-          className="mt-8 bg-white"
-          title="Nenhum exame cadastrado"
-          description="Cadastre exames para alimentar encaminhamentos, agenda e página pública de preparos."
-          action={
-            canManage
-              ? {
-                  label: "Novo exame",
-                  onClick: () => {
-                    setEditExam(null);
-                    setFormOpen(true);
-                  },
-                }
-              : undefined
-          }
-        />
-      ) : !isEmpresaPortal ? (
-        <div className="relative mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
-          {isPending && <LoadingState overlay label="Atualizando exames..." />}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Exame</TableHead>
-                <TableHead className="hidden md:table-cell">Categoria</TableHead>
-                <TableHead className="hidden lg:table-cell">Tipo de preparo</TableHead>
-                {!isEmpresaPortal && (
-                  <>
-                    <TableHead className="hidden sm:table-cell">Prazo médio</TableHead>
-                    <TableHead className="hidden lg:table-cell">Exibir no site</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="hidden xl:table-cell">Atualizado em</TableHead>
-                    <TableHead className="w-12" />
-                  </>
-                )}
-                {isEmpresaPortal && <TableHead className="text-right">Ver detalhes</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {initialItems.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={isEmpresaPortal ? 4 : 8}
-                    className="py-10 text-center text-slate-500"
-                  >
-                    Nenhum exame encontrado com os filtros aplicados.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                initialItems.map((item) => (
-                  <TableRow
-                    key={item.id}
+        <>
+          <div className="colaboradores-empresa-stats">
+            {EXAM_STAT_CARDS.map((card) => {
+              const Icon = STAT_ICONS[card.key] ?? Stethoscope;
+              const isActive = activeCard === card.filter;
+              return (
+                <button
+                  key={card.key}
+                  type="button"
+                  onClick={() => updateFilters({ card: isActive ? "ALL" : card.filter })}
+                  className={cn(
+                    "colaboradores-empresa-stat colaboradores-empresa-stat--clickable",
+                    isActive && "colaboradores-empresa-stat--active"
+                  )}
+                >
+                  <span
                     className={cn(
-                      "hover:bg-slate-50/80",
-                      !isEmpresaPortal && "cursor-pointer"
+                      "colaboradores-empresa-stat-icon",
+                      `colaboradores-empresa-stat-icon--${STAT_TONES[card.key] ?? "primary"}`
                     )}
-                    onClick={!isEmpresaPortal ? () => openDetail(item.id) : undefined}
                   >
-                    <TableCell>
-                      <div className="font-medium text-slate-900">{item.name}</div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="outline" className="rounded-full font-normal">
-                        {EXAM_CATEGORY_LABELS[item.category]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <PreparationBadge type={item.preparationType} />
-                    </TableCell>
-                    {!isEmpresaPortal && (
-                      <>
-                    <TableCell className="hidden sm:table-cell text-sm text-slate-600">
-                      {item.averageDeadline ?? "—"}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "rounded-full font-normal",
-                          item.showOnWebsite
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                            : "border-slate-200 text-slate-500"
-                        )}
-                      >
-                        {item.showOnWebsite ? "Sim" : "Não"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={item.status} type="exam" />
-                    </TableCell>
-                    <TableCell className="hidden xl:table-cell text-sm text-slate-500">
-                      {format(new Date(item.updatedAt), "dd/MM/yyyy", { locale: ptBR })}
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openDetail(item.id)}>
-                            <Eye className="mr-2 h-4 w-4" /> Ver detalhes
-                          </DropdownMenuItem>
-                          {canManage && (
-                            <DropdownMenuItem onClick={() => openEdit(item.id)}>
-                              <Pencil className="mr-2 h-4 w-4" /> Editar
-                            </DropdownMenuItem>
-                          )}
-                          {canManage && (
-                            <DropdownMenuItem
-                              onClick={() => handleDuplicate(item.id)}
-                              disabled={actionLoading === item.id}
-                            >
-                              <Copy className="mr-2 h-4 w-4" /> Duplicar
-                            </DropdownMenuItem>
-                          )}
-                          {canManage && (
-                            <DropdownMenuItem
-                              onClick={() => handleToggleStatus(item)}
-                              disabled={actionLoading === item.id}
-                            >
-                              <Power className="mr-2 h-4 w-4" />
-                              {item.status === "ATIVO" ? "Inativar" : "Ativar"}
-                            </DropdownMenuItem>
-                          )}
-                          {item.showOnWebsite && item.status === "ATIVO" && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                window.open(`/exames?exame=${item.slug}`, "_blank", "noopener,noreferrer")
-                              }
-                            >
-                              <ExternalLink className="mr-2 h-4 w-4" /> Visualizar no site
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                      </>
-                    )}
-                    {isEmpresaPortal && (
-                      <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-full"
-                          disabled={loadingExamId === item.id}
-                          onClick={() => openDetail(item.id)}
-                        >
-                          {loadingExamId === item.id ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Eye className="mr-2 h-4 w-4" />
-                          )}
-                          Ver detalhes
-                        </Button>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    <Icon className="h-4 w-4" aria-hidden />
+                  </span>
+                  <span className="colaboradores-empresa-stat-body">
+                    <span className="colaboradores-empresa-stat-value">
+                      {statCounts[card.key] ?? 0}
+                    </span>
+                    <span className="colaboradores-empresa-stat-title">{card.label}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
-              <p className="text-sm text-slate-500">
-                {initialTotal} exame{initialTotal !== 1 ? "s" : ""} · Página {initialPage} de{" "}
-                {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={initialPage <= 1 || isPending}
-                  onClick={() => updateFilters({ page: String(initialPage - 1) })}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={initialPage >= totalPages || isPending}
-                  onClick={() => updateFilters({ page: String(initialPage + 1) })}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+          <div className="colaboradores-empresa-filters">
+            <div className="colaboradores-empresa-filters-row">
+              <div className="colaboradores-empresa-search">
+                <Search className="colaboradores-empresa-search-icon" aria-hidden />
+                <Input
+                  placeholder="Buscar por nome do exame, categoria ou preparo"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  className="colaboradores-empresa-search-input"
+                  aria-label="Buscar exames"
+                />
               </div>
+
+              <select
+                className="colaboradores-empresa-select"
+                value={category || "ALL"}
+                onChange={(e) => {
+                  const value = e.target.value === "ALL" ? "" : e.target.value;
+                  setCategory(value);
+                  updateFilters({ category: value || undefined });
+                }}
+                aria-label="Filtrar por categoria"
+              >
+                <option value="ALL">Categoria</option>
+                {Object.entries(EXAM_CATEGORY_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="colaboradores-empresa-select"
+                value={status || "ALL"}
+                onChange={(e) => {
+                  const value = e.target.value === "ALL" ? "" : e.target.value;
+                  setStatus(value);
+                  updateFilters({ status: value || undefined });
+                }}
+                aria-label="Filtrar por status"
+              >
+                <option value="ALL">Status</option>
+                {Object.entries(EXAM_STATUS_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="colaboradores-empresa-select"
+                value={preparationType || "ALL"}
+                onChange={(e) => {
+                  const value = e.target.value === "ALL" ? "" : e.target.value;
+                  setPreparationType(value);
+                  updateFilters({ preparationType: value || undefined });
+                }}
+                aria-label="Filtrar por tipo de preparo"
+              >
+                <option value="ALL">Tipo de preparo</option>
+                {Object.entries(EXAM_PREPARATION_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="colaboradores-empresa-select"
+                value={showOnWebsite || "ALL"}
+                onChange={(e) => {
+                  const value = e.target.value === "ALL" ? "" : e.target.value;
+                  setShowOnWebsite(value);
+                  updateFilters({ showOnWebsite: value || undefined });
+                }}
+                aria-label="Filtrar por exibição no site"
+              >
+                <option value="ALL">Exibir no site</option>
+                <option value="true">Sim</option>
+                <option value="false">Não</option>
+              </select>
+
+              <select
+                className="colaboradores-empresa-select"
+                value={requiresAppointment || "ALL"}
+                onChange={(e) => {
+                  const value = e.target.value === "ALL" ? "" : e.target.value;
+                  setRequiresAppointment(value);
+                  updateFilters({ requiresAppointment: value || undefined });
+                }}
+                aria-label="Filtrar por agendamento"
+              >
+                <option value="ALL">Exigir agendamento</option>
+                <option value="true">Sim</option>
+                <option value="false">Não</option>
+              </select>
+
+              <select
+                className="colaboradores-empresa-select"
+                value={deadline || "ALL"}
+                onChange={(e) => {
+                  const value = e.target.value === "ALL" ? "" : e.target.value;
+                  setDeadline(value);
+                  updateFilters({ deadline: value || undefined });
+                }}
+                aria-label="Filtrar por prazo de entrega"
+              >
+                <option value="ALL">Prazo de entrega</option>
+                {Object.entries(EXAM_DEADLINE_TYPE_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="colaboradores-empresa-select"
+                value={sort}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSort(value);
+                  updateFilters({ sort: value });
+                }}
+                aria-label="Ordenar exames"
+              >
+                <option value="name">Ordenar: Nome</option>
+                <option value="category">Ordenar: Categoria</option>
+                <option value="status">Ordenar: Status</option>
+                <option value="displayOrder">Ordenar: Ordem de exibição</option>
+              </select>
+
+              {hasActiveFilters && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="colaboradores-empresa-clear-btn rounded-md"
+                  onClick={clearFilters}
+                >
+                  Limpar
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {empty ? (
+            <EmptyState
+              icon={Stethoscope}
+              className="mt-8 bg-white"
+              title="Nenhum exame cadastrado"
+              description="Cadastre exames para alimentar encaminhamentos, agenda e página pública de preparos."
+              action={
+                canManage
+                  ? {
+                      label: "Novo exame",
+                      onClick: openNewExam,
+                    }
+                  : undefined
+              }
+            />
+          ) : (
+            <div className="colaboradores-empresa-table-wrap relative">
+              {isPending && <LoadingState overlay label="Atualizando exames..." />}
+
+              <div className="colaboradores-empresa-result-bar">
+                <span className="text-xs text-slate-500">{resultLabel}</span>
+              </div>
+
+              {initialItems.length === 0 ? (
+                <EmptyState
+                  icon={Stethoscope}
+                  title="Nenhum exame encontrado"
+                  description="Ajuste os filtros ou cadastre um novo exame."
+                  action={
+                    canManage
+                      ? { label: "Novo exame", onClick: openNewExam }
+                      : undefined
+                  }
+                />
+              ) : (
+                <>
+                  <div className="colaboradores-empresa-table-scroll hidden md:block">
+                    <table className="colaboradores-empresa-table">
+                      <thead>
+                        <tr>
+                          <th>Exame</th>
+                          <th>Categoria</th>
+                          <th>Tipo de preparo</th>
+                          <th>Prazo médio</th>
+                          <th>Exibir no site</th>
+                          <th>Status</th>
+                          <th>Atualizado em</th>
+                          <th className="colaboradores-empresa-th-actions">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {initialItems.map((item) => (
+                          <tr
+                            key={item.id}
+                            className="cursor-pointer"
+                            onClick={() => openDetail(item.id)}
+                          >
+                            <td>
+                              <div className="font-medium text-slate-900">{item.name}</div>
+                            </td>
+                            <td>
+                              <span className="text-sm text-slate-600">
+                                {EXAM_CATEGORY_LABELS[item.category]}
+                              </span>
+                            </td>
+                            <td>
+                              <PreparationBadge type={item.preparationType} />
+                            </td>
+                            <td className="text-sm text-slate-600">
+                              {item.averageDeadline ?? "—"}
+                            </td>
+                            <td>
+                              <span
+                                className={cn(
+                                  "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
+                                  item.showOnWebsite
+                                    ? "bg-emerald-50 text-emerald-800"
+                                    : "bg-slate-100 text-slate-500"
+                                )}
+                              >
+                                {item.showOnWebsite ? "Sim" : "Não"}
+                              </span>
+                            </td>
+                            <td>
+                              <StatusBadge status={item.status} type="exam" />
+                            </td>
+                            <td className="whitespace-nowrap text-sm text-slate-500">
+                              {format(new Date(item.updatedAt), "dd/MM/yyyy", {
+                                locale: ptBR,
+                              })}
+                            </td>
+                            <td
+                              className="colaboradores-empresa-td-actions"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <SystemActionMenu items={buildExamActions(item)} />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="colaboradores-empresa-mobile-list md:hidden">
+                    {initialItems.map((item) => (
+                      <article
+                        key={item.id}
+                        className="mobile-list-card cursor-pointer"
+                        onClick={() => openDetail(item.id)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="mobile-list-card-icon">
+                            <Stethoscope className="h-4 w-4" strokeWidth={2} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-semibold text-[var(--brand-navy)]">
+                                {item.name}
+                              </p>
+                              <StatusBadge status={item.status} type="exam" />
+                            </div>
+                            <p className="mt-0.5 text-xs text-[var(--dash-text-muted)]">
+                              {EXAM_CATEGORY_LABELS[item.category]}
+                            </p>
+                            {item.averageDeadline && (
+                              <p className="mt-1 text-[0.6875rem] text-[var(--dash-text-subtle)]">
+                                Prazo: {item.averageDeadline}
+                              </p>
+                            )}
+                            <div
+                              className="mt-2 flex items-center justify-between gap-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <PreparationBadge type={item.preparationType} />
+                              <SystemActionMenu items={buildExamActions(item)} />
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {totalPages > 1 && (
+                <div className="colaboradores-empresa-pagination">
+                  <p className="text-sm text-slate-500">
+                    {resultLabel} · Página {initialPage} de {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={initialPage <= 1 || isPending}
+                      onClick={() => updateFilters({ page: String(initialPage - 1) })}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={initialPage >= totalPages || isPending}
+                      onClick={() => updateFilters({ page: String(initialPage + 1) })}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      ) : null}
+        </>
+      )}
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
