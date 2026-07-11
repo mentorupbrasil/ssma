@@ -148,23 +148,19 @@
 
 .exams-hero-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  align-self: stretch;
   justify-content: center;
   gap: 0.6rem;
+  width: 100%;
   margin-top: 1.85rem;
 }
 
-@media (max-width: 479px) {
-  .exams-hero-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .exams-hero-actions > a {
-    width: 100%;
-    justify-content: center;
-  }
+.exams-hero-actions .about-v2-hero-cta {
+  min-width: 0;
+  flex: 0 1 auto;
+  white-space: nowrap;
 }
 
 /* Clinical exams --------------------------------------------------- */
@@ -710,7 +706,7 @@
 
 .exam-drawer-badge--status {
   background: rgb(239 246 255);
-  color: rgb(4 100 70);
+  color: rgb(37 99 235);
 }
 
 .exam-drawer-title {
@@ -778,22 +774,102 @@
   background: rgb(248 250 252 / 0.65);
 }
 
-/* Preparo — modal centralizado */
+/* Preparo — modal compacto, sem scroll */
 .exam-modal {
-  gap: 1rem;
+  gap: 0 !important;
+  max-width: min(30rem, calc(100% - 1.5rem)) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 1rem !important;
+  box-shadow:
+    0 24px 48px -12px rgb(14 20 43 / 0.18),
+    0 0 0 1px rgb(226 232 240 / 0.8) !important;
 }
 
 .exam-modal-head {
-  padding-right: 2rem;
+  padding: 0.9rem 1rem 0.75rem;
+  padding-right: 2.75rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: linear-gradient(180deg, rgb(248 250 252 / 0.7), white);
 }
 
-.exam-modal-body {
-  display: block;
+.exam-modal-head-top .exam-drawer-badges {
+  margin-bottom: 0.4rem;
+}
+
+.exam-modal-title {
+  font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+}
+
+.exam-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  padding: 0.75rem 1rem;
+}
+
+.exam-modal-item {
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252 / 0.65);
+}
+
+.exam-modal-item--wide {
+  grid-column: 1 / -1;
+}
+
+.exam-modal-item-label {
+  margin-bottom: 0.2rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgb(46 103 255);
+}
+
+.exam-modal-item-text {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgb(51 65 85);
+}
+
+.exam-modal-notice {
+  margin: 0;
+  padding: 0 1rem 0.65rem;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  text-align: center;
+  color: rgb(148 163 184);
 }
 
 .exam-modal-footer {
   border-top: 1px solid rgb(241 245 249);
-  padding-top: 1rem;
+  padding: 0.65rem 1rem 0.85rem;
+  background: rgb(248 250 252 / 0.45);
+}
+
+.exam-modal-copy {
+  width: 100%;
+  height: 2.25rem;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 479px) {
+  .exam-modal-grid {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+    padding: 0.65rem 0.85rem;
+  }
+
+  .exam-modal-item--wide {
+    grid-column: auto;
+  }
 }
 
 /* CTA -------------------------------------------------------------- */

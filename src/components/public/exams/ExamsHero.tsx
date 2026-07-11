@@ -23,8 +23,8 @@ export function ExamsHero({ whatsappHref }: ExamsHeroProps) {
 
           <h1 className="exams-hero-title">Exames e preparos ocupacionais</h1>
           <p className="exams-hero-desc">
-            Consulte orientações de preparo, prazos e observações importantes para exames
-            ocupacionais realizados conforme a solicitação da empresa, PCMSO ou avaliação médica.
+            Consulte preparo, prazos e observações para exames ocupacionais solicitados pela
+            empresa, PCMSO ou avaliação médica.
           </p>
 
           <div className="exams-hero-badges" aria-label="Destaques da página">

@@ -1,6 +1,5 @@
 "use client";
 
-import type { ReactNode } from "react";
 import type { ExamGuide } from "@/data/exams";
 import {
   copyExamInstructions,
@@ -21,69 +20,78 @@ type ExamPreparationDrawerProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-function ModalSection({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="exam-drawer-section">
-      <h3 className="exam-drawer-section-title">{title}</h3>
-      <div className="exam-drawer-section-body">{children}</div>
-    </section>
-  );
+type PrepItem = {
+  label: string;
+  text: string;
+  wide?: boolean;
+};
+
+function buildPrepItems(exam: ExamGuide): PrepItem[] {
+  const items: PrepItem[] = [
+    { label: "Preparo", text: exam.preparationBefore },
+    { label: "Prazo médio", text: exam.deliveryTime },
+    { label: "No dia do exame", text: exam.preparationOnDay },
+  ];
+
+  if (exam.notes) {
+    items.push({ label: "Observações", text: exam.notes });
+  }
+
+  items.push({ label: "Informar à clínica", text: exam.whenToInformClinic, wide: true });
+
+  return items;
 }
 
 export function ExamPreparationDrawer({ exam, open, onOpenChange }: ExamPreparationDrawerProps) {
   if (!exam) return null;
 
+  const items = buildPrepItems(exam);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="exam-modal" showCloseButton>
-        <div className="exam-modal-head">
-          <div className="exam-drawer-badges">
-            <span className="exam-drawer-badge exam-drawer-badge--category">
-              {DISPLAY_CATEGORY_LABELS[exam.displayCategory]}
-            </span>
-            <span className="exam-drawer-badge exam-drawer-badge--status">
-              {PREPARATION_STATUS_LABELS[exam.preparationStatus]}
-            </span>
+        <header className="exam-modal-head">
+          <div className="exam-modal-head-top">
+            <div className="exam-drawer-badges">
+              <span className="exam-drawer-badge exam-drawer-badge--category">
+                {DISPLAY_CATEGORY_LABELS[exam.displayCategory]}
+              </span>
+              <span className="exam-drawer-badge exam-drawer-badge--status">
+                {PREPARATION_STATUS_LABELS[exam.preparationStatus]}
+              </span>
+            </div>
           </div>
-          <DialogTitle className="exam-drawer-title">{exam.name}</DialogTitle>
+          <DialogTitle className="exam-modal-title">{exam.name}</DialogTitle>
           <DialogDescription className="sr-only">
             Orientações de preparo para {exam.name}
           </DialogDescription>
+        </header>
+
+        <div className="exam-modal-grid">
+          {items.map((item) => (
+            <div
+              key={item.label}
+              className={item.wide ? "exam-modal-item exam-modal-item--wide" : "exam-modal-item"}
+            >
+              <p className="exam-modal-item-label">{item.label}</p>
+              <p className="exam-modal-item-text">{item.text}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="exam-modal-body">
-          <ModalSection title="Preparo necessário">
-            <p>{exam.preparationBefore}</p>
-          </ModalSection>
-          <ModalSection title="Prazo médio">
-            <p>{exam.deliveryTime}</p>
-          </ModalSection>
-          <ModalSection title="No dia do exame">
-            <p>{exam.preparationOnDay}</p>
-          </ModalSection>
-          {exam.notes && (
-            <ModalSection title="Observações importantes">
-              <p>{exam.notes}</p>
-            </ModalSection>
-          )}
-          <ModalSection title="Quando informar a clínica">
-            <p>{exam.whenToInformClinic}</p>
-          </ModalSection>
-          <div className="exam-drawer-notice">
-            As orientações podem variar conforme solicitação médica, PCMSO, protocolo da clínica ou
-            tipo de exame.
-          </div>
-        </div>
+        <p className="exam-modal-notice">
+          Orientações podem variar conforme solicitação médica, PCMSO ou protocolo da clínica.
+        </p>
 
-        <div className="exam-modal-footer">
+        <footer className="exam-modal-footer">
           <CopyButton
-            className="w-full rounded-xl"
+            className="exam-modal-copy rounded-xl"
             label="Copiar preparo"
             onCopy={() => copyExamInstructions(exam)}
             successMessage="Orientações copiadas com sucesso."
             errorMessage="Não foi possível copiar as orientações."
           />
-        </div>
+        </footer>
       </DialogContent>
     </Dialog>
   );

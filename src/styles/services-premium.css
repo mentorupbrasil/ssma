@@ -123,23 +123,19 @@
 
 .services-hero-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  align-self: stretch;
   justify-content: center;
   gap: 0.6rem;
+  width: 100%;
   margin-top: 1.85rem;
 }
 
-@media (max-width: 479px) {
-  .services-hero-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .services-hero-actions > a {
-    width: 100%;
-    justify-content: center;
-  }
+.services-hero-actions .about-v2-hero-cta {
+  min-width: 0;
+  flex: 0 1 auto;
+  white-space: nowrap;
 }
 
 /* Quick nav -------------------------------------------------------- */
