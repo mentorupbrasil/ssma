@@ -1,7 +1,6 @@
 import { COLLABORATOR_STAT_CARDS } from "@/lib/collaborators";
 import { REFERRAL_STAT_CARDS } from "@/lib/referrals";
 import { APPOINTMENT_STAT_CARDS } from "@/lib/appointments";
-import { DOCUMENT_STAT_CARDS } from "@/lib/documents";
 import { TICKET_STAT_CARDS } from "@/lib/tickets";
 import { isCompanyHr } from "@/lib/tenant";
 import type { UserRole } from "@/types/roles";
@@ -20,6 +19,7 @@ export const EMPRESA_HIDDEN_NAV_HREFS = [
 export const EMPRESA_NAV_LABEL_OVERRIDES: Record<string, string> = {
   "/dashboard/encaminhamentos": "Exames",
   "/dashboard/exames": "Preparos",
+  "/dashboard/documentos": "ASOs e documentos",
 };
 
 /** Ícones customizados no menu do RH */
@@ -64,10 +64,60 @@ export function referralStatCardsForEmpresa() {
   );
 }
 
+/** Cards da tela Documentos — portal RH (foco em download) */
+export const EMPRESA_DOCUMENT_STAT_CARDS = [
+  { key: "para_baixar", filter: "PARA_BAIXAR", label: "Para baixar" },
+  { key: "asos", filter: "ASO_ARQUIVO", label: "ASOs" },
+  { key: "aguardando", filter: "AGUARDANDO_ARQUIVO", label: "Aguardando arquivo" },
+  { key: "mes", filter: "MES_ARQUIVO", label: "Novos este mês" },
+] as const;
+
 export function documentStatCardsForEmpresa() {
-  return DOCUMENT_STAT_CARDS.filter(
-    (c) => !["em_emissao", "asos_pendentes"].includes(c.key)
-  );
+  return EMPRESA_DOCUMENT_STAT_CARDS.map((c) => ({ ...c }));
+}
+
+/** Documentos da empresa com arquivo anexado pela clínica */
+export function empresaDocumentDownloadableWhere(
+  companyId: string
+): { companyId: string; fileUrl: { not: null }; status: { notIn: ["ARQUIVADO", "CANCELADO"] } } {
+  return {
+    companyId,
+    fileUrl: { not: null },
+    status: { notIn: ["ARQUIVADO", "CANCELADO"] },
+  };
+}
+
+export function applyEmpresaDocumentCardFilter(
+  where: import("@prisma/client").Prisma.DocumentWhereInput,
+  card?: string
+): import("@prisma/client").Prisma.DocumentWhereInput {
+  if (!card || card === "ALL") return where;
+
+  if (card === "PARA_BAIXAR") {
+    return { ...where, fileUrl: { not: null }, status: { notIn: ["ARQUIVADO", "CANCELADO"] } };
+  }
+  if (card === "ASO_ARQUIVO") {
+    return {
+      ...where,
+      type: "ASO",
+      fileUrl: { not: null },
+      status: { notIn: ["ARQUIVADO", "CANCELADO"] },
+    };
+  }
+  if (card === "AGUARDANDO_ARQUIVO") {
+    return { ...where, fileUrl: null, status: { notIn: ["ARQUIVADO", "CANCELADO", "DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] } };
+  }
+  if (card === "MES_ARQUIVO") {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    return {
+      ...where,
+      fileUrl: { not: null },
+      createdAt: { gte: monthStart, lte: monthEnd },
+    };
+  }
+  return where;
 }
 
 export function ticketStatCardsForEmpresa() {

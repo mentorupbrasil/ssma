@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Clock,
   Clock3,
+  Download,
   FileCheck,
   FileClock,
   FileText,
@@ -137,6 +138,26 @@ export const METRIC_META: Record<string, MetricMeta> = {
     icon: FileCheck,
     description: "Liberados para consulta",
   },
+  "document:para_baixar": {
+    tone: "success",
+    icon: Download,
+    description: "Arquivo anexado — baixar agora",
+  },
+  "document:asos": {
+    tone: "success",
+    icon: FileCheck,
+    description: "ASOs com arquivo",
+  },
+  "document:aguardando": {
+    tone: "warning",
+    icon: FileClock,
+    description: "Clínica ainda não anexou o PDF",
+  },
+  "document:mes": {
+    tone: "info",
+    icon: FolderOpen,
+    description: "Anexados neste mês",
+  },
   "document:vencidos": {
     tone: "danger",
     icon: AlertCircle,
@@ -147,11 +168,6 @@ export const METRIC_META: Record<string, MetricMeta> = {
     tone: "warning",
     icon: FileText,
     description: "ASOs aguardando emissão",
-  },
-  "document:mes": {
-    tone: "info",
-    icon: FolderOpen,
-    description: "Emitidos no mês corrente",
   },
 
   // Pré-encaminhamentos
@@ -320,8 +336,8 @@ export const METRIC_META: Record<string, MetricMeta> = {
   },
   "overview:docs_available": {
     tone: "success",
-    icon: FolderOpen,
-    description: "Documentos já disponíveis no portal",
+    icon: Download,
+    description: "ASOs e laudos prontos para baixar",
   },
   "overview:periodic_due": {
     tone: "warning",

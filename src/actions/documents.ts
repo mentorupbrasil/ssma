@@ -23,6 +23,10 @@ import {
   type DocumentHistoryItem,
   type DocumentFormOptions,
 } from "@/lib/documents";
+import {
+  applyEmpresaDocumentCardFilter,
+  empresaDocumentDownloadableWhere,
+} from "@/lib/empresa-portal";
 import { deleteDocumentFile } from "@/lib/document-storage";
 
 type ActionResult<T extends Record<string, unknown> = {}> =
@@ -149,6 +153,67 @@ export async function listDocumentsForDashboard(
     page,
     pageSize,
     statCounts: { pendentes, em_emissao: emEmissao, disponiveis, vencidos, asos_pendentes: asosPendentes, mes },
+  };
+}
+
+/** Lista documentos para o portal RH — foco em arquivos anexados pela clínica */
+export async function listDocumentsForEmpresa(
+  filters: DocumentListFilters = {},
+  companyId: string
+) {
+  const pageSize = getDocumentPageSize();
+  const page = Math.max(1, filters.page ?? 1);
+  let where = buildDocumentWhere(filters, companyId);
+  where = applyEmpresaDocumentCardFilter(where, filters.card);
+  const orderBy = buildDocumentOrderBy(filters.sort);
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const base = { companyId };
+
+  const [items, total, paraBaixar, asos, aguardando, mes] = await Promise.all([
+    prisma.document.findMany({
+      where,
+      orderBy,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        company: { select: { legalName: true, tradeName: true, whatsapp: true, phone: true } },
+        patient: { select: { fullName: true } },
+        referral: { select: { protocol: true } },
+      },
+    }),
+    prisma.document.count({ where }),
+    prisma.document.count({ where: empresaDocumentDownloadableWhere(companyId) }),
+    prisma.document.count({
+      where: { ...empresaDocumentDownloadableWhere(companyId), type: "ASO" },
+    }),
+    prisma.document.count({
+      where: {
+        ...base,
+        fileUrl: null,
+        status: { notIn: ["ARQUIVADO", "CANCELADO", "DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] },
+      },
+    }),
+    prisma.document.count({
+      where: {
+        ...empresaDocumentDownloadableWhere(companyId),
+        createdAt: { gte: monthStart, lte: monthEnd },
+      },
+    }),
+  ]);
+
+  return {
+    items: items.map(serializeDocumentListItem),
+    total,
+    page,
+    pageSize,
+    statCounts: {
+      para_baixar: paraBaixar,
+      asos,
+      aguardando,
+      mes,
+    },
   };
 }
 

@@ -1791,3 +1791,220 @@
     align-items: flex-start;
   }
 }
+
+/* Portal RH — documentos (download) */
+.empresa-docs-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(209 250 229);
+  background: linear-gradient(135deg, rgb(236 253 245) 0%, rgb(240 253 250) 100%);
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(51 65 85);
+}
+
+.empresa-docs-intro strong {
+  font-weight: 600;
+  color: var(--brand-navy);
+}
+
+.empresa-docs-panel {
+  border-radius: var(--dash-radius-lg);
+  border: 1px solid var(--dash-border);
+  background: white;
+  box-shadow: var(--dash-shadow-sm);
+  overflow: hidden;
+}
+
+.empresa-docs-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252 / 0.85);
+  padding: 0.85rem 1rem;
+}
+
+.empresa-docs-search {
+  position: relative;
+  flex: 1;
+  min-width: min(100%, 16rem);
+  max-width: 28rem;
+}
+
+.empresa-docs-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  height: 1rem;
+  width: 1rem;
+  transform: translateY(-50%);
+  color: rgb(148 163 184);
+}
+
+.empresa-docs-search-input {
+  width: 100%;
+  border-radius: 0.65rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0.55rem 2rem 0.55rem 2.25rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.empresa-docs-search-input:focus-visible {
+  border-color: rgb(22 160 133 / 0.45);
+  box-shadow: 0 0 0 3px rgb(22 160 133 / 0.12);
+}
+
+.empresa-docs-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  display: flex;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.35rem;
+  padding: 0.2rem;
+  color: rgb(148 163 184);
+}
+
+.empresa-docs-search-clear:hover {
+  background: rgb(241 245 249);
+  color: rgb(71 85 105);
+}
+
+.empresa-docs-count {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: var(--dash-text-muted);
+}
+
+.empresa-docs-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.empresa-docs-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  padding: 0.85rem 1rem;
+}
+
+.empresa-docs-row:last-child {
+  border-bottom: none;
+}
+
+.empresa-docs-row:hover {
+  background: rgb(248 250 252 / 0.65);
+}
+
+.empresa-docs-row-icon {
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.65rem;
+  background: rgb(239 246 255);
+  color: rgb(46 103 255);
+}
+
+.empresa-docs-row-body {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.empresa-docs-row-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+}
+
+.empresa-docs-row-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--brand-navy);
+}
+
+.empresa-docs-category {
+  border-radius: 9999px;
+  background: rgb(241 245 249);
+  padding: 0.1rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgb(71 85 105);
+}
+
+.empresa-docs-row-desc {
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  color: var(--dash-text-muted);
+}
+
+.empresa-docs-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--dash-text-subtle);
+}
+
+.empresa-docs-ready {
+  font-weight: 600;
+  color: rgb(5 150 105);
+}
+
+.empresa-docs-waiting {
+  font-weight: 500;
+  color: rgb(217 119 6);
+}
+
+.empresa-docs-download {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: center;
+  border-radius: 0.65rem;
+  border: 1px solid rgb(22 160 133 / 0.25);
+  background: rgb(236 253 245);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(5 150 105);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.empresa-docs-download:hover {
+  border-color: rgb(22 160 133 / 0.45);
+  background: rgb(209 250 229);
+}
+
+.empresa-docs-download--disabled {
+  border-color: rgb(226 232 240);
+  background: rgb(248 250 252);
+  color: rgb(148 163 184);
+  pointer-events: none;
+}
+
+.empresa-docs-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid rgb(241 245 249);
+  padding: 0.75rem 1rem;
+}

@@ -278,8 +278,8 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
       ? prisma.document.count({
           where: {
             ...companyWhere,
-            status: "DISPONIVEL",
-            availableOnPortal: true,
+            fileUrl: { not: null },
+            status: { notIn: ["ARQUIVADO", "CANCELADO"] },
           },
         })
       : Promise.resolve(0),
@@ -327,14 +327,15 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
       ? prisma.document.findMany({
           where: {
             ...companyWhere,
-            status: "DISPONIVEL",
-            availableOnPortal: true,
+            fileUrl: { not: null },
+            status: { notIn: ["ARQUIVADO", "CANCELADO"] },
           },
           orderBy: { updatedAt: "desc" },
           take: 5,
           select: {
             id: true,
             title: true,
+            type: true,
             updatedAt: true,
             patient: { select: { fullName: true } },
           },
@@ -386,9 +387,9 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
         },
         {
           key: "docs_available",
-          title: "Documentos disponíveis",
+          title: "Prontos para baixar",
           value: docsAvailable,
-          href: "/dashboard/documentos?card=disponiveis",
+          href: "/dashboard/documentos?card=PARA_BAIXAR",
           show: true,
         },
         {
@@ -494,9 +495,9 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           id: d.id,
           title: d.title,
           subtitle: d.patient?.fullName
-            ? `Colaborador: ${d.patient.fullName}`
-            : "Documento disponível no portal",
-          href: "/dashboard/documentos?card=disponiveis",
+            ? `${d.patient.fullName} — pronto para baixar`
+            : "Documento pronto para baixar",
+          href: `/dashboard/documentos?id=${d.id}`,
           type: "documento",
         })),
       ].slice(0, 8)

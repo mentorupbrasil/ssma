@@ -328,12 +328,7 @@ export function canViewDocument(
 ): boolean {
   if (role === "ADMIN" || role === "CLINIC_ADMIN") return true;
   if (role === "EMPRESA" || role === "COMPANY_HR") {
-    return (
-      !!userCompanyId &&
-      doc.companyId === userCompanyId &&
-      doc.availableOnPortal &&
-      !doc.sensitive
-    );
+    return !!userCompanyId && doc.companyId === userCompanyId;
   }
   if (role === "FINANCEIRO" || role === "FINANCIAL") {
     return COMMERCIAL_DOCUMENT_TYPES.includes(doc.type) && !doc.sensitive;

@@ -54,9 +54,9 @@ export default async function DashboardPage() {
           icon: CalendarCheck,
         },
         {
-          href: "/dashboard/documentos?card=disponiveis",
-          label: "Documentos",
-          description: "ASOs e laudos disponíveis",
+          href: "/dashboard/documentos?card=PARA_BAIXAR",
+          label: "Baixar ASOs",
+          description: "Documentos anexados pela Unimetra",
           icon: FolderOpen,
         },
         {
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
         title="Visão geral"
         description={
           isEmpresa
-            ? "Colaboradores, exames, documentos e chamados da sua empresa."
+            ? "Cadastre colaboradores, solicite exames e baixe ASOs anexados pela Unimetra."
             : "Pendências, produção e ações prioritárias da clínica — atualizado em tempo real."
         }
       />
@@ -190,15 +190,17 @@ export default async function DashboardPage() {
               )}
             </DashboardPanel>
 
-            <DashboardPanel title="Documentos disponíveis" icon={FolderOpen}>
+            <DashboardPanel title="Prontos para baixar" icon={FolderOpen}>
               {!overview.availableDocuments?.length ? (
-                <InlineEmptyNote>Nenhum documento disponível ainda.</InlineEmptyNote>
+                <InlineEmptyNote>
+                  Quando a Unimetra anexar ASOs ou laudos, eles aparecerão aqui.
+                </InlineEmptyNote>
               ) : (
                 <div className="dashboard-list">
                   {overview.availableDocuments.map((d) => (
                     <Link
                       key={d.id}
-                      href="/dashboard/documentos?card=disponiveis"
+                      href={`/dashboard/documentos?id=${d.id}`}
                       className="dashboard-list-item dashboard-list-item-row"
                     >
                       <div className="min-w-0">

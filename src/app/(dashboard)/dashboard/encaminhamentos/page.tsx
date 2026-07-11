@@ -99,8 +99,7 @@ async function loadReferralsForPage(
     companyWhatsapp: r.company.whatsapp ?? r.company.phone,
   }));
 
-  const canManage =
-    session.user.role !== "EMPRESA" && session.user.role !== "VISUALIZADOR";
+  const canManage = !isEmpresa && session.user.role !== "VISUALIZADOR";
 
   return {
     initialItems: items,
@@ -211,8 +210,8 @@ async function loadAgendaForPage(
   const items = appointments.map(serializeAppointmentListItem);
 
   const canManage =
+    !isEmpresa &&
     session.user.role !== "VISUALIZADOR" &&
-    session.user.role !== "EMPRESA" &&
     session.user.role !== "FINANCEIRO";
 
   return {

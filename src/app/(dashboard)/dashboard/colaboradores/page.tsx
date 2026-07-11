@@ -153,9 +153,10 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
   const statCounts = Object.fromEntries(countResults.map((c) => [c.key, c.count]));
   const items = patients.map(serializeCollaboratorListItem);
   const canManage =
-    session.user.role !== "VISUALIZADOR" &&
-    session.user.role !== "MEDICO" &&
-    session.user.role !== "FINANCEIRO";
+    isEmpresa ||
+    (session.user.role !== "VISUALIZADOR" &&
+      session.user.role !== "MEDICO" &&
+      session.user.role !== "FINANCEIRO");
 
   return (
     <ColaboradoresClient
@@ -170,7 +171,7 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
       }))}
       jobTitles={jobTitles}
       departments={departments}
-      canManage={canManage || session.user.role === "EMPRESA"}
+      canManage={canManage}
       isEmpresaPortal={isEmpresa}
       filters={filters}
     />
