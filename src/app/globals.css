@@ -3494,55 +3494,45 @@
   /* App shell — organização visual do painel */
   .app-shell {
     display: flex;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100dvh;
     background:
       radial-gradient(circle at top right, rgb(46 103 255 / 0.05), transparent 28%),
       var(--brand-bg);
   }
 
   .app-shell-sidebar {
-    width: 17.5rem;
+    width: var(--dash-sidebar-w, 17.5rem);
     flex-shrink: 0;
     border-right: 1px solid rgb(226 232 240 / 0.9);
     background: rgb(255 255 255 / 0.92);
     backdrop-filter: blur(10px);
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 768px) {
     .app-shell-sidebar {
       position: fixed;
       top: 0;
+      bottom: 0;
       left: 0;
       z-index: 40;
-      height: 100vh;
+      height: auto;
       overflow: hidden;
     }
 
     .app-shell-main {
-      margin-left: 17.5rem;
-      height: 100vh;
-      overflow-y: auto;
+      margin-left: var(--dash-sidebar-w, 17.5rem);
+      width: calc(100% - var(--dash-sidebar-w, 17.5rem));
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
     }
   }
 
   .app-shell-sidebar-inner {
     display: flex;
     height: 100%;
+    min-height: 100%;
     flex-direction: column;
-  }
-
-  .app-shell-sidebar-body {
-    display: flex;
-    min-height: 0;
-    flex: 1;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .app-shell-sidebar-body .app-shell-nav {
-    flex: 1;
-    min-height: 0;
   }
 
   .app-shell-sidebar-brand {
@@ -3583,7 +3573,8 @@
   }
 
   .app-shell-nav {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     padding: 0.85rem 0.75rem 1rem;
   }
@@ -3632,8 +3623,8 @@
     color: var(--brand-green);
   }
 
-  /* Portal RH — sidebar 100vh, rodapé no fundo, menu sem rolagem */
-  @media (min-width: 1024px) {
+  /* Portal RH — sidebar full height, menu distribuído, rodapé no fundo */
+  @media (min-width: 768px) {
     .app-shell-sidebar--empresa {
       top: 0;
       bottom: 0;
@@ -3642,9 +3633,14 @@
   }
 
   .app-shell-sidebar--empresa {
-    display: flex;
-    flex-direction: column;
     background: rgb(255 255 255 / 0.96);
+  }
+
+  @media (min-width: 768px) {
+    .app-shell-sidebar--empresa {
+      display: flex;
+      flex-direction: column;
+    }
   }
 
   .app-shell-sidebar-inner--empresa {
@@ -3655,14 +3651,6 @@
     flex-direction: column;
   }
 
-  .app-shell-sidebar-body--empresa {
-    display: flex;
-    min-height: 0;
-    flex: 1;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
   .app-shell-sidebar-inner--empresa .app-shell-sidebar-brand {
     flex: 0 0 auto;
     padding: 0.9rem 0.95rem 0.75rem;
@@ -3670,14 +3658,17 @@
 
   .app-shell-sidebar-inner--empresa .app-shell-nav,
   .app-shell-sidebar-inner--empresa .app-shell-nav--empresa {
+    display: flex;
     flex: 1 1 auto;
     min-height: 0;
+    flex-direction: column;
+    justify-content: flex-start;
     overflow: hidden;
-    padding: 0.6rem 0.75rem 0.5rem;
+    padding: 0.75rem 0.75rem 0.65rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-nav-section + .app-shell-nav-section {
-    margin-top: 0.75rem;
+    margin-top: 0.85rem;
   }
 
   .app-shell-sidebar-inner--empresa .app-shell-nav-label {
@@ -3693,7 +3684,7 @@
 
   .app-shell-sidebar-inner--empresa .app-shell-sidebar-footer {
     flex: 0 0 auto;
-    margin-top: 0;
+    margin-top: auto;
     padding: 0.75rem 0.85rem 0.85rem;
     border-top: 1px solid rgb(241 245 249);
     background: rgb(255 255 255 / 0.96);
@@ -3748,13 +3739,14 @@
   }
 
   .app-shell-content {
-    flex: 1;
-    padding: 0 1rem 6rem;
+    flex: 0 0 auto;
+    width: 100%;
+    padding: 0 1rem 1.25rem;
   }
 
   @media (min-width: 640px) {
     .app-shell-content {
-      padding: 0 1.5rem 2rem;
+      padding: 0 1.5rem 1.75rem;
     }
   }
 
