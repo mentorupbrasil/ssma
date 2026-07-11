@@ -17,6 +17,7 @@ export type BlogPostSummary = {
   excerpt: string;
   content: string;
   category: string;
+  coverImage: string | null;
   publishedAt: Date;
 };
 

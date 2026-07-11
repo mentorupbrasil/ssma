@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowUpRight, Clock3 } from "lucide-react";
@@ -13,7 +14,6 @@ type BlogPostCardProps = {
 
 export function BlogPostCard({ post, featured = false }: BlogPostCardProps) {
   const meta = getBlogCategoryMeta(post.category);
-  const Icon = meta.icon;
   const readingTime = getReadingTimeMinutes(`${post.excerpt} ${post.content}`);
 
   return (
@@ -22,12 +22,21 @@ export function BlogPostCard({ post, featured = false }: BlogPostCardProps) {
       className={cn("blog-post-card group", featured && "blog-post-card--featured")}
     >
       <article className="blog-post-card-inner">
-        <div className={cn("blog-post-card-visual", `blog-post-card-visual--${meta.accent}`)}>
-          <div className="blog-post-card-visual-glow" aria-hidden />
-          <span className="blog-post-card-icon" aria-hidden>
-            <Icon className="size-5" strokeWidth={1.75} />
-          </span>
-          <span className="blog-post-card-category">{meta.label}</span>
+        <div className={cn("blog-post-card-cover", featured && "blog-post-card-cover--featured")}>
+          {post.coverImage ? (
+            <Image
+              src={post.coverImage}
+              alt={`Ilustração: ${post.title}`}
+              fill
+              priority={featured}
+              sizes={featured ? "(min-width: 900px) 42vw, 100vw" : "(min-width: 1100px) 33vw, (min-width: 768px) 50vw, 100vw"}
+              className="blog-post-card-cover-img"
+            />
+          ) : (
+            <div className={cn("blog-post-card-cover-fallback", `blog-post-card-cover-fallback--${meta.accent}`)} />
+          )}
+          <div className="blog-post-card-cover-overlay" aria-hidden />
+          <span className="blog-post-card-cover-category">{meta.label}</span>
         </div>
 
         <div className="blog-post-card-body">

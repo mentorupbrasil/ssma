@@ -2,6 +2,7 @@ import { BlogEmptyState } from "@/components/public/blog/BlogEmptyState";
 import { BlogHero } from "@/components/public/blog/BlogHero";
 import { BlogPostCard } from "@/components/public/blog/BlogPostCard";
 import { getClinicInfo, whatsappLink } from "@/lib/helpers";
+import { BLOG_POST_SELECT } from "@/lib/blog-queries";
 import { prisma } from "@/lib/prisma";
 import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
 
@@ -11,15 +12,7 @@ export default async function BlogPage() {
   const posts = await prisma.blogPost.findMany({
     where: { published: true },
     orderBy: { publishedAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      excerpt: true,
-      content: true,
-      category: true,
-      publishedAt: true,
-    },
+    select: BLOG_POST_SELECT,
   });
 
   const clinic = getClinicInfo();

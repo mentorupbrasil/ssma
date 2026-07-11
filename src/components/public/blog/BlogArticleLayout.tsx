@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowLeft, Clock3 } from "lucide-react";
@@ -54,6 +55,21 @@ export function BlogArticleLayout({ post, related }: BlogArticleLayoutProps) {
         </div>
       </header>
 
+      {post.coverImage && (
+        <div className="container-page">
+          <div className="blog-article-cover">
+            <Image
+              src={post.coverImage}
+              alt={`Ilustração: ${post.title}`}
+              fill
+              priority
+              sizes="(min-width: 1024px) 56rem, 100vw"
+              className="blog-article-cover-img"
+            />
+          </div>
+        </div>
+      )}
+
       <div className="container-page">
         <div className="blog-article-content legal-prose">{formatArticleContent(post.content)}</div>
       </div>
@@ -84,12 +100,40 @@ function formatArticleContent(content: string) {
 
   return blocks.map((block, index) => {
     const trimmed = block.trim();
+
     if (trimmed.startsWith("## ")) {
       return <h2 key={index}>{trimmed.replace(/^##\s+/, "")}</h2>;
     }
+
     if (trimmed.startsWith("### ")) {
       return <h3 key={index}>{trimmed.replace(/^###\s+/, "")}</h3>;
     }
-    return <p key={index}>{trimmed}</p>;
+
+    const lines = trimmed.split("\n");
+    const isList = lines.every((line) => line.trim().startsWith("- "));
+
+    if (isList) {
+      return (
+        <ul key={index} className="blog-article-list">
+          {lines.map((line, lineIndex) => (
+            <li key={lineIndex}>{formatInlineText(line.replace(/^-\s+/, ""))}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    return <p key={index}>{formatInlineText(trimmed)}</p>;
+  });
+}
+
+function formatInlineText(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index}>{part.slice(2, -2)}</strong>;
+    }
+
+    return part;
   });
 }

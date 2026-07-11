@@ -379,38 +379,3 @@ export const LAB_EXAM_OPTIONS = [
   "Tipagem sanguínea",
   "VDRL",
 ];
-
-export const BLOG_POSTS = [
-  {
-    title: "PCMSO: obrigações e prazos para empresas",
-    slug: "pcmso-obrigacoes-prazos",
-    excerpt: "Entenda quando sua empresa precisa de PCMSO e quais são os prazos legais.",
-    category: "Medicina do trabalho",
-    content:
-      "O Programa de Controle Médico de Saúde Ocupacional (PCMSO) é obrigatório para empresas que admitam trabalhadores como empregados, conforme NR-7...",
-  },
-  {
-    title: "NR-1 e o novo PGR: o que muda na segurança do trabalho",
-    slug: "nr1-novo-pgr",
-    excerpt: "A atualização da NR-1 trouxe mudanças importantes no gerenciamento de riscos.",
-    category: "Segurança do trabalho",
-    content:
-      "Com a revisão da NR-1, o PGR substitui gradualmente o PPRA como documento central de gestão de riscos...",
-  },
-  {
-    title: "Exames admissionais: guia rápido para RH",
-    slug: "exames-admissionais-guia-rh",
-    excerpt: "Saiba quais exames solicitar no processo admissional e como organizar encaminhamentos.",
-    category: "Exames ocupacionais",
-    content:
-      "O exame admissional é o primeiro passo para garantir que o colaborador está apto para a função...",
-  },
-  {
-    title: "5 erros comuns na gestão de ASO",
-    slug: "erros-gestao-aso",
-    excerpt: "Evite multas e retrabalho com uma gestão organizada de ASOs.",
-    category: "Saúde ocupacional",
-    content:
-      "Muitas empresas ainda armazenam ASOs em pastas físicas sem controle de validade...",
-  },
-];

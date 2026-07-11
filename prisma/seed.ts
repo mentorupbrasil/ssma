@@ -5,7 +5,7 @@ dotenv.config({ override: true });
 import { PrismaClient, ExamCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { CATALOG_SEED_EXAMS } from "../src/lib/exams";
-import { BLOG_POSTS } from "../src/data/services";
+import { BLOG_POSTS } from "../src/data/blog-posts";
 
 const prisma = new PrismaClient();
 
@@ -375,14 +375,24 @@ async function main() {
   for (const post of BLOG_POSTS) {
     await prisma.blogPost.upsert({
       where: { slug: post.slug },
-      update: {},
+      update: {
+        title: post.title,
+        excerpt: post.excerpt,
+        content: post.content,
+        category: post.category,
+        coverImage: post.coverImage,
+        published: true,
+        publishedAt: new Date(post.publishedAt),
+      },
       create: {
         title: post.title,
         slug: post.slug,
         excerpt: post.excerpt,
         content: post.content,
         category: post.category,
+        coverImage: post.coverImage,
         published: true,
+        publishedAt: new Date(post.publishedAt),
       },
     });
   }

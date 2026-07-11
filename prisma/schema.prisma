@@ -1083,6 +1083,7 @@ model BlogPost {
   excerpt     String
   content     String
   category    String
+  coverImage  String?
   published   Boolean  @default(true)
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())

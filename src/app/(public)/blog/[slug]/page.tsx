@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { BlogArticleLayout } from "@/components/public/blog/BlogArticleLayout";
+import { BLOG_POST_SELECT } from "@/lib/blog-queries";
 import { prisma } from "@/lib/prisma";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -30,15 +31,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     },
     orderBy: { publishedAt: "desc" },
     take: 3,
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      excerpt: true,
-      content: true,
-      category: true,
-      publishedAt: true,
-    },
+    select: BLOG_POST_SELECT,
   });
 
   const fallbackRelated =
@@ -51,15 +44,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           },
           orderBy: { publishedAt: "desc" },
           take: 3,
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            excerpt: true,
-            content: true,
-            category: true,
-            publishedAt: true,
-          },
+          select: BLOG_POST_SELECT,
         });
 
   return <BlogArticleLayout post={post} related={fallbackRelated} />;
