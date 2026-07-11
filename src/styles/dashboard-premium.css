@@ -1652,27 +1652,6 @@
   margin-bottom: 1rem;
 }
 
-.exames-empresa-table thead th,
-.exames-empresa-table tbody td {
-  text-align: center;
-  vertical-align: middle;
-}
-
-.exames-empresa-table .colaboradores-empresa-th-actions,
-.exames-empresa-table .colaboradores-empresa-td-actions {
-  width: auto;
-  text-align: center;
-}
-
-.exames-empresa-table .colaboradores-empresa-td-actions {
-  white-space: nowrap;
-}
-
-.exames-empresa-table .status-badge-premium {
-  justify-content: center;
-  margin-inline: auto;
-}
-
 /* Exames — portal empresa */
 .exames-empresa,
 .exames-empresa-novo {
@@ -2733,6 +2712,27 @@
   color: rgb(100 116 139);
 }
 
+.colaboradores-empresa-table.exames-empresa-table thead th,
+.colaboradores-empresa-table.exames-empresa-table tbody td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.colaboradores-empresa-table.exames-empresa-table .colaboradores-empresa-th-actions,
+.colaboradores-empresa-table.exames-empresa-table .colaboradores-empresa-td-actions {
+  width: auto;
+  text-align: center;
+}
+
+.colaboradores-empresa-table.exames-empresa-table .colaboradores-empresa-td-actions {
+  white-space: nowrap;
+}
+
+.colaboradores-empresa-table.exames-empresa-table .status-badge-premium {
+  justify-content: center;
+  margin-inline: auto;
+}
+
 .colaboradores-empresa-row {
   height: 4.25rem;
   border-bottom: 1px solid rgb(241 245 249);
@@ -2854,6 +2854,12 @@
   width: 3.5rem;
   text-align: right;
   vertical-align: middle;
+}
+
+.colaboradores-empresa-table.exames-empresa-table .colaboradores-empresa-th-actions,
+.colaboradores-empresa-table.exames-empresa-table .colaboradores-empresa-td-actions {
+  width: auto;
+  text-align: center;
 }
 
 .colaboradores-empresa-td-actions {
