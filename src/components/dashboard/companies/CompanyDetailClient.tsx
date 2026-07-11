@@ -1,30 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format } from "date-fns";
+import { differenceInDays, format, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
+  AlertTriangle,
+  Building2,
+  CheckCircle2,
   DollarSign,
+  FileText,
+  Globe,
+  KeyRound,
   MessageCircle,
+  MoreHorizontal,
   Pencil,
   Plus,
-  Building2,
-  UserPlus,
+  Search,
   ShieldOff,
-  KeyRound,
-  CheckCircle2,
-  AlertTriangle,
-  MoreHorizontal,
-  Globe,
-  Phone,
+  UserPlus,
+  Users,
 } from "lucide-react";
 import type { CompanyDetailSerialized } from "@/lib/companies";
 import {
   COMPANY_SIZE_LABELS,
   COMPANY_CONTRACT_LABELS,
-  COMPANY_CONTACT_TYPE_LABELS,
   COMPANY_HISTORY_ACTION_LABELS,
   COMPANY_STATUS_LABELS,
   buildCompanyWhatsAppMessage,
@@ -32,6 +33,7 @@ import {
 } from "@/lib/companies";
 import {
   DOCUMENT_TYPE_LABELS,
+  CLINICAL_DOCUMENT_TYPES,
   normalizeDocumentStatus,
 } from "@/lib/documents";
 import { PageModule } from "@/components/dashboard/PageModule";
@@ -51,47 +53,41 @@ import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { toggleCompanyPortal } from "@/actions/companies";
 import { createUser, updateUser } from "@/actions/users";
-import { EditCompanyDialog, CompanyContactDialog } from "./CompanyDialogs";
-import { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
+import { EditCompanyDialog } from "./CompanyDialogs";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { useBreadcrumbSegmentLabel } from "@/components/dashboard/BreadcrumbLabelProvider";
 import { toast } from "sonner";
+import type { CompanyHistoryAction } from "@prisma/client";
+import type { DocumentType } from "@prisma/client";
 
 type TabId =
   | "overview"
   | "employees"
-  | "referrals"
-  | "agenda"
   | "documents"
-  | "quotes"
   | "contract"
-  | "contacts"
   | "portal"
   | "history";
 
-const COMPANY_NAV_PRIMARY: { id: TabId; label: string }[] = [
+const COMPANY_TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Visão geral" },
   { id: "employees", label: "Colaboradores" },
+  { id: "documents", label: "Documentos" },
   { id: "contract", label: "Contrato e preços" },
   { id: "portal", label: "Portal" },
-];
-
-const COMPANY_NAV_MORE: { id: TabId; label: string }[] = [
-  { id: "contacts", label: "Contatos" },
-  { id: "documents", label: "Documentos" },
-  { id: "quotes", label: "Orçamentos" },
   { id: "history", label: "Histórico" },
 ];
 
-const ALL_COMPANY_TABS: { id: TabId; label: string }[] = [
-  ...COMPANY_NAV_PRIMARY,
-  ...COMPANY_NAV_MORE,
-  { id: "referrals", label: "Atendimentos" },
-  { id: "agenda", label: "Agenda" },
-];
+const LEGACY_TABS = ["contacts", "quotes", "referrals", "agenda"] as const;
 
 function isTabId(value: string | null): value is TabId {
-  return ALL_COMPANY_TABS.some((item) => item.id === value);
+  return COMPANY_TABS.some((item) => item.id === value);
+}
+
+function resolveTab(tabParam: string | null): TabId {
+  if (!tabParam) return "overview";
+  if ((LEGACY_TABS as readonly string[]).includes(tabParam)) return "overview";
+  if (isTabId(tabParam)) return tabParam;
+  return "overview";
 }
 
 type PortalState = "not_configured" | "active" | "suspended";
@@ -108,6 +104,16 @@ const PORTAL_STATE_LABELS: Record<PortalState, string> = {
   suspended: "Portal suspenso",
 };
 
+const PORTAL_STATE_SHORT_LABELS: Record<PortalState, string> = {
+  not_configured: "Não configurado",
+  active: "Ativo",
+  suspended: "Suspenso",
+};
+
+function displayValue(value: string | null | undefined): string {
+  return value?.trim() ? value.trim() : "Não informado";
+}
+
 type CompanyDetailClientProps = {
   company: CompanyDetailSerialized;
   canManage: boolean;
@@ -122,10 +128,9 @@ export function CompanyDetailClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const activeTab: TabId = isTabId(tabParam) ? tabParam : "overview";
+  const activeTab = resolveTab(tabParam);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
 
   const displayName = company.tradeName ?? company.legalName;
@@ -141,6 +146,14 @@ export function CompanyDetailClient({
     params.set("tab", tab);
     router.replace(`/dashboard/empresas/${company.id}?${params.toString()}`);
   };
+
+  useEffect(() => {
+    if (tabParam && (LEGACY_TABS as readonly string[]).includes(tabParam)) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", "overview");
+      router.replace(`/dashboard/empresas/${company.id}?${params.toString()}`);
+    }
+  }, [tabParam, company.id, router, searchParams]);
 
   const refresh = () => router.refresh();
 
@@ -183,15 +196,6 @@ export function CompanyDetailClient({
 
         <div className="empresa-perfil-actions">
           {canManage && (
-            <Link
-              href={`/dashboard/colaboradores?new=1&companyId=${company.id}`}
-              className={cn(buttonVariants({ variant: "brand", size: "sm" }), "empresa-perfil-btn")}
-            >
-              <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-              Novo colaborador
-            </Link>
-          )}
-          {canManage && (
             <Button
               variant="outline"
               size="sm"
@@ -202,8 +206,7 @@ export function CompanyDetailClient({
               Editar cadastro
             </Button>
           )}
-          {(waUrl || canManage) && (
-            <Popover>
+          <Popover>
               <PopoverTrigger
                 render={
                   <Button
@@ -232,7 +235,7 @@ export function CompanyDetailClient({
                     </span>
                   </button>
                 )}
-                {canManage && canCommercial && (
+                {canCommercial && (
                   <button
                     type="button"
                     className="collaborator-action-item"
@@ -250,32 +253,6 @@ export function CompanyDetailClient({
                 <button
                   type="button"
                   className="collaborator-action-item"
-                  onClick={() => setTab("portal")}
-                >
-                  <span className="collaborator-action-icon collaborator-action-icon--portal">
-                    <Globe className="h-4 w-4" />
-                  </span>
-                  <span>
-                    <span className="collaborator-action-label">Gerenciar portal</span>
-                    <span className="collaborator-action-hint">Acesso do RH da empresa</span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="collaborator-action-item"
-                  onClick={() => setTab("contacts")}
-                >
-                  <span className="collaborator-action-icon collaborator-action-icon--view">
-                    <Phone className="h-4 w-4" />
-                  </span>
-                  <span>
-                    <span className="collaborator-action-label">Contatos</span>
-                    <span className="collaborator-action-hint">Agenda de contatos</span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="collaborator-action-item"
                   onClick={() =>
                     router.push(`/dashboard/encaminhamentos?companyId=${company.id}`)
                   }
@@ -289,22 +266,18 @@ export function CompanyDetailClient({
                   </span>
                 </button>
               </PopoverContent>
-            </Popover>
-          )}
+          </Popover>
         </div>
       </header>
 
       <nav className="empresa-perfil-tabs" aria-label="Seções da empresa">
-        {COMPANY_NAV_PRIMARY.map((item) => {
+        {COMPANY_TABS.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
               type="button"
-              className={cn(
-                "empresa-perfil-tab",
-                isActive && "empresa-perfil-tab--active"
-              )}
+              className={cn("empresa-perfil-tab", isActive && "empresa-perfil-tab--active")}
               aria-current={isActive ? "page" : undefined}
               onClick={() => setTab(item.id)}
             >
@@ -312,35 +285,6 @@ export function CompanyDetailClient({
             </button>
           );
         })}
-        <Popover>
-          <PopoverTrigger
-            render={
-              <button
-                type="button"
-                className={cn(
-                  "empresa-perfil-tab",
-                  COMPANY_NAV_MORE.some((item) => item.id === activeTab) &&
-                    "empresa-perfil-tab--active"
-                )}
-                aria-label="Mais seções"
-              >
-                Mais
-              </button>
-            }
-          />
-          <PopoverContent className="collaborator-action-menu w-52 p-1.5" align="start" sideOffset={6}>
-            {COMPANY_NAV_MORE.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className="collaborator-action-item"
-                onClick={() => setTab(item.id)}
-              >
-                <span className="collaborator-action-label">{item.label}</span>
-              </button>
-            ))}
-          </PopoverContent>
-        </Popover>
       </nav>
 
       <div className="empresa-perfil-body">
@@ -350,35 +294,9 @@ export function CompanyDetailClient({
         {activeTab === "employees" && (
           <EmployeesTab company={company} canManage={canManage} />
         )}
-        {activeTab === "referrals" && (
-          <OpsRedirectTab
-            title="Atendimentos desta empresa"
-            description="A operação de fila fica em Atendimentos. Use o atalho abaixo para filtrar por esta empresa."
-            href={`/dashboard/encaminhamentos?companyId=${company.id}`}
-            cta="Abrir fila de atendimentos"
-          />
-        )}
-        {activeTab === "agenda" && (
-          <OpsRedirectTab
-            title="Agenda operacional"
-            description="A clínica não agenda horários nesta tela. Acompanhe o status na fila de atendimentos."
-            href={`/dashboard/encaminhamentos?companyId=${company.id}`}
-            cta="Abrir fila de atendimentos"
-          />
-        )}
         {activeTab === "documents" && <DocumentsTab company={company} />}
-        {activeTab === "quotes" && (
-          <QuotesTab company={company} canCommercial={canCommercial} />
-        )}
         {activeTab === "contract" && (
           <ContractTab company={company} canCommercial={canCommercial} />
-        )}
-        {activeTab === "contacts" && (
-          <ContactsTab
-            company={company}
-            canManage={canManage}
-            onAddContact={() => setContactOpen(true)}
-          />
         )}
         {activeTab === "portal" && (
           <PortalTab
@@ -409,12 +327,6 @@ export function CompanyDetailClient({
         }}
         onSuccess={refresh}
       />
-      <CompanyContactDialog
-        open={contactOpen}
-        onOpenChange={setContactOpen}
-        companyId={company.id}
-        onSuccess={refresh}
-      />
     </PageModule>
   );
 }
@@ -431,58 +343,71 @@ function OverviewTab({
     {
       key: "employees",
       label: "Colaboradores",
-      value: company.stats.employees,
+      value: String(company.stats.employees),
       tab: "employees" as TabId,
+      icon: Users,
     },
     {
       key: "pending_documents",
       label: "Pendências",
-      value: company.stats.pendingDocuments,
+      value: String(company.stats.pendingDocuments),
       tab: "documents" as TabId,
+      icon: AlertTriangle,
     },
     {
       key: "contract",
       label: "Contrato",
       value: company.contractType
         ? COMPANY_CONTRACT_LABELS[company.contractType]
-        : "—",
+        : "Não definido",
       tab: "contract" as TabId,
       isText: true,
+      icon: FileText,
     },
     {
       key: "portal",
       label: "Portal",
-      value: PORTAL_STATE_LABELS[portalState],
+      value: PORTAL_STATE_SHORT_LABELS[portalState],
       tab: "portal" as TabId,
       isText: true,
+      icon: Globe,
     },
   ];
 
-  const address =
-    [company.address, company.city, company.state, company.zipCode].filter(Boolean).join(", ") ||
-    "—";
+  const addressParts = [company.address, company.city, company.state, company.zipCode].filter(
+    Boolean
+  );
+  const address = addressParts.length > 0 ? addressParts.join(", ") : "Não informado";
 
   return (
     <div className="empresa-perfil-overview">
       <div className="empresa-perfil-kpis">
-        {stats.map((s) => (
-          <button
-            key={s.key}
-            type="button"
-            onClick={() => onNavigate(s.tab)}
-            className="empresa-perfil-kpi"
-          >
-            <span
-              className={cn(
-                "empresa-perfil-kpi-value",
-                "isText" in s && s.isText && "empresa-perfil-kpi-value--text"
-              )}
+        {stats.map((s) => {
+          const Icon = s.icon;
+          return (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => onNavigate(s.tab)}
+              className="empresa-perfil-kpi"
             >
-              {s.value}
-            </span>
-            <span className="empresa-perfil-kpi-label">{s.label}</span>
-          </button>
-        ))}
+              <span className="empresa-perfil-kpi-icon" aria-hidden>
+                <Icon className="h-3.5 w-3.5" />
+              </span>
+              <span className="empresa-perfil-kpi-content">
+                <span
+                  className={cn(
+                    "empresa-perfil-kpi-value",
+                    "isText" in s && s.isText && "empresa-perfil-kpi-value--text"
+                  )}
+                >
+                  {s.value}
+                </span>
+                <span className="empresa-perfil-kpi-label">{s.label}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="empresa-perfil-columns">
@@ -490,15 +415,20 @@ function OverviewTab({
           <section className="empresa-erp-panel">
             <h2 className="empresa-erp-panel-title">Dados cadastrais</h2>
             <dl className="empresa-erp-fields">
-              <FieldRow label="Razão social" value={company.legalName} />
-              <FieldRow label="Nome fantasia" value={company.tradeName ?? "—"} />
+              <FieldRow label="Razão social" value={displayValue(company.legalName)} />
+              <FieldRow label="Nome fantasia" value={displayValue(company.tradeName)} />
               <FieldRow label="CNPJ" value={formatCNPJ(company.cnpj)} />
-              <FieldRow label="Inscrição estadual" value={company.stateRegistration ?? "—"} />
+              <FieldRow
+                label="Inscrição estadual"
+                value={displayValue(company.stateRegistration)}
+              />
               <FieldRow label="Endereço" value={address} />
-              <FieldRow label="Segmento" value={company.segment ?? "—"} />
+              <FieldRow label="Segmento" value={displayValue(company.segment)} />
               <FieldRow
                 label="Porte"
-                value={company.size ? COMPANY_SIZE_LABELS[company.size] : "—"}
+                value={
+                  company.size ? COMPANY_SIZE_LABELS[company.size] : "Não informado"
+                }
               />
               <FieldRow
                 label="Cadastro em"
@@ -510,17 +440,19 @@ function OverviewTab({
           <section className="empresa-erp-panel">
             <h2 className="empresa-erp-panel-title">Responsável e contatos</h2>
             <dl className="empresa-erp-fields">
-              <FieldRow label="Responsável" value={company.responsibleName ?? "—"} />
-              <FieldRow label="Cargo" value={company.responsibleRole ?? "—"} />
+              <FieldRow label="Responsável" value={displayValue(company.responsibleName)} />
+              <FieldRow label="Cargo" value={displayValue(company.responsibleRole)} />
               <FieldRow
                 label="WhatsApp"
-                value={company.whatsapp ? formatPhone(company.whatsapp) : "—"}
+                value={
+                  company.whatsapp ? formatPhone(company.whatsapp) : "Não informado"
+                }
               />
               <FieldRow
                 label="Telefone"
-                value={company.phone ? formatPhone(company.phone) : "—"}
+                value={company.phone ? formatPhone(company.phone) : "Não informado"}
               />
-              <FieldRow label="E-mail" value={company.email ?? "—"} />
+              <FieldRow label="E-mail" value={displayValue(company.email)} />
               {company.notes ? (
                 <FieldRow label="Observações internas" value={company.notes} />
               ) : null}
@@ -539,7 +471,9 @@ function OverviewTab({
               <FieldRow
                 label="Contrato"
                 value={
-                  company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "—"
+                  company.contractType
+                    ? COMPANY_CONTRACT_LABELS[company.contractType]
+                    : "Não informado"
                 }
               />
               <FieldRow label="Portal" value={PORTAL_STATE_LABELS[portalState]} />
@@ -572,35 +506,6 @@ function FieldRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
-  return <FieldRow label={label} value={value} />;
-}
-
-function OpsRedirectTab({
-  title,
-  description,
-  href,
-  cta,
-}: {
-  title: string;
-  description: string;
-  href: string;
-  cta: string;
-}) {
-  return (
-    <div className="empresa-erp-panel">
-      <h2 className="empresa-erp-panel-title">{title}</h2>
-      <p className="mb-4 text-sm text-slate-600">{description}</p>
-      <Link
-        href={href}
-        className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
-      >
-        {cta}
-      </Link>
-    </div>
-  );
-}
-
 function EmployeesTab({
   company,
   canManage,
@@ -608,209 +513,398 @@ function EmployeesTab({
   company: CompanyDetailSerialized;
   canManage: boolean;
 }) {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ATIVO" | "INATIVO">("ALL");
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return company.employees.filter((e) => {
+      if (statusFilter !== "ALL" && e.status !== statusFilter) return false;
+      if (!q) return true;
+      const haystack = [
+        e.fullName,
+        e.cpf,
+        e.jobTitle ?? "",
+        e.department ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [company.employees, search, statusFilter]);
+
+  const countLabel =
+    filtered.length === company.employees.length
+      ? `${filtered.length} colaborador${filtered.length === 1 ? "" : "es"}`
+      : `${filtered.length} de ${company.employees.length} colaboradores`;
+
   return (
     <div>
-      {canManage && (
-        <div className="mb-4 flex gap-2">
+      <div className="empresa-perfil-tab-toolbar">
+        <div className="empresa-perfil-tab-toolbar-filters">
+          <div className="empresa-perfil-search">
+            <Search className="empresa-perfil-search-icon" aria-hidden />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por nome, CPF, função ou setor"
+              className="empresa-perfil-search-input"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+            className="empresa-perfil-select"
+            aria-label="Filtrar por status"
+          >
+            <option value="ALL">Todos</option>
+            <option value="ATIVO">Ativo</option>
+            <option value="INATIVO">Inativo</option>
+          </select>
+          <span className="empresa-perfil-count">{countLabel}</span>
+        </div>
+        {canManage && (
           <Link
             href={`/dashboard/colaboradores?new=1&companyId=${company.id}`}
-            className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
+            className={cn(buttonVariants({ variant: "brand", size: "sm" }), "empresa-perfil-btn")}
           >
-            <Plus className="mr-1.5 h-4 w-4" /> Novo colaborador
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Novo colaborador
           </Link>
-        </div>
-      )}
-      {company.employees.length === 0 ? (
-        <InlineEmptyNote>Nenhum colaborador cadastrado.</InlineEmptyNote>
+        )}
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          compact
+          className="empresa-perfil-empty-compact"
+          title={
+            company.employees.length === 0
+              ? "Nenhum colaborador cadastrado"
+              : "Nenhum resultado para os filtros"
+          }
+          description={
+            company.employees.length === 0
+              ? "Cadastre colaboradores vinculados a esta empresa."
+              : "Ajuste a busca ou o filtro de status."
+          }
+        />
       ) : (
-        <div className="colaboradores-empresa-table-scroll">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>CPF</TableHead>
-                <TableHead>Função</TableHead>
-                <TableHead>Setor</TableHead>
-                <TableHead>Último exame</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {company.employees.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/colaboradores/${e.id}`}
-                      className="text-[var(--brand-green)] hover:underline"
-                    >
-                      {e.fullName}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{e.cpf}</TableCell>
-                  <TableCell>{e.jobTitle ?? "—"}</TableCell>
-                  <TableCell>{e.department ?? "—"}</TableCell>
-                  <TableCell>
-                    {e.lastReferralAt
-                      ? format(new Date(e.lastReferralAt), "dd/MM/yyyy", { locale: ptBR })
-                      : "—"}
-                  </TableCell>
-                  <TableCell>{e.status === "ATIVO" ? "Ativo" : e.status}</TableCell>
-                </TableRow>
+        <div className="empresa-perfil-panel">
+          <div className="empresa-perfil-table-shell">
+            <div className="empresa-perfil-table-scroll">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>CPF</TableHead>
+                    <TableHead>Função</TableHead>
+                    <TableHead>Setor</TableHead>
+                    <TableHead>Último exame</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-12">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((e) => (
+                    <TableRow key={e.id}>
+                      <TableCell className="font-medium">{e.fullName}</TableCell>
+                      <TableCell>{e.cpf}</TableCell>
+                      <TableCell>{displayValue(e.jobTitle)}</TableCell>
+                      <TableCell>{displayValue(e.department)}</TableCell>
+                      <TableCell>
+                        {e.lastReferralAt
+                          ? format(new Date(e.lastReferralAt), "dd/MM/yyyy", { locale: ptBR })
+                          : "Não informado"}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={e.status} type="collaborator" />
+                      </TableCell>
+                      <TableCell>
+                        <Popover>
+                          <PopoverTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label={`Ações de ${e.fullName}`}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            }
+                          />
+                          <PopoverContent
+                            className="collaborator-action-menu w-52 p-1.5"
+                            align="end"
+                            sideOffset={6}
+                          >
+                            <Link
+                              href={`/dashboard/colaboradores/${e.id}`}
+                              className="collaborator-action-item"
+                            >
+                              <span className="collaborator-action-icon collaborator-action-icon--view">
+                                <Users className="h-4 w-4" />
+                              </span>
+                              <span>
+                                <span className="collaborator-action-label">Ver colaborador</span>
+                                <span className="collaborator-action-hint">Abrir perfil completo</span>
+                              </span>
+                            </Link>
+                          </PopoverContent>
+                        </Popover>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="empresa-perfil-mobile">
+              {filtered.map((e) => (
+                <article key={e.id} className="empresa-perfil-mobile-card">
+                  <div className="empresa-perfil-mobile-card-head">
+                    <p className="empresa-perfil-mobile-card-name">{e.fullName}</p>
+                    <StatusBadge status={e.status} type="collaborator" />
+                  </div>
+                  <p className="empresa-perfil-mobile-card-sub">
+                    {[displayValue(e.jobTitle), displayValue(e.department)]
+                      .filter((v) => v !== "Não informado")
+                      .join(" · ") || "Não informado"}
+                  </p>
+                  <dl className="empresa-perfil-mobile-card-meta">
+                    <div>
+                      <dt>CPF</dt>
+                      <dd>{e.cpf}</dd>
+                    </div>
+                    <div>
+                      <dt>Último exame</dt>
+                      <dd>
+                        {e.lastReferralAt
+                          ? format(new Date(e.lastReferralAt), "dd/MM/yyyy", { locale: ptBR })
+                          : "Não informado"}
+                      </dd>
+                    </div>
+                  </dl>
+                  <Link
+                    href={`/dashboard/colaboradores/${e.id}`}
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "sm" }),
+                      "empresa-perfil-mobile-card-action"
+                    )}
+                  >
+                    Ver colaborador
+                  </Link>
+                </article>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+const DOCUMENT_CATEGORIES = [
+  "Todos",
+  "Programas ocupacionais",
+  "Documentos cadastrais",
+  "Contratos",
+  "Laudos e relatórios",
+  "Outros",
+] as const;
+
+type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
+
+function getDocumentCategory(type: string): DocumentCategory {
+  if (["PCMSO", "PGR", "LTCAT", "PPP"].includes(type)) return "Programas ocupacionais";
+  if (type === "DOCUMENTO_ADMINISTRATIVO") return "Documentos cadastrais";
+  if (type === "CONTRATO") return "Contratos";
+  if (type.startsWith("LAUDO") || type === "LAUDO") return "Laudos e relatórios";
+  return "Outros";
+}
+
+function getDocumentValidityLabel(validUntil: string | null): {
+  label: string;
+  tone: "neutral" | "danger" | "warning" | "success";
+} {
+  if (!validUntil) return { label: "Sem validade definida", tone: "neutral" };
+  const date = new Date(validUntil);
+  const now = new Date();
+  if (date < now) return { label: "Vencido", tone: "danger" };
+  const days = differenceInDays(date, now);
+  if (days < 30) return { label: "Próximo do vencimento", tone: "warning" };
+  return { label: "Vigente", tone: "success" };
 }
 
 function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
-  return company.documents.length === 0 ? (
-    <div className="space-y-4">
-      <InlineEmptyNote>Nenhum documento vinculado.</InlineEmptyNote>
-      <Link
-        href={`/dashboard/documentos?companyId=${company.id}`}
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
-      >
-        <Plus className="mr-2 h-4 w-4" /> Anexar documento
-      </Link>
-    </div>
-  ) : (
-    <div className="space-y-4">
-      <div className="flex justify-end">
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<DocumentCategory>("Todos");
+
+  const companyDocs = useMemo(
+    () =>
+      company.documents.filter(
+        (d) => !CLINICAL_DOCUMENT_TYPES.includes(d.type as DocumentType)
+      ),
+    [company.documents]
+  );
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return companyDocs.filter((d) => {
+      const category = getDocumentCategory(d.type);
+      if (categoryFilter !== "Todos" && category !== categoryFilter) return false;
+      if (!q) return true;
+      const typeLabel =
+        DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS] ?? d.type;
+      return [d.title, typeLabel, category].join(" ").toLowerCase().includes(q);
+    });
+  }, [companyDocs, search, categoryFilter]);
+
+  return (
+    <div>
+      <div className="empresa-perfil-tab-toolbar">
+        <div>
+          <h2 className="empresa-perfil-tab-toolbar-title">Documentos da empresa</h2>
+          <p className="empresa-perfil-tab-toolbar-desc">
+            Centralize programas, laudos, documentos cadastrais e arquivos importantes desta
+            empresa.
+          </p>
+        </div>
         <Link
           href={`/dashboard/documentos?companyId=${company.id}`}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
+          className={cn(buttonVariants({ variant: "brand", size: "sm" }), "empresa-perfil-btn")}
         >
-          Ver na central de documentos
+          <Plus className="mr-1.5 h-3.5 w-3.5" />
+          Anexar documento
         </Link>
       </div>
-      <div className="colaboradores-empresa-table-scroll">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Nome</TableHead>
-              <TableHead>Validade</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Anexado em</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {company.documents.map((d) => (
-              <TableRow key={d.id}>
-                <TableCell>
-                  {DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS] ?? d.type}
-                </TableCell>
-                <TableCell>
-                  {d.fileUrl ? (
-                    <a
-                      href={`/api/documents/${d.id}/file`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[var(--brand-green)] hover:underline"
-                    >
-                      {d.title}
-                    </a>
-                  ) : (
-                    d.title
-                  )}
-                </TableCell>
-                <TableCell>
-                  {d.validUntil
-                    ? format(new Date(d.validUntil), "dd/MM/yyyy", { locale: ptBR })
-                    : "—"}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge
-                    status={normalizeDocumentStatus(
-                      d.status as import("@prisma/client").DocumentStatus
-                    )}
-                    type="document"
-                  />
-                </TableCell>
-                <TableCell>
-                  {format(new Date(d.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  );
-}
 
-function QuotesTab({
-  company,
-  canCommercial,
-}: {
-  company: CompanyDetailSerialized;
-  canCommercial: boolean;
-}) {
-  if (company.quotes.length === 0) {
-    return (
-      <EmptyState
-        compact
-        title="Nenhum orçamento"
-        description="Orçamentos vinculados a esta empresa aparecerão aqui."
-        action={
-          canCommercial
-            ? { label: "Novo orçamento", href: `/dashboard/orcamentos?companyId=${company.id}` }
-            : undefined
-        }
-      />
-    );
-  }
-  return (
-    <div className="colaboradores-empresa-table-scroll">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Número</TableHead>
-            <TableHead>Serviço</TableHead>
-            <TableHead>Valor</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Data</TableHead>
-            <TableHead>Validade</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {company.quotes.map((q) => (
-            <TableRow key={q.id}>
-              <TableCell>
-                <Link
-                  href={`/dashboard/orcamentos?id=${q.id}`}
-                  className="text-[var(--brand-green)] hover:underline"
-                >
-                  {q.quoteNumber ?? q.id.slice(-6).toUpperCase()}
-                </Link>
-              </TableCell>
-              <TableCell>{q.serviceTitle ?? "—"}</TableCell>
-              <TableCell>
-                {q.estimatedValue != null
-                  ? q.estimatedValue.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })
-                  : "—"}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={q.status} type="quote" />
-              </TableCell>
-              <TableCell>
-                {format(new Date(q.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-              </TableCell>
-              <TableCell>
-                {q.validUntil
-                  ? format(new Date(q.validUntil), "dd/MM/yyyy", { locale: ptBR })
-                  : "—"}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {companyDocs.length > 0 && (
+        <div className="empresa-perfil-tab-toolbar empresa-perfil-tab-toolbar--filters">
+          <div className="empresa-perfil-tab-toolbar-filters">
+            <div className="empresa-perfil-search">
+              <Search className="empresa-perfil-search-icon" aria-hidden />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar documento"
+                className="empresa-perfil-search-input"
+              />
+            </div>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value as DocumentCategory)}
+              className="empresa-perfil-select"
+              aria-label="Filtrar por categoria"
+            >
+              {DOCUMENT_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
+      {companyDocs.length === 0 ? (
+        <EmptyState
+          compact
+          className="empresa-perfil-empty-compact empresa-perfil-doc-empty"
+          title="Nenhum documento armazenado"
+          description="Centralize aqui os programas, laudos e documentos desta empresa."
+          action={{
+            label: "Anexar primeiro documento",
+            href: `/dashboard/documentos?companyId=${company.id}`,
+          }}
+        />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          compact
+          className="empresa-perfil-empty-compact"
+          title="Nenhum resultado para os filtros"
+          description="Ajuste a busca ou a categoria para ver mais documentos."
+        />
+      ) : (
+        <div className="empresa-perfil-panel">
+          <div className="empresa-perfil-table-shell">
+            <div className="empresa-perfil-table-scroll">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Documento</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Validade</TableHead>
+                    <TableHead>Atualizado em</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-12">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((d) => {
+                    const validity = getDocumentValidityLabel(d.validUntil);
+                    const typeLabel =
+                      DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS] ??
+                      d.type;
+                    return (
+                      <TableRow key={d.id}>
+                        <TableCell>
+                          <div className="empresa-perfil-doc-cell">
+                            <span className="empresa-perfil-doc-title">{d.title}</span>
+                            <span className="empresa-perfil-doc-sub">{typeLabel}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getDocumentCategory(d.type)}</TableCell>
+                        <TableCell>
+                          <span
+                            className={cn(
+                              "empresa-perfil-validity",
+                              validity.tone === "danger" && "is-danger",
+                              validity.tone === "warning" && "is-warning",
+                              validity.tone === "success" && "is-success"
+                            )}
+                          >
+                            {validity.label}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(d.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge
+                            status={normalizeDocumentStatus(
+                              d.status as import("@prisma/client").DocumentStatus
+                            )}
+                            type="document"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {d.fileUrl ? (
+                            <a
+                              href={`/api/documents/${d.id}/file`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn(
+                                buttonVariants({ variant: "ghost", size: "sm" }),
+                                "h-8 px-2"
+                              )}
+                            >
+                              Ver arquivo
+                            </a>
+                          ) : (
+                            <span className="text-xs text-slate-400">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -824,131 +918,91 @@ function ContractTab({
 }) {
   return (
     <div className="space-y-4">
-      <section className="colaborador-perfil-block">
-        <h2 className="colaborador-perfil-block-title">Contrato</h2>
-        <dl className="colaborador-perfil-fields">
-          <Field
-            label="Tipo de contrato"
-            value={
-              company.contractType
-                ? COMPANY_CONTRACT_LABELS[company.contractType]
-                : "Não definido"
-            }
-          />
-          <Field label="Status comercial" value={COMPANY_STATUS_LABELS[company.status]} />
-          <Field label="Portal empresarial" value={PORTAL_STATE_LABELS[getPortalState(company)]} />
-        </dl>
+      <section className="empresa-erp-panel">
+        <h2 className="empresa-erp-panel-title">Resumo do contrato</h2>
+        {!company.contractType ? (
+          <div className="empresa-perfil-empty-compact empresa-perfil-contract-empty">
+            <p className="empresa-perfil-empty-title">Nenhum contrato configurado</p>
+            <p className="empresa-perfil-empty-desc">
+              Cadastre as condições comerciais e contratuais desta empresa.
+            </p>
+          </div>
+        ) : (
+          <dl className="empresa-erp-fields">
+            <FieldRow
+              label="Tipo de contrato"
+              value={COMPANY_CONTRACT_LABELS[company.contractType]}
+            />
+            <FieldRow
+              label="Status comercial"
+              value={COMPANY_STATUS_LABELS[company.status]}
+            />
+            {company.notes ? (
+              <FieldRow label="Observações" value={company.notes} />
+            ) : null}
+          </dl>
+        )}
       </section>
 
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-[var(--brand-navy)]">Preços negociados</h3>
-        {canCommercial && (
-          <Link
-            href={`/dashboard/tabela-precos?companyId=${company.id}`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
-          >
-            Gerenciar na tabela de preços
-          </Link>
-        )}
-      </div>
+      <section className="empresa-erp-panel">
+        <div className="empresa-perfil-tab-toolbar empresa-perfil-tab-toolbar--inner">
+          <h3 className="empresa-perfil-section-title">Preços negociados</h3>
+          {canCommercial && (
+            <Link
+              href={`/dashboard/tabela-precos?companyId=${company.id}`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "empresa-perfil-btn")}
+            >
+              Gerenciar preços
+            </Link>
+          )}
+        </div>
 
-      {company.priceListItems.length === 0 ? (
-        <InlineEmptyNote>
-          Nenhum preço específico para esta empresa. Os valores padrão da clínica serão aplicados.
-        </InlineEmptyNote>
-      ) : (
-        <div className="colaboradores-empresa-table-scroll">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Serviço</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Cobrança</TableHead>
-                <TableHead>Preço</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {company.priceListItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>{item.chargeType}</TableCell>
-                  <TableCell>
-                    {item.price.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </TableCell>
+        {company.priceListItems.length === 0 ? (
+          <div className="empresa-perfil-empty-compact">
+            <p className="empresa-perfil-empty-title">Nenhum preço específico cadastrado</p>
+            <p className="empresa-perfil-empty-desc">
+              Os valores padrão da clínica serão aplicados aos atendimentos desta empresa.
+            </p>
+          </div>
+        ) : (
+          <div className="empresa-perfil-table-scroll empresa-perfil-table-scroll--always">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Serviço</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Cobrança</TableHead>
+                  <TableHead>Preço</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+              </TableHeader>
+              <TableBody>
+                {company.priceListItems.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.category}</TableCell>
+                    <TableCell>{item.chargeType}</TableCell>
+                    <TableCell>
+                      {item.price.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-function ContactsTab({
-  company,
-  canManage,
-  onAddContact,
-}: {
-  company: CompanyDetailSerialized;
-  canManage: boolean;
-  onAddContact: () => void;
-}) {
-  return (
-    <div className="space-y-4">
-      {canManage && (
-        <Button variant="brand" size="sm" className="rounded-lg" onClick={onAddContact}>
-          <Plus className="mr-1.5 h-4 w-4" /> Registrar contato
-        </Button>
-      )}
-      {company.siteMessages.length > 0 && (
-        <div>
-          <h3 className="mb-2 text-sm font-semibold text-[var(--brand-navy)]">
-            Mensagens do site
-          </h3>
-          <ul className="space-y-2">
-            {company.siteMessages.map((m) => (
-              <li key={m.id} className="rounded-lg border border-slate-100 p-3 text-sm">
-                <p className="font-medium">{m.subject}</p>
-                <p className="text-slate-500">{m.name}</p>
-                <StatusBadge status={m.status} type="contact" />
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {company.contacts.length === 0 && company.siteMessages.length === 0 ? (
-        <InlineEmptyNote>Nenhum contato registrado.</InlineEmptyNote>
-      ) : (
-        <ul className="referral-history-list">
-          {company.contacts.map((c) => (
-            <li key={c.id} className="referral-history-item">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">
-                  {COMPANY_CONTACT_TYPE_LABELS[
-                    c.type as keyof typeof COMPANY_CONTACT_TYPE_LABELS
-                  ] ?? c.type}
-                  {c.title ? ` — ${c.title}` : ""}
-                </span>
-                <span className="text-xs text-slate-400">
-                  {format(new Date(c.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                </span>
-              </div>
-              {c.performedByName && (
-                <p className="text-xs text-slate-500">Por: {c.performedByName}</p>
-              )}
-              <p className="mt-1 text-sm text-slate-600">{c.notes}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+const PORTAL_CHECKLIST = [
+  "Ativar o portal da empresa",
+  "Cadastrar o responsável do RH",
+  "Liberar acesso ao portal",
+] as const;
 
 function PortalTab({
   company,
@@ -972,6 +1026,13 @@ function PortalTab({
   const [password, setPassword] = useState("");
   const [resetPassword, setResetPassword] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const activationDate = useMemo(() => {
+    if (company.portalUsers.length === 0) return company.updatedAt;
+    return company.portalUsers.reduce((oldest, user) => {
+      return new Date(user.createdAt) < new Date(oldest) ? user.createdAt : oldest;
+    }, company.portalUsers[0].createdAt);
+  }, [company.portalUsers, company.updatedAt]);
 
   const configurePortal = async () => {
     const ok = company.portalEnabled ? true : await onToggle(true);
@@ -1028,7 +1089,7 @@ function PortalTab({
 
   if (portalState === "not_configured" && !showCreateUser) {
     return (
-      <div className="empresa-portal-empty">
+      <div className="empresa-portal-empty empresa-portal-checklist-card">
         <div className="empresa-portal-empty-icon" aria-hidden>
           <Globe className="h-5 w-5" />
         </div>
@@ -1037,10 +1098,14 @@ function PortalTab({
           Configure o acesso para que o RH da empresa acompanhe colaboradores, exames e
           documentos.
         </p>
-        <ol className="empresa-portal-steps">
-          <li>Ativar o portal da empresa</li>
-          <li>Criar o usuário responsável do RH</li>
-        </ol>
+        <ul className="empresa-portal-checklist">
+          {PORTAL_CHECKLIST.map((item) => (
+            <li key={item} className="empresa-portal-checklist-item">
+              <CheckCircle2 className="empresa-portal-checklist-icon" aria-hidden />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
         {canManage && (
           <Button
             variant="brand"
@@ -1049,7 +1114,7 @@ function PortalTab({
             disabled={busy}
             onClick={configurePortal}
           >
-            Configurar acesso ao portal
+            Configurar portal
           </Button>
         )}
       </div>
@@ -1058,11 +1123,11 @@ function PortalTab({
 
   return (
     <div className="space-y-4">
-      <section className="colaborador-perfil-block">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+      <section className="empresa-erp-panel">
+        <div className="empresa-perfil-tab-toolbar empresa-perfil-tab-toolbar--inner">
           <div>
-            <h2 className="colaborador-perfil-block-title">Status do portal</h2>
-            <div className="mt-2 flex items-center gap-2">
+            <h2 className="empresa-perfil-section-title">Status do portal</h2>
+            <div className="mt-1 flex items-center gap-2">
               {portalState === "active" ? (
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" aria-hidden />
               ) : (
@@ -1108,21 +1173,28 @@ function PortalTab({
           )}
         </div>
 
-        <dl className="colaborador-perfil-fields mt-4">
-          <Field label="Usuários vinculados" value={String(company.portalUsers.length)} />
-          <Field label="Responsável" value={primaryUser?.name ?? "—"} />
-          <Field label="E-mail" value={primaryUser?.email ?? company.email ?? "—"} />
-          <Field label="Último acesso" value="—" />
+        <dl className="empresa-erp-fields">
+          <FieldRow label="Usuários vinculados" value={String(company.portalUsers.length)} />
+          <FieldRow label="Responsável" value={displayValue(primaryUser?.name)} />
+          <FieldRow
+            label="E-mail"
+            value={displayValue(primaryUser?.email ?? company.email)}
+          />
+          <FieldRow
+            label="Data de ativação"
+            value={format(new Date(activationDate), "dd/MM/yyyy", { locale: ptBR })}
+          />
+          <FieldRow label="Último acesso" value="Não informado" />
         </dl>
       </section>
 
       {(showCreateUser || portalState === "not_configured") && canManage && (
-        <section className="colaborador-perfil-block">
-          <h2 className="colaborador-perfil-block-title">Criar usuário do RH</h2>
-          <p className="mb-3 text-xs text-slate-500">
+        <section className="empresa-erp-panel">
+          <h2 className="empresa-erp-panel-title">Criar usuário do RH</h2>
+          <p className="px-[0.85rem] pt-2 text-xs text-slate-500">
             Após ativar o portal, crie o acesso do responsável para o RH entrar no sistema.
           </p>
-          <div className="empresa-portal-form">
+          <div className="empresa-portal-form p-[0.85rem]">
             <Input
               placeholder="Nome do responsável"
               value={name}
@@ -1166,17 +1238,18 @@ function PortalTab({
       )}
 
       {company.portalUsers.length > 0 && (
-        <section className="colaborador-perfil-block">
-          <h2 className="colaborador-perfil-block-title">Usuários vinculados</h2>
-          <div className="colaboradores-empresa-table-scroll">
+        <section className="empresa-erp-panel">
+          <h2 className="empresa-erp-panel-title">Usuários vinculados</h2>
+          <div className="empresa-perfil-table-scroll empresa-perfil-table-scroll--always">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>E-mail</TableHead>
+                  <TableHead>Perfil</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Cadastro</TableHead>
-                  <TableHead className="w-10" />
+                  <TableHead className="w-28">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1184,6 +1257,7 @@ function PortalTab({
                   <TableRow key={u.id}>
                     <TableCell>{u.name}</TableCell>
                     <TableCell>{u.email}</TableCell>
+                    <TableCell>RH</TableCell>
                     <TableCell>{u.status === "ACTIVE" ? "Ativo" : "Inativo"}</TableCell>
                     <TableCell>
                       {format(new Date(u.createdAt), "dd/MM/yyyy", { locale: ptBR })}
@@ -1200,7 +1274,7 @@ function PortalTab({
                           }}
                         >
                           <KeyRound className="mr-1.5 h-3.5 w-3.5" />
-                          Redefinir
+                          Redefinir senha
                         </Button>
                       )}
                     </TableCell>
@@ -1213,9 +1287,9 @@ function PortalTab({
       )}
 
       {resetUserId && canManage && (
-        <section className="colaborador-perfil-block">
-          <h2 className="colaborador-perfil-block-title">Redefinir acesso</h2>
-          <div className="empresa-portal-form">
+        <section className="empresa-erp-panel">
+          <h2 className="empresa-erp-panel-title">Redefinir acesso</h2>
+          <div className="empresa-portal-form p-[0.85rem]">
             <Input
               type="password"
               placeholder="Nova senha"
@@ -1248,27 +1322,119 @@ function PortalTab({
   );
 }
 
+const HISTORY_ACTION_ICONS: Record<CompanyHistoryAction, typeof Building2> = {
+  CREATED: Building2,
+  UPDATED: Pencil,
+  STATUS_CHANGED: AlertTriangle,
+  EMPLOYEE_ADDED: UserPlus,
+  REFERRAL_CREATED: FileText,
+  QUOTE_SENT: DollarSign,
+  DOCUMENT_ATTACHED: FileText,
+  PORTAL_ENABLED: Globe,
+  PORTAL_DISABLED: ShieldOff,
+  USER_CREATED: UserPlus,
+  CONTACT_ADDED: MessageCircle,
+};
+
 function HistoryTab({ company }: { company: CompanyDetailSerialized }) {
-  return company.history.length === 0 ? (
-    <InlineEmptyNote>Nenhum registro no histórico.</InlineEmptyNote>
-  ) : (
-    <ul className="referral-history-list">
-      {company.history.map((h) => (
-        <li key={h.id} className="referral-history-item">
-          <div className="flex justify-between">
-            <span className="text-sm font-medium">
-              {COMPANY_HISTORY_ACTION_LABELS[h.action] ?? h.action}
-            </span>
-            <span className="text-xs text-slate-400">
-              {format(new Date(h.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-            </span>
-          </div>
-          {h.performedByName && (
-            <p className="text-xs text-slate-500">Por: {h.performedByName}</p>
-          )}
-          {h.notes && <p className="mt-1 text-sm text-slate-600">{h.notes}</p>}
-        </li>
-      ))}
-    </ul>
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return company.history;
+    return company.history.filter((h) => {
+      const title = COMPANY_HISTORY_ACTION_LABELS[h.action] ?? h.action;
+      const description = h.notes ?? (h.performedByName ? `Por ${h.performedByName}` : "");
+      return [title, description, h.performedByName ?? ""].join(" ").toLowerCase().includes(q);
+    });
+  }, [company.history, search]);
+
+  const groupedByDay = useMemo(() => {
+    const groups = new Map<string, typeof filtered>();
+    for (const item of filtered) {
+      const dayKey = format(startOfDay(new Date(item.createdAt)), "yyyy-MM-dd");
+      const existing = groups.get(dayKey) ?? [];
+      existing.push(item);
+      groups.set(dayKey, existing);
+    }
+    return Array.from(groups.entries()).sort(([a], [b]) => b.localeCompare(a));
+  }, [filtered]);
+
+  if (company.history.length === 0) {
+    return (
+      <EmptyState
+        compact
+        className="empresa-perfil-empty-compact"
+        title="Nenhuma atividade registrada"
+        description="As alterações realizadas nesta empresa aparecerão aqui."
+      />
+    );
+  }
+
+  return (
+    <div>
+      <div className="empresa-perfil-tab-toolbar empresa-perfil-tab-toolbar--filters">
+        <div className="empresa-perfil-search">
+          <Search className="empresa-perfil-search-icon" aria-hidden />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar no histórico"
+            className="empresa-perfil-search-input"
+          />
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          compact
+          className="empresa-perfil-empty-compact"
+          title="Nenhum resultado para a busca"
+          description="Tente outro termo ou limpe o filtro."
+        />
+      ) : (
+        <div className="empresa-perfil-timeline">
+          {groupedByDay.map(([dayKey, items]) => (
+            <section key={dayKey} className="empresa-perfil-timeline-day">
+              <h3 className="empresa-perfil-timeline-day-label">
+                {format(new Date(dayKey), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              </h3>
+              <ul className="empresa-perfil-timeline-list">
+                {items.map((h) => {
+                  const Icon = HISTORY_ACTION_ICONS[h.action] ?? Building2;
+                  const description =
+                    h.notes ?? (h.performedByName ? `Por ${h.performedByName}` : null);
+                  return (
+                    <li key={h.id} className="empresa-perfil-timeline-item">
+                      <span className="empresa-perfil-timeline-icon" aria-hidden>
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <div className="empresa-perfil-timeline-content">
+                        <div className="empresa-perfil-timeline-head">
+                          <span className="empresa-perfil-timeline-title">
+                            {COMPANY_HISTORY_ACTION_LABELS[h.action] ?? h.action}
+                          </span>
+                          <time
+                            className="empresa-perfil-timeline-time"
+                            dateTime={h.createdAt}
+                          >
+                            {format(new Date(h.createdAt), "dd/MM/yyyy 'às' HH:mm", {
+                              locale: ptBR,
+                            })}
+                          </time>
+                        </div>
+                        {description ? (
+                          <p className="empresa-perfil-timeline-desc">{description}</p>
+                        ) : null}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
