@@ -202,7 +202,6 @@ export function CollaboratorFilterPanel({
             </Button>
           </div>
         </div>
-      </div>
     </div>
   );
 }
