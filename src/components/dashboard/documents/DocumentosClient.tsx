@@ -15,22 +15,19 @@ import {
   Download,
   type LucideIcon,
 } from "lucide-react";
-import type { DocumentDetailSerialized, DocumentListItem, DocumentFormOptions } from "@/lib/documents";
-import {
-  DOCUMENT_KPI_CARDS,
-  getDocumentDisplayStatus,
-} from "@/lib/documents";
-import {
-  getDocumentDetail,
-  updateDocumentStatus,
-} from "@/actions/documents";
+import type { DocumentListItem, DocumentFormOptions } from "@/lib/documents";
+import { DOCUMENT_KPI_CARDS, getDocumentDisplayStatus } from "@/lib/documents";
+import { updateDocumentStatus } from "@/actions/documents";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterChips } from "@/components/dashboard/FilterChips";
 import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
 import { LoadingState } from "@/components/ui/loading-state";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { DocumentFormDialog } from "./DocumentDialogs";
+import {
+  DocumentAttachPanel,
+  type AttachContext,
+} from "./DocumentAttachPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -58,6 +55,18 @@ type DocumentosClientProps = {
   isEmpresaPortal?: boolean;
 };
 
+function toAttachContext(item: DocumentListItem): AttachContext {
+  return {
+    documentId: item.id,
+    referralId: item.referralId,
+    companyId: item.companyId,
+    companyName: item.companyName,
+    patientId: item.patientId,
+    patientName: item.patientName,
+    protocol: item.protocol,
+  };
+}
+
 export function DocumentosClient({
   initialItems,
   initialTotal,
@@ -74,12 +83,11 @@ export function DocumentosClient({
 
   const [q, setQ] = useState(filters.q ?? "");
   const [companyId, setCompanyId] = useState(filters.companyId ?? "");
-  const [formOpen, setFormOpen] = useState(false);
-  const [editDoc, setEditDoc] = useState<DocumentDetailSerialized | null>(null);
-  const [prefillReferralId, setPrefillReferralId] = useState<string | undefined>();
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [attachContext, setAttachContext] = useState<AttachContext | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const activeCard = filters.card ?? "";
+  const activeCard = filters.card ?? "PENDENTES_LIBERACAO";
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
 
   const updateFilters = useCallback(
@@ -109,10 +117,12 @@ export function DocumentosClient({
   const clearFilters = () => {
     setQ("");
     setCompanyId("");
-    startTransition(() => router.push("/dashboard/documentos"));
+    startTransition(() => router.push("/dashboard/documentos?card=PENDENTES_LIBERACAO"));
   };
 
-  const hasActiveFilters = Boolean(filters.q || filters.card || filters.companyId);
+  const hasActiveFilters = Boolean(
+    filters.q || filters.companyId || (filters.card && filters.card !== "PENDENTES_LIBERACAO")
+  );
 
   const activeChips = useMemo(
     () =>
@@ -120,7 +130,7 @@ export function DocumentosClient({
         { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
         {
           key: "card",
-          value: filters.card,
+          value: filters.card && filters.card !== "PENDENTES_LIBERACAO" ? filters.card : undefined,
           label: (v) => DOCUMENT_KPI_CARDS.find((c) => c.filter === v)?.label ?? v,
         },
         {
@@ -140,13 +150,32 @@ export function DocumentosClient({
   const removeChip = (key: string) => {
     if (key === "q") setQ("");
     if (key === "companyId") setCompanyId("");
+    if (key === "card") {
+      updateFilters({ ...removeFilterKey(key, filters), card: "PENDENTES_LIBERACAO" });
+      return;
+    }
     updateFilters(removeFilterKey(key, filters));
   };
 
-  const openReleaseForm = (doc?: DocumentDetailSerialized | null, referralId?: string) => {
-    setEditDoc(doc ?? null);
-    setPrefillReferralId(referralId);
-    setFormOpen(true);
+  const pendingQueue = useMemo(
+    () =>
+      initialItems
+        .filter((item) => {
+          const display = getDocumentDisplayStatus(item);
+          return !(display.status === "DISPONIVEL" && item.hasFile);
+        })
+        .map(toAttachContext),
+    [initialItems]
+  );
+
+  const openAttach = (item: DocumentListItem) => {
+    setAttachContext(toAttachContext(item));
+    setPanelOpen(true);
+  };
+
+  const openNext = (next: AttachContext) => {
+    setAttachContext(next);
+    setPanelOpen(true);
   };
 
   const liberar = async (id: string) => {
@@ -157,17 +186,8 @@ export function DocumentosClient({
       toast.error(result.error);
       return;
     }
-    toast.success("ASO liberado para a empresa.");
+    toast.success("Liberado para a empresa.");
     router.refresh();
-  };
-
-  const openAttachExisting = async (id: string) => {
-    const result = await getDocumentDetail(id);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
-    }
-    openReleaseForm(result.document);
   };
 
   useEffect(() => {
@@ -175,35 +195,26 @@ export function DocumentosClient({
     setCompanyId(filters.companyId ?? "");
   }, [filters]);
 
+  // Entrada padrão: fila de pendentes (trabalho em massa)
   useEffect(() => {
-    if ((searchParams.get("new") === "1" || searchParams.get("attach") === "1") && canManage) {
-      openReleaseForm(null, searchParams.get("referralId") ?? undefined);
+    if (!filters.card && !searchParams.get("card")) {
+      updateFilters({ card: "PENDENTES_LIBERACAO" });
     }
-  }, [searchParams, canManage]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resultLabel =
-    initialTotal === 1 ? "1 ASO na fila" : `${initialTotal} ASOs na fila`;
+    initialTotal === 1 ? "1 colaborador na fila" : `${initialTotal} na fila`;
 
   return (
     <PageModule className="documentos-clinica atendimentos-clinica">
       <header className="sys-page-header">
         <div>
-          <h1 className="sys-page-title">Documentos — liberação de ASO</h1>
+          <h1 className="sys-page-title">Documentos</h1>
           <p className="sys-page-subtitle">
-            Anexe o ASO do atendimento e libere para a empresa baixar no portal. Nada além disso.
+            Fila de pendentes por colaborador. Abra cada um, anexe os arquivos e libere para a
+            empresa.
           </p>
         </div>
-        {canManage && (
-          <Button
-            variant="brand"
-            size="sm"
-            className="rounded-md"
-            onClick={() => openReleaseForm(null)}
-          >
-            <Paperclip className="mr-2 h-4 w-4" />
-            Anexar e liberar ASO
-          </Button>
-        )}
       </header>
 
       <div className="colaboradores-empresa-stats documentos-clinica-stats">
@@ -214,7 +225,7 @@ export function DocumentosClient({
             <button
               key={card.key}
               type="button"
-              onClick={() => updateFilters({ card: isActive ? undefined : card.filter })}
+              onClick={() => updateFilters({ card: card.filter })}
               className={cn(
                 "colaboradores-empresa-stat colaboradores-empresa-stat--clickable",
                 isActive && "colaboradores-empresa-stat--active"
@@ -249,7 +260,7 @@ export function DocumentosClient({
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && pushCurrentFilters()}
               placeholder="Empresa, colaborador ou protocolo"
-              aria-label="Buscar ASOs"
+              aria-label="Buscar na fila"
               className="colaboradores-empresa-search-input"
             />
           </div>
@@ -287,7 +298,7 @@ export function DocumentosClient({
       </div>
 
       <div className="colaboradores-empresa-table-wrap relative sys-table-panel">
-        {isPending && <LoadingState overlay label="Atualizando documentos..." />}
+        {isPending && <LoadingState overlay label="Atualizando fila..." />}
 
         <div className="colaboradores-empresa-result-bar">
           <span className="text-xs text-slate-500">{resultLabel}</span>
@@ -296,13 +307,8 @@ export function DocumentosClient({
         {initialItems.length === 0 ? (
           <EmptyState
             icon={FolderOpen}
-            title="Nenhum ASO nesta fila"
-            description="Quando o atendimento for concluído, anexe o ASO aqui e libere para a empresa."
-            action={
-              canManage
-                ? { label: "Anexar e liberar ASO", onClick: () => openReleaseForm(null) }
-                : undefined
-            }
+            title="Nenhum pendente na fila"
+            description="Quando houver atendimentos concluídos aguardando documentação, eles aparecem aqui."
           />
         ) : (
           <div className="colaboradores-empresa-table-scroll">
@@ -312,7 +318,7 @@ export function DocumentosClient({
                   <th>Colaborador</th>
                   <th>Empresa</th>
                   <th>Protocolo</th>
-                  <th>Recebido em</th>
+                  <th>Data</th>
                   <th>Situação</th>
                   {canManage && <th className="colaboradores-empresa-th-actions">Ação</th>}
                 </tr>
@@ -373,21 +379,16 @@ export function DocumentosClient({
                                 Liberar
                               </Button>
                             )}
-                            {!item.hasFile && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="rounded-md"
-                                onClick={() => openAttachExisting(item.id)}
-                              >
-                                <Paperclip className="mr-1.5 h-3.5 w-3.5" />
-                                Anexar
-                              </Button>
-                            )}
-                            {isLiberado && (
-                              <span className="text-xs font-medium text-emerald-700">OK</span>
-                            )}
+                            <Button
+                              type="button"
+                              variant={isLiberado ? "outline" : "brand"}
+                              size="sm"
+                              className="rounded-md"
+                              onClick={() => openAttach(item)}
+                            >
+                              <Paperclip className="mr-1.5 h-3.5 w-3.5" />
+                              {isLiberado ? "Arquivos" : "Anexar"}
+                            </Button>
                           </div>
                         </td>
                       )}
@@ -426,25 +427,13 @@ export function DocumentosClient({
         </div>
       )}
 
-      <DocumentFormDialog
-        open={formOpen}
-        onOpenChange={(open) => {
-          setFormOpen(open);
-          if (!open) {
-            setEditDoc(null);
-            setPrefillReferralId(undefined);
-          }
-        }}
-        document={editDoc}
-        formOptions={formOptions}
-        asoReleaseMode
-        prefillReferralId={prefillReferralId}
-        onSuccess={() => {
-          setFormOpen(false);
-          setEditDoc(null);
-          setPrefillReferralId(undefined);
-          router.refresh();
-        }}
+      <DocumentAttachPanel
+        open={panelOpen}
+        onOpenChange={setPanelOpen}
+        context={attachContext}
+        pendingQueue={pendingQueue}
+        onDone={() => router.refresh()}
+        onOpenNext={(next) => openNext(next)}
       />
     </PageModule>
   );

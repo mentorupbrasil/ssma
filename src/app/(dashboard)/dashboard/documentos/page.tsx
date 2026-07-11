@@ -63,8 +63,13 @@ async function DocumentosContent({ searchParams }: { searchParams: SearchParams 
     );
   }
 
+  const clinicFilters = {
+    ...filterInput,
+    card: filterInput.card ?? "PENDENTES_LIBERACAO",
+  };
+
   const [data, formOptions] = await Promise.all([
-    listDocumentsForDashboard(filterInput, companyFilter.companyId),
+    listDocumentsForDashboard(clinicFilters, companyFilter.companyId),
     getDocumentFormOptions(),
   ]);
 
@@ -79,7 +84,7 @@ async function DocumentosContent({ searchParams }: { searchParams: SearchParams 
       formOptions={formOptions}
       filters={{
         q: param(sp.q),
-        card: param(sp.card),
+        card: clinicFilters.card,
         type: param(sp.type),
         status: param(sp.status),
         companyId: param(sp.companyId),

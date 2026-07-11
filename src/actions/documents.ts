@@ -235,6 +235,38 @@ export async function listDocumentsForEmpresa(
   };
 }
 
+export async function listDocumentsForReferralContext(
+  referralId: string
+): Promise<ActionResult<{ documents: DocumentListItem[] }>> {
+  try {
+    await requirePermission("documents.manage");
+    if (!referralId) return { success: false, error: "Atendimento inválido." };
+
+    const documents = await prisma.document.findMany({
+      where: {
+        referralId,
+        status: { notIn: ["ARQUIVADO", "CANCELADO"] },
+      },
+      include: {
+        company: { select: { legalName: true, tradeName: true, whatsapp: true, phone: true } },
+        patient: { select: { fullName: true } },
+        referral: { select: { protocol: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return {
+      success: true,
+      documents: documents.map(serializeDocumentListItem),
+    };
+  } catch (e) {
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Erro ao carregar documentos do atendimento.",
+    };
+  }
+}
+
 export async function getDocumentDetail(
   id: string
 ): Promise<ActionResult<{ document: DocumentDetailSerialized }>> {

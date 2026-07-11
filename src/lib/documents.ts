@@ -33,14 +33,14 @@ export const DOCUMENT_KPI_CARDS: {
   {
     key: "pendentes_liberacao",
     filter: "PENDENTES_LIBERACAO",
-    label: "Pendentes de liberação",
-    hint: "ASO ainda não liberado para a empresa",
+    label: "Pendentes",
+    hint: "Fila para anexar e liberar",
   },
   {
     key: "liberados",
     filter: "LIBERADOS",
     label: "Liberados",
-    hint: "Empresa já pode baixar no portal",
+    hint: "Empresa já pode baixar",
   },
 ];
 
@@ -159,8 +159,11 @@ export type DocumentListItem = {
   type: DocumentType;
   fileName: string | null;
   linkLabel: string;
+  companyId: string | null;
   companyName: string | null;
+  patientId: string | null;
   patientName: string | null;
+  referralId: string | null;
   contactPhone: string | null;
   protocol: string | null;
   createdAt: string;
@@ -415,8 +418,11 @@ export function serializeDocumentListItem(doc: DocWithRelations): DocumentListIt
     type: doc.type,
     fileName: doc.fileName,
     linkLabel: getLinkLabel(doc),
+    companyId: doc.companyId,
     companyName: doc.company?.tradeName ?? doc.company?.legalName ?? null,
+    patientId: doc.patientId,
     patientName: doc.patient?.fullName ?? null,
+    referralId: doc.referralId,
     contactPhone: doc.company?.whatsapp ?? doc.company?.phone ?? null,
     protocol: doc.referral?.protocol ?? null,
     createdAt: doc.createdAt.toISOString(),
@@ -426,6 +432,66 @@ export function serializeDocumentListItem(doc: DocWithRelations): DocumentListIt
     sensitive: doc.sensitive,
     hasFile: !!doc.fileUrl,
   };
+}
+
+/** Slots de anexos do pós-atendimento (visão clínica) */
+export const CLINIC_ATTACH_SLOTS: {
+  key: string;
+  label: string;
+  type: DocumentType;
+  titlePrefix: string;
+  required?: boolean;
+  hint: string;
+}[] = [
+  {
+    key: "aso",
+    label: "ASO",
+    type: "ASO",
+    titlePrefix: "ASO",
+    required: true,
+    hint: "Atestado de Saúde Ocupacional",
+  },
+  {
+    key: "ficha",
+    label: "Ficha clínica",
+    type: "OUTRO",
+    titlePrefix: "Ficha clínica",
+    hint: "Ficha clínica do atendimento",
+  },
+  {
+    key: "lab",
+    label: "Exames laboratoriais",
+    type: "RESULTADO_EXAME",
+    titlePrefix: "Exames laboratoriais",
+    hint: "Resultados de laboratório",
+  },
+  {
+    key: "complementares",
+    label: "Exames complementares",
+    type: "LAUDO",
+    titlePrefix: "Exames complementares",
+    hint: "Laudos e exames complementares",
+  },
+  {
+    key: "completa",
+    label: "Documentação completa",
+    type: "OUTRO",
+    titlePrefix: "Documentação completa",
+    hint: "Pacote completo / PDF consolidado",
+  },
+];
+
+export function matchDocumentToAttachSlot(doc: {
+  type: DocumentType;
+  title: string;
+}): string | null {
+  if (doc.type === "ASO") return "aso";
+  const title = doc.title.toLowerCase();
+  for (const slot of CLINIC_ATTACH_SLOTS) {
+    if (slot.key === "aso") continue;
+    if (title.startsWith(slot.titlePrefix.toLowerCase())) return slot.key;
+  }
+  return null;
 }
 
 export function canManageDocuments(role: UserRole): boolean {
