@@ -154,13 +154,26 @@ export function buildReferralWhere(
 
   if (filters.q?.trim()) {
     const q = filters.q.trim();
+    const qLower = q.toLowerCase();
     const digits = q.replace(/\D/g, "");
+    const matchingExamTypes = (
+      Object.entries(CLINICAL_EXAM_LABELS) as [ClinicalExamType, string][]
+    )
+      .filter(
+        ([value, label]) =>
+          label.toLowerCase().includes(qLower) || value.toLowerCase().includes(qLower)
+      )
+      .map(([value]) => value);
+
     where.OR = [
       { protocol: { contains: q, mode: "insensitive" } },
       { company: { legalName: { contains: q, mode: "insensitive" } } },
       { company: { tradeName: { contains: q, mode: "insensitive" } } },
       { patient: { fullName: { contains: q, mode: "insensitive" } } },
       ...(digits.length >= 3 ? [{ patient: { cpf: { contains: digits } } }] : []),
+      ...(matchingExamTypes.length
+        ? [{ clinicalExamType: { in: matchingExamTypes } }]
+        : []),
     ];
   }
 

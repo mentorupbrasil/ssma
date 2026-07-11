@@ -26,7 +26,7 @@ import { requireAuthSession } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
 import { getDashboardOverview } from "@/lib/dashboard-overview";
 import { getMetricMeta } from "@/lib/metric-cards";
-import { empresaReferralStatusLabel } from "@/lib/empresa-portal";
+import { empresaReferralDisplayStatus } from "@/lib/empresa-portal";
 import type { ReferralStatus } from "@prisma/client";
 
 export default async function DashboardPage() {
@@ -161,9 +161,19 @@ export default async function DashboardPage() {
                         </p>
                       </div>
                       <StatusBadge
-                        status={r.status}
+                        status={
+                          empresaReferralDisplayStatus(
+                            r.status as ReferralStatus,
+                            r.scheduledAt
+                          ).toneStatus
+                        }
                         type="referral"
-                        label={empresaReferralStatusLabel(r.status as ReferralStatus)}
+                        label={
+                          empresaReferralDisplayStatus(
+                            r.status as ReferralStatus,
+                            r.scheduledAt
+                          ).label
+                        }
                       />
                     </Link>
                   ))}

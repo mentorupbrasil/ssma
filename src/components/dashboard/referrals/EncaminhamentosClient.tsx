@@ -67,7 +67,7 @@ import {
   ReferralScheduleDialog,
   ReferralDocumentDialog,
 } from "./ReferralActionDialogs";
-import { empresaReferralStatusLabel, EMPRESA_EXAMES_STATUS_FILTER_OPTIONS } from "@/lib/empresa-portal";
+import { empresaReferralDisplayStatus, EMPRESA_EXAMES_STATUS_FILTER_OPTIONS } from "@/lib/empresa-portal";
 import { cn } from "@/lib/utils";
 
 type CompanyOption = { id: string; name: string };
@@ -450,10 +450,16 @@ export function EncaminhamentosClient({
                     )}
                     <TableCell>
                       <StatusBadge
-                        status={item.status}
+                        status={
+                          isEmpresa
+                            ? empresaReferralDisplayStatus(item.status, item.scheduledAt).toneStatus
+                            : item.status
+                        }
                         type="referral"
                         label={
-                          isEmpresa ? empresaReferralStatusLabel(item.status) : undefined
+                          isEmpresa
+                            ? empresaReferralDisplayStatus(item.status, item.scheduledAt).label
+                            : undefined
                         }
                       />
                     </TableCell>
@@ -561,9 +567,17 @@ export function EncaminhamentosClient({
                 }
                 badge={
                   <StatusBadge
-                    status={item.status}
+                    status={
+                      isEmpresa
+                        ? empresaReferralDisplayStatus(item.status, item.scheduledAt).toneStatus
+                        : item.status
+                    }
                     type="referral"
-                    label={isEmpresa ? empresaReferralStatusLabel(item.status) : undefined}
+                    label={
+                      isEmpresa
+                        ? empresaReferralDisplayStatus(item.status, item.scheduledAt).label
+                        : undefined
+                    }
                   />
                 }
                 onClick={() => openDetail(item.id)}

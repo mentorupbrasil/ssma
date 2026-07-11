@@ -3,7 +3,6 @@ import { COLLABORATOR_STAT_CARDS } from "@/lib/collaborators";
 import { APPOINTMENT_STAT_CARDS } from "@/lib/appointments";
 import { TICKET_STAT_CARDS } from "@/lib/tickets";
 import { isCompanyHr } from "@/lib/tenant";
-import { REFERRAL_STATUS_LABELS } from "@/types";
 import type { UserRole } from "@/types/roles";
 
 export function isEmpresaPortalRole(role: UserRole): boolean {
@@ -88,31 +87,90 @@ export function empresaReferralCardLabel(key: string): string {
   return empresaReferralCardByKey(key)?.label ?? key;
 }
 
+const EMPRESA_PRE_SCHEDULE_STATUSES: ReferralStatus[] = [
+  "NOVO",
+  "EM_ANALISE",
+  "AGUARDANDO_AGENDAMENTO",
+  "AGENDADO",
+];
+
+const EMPRESA_IN_ATTENDANCE_STATUSES: ReferralStatus[] = [
+  "EM_ATENDIMENTO",
+  "AGUARDANDO_RESULTADO",
+  "AGUARDANDO_DOCUMENTO",
+];
+
+const EMPRESA_FINISHED_STATUSES: ReferralStatus[] = ["CONCLUIDO", "ASO_DISPONIVEL"];
+
 export function applyEmpresaReferralStatusFilter(
   where: import("@prisma/client").Prisma.ReferralWhereInput,
   statusFilter?: string
 ): import("@prisma/client").Prisma.ReferralWhereInput {
-  const card = empresaReferralCardByKey(statusFilter);
-  if (!card) return where;
-  return { ...where, status: { in: card.statuses } };
+  if (!statusFilter) return where;
+
+  switch (statusFilter) {
+    case "AGUARDANDO_AGENDAMENTO":
+      return {
+        ...where,
+        scheduledAt: null,
+        status: { in: EMPRESA_PRE_SCHEDULE_STATUSES },
+      };
+    case "AGENDADO":
+      return {
+        ...where,
+        scheduledAt: { not: null },
+        status: { in: EMPRESA_PRE_SCHEDULE_STATUSES },
+      };
+    case "EM_ATENDIMENTO":
+      return {
+        ...where,
+        status: { in: EMPRESA_IN_ATTENDANCE_STATUSES },
+      };
+    case "CONCLUIDO":
+      return {
+        ...where,
+        status: { in: EMPRESA_FINISHED_STATUSES },
+      };
+    case "CANCELADO":
+      return {
+        ...where,
+        status: "CANCELADO",
+      };
+    default: {
+      const card = empresaReferralCardByKey(statusFilter);
+      if (!card) return where;
+      return { ...where, status: { in: card.statuses } };
+    }
+  }
 }
 
-/** Rótulos amigáveis para o RH (sem jargão de agenda da clínica) */
-export const EMPRESA_REFERRAL_STATUS_LABELS: Partial<Record<ReferralStatus, string>> = {
-  NOVO: "Agendado",
-  EM_ANALISE: "Agendado",
-  AGUARDANDO_AGENDAMENTO: "Agendado",
-  AGENDADO: "Agendado",
-  EM_ATENDIMENTO: "Agendado",
-  AGUARDANDO_RESULTADO: "Agendado",
-  AGUARDANDO_DOCUMENTO: "Aguardando documento",
-  ASO_DISPONIVEL: "ASO disponível",
-  CONCLUIDO: "Concluído",
-  CANCELADO: "Cancelado",
-};
+/**
+ * Status exibido para o RH — nunca mostra "Agendado" sem data/horário reais.
+ */
+export function empresaReferralDisplayStatus(
+  status: ReferralStatus,
+  scheduledAt?: string | Date | null
+): { label: string; toneStatus: string } {
+  if (status === "CANCELADO") {
+    return { label: "Cancelado", toneStatus: "CANCELADO" };
+  }
+  if (EMPRESA_FINISHED_STATUSES.includes(status)) {
+    return { label: "Concluído", toneStatus: "CONCLUIDO" };
+  }
+  if (EMPRESA_IN_ATTENDANCE_STATUSES.includes(status)) {
+    return { label: "Em atendimento", toneStatus: "EM_ATENDIMENTO" };
+  }
+  if (scheduledAt) {
+    return { label: "Agendado", toneStatus: "AGENDADO" };
+  }
+  return { label: "Aguardando agendamento", toneStatus: "AGUARDANDO_AGENDAMENTO" };
+}
 
-export function empresaReferralStatusLabel(status: ReferralStatus): string {
-  return EMPRESA_REFERRAL_STATUS_LABELS[status] ?? REFERRAL_STATUS_LABELS[status];
+export function empresaReferralStatusLabel(
+  status: ReferralStatus,
+  scheduledAt?: string | Date | null
+): string {
+  return empresaReferralDisplayStatus(status, scheduledAt).label;
 }
 
 /** Orientação objetiva para o RH conforme o status do encaminhamento */
@@ -120,37 +178,27 @@ export function empresaReferralStatusGuidance(
   status: ReferralStatus,
   scheduledAt: string | null
 ): string {
-  if (status === "CANCELADO") {
+  const { label } = empresaReferralDisplayStatus(status, scheduledAt);
+  if (label === "Cancelado") {
     return "Esta solicitação foi cancelada. Abra uma nova solicitação se necessário.";
   }
-  if (status === "ASO_DISPONIVEL" || status === "CONCLUIDO") {
-    return "O documento está disponível. Baixe o ASO na aba Documentos ou em ASOs e documentos.";
+  if (label === "Concluído") {
+    return "O exame foi finalizado. Confira os documentos na aba Documentos.";
   }
-  if (status === "AGUARDANDO_DOCUMENTO") {
-    return "O exame foi realizado. Aguarde a clínica anexar o ASO — você será notificado quando estiver disponível.";
+  if (label === "Em atendimento") {
+    return "O colaborador já compareceu. Acompanhe até a liberação do documento.";
   }
-  if (status === "AGENDADO" || status === "EM_ATENDIMENTO") {
-    if (scheduledAt) {
-      return "Exame agendado. Oriente o colaborador a comparecer na data e horário indicados com documento de identidade.";
-    }
-    return "Exame em andamento na clínica. Acompanhe até a liberação do documento.";
+  if (label === "Agendado") {
+    return "Exame agendado. Oriente o colaborador a comparecer na data e horário indicados com documento de identidade.";
   }
-  if (
-    status === "NOVO" ||
-    status === "EM_ANALISE" ||
-    status === "AGUARDANDO_AGENDAMENTO" ||
-    status === "AGUARDANDO_RESULTADO"
-  ) {
-    return "Solicitação registrada. A clínica processará o atendimento e atualizará o status aqui.";
-  }
-  return "Acompanhe o andamento nesta tela até a liberação do documento.";
+  return "Solicitação registrada. Aguarde a clínica definir data e horário do exame.";
 }
 
 export const EMPRESA_EXAMES_STATUS_FILTER_OPTIONS = [
   { value: "", label: "Status" },
-  { value: "AGENDADOS", label: "Agendado" },
-  { value: "AGUARDANDO_DOCUMENTO", label: "Aguardando documento" },
-  { value: "ASO_DISPONIVEL", label: "ASO disponível" },
+  { value: "AGUARDANDO_AGENDAMENTO", label: "Aguardando agendamento" },
+  { value: "AGENDADO", label: "Agendado" },
+  { value: "EM_ATENDIMENTO", label: "Em atendimento" },
   { value: "CONCLUIDO", label: "Concluído" },
   { value: "CANCELADO", label: "Cancelado" },
 ] as const;

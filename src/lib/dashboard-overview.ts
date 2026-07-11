@@ -46,6 +46,7 @@ export type DashboardOverview = {
     protocol: string;
     patientName: string;
     status: string;
+    scheduledAt: Date | null;
     createdAt: Date;
   }[];
   availableDocuments?: {
@@ -284,6 +285,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
             id: true,
             protocol: true,
             status: true,
+            scheduledAt: true,
             createdAt: true,
             patient: { select: { fullName: true } },
           },
@@ -501,6 +503,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           protocol: r.protocol,
           patientName: r.patient.fullName,
           status: r.status,
+          scheduledAt: r.scheduledAt,
           createdAt: r.createdAt,
         }))
       : undefined,

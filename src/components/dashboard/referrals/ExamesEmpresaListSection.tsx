@@ -8,7 +8,7 @@ import type { ReferralListItem } from "@/lib/referrals";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import {
   EMPRESA_EXAMES_STATUS_FILTER_OPTIONS,
-  empresaReferralStatusLabel,
+  empresaReferralDisplayStatus,
 } from "@/lib/empresa-portal";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -75,7 +75,14 @@ export function ExamesEmpresaListSection({
     total === 1 ? "1 solicitação encontrada" : `${total} solicitações encontradas`;
 
   const hasActiveFilters = useMemo(
-    () => Boolean(filters.q || filters.status || filters.clinicalExamType || filters.dateFrom || filters.dateTo),
+    () =>
+      Boolean(
+        filters.q ||
+          filters.status ||
+          filters.clinicalExamType ||
+          filters.dateFrom ||
+          filters.dateTo
+      ),
     [filters]
   );
 
@@ -101,7 +108,7 @@ export function ExamesEmpresaListSection({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && pushFilters()}
-              placeholder="Buscar por protocolo ou colaborador"
+              placeholder="Buscar por colaborador, CPF ou tipo de exame"
               aria-label="Buscar exames"
               className="colaboradores-empresa-search-input"
             />
@@ -235,67 +242,79 @@ export function ExamesEmpresaListSection({
                 <thead>
                   <tr>
                     <th>Colaborador</th>
-                    <th>Protocolo</th>
+                    <th>Função</th>
                     <th>Tipo de exame</th>
-                    <th>Solicitação</th>
-                    <th>Agendamento</th>
+                    <th>Data da solicitação</th>
+                    <th>Data e horário do agendamento</th>
                     <th>Status</th>
                     <th className="colaboradores-empresa-th-actions">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item) => (
-                    <tr key={item.id} className="colaboradores-empresa-row">
-                      <td>
-                        <div className="colaboradores-empresa-name">{item.employeeName}</div>
-                        {item.jobTitle && (
-                          <div className="colaboradores-empresa-role">{item.jobTitle}</div>
-                        )}
-                      </td>
-                      <td className="font-medium text-slate-700">{item.protocol}</td>
-                      <td>
-                        {CLINICAL_EXAM_LABELS[item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS]}
-                      </td>
-                      <td>
-                        {format(new Date(item.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
-                      </td>
-                      <td>
-                        {item.scheduledAt ? (
-                          <>
-                            <div className="colaboradores-empresa-exam-type">
-                              {format(new Date(item.scheduledAt), "dd/MM/yyyy", { locale: ptBR })}
-                            </div>
-                            <div className="colaboradores-empresa-exam-date">
-                              {format(new Date(item.scheduledAt), "HH:mm", { locale: ptBR })}
-                            </div>
-                          </>
-                        ) : (
-                          <span className="colaboradores-empresa-muted">—</span>
-                        )}
-                      </td>
-                      <td>
-                        <StatusBadge
-                          status={item.status}
-                          type="referral"
-                          label={empresaReferralStatusLabel(item.status)}
-                        />
-                      </td>
-                      <td className="colaboradores-empresa-td-actions">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-lg"
-                          disabled={detailLoading && selectedId === item.id}
-                          onClick={() => onOpenDetail(item.id)}
-                        >
-                          {detailLoading && selectedId === item.id ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : null}
-                          Ver detalhes
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {items.map((item) => {
+                    const display = empresaReferralDisplayStatus(item.status, item.scheduledAt);
+                    return (
+                      <tr key={item.id} className="colaboradores-empresa-row">
+                        <td>
+                          <div className="colaboradores-empresa-name">{item.employeeName}</div>
+                        </td>
+                        <td>
+                          {item.jobTitle ? (
+                            <span className="colaboradores-empresa-role">{item.jobTitle}</span>
+                          ) : (
+                            <span className="colaboradores-empresa-muted">—</span>
+                          )}
+                        </td>
+                        <td>
+                          {
+                            CLINICAL_EXAM_LABELS[
+                              item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS
+                            ]
+                          }
+                        </td>
+                        <td>
+                          {format(new Date(item.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
+                        </td>
+                        <td>
+                          {item.scheduledAt ? (
+                            <>
+                              <div className="colaboradores-empresa-exam-type">
+                                {format(new Date(item.scheduledAt), "dd/MM/yyyy", {
+                                  locale: ptBR,
+                                })}
+                              </div>
+                              <div className="colaboradores-empresa-exam-date">
+                                {format(new Date(item.scheduledAt), "HH:mm", { locale: ptBR })}
+                              </div>
+                            </>
+                          ) : (
+                            <span className="colaboradores-empresa-muted">—</span>
+                          )}
+                        </td>
+                        <td>
+                          <StatusBadge
+                            status={display.toneStatus}
+                            type="referral"
+                            label={display.label}
+                          />
+                        </td>
+                        <td className="colaboradores-empresa-td-actions">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-lg"
+                            disabled={detailLoading && selectedId === item.id}
+                            onClick={() => onOpenDetail(item.id)}
+                          >
+                            {detailLoading && selectedId === item.id ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
+                            Ver detalhes
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

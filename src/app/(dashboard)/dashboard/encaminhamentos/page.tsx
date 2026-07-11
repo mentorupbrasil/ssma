@@ -39,13 +39,11 @@ async function loadReferralsForPage(
 
   const page = Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1);
   let where = buildReferralWhere(
-    isEmpresa && statusParam && !["CONCLUIDO", "CANCELADO"].includes(statusParam)
-      ? { ...filters, status: undefined }
-      : filters,
+    isEmpresa && statusParam ? { ...filters, status: undefined } : filters,
     companyScope
   );
 
-  if (isEmpresa && statusParam && !["CONCLUIDO", "CANCELADO"].includes(statusParam)) {
+  if (isEmpresa && statusParam) {
     where = applyEmpresaReferralStatusFilter(where, statusParam);
   }
   const skip = (page - 1) * REFERRAL_PAGE_SIZE;
