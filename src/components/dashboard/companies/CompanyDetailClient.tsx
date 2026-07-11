@@ -148,12 +148,13 @@ export function CompanyDetailClient({
   };
 
   useEffect(() => {
-    if (tabParam && (LEGACY_TABS as readonly string[]).includes(tabParam)) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("tab", "overview");
-      router.replace(`/dashboard/empresas/${company.id}?${params.toString()}`);
-    }
-  }, [tabParam, company.id, router, searchParams]);
+    if (!tabParam || !(LEGACY_TABS as readonly string[]).includes(tabParam)) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "overview");
+    router.replace(`/dashboard/empresas/${company.id}?${params.toString()}`);
+    // Apenas quando o tab legado muda — evita replace em loop por identidade de searchParams
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabParam, company.id]);
 
   const refresh = () => router.refresh();
 
