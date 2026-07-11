@@ -48,7 +48,7 @@ async function EmpresasData({ searchParams }: { searchParams: SearchParams }) {
       where,
       include: {
         _count: { select: { patients: true, referrals: true, documents: true } },
-        documents: { select: { status: true, validUntil: true }, take: 20 },
+        documents: { select: { status: true, validUntil: true } },
         referrals: {
           where: { status: { in: OPEN_REFERRAL_STATUSES } },
           select: { id: true },

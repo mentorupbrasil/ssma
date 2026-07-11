@@ -204,6 +204,23 @@ export function computeDocumentSummary(
   return "EM_DIA";
 }
 
+export function computeCompanyPendingCount(
+  documents: { status: DocumentStatus; validUntil: Date | null }[]
+): number {
+  const now = new Date();
+  return documents.filter(
+    (d) =>
+      ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO", "VENCIDO"].includes(d.status) ||
+      (d.validUntil != null && d.validUntil < now && d.status !== "ARQUIVADO" && d.status !== "CANCELADO")
+  ).length;
+}
+
+export function formatCompanyPendingLabel(count: number): string {
+  if (count <= 0) return "Sem pendências";
+  if (count === 1) return "1 pendência";
+  return `${count} pendências`;
+}
+
 export type CompanyListItem = {
   id: string;
   legalName: string;
@@ -217,6 +234,7 @@ export type CompanyListItem = {
   employeeCount: number;
   referralCount: number;
   documentSummary: keyof typeof COMPANY_DOCUMENT_SUMMARY_LABELS;
+  pendingCount: number;
   openReferrals: number;
 };
 
@@ -242,6 +260,7 @@ export function serializeCompanyListItem(
     employeeCount: c._count.patients,
     referralCount: c._count.referrals,
     documentSummary: computeDocumentSummary(c.documents),
+    pendingCount: computeCompanyPendingCount(c.documents),
     openReferrals: c.referrals.length,
   };
 }

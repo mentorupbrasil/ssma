@@ -1388,6 +1388,16 @@
     color: rgb(217 119 6);
   }
 
+  .collaborator-action-icon--quote {
+    background: rgb(240 253 244);
+    color: rgb(22 163 74);
+  }
+
+  .collaborator-action-icon--portal {
+    background: rgb(243 232 255);
+    color: rgb(126 34 206);
+  }
+
   .collaborator-action-label {
     display: block;
     font-size: 0.8125rem;
@@ -3720,8 +3730,66 @@
   vertical-align: middle;
 }
 
-.empresas-clinica-table tbody tr:hover {
-  background: rgb(248 250 252);
+.empresas-clinica-table tbody td {
+  padding: 1rem 1rem;
+}
+
+.empresas-clinica-table tbody tr.empresas-clinica-row {
+  height: 4.6rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  transition: background-color 0.15s ease;
+}
+
+.empresas-clinica-table tbody tr.empresas-clinica-row:last-child {
+  border-bottom: 0;
+}
+
+.empresas-clinica-table tbody tr.empresas-clinica-row:hover {
+  background: rgb(248 250 252 / 0.9);
+}
+
+.empresas-clinica-cnpj {
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.empresas-clinica-phone {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.empresas-clinica-link-count {
+  font-weight: 650;
+  color: rgb(180 83 9);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgb(180 83 9 / 0.35);
+}
+
+.empresas-clinica-link-count:hover {
+  color: rgb(146 64 14);
+  text-decoration-color: rgb(146 64 14 / 0.55);
+}
+
+.empresas-clinica-pending {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.empresas-clinica-pending--ok {
+  background: rgb(240 253 244);
+  color: rgb(22 101 52);
+}
+
+.empresas-clinica-pending--alert {
+  background: rgb(255 247 237);
+  color: rgb(154 52 18);
 }
 
 .empresa-perfil {

@@ -5,11 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Plus,
   Search,
-  MoreHorizontal,
-  Eye,
-  FileText,
-  DollarSign,
-  ExternalLink,
   Loader2,
   ChevronLeft,
   ChevronRight,
@@ -23,7 +18,7 @@ import {
 import type { CompanyListItem } from "@/lib/companies";
 import {
   COMPANY_STAT_CARDS,
-  COMPANY_DOCUMENT_SUMMARY_LABELS,
+  formatCompanyPendingLabel,
 } from "@/lib/companies";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -33,13 +28,8 @@ import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { NewCompanyDialog } from "./CompanyDialogs";
+import { CompanyActionMenu } from "./CompanyActionMenu";
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 
@@ -464,7 +454,7 @@ export function EmpresasClient({
                 {initialItems.map((c) => (
                   <tr
                     key={c.id}
-                    className="cursor-pointer"
+                    className="empresas-clinica-row cursor-pointer"
                     onClick={() => router.push(`/dashboard/empresas/${c.id}`)}
                   >
                     <td>
@@ -475,10 +465,10 @@ export function EmpresasClient({
                         ) : null}
                       </div>
                     </td>
-                    <td className="whitespace-nowrap text-sm">{formatCNPJ(c.cnpj)}</td>
+                    <td className="empresas-clinica-cnpj">{formatCNPJ(c.cnpj)}</td>
                     <td>
                       <p className="text-sm">{c.responsibleName ?? "—"}</p>
-                      <p className="colaboradores-empresa-muted">
+                      <p className="colaboradores-empresa-muted empresas-clinica-phone">
                         {c.whatsapp ? formatPhone(c.whatsapp) : "—"}
                       </p>
                     </td>
@@ -488,26 +478,33 @@ export function EmpresasClient({
                     <td className="text-center text-sm">{c.employeeCount}</td>
                     <td className="text-center text-sm">
                       {c.openReferrals > 0 ? (
-                        <span className="font-semibold text-amber-700">{c.openReferrals}</span>
+                        <button
+                          type="button"
+                          className="empresas-clinica-link-count"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(
+                              `/dashboard/encaminhamentos?companyId=${c.id}`
+                            );
+                          }}
+                        >
+                          {c.openReferrals}
+                        </button>
                       ) : (
-                        "0"
+                        <span className="text-slate-400">0</span>
                       )}
                     </td>
                     <td>
-                      <StatusBadge
-                        status={
-                          (
-                            {
-                              EM_DIA: "EM_DIA",
-                              PENDENTE: "PENDENTE",
-                              VENCIDO: "VENCIDO",
-                              NONE: "ARQUIVADO",
-                            } as const
-                          )[c.documentSummary]
-                        }
-                        type="document"
-                        label={COMPANY_DOCUMENT_SUMMARY_LABELS[c.documentSummary]}
-                      />
+                      <span
+                        className={cn(
+                          "empresas-clinica-pending",
+                          c.pendingCount > 0
+                            ? "empresas-clinica-pending--alert"
+                            : "empresas-clinica-pending--ok"
+                        )}
+                      >
+                        {formatCompanyPendingLabel(c.pendingCount)}
+                      </span>
                     </td>
                     <td>
                       <StatusBadge status={c.status} type="company" />
@@ -516,48 +513,25 @@ export function EmpresasClient({
                       className="colaboradores-empresa-td-actions"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Ações</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => router.push(`/dashboard/empresas/${c.id}`)}
-                          >
-                            <Eye className="mr-2 h-4 w-4" /> Ver detalhes
-                          </DropdownMenuItem>
-                          {canManage && (
-                            <DropdownMenuItem
-                              onClick={() =>
+                      <CompanyActionMenu
+                        onViewDetails={() => router.push(`/dashboard/empresas/${c.id}`)}
+                        onCreateAttendance={
+                          canManage
+                            ? () =>
                                 router.push(
                                   `/dashboard/encaminhamentos/novo?companyId=${c.id}`
                                 )
-                              }
-                            >
-                              <FileText className="mr-2 h-4 w-4" /> Criar atendimento
-                            </DropdownMenuItem>
-                          )}
-                          {canManage && canCommercial && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                router.push(`/dashboard/orcamentos?companyId=${c.id}`)
-                              }
-                            >
-                              <DollarSign className="mr-2 h-4 w-4" /> Novo orçamento
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem
-                            onClick={() =>
-                              router.push(`/dashboard/empresas/${c.id}?tab=portal`)
-                            }
-                          >
-                            <ExternalLink className="mr-2 h-4 w-4" /> Gerenciar portal
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            : undefined
+                        }
+                        onNewQuote={
+                          canManage && canCommercial
+                            ? () => router.push(`/dashboard/orcamentos?companyId=${c.id}`)
+                            : undefined
+                        }
+                        onManagePortal={() =>
+                          router.push(`/dashboard/empresas/${c.id}?tab=portal`)
+                        }
+                      />
                     </td>
                   </tr>
                 ))}

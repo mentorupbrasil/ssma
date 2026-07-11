@@ -26,7 +26,8 @@ export function formatCNPJ(cnpj: string): string {
 
 export function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
-  if (digits.length === 13 && digits.startsWith("55")) {
+  if (!digits) return "";
+  if (digits.length >= 12 && digits.startsWith("55")) {
     return formatPhone(digits.slice(2));
   }
   if (digits.length === 11) {
@@ -35,8 +36,13 @@ export function formatPhone(phone: string): string {
   if (digits.length === 10) {
     return digits.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
   }
-  if (!digits.length) return "";
-  return phone;
+  if (digits.length === 9) {
+    return digits.replace(/(\d{5})(\d{4})/, "$1-$2");
+  }
+  if (digits.length === 8) {
+    return digits.replace(/(\d{4})(\d{4})/, "$1-$2");
+  }
+  return phone.trim();
 }
 
 /** @deprecated Prefer getClinicSiteConfig() — mantido para compatibilidade. */
