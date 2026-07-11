@@ -8,13 +8,19 @@ type CollaboratorActionMenuProps = {
   onViewDetails: () => void;
   onSchedule: () => void;
   onViewDocuments: () => void;
+  onViewProfile?: () => void;
+  variant?: "default" | "empresa";
 };
 
 export function CollaboratorActionMenu({
   onViewDetails,
   onSchedule,
   onViewDocuments,
+  onViewProfile,
+  variant = "default",
 }: CollaboratorActionMenuProps) {
+  const isEmpresa = variant === "empresa";
+
   return (
     <Popover>
       <PopoverTrigger
@@ -24,6 +30,7 @@ export function CollaboratorActionMenu({
             size="icon"
             className="h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800"
             onClick={(e) => e.stopPropagation()}
+            aria-label="Ações do colaborador"
           >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
@@ -35,13 +42,21 @@ export function CollaboratorActionMenu({
         sideOffset={6}
         onClick={(e) => e.stopPropagation()}
       >
-        <button type="button" className="collaborator-action-item" onClick={onViewDetails}>
+        <button
+          type="button"
+          className="collaborator-action-item"
+          onClick={onViewProfile ?? onViewDetails}
+        >
           <span className="collaborator-action-icon collaborator-action-icon--view">
             <Eye className="h-4 w-4" />
           </span>
           <span>
-            <span className="collaborator-action-label">Ver detalhes</span>
-            <span className="collaborator-action-hint">Histórico do colaborador</span>
+            <span className="collaborator-action-label">
+              {isEmpresa ? "Ver perfil" : "Ver detalhes"}
+            </span>
+            <span className="collaborator-action-hint">
+              {isEmpresa ? "Ficha completa do colaborador" : "Histórico do colaborador"}
+            </span>
           </span>
         </button>
         <button type="button" className="collaborator-action-item" onClick={onSchedule}>
@@ -49,7 +64,9 @@ export function CollaboratorActionMenu({
             <Calendar className="h-4 w-4" />
           </span>
           <span>
-            <span className="collaborator-action-label">Solicitar exame</span>
+            <span className="collaborator-action-label">
+              {isEmpresa ? "Encaminhar para exame" : "Solicitar exame"}
+            </span>
             <span className="collaborator-action-hint">Novo encaminhamento</span>
           </span>
         </button>

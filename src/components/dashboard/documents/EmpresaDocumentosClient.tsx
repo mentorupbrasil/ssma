@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
-  FileCheck,
   FileText,
   FolderOpen,
   Loader2,
@@ -105,14 +104,6 @@ export function EmpresaDocumentosClient({
         title="Documentos"
         description="ASOs, laudos e arquivos anexados pela Unimetra. Se tem arquivo aqui, você pode baixar."
       />
-
-      <div className="empresa-docs-intro">
-        <FileCheck className="h-4 w-4 shrink-0 text-emerald-600" />
-        <p>
-          A clínica anexa o documento e ele aparece aqui automaticamente para sua empresa.
-          Use <strong>Baixar</strong> para salvar o PDF no seu computador.
-        </p>
-      </div>
 
       <FilterMetricGrid
         items={documentStatCardsForEmpresa().map((card) => {

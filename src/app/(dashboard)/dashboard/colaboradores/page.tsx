@@ -11,6 +11,10 @@ import {
 } from "@/lib/collaborators";
 import { collaboratorStatCardsForEmpresa } from "@/lib/empresa-portal";
 import { ColaboradoresClient } from "@/components/dashboard/collaborators/ColaboradoresClient";
+import {
+  ColaboradoresEmpresaClient,
+  type EmpresaCollaboratorStats,
+} from "@/components/dashboard/collaborators/ColaboradoresEmpresaClient";
 import { Loader2 } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -58,17 +62,16 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
       include: {
         company: true,
         referrals: { orderBy: { createdAt: "desc" }, take: 1 },
-        documents: {
-          where: { status: { in: ["PENDENTE", "VENCIDO", "EM_ELABORACAO"] } },
-          take: 1,
-        },
+        documents: { orderBy: { createdAt: "desc" }, where: { status: { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO", "VENCIDO"] } } },
       },
       orderBy: { fullName: "asc" },
       skip,
       take: PAGE_SIZE,
     }),
     Promise.all(
-      statCardDefs.map(async (card) => {
+      isEmpresa
+        ? []
+        : statCardDefs.map(async (card) => {
         if (card.filter === "ATIVO" || card.filter === "INATIVO") {
           return {
             key: card.key,
@@ -158,22 +161,63 @@ async function ColaboradoresData({ searchParams }: { searchParams: SearchParams 
       session.user.role !== "MEDICO" &&
       session.user.role !== "FINANCEIRO");
 
+  const sharedProps = {
+    initialItems: items,
+    initialTotal: total,
+    initialPage: page,
+    pageSize: PAGE_SIZE,
+    companies: companies.map((c) => ({
+      id: c.id,
+      name: c.tradeName ?? c.legalName,
+    })),
+    jobTitles,
+    departments,
+    canManage,
+    filters,
+  };
+
+  if (isEmpresa) {
+    const [ativos, inativos, agendados, docsPendentes, periodicosVencer] = await Promise.all([
+      prisma.patient.count({ where: { ...patientScope, status: "ATIVO" } }),
+      prisma.patient.count({ where: { ...patientScope, status: "INATIVO" } }),
+      prisma.patient.count({
+        where: {
+          ...patientScope,
+          appointments: {
+            some: {
+              scheduledAt: { gte: new Date() },
+              status: { in: ["AGENDADO", "CONFIRMADO"] },
+            },
+          },
+        },
+      }),
+      prisma.patient.count({
+        where: {
+          ...patientScope,
+          documents: { some: { status: { in: ["PENDENTE", "VENCIDO", "EM_ELABORACAO", "EM_EMISSAO"] } } },
+        },
+      }),
+      prisma.patient.count({
+        where: { ...patientScope, nextPeriodicDate: { lte: in30 } },
+      }),
+    ]);
+
+    const stats: EmpresaCollaboratorStats = {
+      ativos,
+      inativos,
+      agendados,
+      docsPendentes,
+      periodicosVencer,
+    };
+
+    return <ColaboradoresEmpresaClient {...sharedProps} stats={stats} />;
+  }
+
   return (
     <ColaboradoresClient
-      initialItems={items}
-      initialTotal={total}
-      initialPage={page}
-      pageSize={PAGE_SIZE}
+      {...sharedProps}
       statCounts={statCounts}
-      companies={companies.map((c) => ({
-        id: c.id,
-        name: c.tradeName ?? c.legalName,
-      }))}
-      jobTitles={jobTitles}
-      departments={departments}
-      canManage={canManage}
-      isEmpresaPortal={isEmpresa}
-      filters={filters}
+      isEmpresaPortal={false}
     />
   );
 }

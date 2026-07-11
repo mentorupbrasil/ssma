@@ -2,6 +2,7 @@ import type { PatientStatus, PatientHistoryAction, ClinicalExamType } from "@pri
 import type { Prisma } from "@prisma/client";
 import { startOfDay, endOfDay, parseISO, isValid, addDays } from "date-fns";
 import { maskCpf } from "@/lib/referrals";
+import { formatCPF } from "@/lib/helpers";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 
 export const COLLABORATOR_STAT_CARDS: { key: string; filter: string; label: string }[] = [
@@ -152,6 +153,7 @@ export type CollaboratorListItem = {
   id: string;
   fullName: string;
   cpfMasked: string;
+  cpfFormatted: string;
   companyId: string | null;
   companyName: string | null;
   jobTitle: string | null;
@@ -161,6 +163,7 @@ export type CollaboratorListItem = {
   lastExamDate: string | null;
   nextPeriodicDate: string | null;
   hasPendingDocs: boolean;
+  pendingDocsCount: number;
 };
 
 export function serializeCollaboratorListItem(
@@ -177,6 +180,7 @@ export function serializeCollaboratorListItem(
     id: p.id,
     fullName: p.fullName,
     cpfMasked: maskCpf(p.cpf),
+    cpfFormatted: formatCPF(p.cpf),
     companyId: p.companyId,
     companyName: p.company ? (p.company.tradeName ?? p.company.legalName) : null,
     jobTitle: p.jobTitle,
@@ -188,6 +192,7 @@ export function serializeCollaboratorListItem(
     lastExamDate: lastRef?.createdAt.toISOString() ?? null,
     nextPeriodicDate: p.nextPeriodicDate?.toISOString() ?? null,
     hasPendingDocs: p.documents.length > 0,
+    pendingDocsCount: p.documents.length,
   };
 }
 
