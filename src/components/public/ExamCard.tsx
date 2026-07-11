@@ -1,23 +1,24 @@
 "use client";
 
-import type { MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import {
+  Check,
   Clock3,
+  Copy,
   FlaskConical,
   Microscope,
   Radiation,
-  Share2,
   Stethoscope,
   ArrowRight,
 } from "lucide-react";
+import { toast } from "sonner";
 import type { ExamGuide } from "@/data/exams";
 import {
-  buildWhatsAppShareMessage,
+  copyExamInstructions,
   DISPLAY_CATEGORY_LABELS,
   getExamStatusChip,
   type ExamStatusTone,
 } from "@/lib/exam-preparation";
-import { whatsappLink } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 
 type ExamCardProps = {
@@ -44,10 +45,18 @@ const STATUS_CLASS: Record<ExamStatusTone, string> = {
 export function ExamCard({ exam, onViewPreparation, className }: ExamCardProps) {
   const CategoryIcon = CATEGORY_ICONS[exam.displayCategory] ?? Stethoscope;
   const status = getExamStatusChip(exam);
+  const [copied, setCopied] = useState(false);
 
-  const share = (event: MouseEvent<HTMLButtonElement>) => {
+  const copy = async (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    window.open(whatsappLink(buildWhatsAppShareMessage(exam)), "_blank", "noopener,noreferrer");
+    try {
+      await copyExamInstructions(exam);
+      setCopied(true);
+      toast.success("Orientações copiadas com sucesso.");
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Não foi possível copiar as orientações.");
+    }
   };
 
   const open = () => onViewPreparation(exam);
@@ -68,11 +77,11 @@ export function ExamCard({ exam, onViewPreparation, className }: ExamCardProps) 
       <button
         type="button"
         className="exam-card-share"
-        onClick={share}
-        aria-label={`Compartilhar preparo de ${exam.name}`}
-        title="Compartilhar preparo"
+        onClick={copy}
+        aria-label={`Copiar preparo de ${exam.name}`}
+        title="Copiar preparo"
       >
-        <Share2 strokeWidth={1.75} />
+        {copied ? <Check strokeWidth={2} /> : <Copy strokeWidth={1.75} />}
       </button>
 
       <div className="exam-card-top">

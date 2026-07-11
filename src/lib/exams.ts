@@ -508,6 +508,24 @@ export const CATALOG_SEED_EXAMS: ExamSeedData[] = [
     displayOrder: 10,
   },
   {
+    name: "Endoscopia",
+    slug: "endoscopia",
+    category: "IMAGEM",
+    shortDescription: "Exame endoscópico complementar conforme solicitação e indicação clínica.",
+    preparationType: "JEJUM_NECESSARIO",
+    preparationBefore:
+      "Jejum de 8 horas (sólidos e líquidos), salvo orientação diferente da clínica. Suspender ou ajustar medicamentos apenas mediante orientação médica.",
+    instructionsOnDay:
+      "Comparecer com acompanhante, pois pode haver sedação. Levar exames anteriores e informar medicamentos em uso.",
+    averageDeadline: "Conforme agendamento",
+    deadlineType: "CONFORME_AGENDAMENTO",
+    observations: "Realizada conforme solicitação médica e indicação clínica.",
+    whenToNotifyClinic:
+      "Informe uso de anticoagulantes, alergias a medicamentos, diabetes, gravidez ou cirurgias recentes.",
+    requiresAppointment: true,
+    displayOrder: 11,
+  },
+  {
     name: "Toxicológico",
     slug: "toxicologico",
     category: "TOXICOLOGICO",
@@ -519,6 +537,6 @@ export const CATALOG_SEED_EXAMS: ExamSeedData[] = [
     deadlineType: "DIAS_UTEIS",
     observations: "Indicado para motoristas profissionais e funções regulamentadas.",
     whenToNotifyClinic: "Informe função exercida e exigência legal aplicável.",
-    displayOrder: 11,
+    displayOrder: 12,
   },
 ];

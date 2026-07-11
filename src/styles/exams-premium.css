@@ -28,84 +28,110 @@
   color: rgb(71 85 105);
 }
 
-/* Hero ------------------------------------------------------------- */
+/* Hero — mesma pegada da página Serviços (centralizado, editorial) --- */
 
 .exams-hero {
   position: relative;
   overflow: hidden;
-  padding-block: clamp(2rem, 4vw, 3rem) clamp(2.25rem, 4vw, 3.25rem);
+  isolation: isolate;
+  padding-block: calc(var(--header-height) + clamp(1.5rem, 4vw, 2.5rem))
+    clamp(2.75rem, 5vw, 3.75rem);
 }
 
 .exams-hero-bg {
   position: absolute;
   inset: 0;
+  z-index: 0;
   background:
-    radial-gradient(ellipse 70% 55% at 85% 0%, rgb(46 103 255 / 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 60% at 50% -10%, rgb(46 103 255 / 0.18), transparent 60%),
     linear-gradient(155deg, var(--brand-navy) 0%, #16204a 52%, #0e142b 100%);
 }
 
 .exams-hero-inner {
   position: relative;
+  z-index: 1;
 }
 
-.exams-hero-layout {
-  display: grid;
-  gap: 2rem;
+.exams-hero-content {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
+  max-width: 48rem;
+  margin-inline: auto;
 }
 
-@media (min-width: 1024px) {
-  .exams-hero-layout {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    gap: 2.5rem;
-  }
+.exams-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0 auto 1.5rem;
+  padding: 0.35rem 0.35rem 0.35rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: 0 4px 20px rgb(0 0 0 / 0.15);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(239 246 255);
+  text-decoration: none;
+  transition: border-color 0.25s ease, background 0.25s ease;
 }
 
-.exams-hero-copy {
-  max-width: 42rem;
+.exams-hero-pill:hover {
+  border-color: rgb(46 103 255 / 0.4);
+  background: rgb(255 255 255 / 0.12);
 }
 
-.exams-hero-aside {
-  display: none;
+.exams-hero-pill-divider {
+  width: 1px;
+  height: 1rem;
+  background: rgb(255 255 255 / 0.2);
 }
 
-@media (min-width: 1024px) {
-  .exams-hero-aside {
-    display: block;
-  }
+.exams-hero-pill-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: rgb(46 103 255 / 0.9);
+  color: white;
+  transition: transform 0.25s ease;
 }
 
-.exams-hero-eyebrow {
-  margin-bottom: 0.75rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgb(191 219 254 / 0.95);
+.exams-hero-pill:hover .exams-hero-pill-icon {
+  transform: translateX(2px);
 }
 
 .exams-hero-title {
+  margin: 0;
+  max-width: 20ch;
   font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
-  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-size: clamp(1.95rem, 4.2vw, 2.85rem);
   font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: -0.03em;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
   color: white;
 }
 
 .exams-hero-desc {
-  margin-top: 1rem;
-  max-width: 36rem;
-  font-size: 1.05rem;
+  margin: 1.25rem auto 0;
+  max-width: 40rem;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
   line-height: 1.7;
+  text-wrap: balance;
   color: rgb(226 232 240 / 0.9);
 }
 
 .exams-hero-badges {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.45rem;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .exams-hero-badge {
@@ -123,8 +149,22 @@
 .exams-hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.6rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.85rem;
+}
+
+@media (max-width: 479px) {
+  .exams-hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .exams-hero-actions > a {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* Clinical exams --------------------------------------------------- */
@@ -137,6 +177,30 @@
 .exams-clinical-header {
   max-width: 38rem;
   margin-bottom: 1.75rem;
+}
+
+/* Grid clínico — 5 colunas nesta página (uma linha, sem sobrar) */
+@media (min-width: 640px) {
+  .exams-clinical .home-clinical-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .exams-clinical .home-clinical-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .exams-clinical .home-clinical-item {
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1.1rem 1rem;
+  }
+
+  .exams-clinical .home-clinical-item-num {
+    font-size: 1.35rem;
+  }
 }
 
 .exams-clinical-grid {
@@ -712,6 +776,24 @@
   border-top: 1px solid rgb(241 245 249);
   padding: 1rem 1.25rem 1.25rem;
   background: rgb(248 250 252 / 0.65);
+}
+
+/* Preparo — modal centralizado */
+.exam-modal {
+  gap: 1rem;
+}
+
+.exam-modal-head {
+  padding-right: 2rem;
+}
+
+.exam-modal-body {
+  display: block;
+}
+
+.exam-modal-footer {
+  border-top: 1px solid rgb(241 245 249);
+  padding-top: 1rem;
 }
 
 /* CTA -------------------------------------------------------------- */

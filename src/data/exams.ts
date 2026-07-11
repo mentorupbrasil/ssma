@@ -187,6 +187,22 @@ export const EXAM_GUIDES: ExamGuide[] = [
       "Informe medicamentos em uso, condições clínicas relevantes e dúvidas sobre jejum antes da coleta.",
   },
   {
+    name: "Endoscopia",
+    slug: "endoscopia",
+    category: "IMAGEM",
+    displayCategory: "IMAGEM",
+    preparationStatus: "JEJUM_NECESSARIO",
+    preparationSummary: "Jejum de 8 horas, salvo orientação da clínica.",
+    preparationBefore:
+      "Jejum de 8 horas (sólidos e líquidos), salvo orientação diferente da clínica. Suspender ou ajustar medicamentos apenas mediante orientação médica.",
+    preparationOnDay:
+      "Comparecer com acompanhante, pois pode haver sedação. Levar exames anteriores e informar medicamentos em uso.",
+    deliveryTime: "Conforme agendamento",
+    notes: "Realizada conforme solicitação médica e indicação clínica.",
+    whenToInformClinic:
+      "Informe uso de anticoagulantes, alergias a medicamentos, diabetes, gravidez ou cirurgias recentes.",
+  },
+  {
     name: "Toxicológico",
     slug: "toxicologico",
     category: "COMPLEMENTAR",

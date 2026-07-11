@@ -4,6 +4,7 @@ import { ExamsCTA } from "@/components/public/exams/ExamsCTA";
 import { ExamsHero } from "@/components/public/exams/ExamsHero";
 import { TopClinicalExams } from "@/components/public/TopClinicalExams";
 import { getPublicWebsiteExams } from "@/actions/exams";
+import { getClinicInfo, whatsappLink } from "@/lib/helpers";
 import { createPageMetadata, PUBLIC_PAGE_SEO } from "@/lib/seo";
 
 export const metadata = createPageMetadata(PUBLIC_PAGE_SEO.exames);
@@ -14,9 +15,14 @@ async function ExamCatalogSection() {
 }
 
 export default async function ExamesPage() {
+  const clinic = getClinicInfo();
+  const whatsappHref = whatsappLink(
+    `Olá! Gostaria de tirar dúvidas sobre exames e preparos com a ${clinic.name}.`
+  );
+
   return (
     <>
-      <ExamsHero />
+      <ExamsHero whatsappHref={whatsappHref} />
       <TopClinicalExams />
 
       <section id="preparo-por-exame" className="exams-catalog-section scroll-mt-[var(--header-height)]">
