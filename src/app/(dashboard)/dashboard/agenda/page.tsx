@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { format, startOfDay, endOfDay } from "date-fns";
 import type { AppointmentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -25,10 +26,26 @@ function getParam(params: Record<string, string | string[] | undefined>, key: st
   return value ?? "";
 }
 
+function buildEmpresaAgendaRedirect(params: Record<string, string | string[] | undefined>) {
+  const qs = new URLSearchParams();
+  qs.set("tab", "agenda");
+  for (const [key, value] of Object.entries(params)) {
+    if (key === "tab") continue;
+    const v = Array.isArray(value) ? value[0] : value;
+    if (v) qs.set(key, v);
+  }
+  return `/dashboard/encaminhamentos?${qs.toString()}`;
+}
+
 async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const session = await requireAuthSession();
   const isEmpresa = isEmpresaUser(session);
+
+  if (isEmpresa) {
+    redirect(buildEmpresaAgendaRedirect(params));
+  }
+
   const companyScope = getCompanyFilter(session).companyId;
 
   const filters = {
@@ -54,7 +71,7 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
   const todayEnd = endOfDay(new Date());
   const baseWhere = companyScope ? { companyId: companyScope } : {};
 
-  const statCards = isEmpresa ? appointmentStatCardsForEmpresa() : APPOINTMENT_STAT_CARDS;
+  const statCards = APPOINTMENT_STAT_CARDS;
 
   const [total, appointments, countResults, companies, patients, professionals] =
     await Promise.all([
@@ -93,13 +110,11 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
           };
         })
       ),
-      isEmpresa
-        ? Promise.resolve([])
-        : prisma.company.findMany({
-            select: { id: true, legalName: true, tradeName: true },
-            orderBy: { legalName: "asc" },
-            take: 200,
-          }),
+      prisma.company.findMany({
+        select: { id: true, legalName: true, tradeName: true },
+        orderBy: { legalName: "asc" },
+        take: 200,
+      }),
       prisma.patient.findMany({
         where: companyScope ? { companyId: companyScope, status: "ATIVO" } : { status: "ATIVO" },
         select: { id: true, fullName: true },
@@ -114,12 +129,12 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
     ]);
 
   const statusCounts = Object.fromEntries(countResults.map((c) => [c.key, c.count]));
-
   const items = appointments.map(serializeAppointmentListItem);
 
   const canManage =
     session.user.role !== "VISUALIZADOR" &&
-    (session.user.role !== "EMPRESA" || isEmpresa);
+    session.user.role !== "EMPRESA" &&
+    session.user.role !== "FINANCEIRO";
 
   return (
     <AgendaClient
@@ -133,9 +148,8 @@ async function AgendaData({ searchParams }: { searchParams: SearchParams }) {
       patients={patients.map((p) => ({ id: p.id, name: p.fullName }))}
       professionals={professionals}
       rooms={["Sala 1", "Sala 2", "Sala 3", "Unidade Centro", "Unidade Norte"]}
-      canManage={canManage && session.user.role !== "FINANCEIRO"}
+      canManage={canManage}
       userRole={session.user.role}
-      isEmpresaPortal={isEmpresa}
       filters={filters}
     />
   );

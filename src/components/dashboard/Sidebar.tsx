@@ -24,6 +24,7 @@ import {
   CalendarDays,
   Newspaper,
   Tags,
+  ClipboardList,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import type { UserRole } from "@/types/roles";
@@ -31,6 +32,9 @@ import { DASHBOARD_NAV, hasPermission, getRoleLabel } from "@/lib/permissions";
 import {
   EMPRESA_HIDDEN_NAV_HREFS,
   EMPRESA_NAV_SECTIONS,
+  EMPRESA_NAV_LABEL_OVERRIDES,
+  EMPRESA_NAV_ICON_OVERRIDES,
+  EMPRESA_NAV_HREFS,
   isEmpresaPortalRole,
 } from "@/lib/empresa-portal";
 import { BrandLogo } from "@/components/brand/BrandLogo";
@@ -59,6 +63,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CalendarDays,
   Newspaper,
   Tags,
+  ClipboardList,
 };
 
 const NAV_SECTIONS = [
@@ -119,7 +124,10 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
   const isEmpresa = isEmpresaPortalRole(user.role);
   const items = DASHBOARD_NAV.filter((item) => {
     if (!hasPermission(user.role, item.permission)) return false;
-    if (isEmpresa && EMPRESA_HIDDEN_NAV_HREFS.includes(item.href)) return false;
+    if (isEmpresa) {
+      if (!EMPRESA_NAV_HREFS.includes(item.href)) return false;
+      if (EMPRESA_HIDDEN_NAV_HREFS.includes(item.href)) return false;
+    }
     return true;
   });
   const navSections = isEmpresa ? EMPRESA_NAV_SECTIONS : NAV_SECTIONS;
@@ -127,7 +135,7 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
   const initials = userInitials(user.name);
 
   return (
-    <div className="app-shell-sidebar-inner">
+    <div className={cn("app-shell-sidebar-inner", isEmpresa && "app-shell-sidebar-inner--empresa")}>
       <div className="app-shell-sidebar-brand">
         <Link href="/dashboard" onClick={onNavigate} className="app-shell-sidebar-brand-link">
           <BrandLogo height={28} showLink={false} className="app-shell-sidebar-logo" />
@@ -151,10 +159,23 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
               <p className="app-shell-nav-label">{section.label}</p>
               <div className="space-y-0.5">
                 {sectionItems.map((item) => {
-                  const Icon = ICONS[item.icon] ?? LayoutDashboard;
-                  const active =
-                    pathname === item.href ||
-                    (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                  const iconName =
+                    isEmpresa && EMPRESA_NAV_ICON_OVERRIDES[item.href]
+                      ? EMPRESA_NAV_ICON_OVERRIDES[item.href]
+                      : item.icon;
+                  const Icon = ICONS[iconName] ?? LayoutDashboard;
+                  const active = isEmpresa
+                    ? item.href === "/dashboard/encaminhamentos"
+                      ? pathname.startsWith("/dashboard/encaminhamentos") ||
+                        pathname.startsWith("/dashboard/agenda")
+                      : pathname === item.href ||
+                        (item.href !== "/dashboard" && pathname.startsWith(item.href))
+                    : pathname === item.href ||
+                      (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                  const label =
+                    isEmpresa && EMPRESA_NAV_LABEL_OVERRIDES[item.href]
+                      ? EMPRESA_NAV_LABEL_OVERRIDES[item.href]
+                      : item.label;
 
                   return (
                     <Link
@@ -164,7 +185,7 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
                       className={cn("app-shell-nav-link", active && "app-shell-nav-link-active")}
                     >
                       <Icon className="h-4 w-4 shrink-0 [&_svg]:stroke-[2]" />
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate">{label}</span>
                     </Link>
                   );
                 })}

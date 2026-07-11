@@ -49,8 +49,8 @@ export function CollaboratorActionMenu({
             <Calendar className="h-4 w-4" />
           </span>
           <span>
-            <span className="collaborator-action-label">Agendar</span>
-            <span className="collaborator-action-hint">Novo agendamento</span>
+            <span className="collaborator-action-label">Solicitar exame</span>
+            <span className="collaborator-action-hint">Novo encaminhamento</span>
           </span>
         </button>
         <button type="button" className="collaborator-action-item" onClick={onViewDocuments}>

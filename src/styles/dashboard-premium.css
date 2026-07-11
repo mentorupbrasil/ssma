@@ -162,6 +162,42 @@
     flex: 1;
   }
 
+  /* Sidebar compacta — portal RH (sem rolagem no menu) */
+  .app-shell-sidebar-inner--empresa .app-shell-sidebar-brand {
+    padding: 0.95rem 1rem 0.85rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-nav {
+    flex: 0 1 auto;
+    overflow-y: visible;
+    padding: 0.65rem 0.6rem 0.75rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-nav-section + .app-shell-nav-section {
+    margin-top: 0.85rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-nav-label {
+    margin-bottom: 0.35rem;
+    font-size: 0.625rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-nav-link {
+    gap: 0.6rem;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.8125rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-sidebar-footer {
+    margin-top: auto;
+    padding: 0.75rem;
+  }
+
+  .app-shell-sidebar-inner--empresa .app-shell-user-card {
+    margin-bottom: 0.45rem;
+    padding: 0.55rem 0.65rem;
+  }
+
   /* ── Topbar ──────────────────────────────────────────── */
   .app-shell-topbar {
     border-bottom: 1px solid var(--dash-border);
@@ -1460,5 +1496,327 @@
     font-size: 0.8125rem;
     line-height: 1.45;
     color: rgb(71 85 105);
+  }
+}
+
+/* Exames unificados — portal RH */
+.exames-operacao-intro {
+  margin-bottom: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(209 250 229);
+  background: linear-gradient(135deg, rgb(236 253 245) 0%, rgb(240 253 250) 100%);
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgb(51 65 85);
+}
+
+.exames-operacao-intro strong {
+  font-weight: 600;
+  color: var(--brand-navy);
+}
+
+.exames-operacao-tabs {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .exames-operacao-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.exames-operacao-tab {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: 0.875rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0.875rem 1rem;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.exames-operacao-tab:hover:not(:disabled) {
+  border-color: rgb(203 213 225);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.05);
+}
+
+.exames-operacao-tab--active {
+  border-color: rgb(22 160 133 / 0.45);
+  background: rgb(236 253 245 / 0.65);
+  box-shadow: 0 0 0 1px rgb(22 160 133 / 0.12);
+}
+
+.exames-operacao-tab-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.exames-operacao-tab-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--brand-navy);
+}
+
+.exames-operacao-tab-hint {
+  font-size: 0.75rem;
+  color: var(--dash-text-muted);
+}
+
+.exames-operacao-tab--active .exames-operacao-tab-label {
+  color: rgb(15 118 110);
+}
+
+.exames-operacao-panel {
+  min-width: 0;
+}
+
+.exames-agenda-toolbar {
+  border-radius: 0.75rem;
+  border: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252 / 0.8);
+  padding: 0.75rem 1rem;
+}
+
+/* Exames e preparos — portal RH */
+.empresa-exams-panel {
+  margin-top: 0.25rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
+  overflow: hidden;
+}
+
+.empresa-exams-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252 / 0.65);
+  padding: 0.875rem 1rem;
+}
+
+.empresa-exams-search {
+  position: relative;
+  flex: 1 1 16rem;
+  max-width: 28rem;
+}
+
+.empresa-exams-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  color: rgb(148 163 184);
+  pointer-events: none;
+}
+
+.empresa-exams-search-input {
+  height: 2.5rem;
+  padding-left: 2.25rem;
+  padding-right: 2.25rem;
+  border-radius: 0.625rem;
+  border-color: rgb(226 232 240);
+  background: white;
+  font-size: 0.875rem;
+  box-shadow: none;
+}
+
+.empresa-exams-search-input:focus-visible {
+  border-color: rgb(22 160 133 / 0.45);
+  box-shadow: 0 0 0 3px rgb(22 160 133 / 0.1);
+}
+
+.empresa-exams-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  display: inline-flex;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  padding: 0.2rem;
+  color: rgb(148 163 184);
+  transition: color 0.15s, background 0.15s;
+}
+
+.empresa-exams-search-clear:hover {
+  background: rgb(241 245 249);
+  color: rgb(71 85 105);
+}
+
+.empresa-exams-count {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--dash-text-muted);
+  white-space: nowrap;
+}
+
+.empresa-exams-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.empresa-exams-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: white;
+  padding: 0.95rem 1rem;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.empresa-exams-row:last-child {
+  border-bottom: 0;
+}
+
+.empresa-exams-row:hover:not(:disabled) {
+  background: rgb(248 250 252);
+}
+
+.empresa-exams-row:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.empresa-exams-row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.625rem;
+  background: rgb(236 253 245);
+  color: rgb(15 118 110);
+  flex-shrink: 0;
+}
+
+.empresa-exams-row-body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.empresa-exams-row-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.empresa-exams-row-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--brand-navy);
+  line-height: 1.3;
+}
+
+.empresa-exams-row-desc {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--dash-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.empresa-exams-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--dash-text-subtle);
+}
+
+.empresa-exams-category {
+  display: inline-flex;
+  border-radius: 999px;
+  background: rgb(241 245 249);
+  padding: 0.15rem 0.55rem;
+  font-weight: 500;
+  color: rgb(71 85 105);
+}
+
+.empresa-exams-dot {
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: rgb(203 213 225);
+}
+
+.empresa-exams-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  color: rgb(148 163 184);
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.empresa-exams-row:hover:not(:disabled) .empresa-exams-row-action {
+  background: rgb(236 253 245);
+  color: rgb(15 118 110);
+}
+
+.empresa-exams-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--dash-text-muted);
+}
+
+.empresa-exams-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid rgb(241 245 249);
+  padding: 0.75rem 1rem;
+}
+
+@media (max-width: 639px) {
+  .empresa-exams-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .empresa-exams-search {
+    max-width: none;
+  }
+
+  .empresa-exams-count {
+    text-align: right;
+  }
+
+  .empresa-exams-row-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

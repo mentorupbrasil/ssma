@@ -65,6 +65,7 @@ import {
   ReferralScheduleDialog,
   ReferralDocumentDialog,
 } from "./ReferralActionDialogs";
+import { referralStatCardsForEmpresa } from "@/lib/empresa-portal";
 import { cn } from "@/lib/utils";
 
 type CompanyOption = { id: string; name: string };
@@ -78,6 +79,8 @@ type EncaminhamentosClientProps = {
   companies: CompanyOption[];
   isEmpresa: boolean;
   canManage: boolean;
+  embedded?: boolean;
+  listPath?: string;
   filters: {
     q?: string;
     status?: string;
@@ -97,11 +100,15 @@ export function EncaminhamentosClient({
   companies,
   isEmpresa,
   canManage,
+  embedded = false,
+  listPath: listPathProp,
   filters,
 }: EncaminhamentosClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const listPath = listPathProp ?? "/dashboard/encaminhamentos";
+  const statCards = isEmpresa ? referralStatCardsForEmpresa() : REFERRAL_STAT_CARDS;
 
   const [q, setQ] = useState(filters.q ?? "");
   const [companyId, setCompanyId] = useState(filters.companyId ?? "");
@@ -125,16 +132,17 @@ export function EncaminhamentosClient({
   const updateFilters = useCallback(
     (updates: Record<string, string | undefined>) => {
       const params = new URLSearchParams(searchParams.toString());
+      if (embedded) params.set("tab", "solicitacoes");
       Object.entries(updates).forEach(([key, value]) => {
         if (!value || value === "ALL") params.delete(key);
         else params.set(key, value);
       });
       if (!updates.page) params.delete("page");
       startTransition(() => {
-        router.push(`/dashboard/encaminhamentos?${params.toString()}`);
+        router.push(`${listPath}?${params.toString()}`);
       });
     },
-    [router, searchParams]
+    [router, searchParams, embedded, listPath]
   );
 
   const handleSearch = () => {
@@ -148,7 +156,7 @@ export function EncaminhamentosClient({
     setDateFrom("");
     setDateTo("");
     startTransition(() => {
-      router.push("/dashboard/encaminhamentos");
+      router.push(embedded ? `${listPath}?tab=solicitacoes` : listPath);
     });
   };
 
@@ -211,29 +219,31 @@ export function EncaminhamentosClient({
     return `https://wa.me/55${phone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
   };
 
-  return (
-    <PageModule>
-      <PageHeader
-        title="Encaminhamentos"
-        description="Gestão de encaminhamentos do portal e solicitações internas"
-      >
-        <div className="flex flex-wrap gap-2">
-          {!isEmpresa && (
-            <Link href="/dashboard/pre-encaminhamentos">
-              <Button variant="outline">Pré-encaminhamentos</Button>
+  const body = (
+    <>
+      {!embedded && (
+        <PageHeader
+          title="Encaminhamentos"
+          description="Gestão de encaminhamentos do portal e solicitações internas"
+        >
+          <div className="flex flex-wrap gap-2">
+            {!isEmpresa && (
+              <Link href="/dashboard/pre-encaminhamentos">
+                <Button variant="outline">Pré-encaminhamentos</Button>
+              </Link>
+            )}
+            <Link href="/dashboard/encaminhamentos/novo">
+              <Button variant="brand">
+                <Plus className="mr-2 h-4 w-4" />
+                Novo encaminhamento
+              </Button>
             </Link>
-          )}
-          <Link href="/dashboard/encaminhamentos/novo">
-            <Button variant="brand">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo encaminhamento
-            </Button>
-          </Link>
-        </div>
-      </PageHeader>
+          </div>
+        </PageHeader>
+      )}
 
       <FilterMetricGrid
-        items={REFERRAL_STAT_CARDS.map((card) => {
+        items={statCards.map((card) => {
           const isActive = filters.status === card.status;
           return {
             key: card.status,
@@ -252,7 +262,11 @@ export function EncaminhamentosClient({
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               className="pl-9"
-              placeholder="Buscar por protocolo, empresa, colaborador ou CPF"
+              placeholder={
+                isEmpresa
+                  ? "Buscar por protocolo ou colaborador"
+                  : "Buscar por protocolo, empresa, colaborador ou CPF"
+              }
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -309,9 +323,13 @@ export function EncaminhamentosClient({
             compact
             className="border-0 bg-transparent"
             title="Nenhum encaminhamento encontrado"
-            description="Crie um novo encaminhamento ou ajuste os filtros."
+            description={
+              isEmpresa
+                ? "Solicite exames para sua equipe ou ajuste os filtros."
+                : "Crie um novo encaminhamento ou ajuste os filtros."
+            }
             action={{
-              label: "Novo encaminhamento",
+              label: isEmpresa ? "Solicitar exames" : "Novo encaminhamento",
               href: "/dashboard/encaminhamentos/novo",
             }}
           />
@@ -322,7 +340,7 @@ export function EncaminhamentosClient({
             <TableHeader>
               <TableRow>
                 <TableHead>Protocolo</TableHead>
-                <TableHead>Empresa</TableHead>
+                {!isEmpresa && <TableHead>Empresa</TableHead>}
                 <TableHead>Colaborador</TableHead>
                 <TableHead className="hidden md:table-cell">Função</TableHead>
                 <TableHead className="hidden lg:table-cell">Tipo de exame</TableHead>
@@ -345,7 +363,7 @@ export function EncaminhamentosClient({
                     <TableCell className="font-semibold text-[var(--brand-green)]">
                       {item.protocol}
                     </TableCell>
-                    <TableCell>{item.companyName}</TableCell>
+                    {!isEmpresa && <TableCell>{item.companyName}</TableCell>}
                     <TableCell>{item.employeeName}</TableCell>
                     <TableCell className="hidden md:table-cell">
                       {item.jobTitle ?? "—"}
@@ -435,7 +453,11 @@ export function EncaminhamentosClient({
                 key={item.id}
                 icon={FileText}
                 title={item.protocol}
-                subtitle={`${item.employeeName} · ${item.companyName}`}
+                subtitle={
+                  isEmpresa
+                    ? item.employeeName
+                    : `${item.employeeName} · ${item.companyName}`
+                }
                 meta={CLINICAL_EXAM_LABELS[item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS] ?? item.clinicalExamType}
                 badge={<StatusBadge status={item.status} type="referral" />}
                 onClick={() => openDetail(item.id)}
@@ -538,6 +560,10 @@ export function EncaminhamentosClient({
           />
         </>
       )}
-    </PageModule>
+    </>
   );
+
+  if (embedded) return body;
+
+  return <PageModule>{body}</PageModule>;
 }

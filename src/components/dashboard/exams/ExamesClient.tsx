@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Stethoscope,
+  X,
 } from "lucide-react";
 import type { ExamDetailSerialized, ExamListItem } from "@/lib/exams";
 import {
@@ -245,15 +246,32 @@ export function ExamesClient({
     }
   }, [searchParams, canManage]);
 
+  useEffect(() => {
+    if (!isEmpresaPortal) return;
+    const currentQ = searchParams.get("q") ?? "";
+    if (q === currentQ) return;
+
+    const timer = window.setTimeout(() => {
+      updateFilters({ q: q.trim() || undefined });
+    }, 350);
+
+    return () => window.clearTimeout(timer);
+  }, [q, isEmpresaPortal, searchParams, updateFilters]);
+
+  const clearEmpresaSearch = () => {
+    setQ("");
+    updateFilters({ q: undefined });
+  };
+
   const empty = initialItems.length === 0 && !filters.q && activeCard === "ALL";
 
   return (
     <PageModule>
       <PageHeader
-        title="Exames e preparos"
+        title={isEmpresaPortal ? "Preparos" : "Exames e preparos"}
         description={
           isEmpresaPortal
-            ? "Consulte orientações de preparo para orientar colaboradores"
+            ? "Orientações de preparo para orientar colaboradores antes dos exames"
             : "Catálogo de exames, preparos e prazos"
         }
       >
@@ -286,6 +304,126 @@ export function ExamesClient({
       />
       )}
 
+      {isEmpresaPortal ? (
+        <div className="empresa-exams-panel">
+          <div className="empresa-exams-toolbar">
+            <div className="empresa-exams-search">
+              <Search className="empresa-exams-search-icon" aria-hidden />
+              <Input
+                placeholder="Buscar exame ou categoria"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") updateFilters({ q: q.trim() || undefined });
+                }}
+                className="empresa-exams-search-input"
+                aria-label="Buscar exame"
+              />
+              {q && (
+                <button
+                  type="button"
+                  className="empresa-exams-search-clear"
+                  onClick={clearEmpresaSearch}
+                  aria-label="Limpar busca"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <p className="empresa-exams-count" aria-live="polite">
+              {initialTotal} exame{initialTotal !== 1 ? "s" : ""}
+            </p>
+          </div>
+
+          {empty ? (
+            <EmptyState
+              icon={Stethoscope}
+              className="border-0 bg-transparent shadow-none"
+              title="Nenhum exame disponível"
+              description="O catálogo de preparos ainda não foi publicado pela clínica."
+            />
+          ) : initialItems.length === 0 ? (
+            <div className="empresa-exams-empty">
+              <p>Nenhum exame encontrado para &ldquo;{filters.q}&rdquo;.</p>
+              <Button variant="outline" size="sm" onClick={clearEmpresaSearch}>
+                Limpar busca
+              </Button>
+            </div>
+          ) : (
+            <div className="relative">
+              {isPending && <LoadingState overlay label="Buscando exames..." />}
+              <div className="empresa-exams-list">
+                {initialItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="empresa-exams-row"
+                    disabled={loadingExamId === item.id}
+                    onClick={() => openDetail(item.id)}
+                  >
+                    <span className="empresa-exams-row-icon" aria-hidden>
+                      <Stethoscope className="h-4 w-4" />
+                    </span>
+                    <span className="empresa-exams-row-body">
+                      <span className="empresa-exams-row-top">
+                        <span className="empresa-exams-row-name">{item.name}</span>
+                        <PreparationBadge type={item.preparationType} />
+                      </span>
+                      {item.shortDescription && (
+                        <span className="empresa-exams-row-desc">{item.shortDescription}</span>
+                      )}
+                      <span className="empresa-exams-row-meta">
+                        <span className="empresa-exams-category">
+                          {EXAM_CATEGORY_LABELS[item.category]}
+                        </span>
+                        {item.averageDeadline && (
+                          <>
+                            <span className="empresa-exams-dot" aria-hidden />
+                            <span>Prazo: {item.averageDeadline}</span>
+                          </>
+                        )}
+                      </span>
+                    </span>
+                    <span className="empresa-exams-row-action" aria-hidden>
+                      {loadingExamId === item.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-[var(--brand-green)]" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="empresa-exams-pagination">
+                  <p className="text-sm text-slate-500">
+                    Página {initialPage} de {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={initialPage <= 1 || isPending}
+                      onClick={() => updateFilters({ page: String(initialPage - 1) })}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={initialPage >= totalPages || isPending}
+                      onClick={() => updateFilters({ page: String(initialPage + 1) })}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
       <FilterBar onSearch={handleSearch} onClear={clearFilters} isPending={isPending}>
         <div className="referral-filter-search sm:col-span-2">
             <Search className="referral-filter-search-icon h-4 w-4" />
@@ -404,8 +542,9 @@ export function ExamesClient({
             {!isEmpresaPortal && <option value="displayOrder">Ordenar: Ordem de exibição</option>}
           </select>
       </FilterBar>
+      )}
 
-      {empty ? (
+      {!isEmpresaPortal && empty ? (
         <EmptyState
           icon={Stethoscope}
           className="mt-8 bg-white"
@@ -423,7 +562,7 @@ export function ExamesClient({
               : undefined
           }
         />
-      ) : (
+      ) : !isEmpresaPortal ? (
         <div className="relative mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
           {isPending && <LoadingState overlay label="Atualizando exames..." />}
           <Table>
@@ -597,7 +736,7 @@ export function ExamesClient({
             </div>
           )}
         </div>
-      )}
+      ) : null}
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">

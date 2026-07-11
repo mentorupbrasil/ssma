@@ -43,14 +43,14 @@ export default async function DashboardPage() {
         },
         {
           href: "/dashboard/encaminhamentos/novo",
-          label: "Novo encaminhamento",
-          description: "Solicitar exames em massa",
+          label: "Solicitar exames",
+          description: "Encaminhar colaboradores para a clínica",
           icon: FileText,
         },
         {
-          href: "/dashboard/agenda",
-          label: "Ver agenda",
-          description: "Acompanhar exames agendados",
+          href: "/dashboard/encaminhamentos?tab=agenda",
+          label: "Agenda confirmada",
+          description: "Horários já marcados pela clínica",
           icon: CalendarCheck,
         },
         {
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
         title="Visão geral"
         description={
           isEmpresa
-            ? "Colaboradores, encaminhamentos, agenda e documentos da sua empresa."
+            ? "Colaboradores, exames, documentos e chamados da sua empresa."
             : "Pendências, produção e ações prioritárias da clínica — atualizado em tempo real."
         }
       />
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
                   {overview.upcomingAppointments.map((a) => (
                     <Link
                       key={a.id}
-                      href="/dashboard/agenda"
+                      href="/dashboard/encaminhamentos?tab=agenda"
                       className="dashboard-list-item dashboard-list-item-row"
                     >
                       <div className="min-w-0">
@@ -165,15 +165,15 @@ export default async function DashboardPage() {
               )}
             </DashboardPanel>
 
-            <DashboardPanel title="Encaminhamentos recentes" icon={FileText}>
+            <DashboardPanel title="Solicitações recentes" icon={FileText}>
               {!overview.recentReferrals?.length ? (
-                <InlineEmptyNote>Nenhum encaminhamento recente.</InlineEmptyNote>
+                <InlineEmptyNote>Nenhuma solicitação recente.</InlineEmptyNote>
               ) : (
                 <div className="dashboard-list">
                   {overview.recentReferrals.map((r) => (
                     <Link
                       key={r.id}
-                      href={`/dashboard/encaminhamentos/${r.id}`}
+                      href={`/dashboard/encaminhamentos?tab=solicitacoes&id=${r.id}`}
                       className="dashboard-list-item dashboard-list-item-row"
                     >
                       <div className="min-w-0">

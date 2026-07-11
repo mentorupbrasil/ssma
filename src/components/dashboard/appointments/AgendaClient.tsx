@@ -61,6 +61,8 @@ type AgendaClientProps = {
   canManage: boolean;
   userRole: string;
   isEmpresaPortal?: boolean;
+  embedded?: boolean;
+  listPath?: string;
   filters: {
     q?: string;
     status?: string;
@@ -94,11 +96,14 @@ export function AgendaClient({
   canManage,
   userRole,
   isEmpresaPortal = false,
+  embedded = false,
+  listPath: listPathProp,
   filters,
 }: AgendaClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const listPath = listPathProp ?? (embedded ? "/dashboard/encaminhamentos" : "/dashboard/agenda");
 
   const [q, setQ] = useState(filters.q ?? "");
   const [companyId, setCompanyId] = useState(filters.companyId ?? "");
@@ -127,15 +132,16 @@ export function AgendaClient({
   const updateFilters = useCallback(
     (updates: Record<string, string | undefined>) => {
       const params = new URLSearchParams(searchParams.toString());
+      if (embedded) params.set("tab", "agenda");
       Object.entries(updates).forEach(([key, value]) => {
         if (!value || value === "ALL") params.delete(key);
         else params.set(key, value);
       });
       startTransition(() => {
-        router.push(`/dashboard/agenda?${params.toString()}`);
+        router.push(`${listPath}?${params.toString()}`);
       });
     },
-    [router, searchParams]
+    [router, searchParams, embedded, listPath]
   );
 
   const handleSearch = () => {
@@ -165,7 +171,7 @@ export function AgendaClient({
     setDateTo("");
     setAnchorDate(format(new Date(), "yyyy-MM-dd"));
     startTransition(() => {
-      router.push("/dashboard/agenda");
+      router.push(embedded ? `${listPath}?tab=agenda` : listPath);
     });
   };
 
@@ -207,17 +213,19 @@ export function AgendaClient({
     setSelectedId(id);
     loadDetail(id);
     const params = new URLSearchParams(searchParams.toString());
+    if (embedded) params.set("tab", "agenda");
     params.set("id", id);
-    window.history.replaceState(null, "", `/dashboard/agenda?${params.toString()}`);
+    window.history.replaceState(null, "", `${listPath}?${params.toString()}`);
   };
 
   const closeDetail = () => {
     setSelectedId(null);
     setDetail(null);
     const params = new URLSearchParams(searchParams.toString());
+    if (embedded) params.set("tab", "agenda");
     params.delete("id");
     const qs = params.toString();
-    window.history.replaceState(null, "", qs ? `/dashboard/agenda?${qs}` : "/dashboard/agenda");
+    window.history.replaceState(null, "", qs ? `${listPath}?${qs}` : listPath);
   };
 
   const refreshDetail = () => {
@@ -248,39 +256,66 @@ export function AgendaClient({
   const showDateGroups = activeView === "week" || activeView === "month" || activeView === "list";
   const appointmentCards = isEmpresaPortal ? appointmentStatCardsForEmpresa() : APPOINTMENT_STAT_CARDS;
 
-  return (
-    <PageModule>
-      <PageHeader
-        title="Agenda"
-        description={
-          isEmpresaPortal
-            ? "Acompanhe os agendamentos da sua equipe"
-            : "Agendamentos de atendimentos e exames ocupacionais"
-        }
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={goToday}>
-            Hoje
-          </Button>
-          {VIEW_MODES.map((v) => (
-            <Button
-              key={v.value}
-              variant={activeView === v.value ? "brand" : "outline"}
-              size="sm"
-              onClick={() => updateFilters({ view: v.value, date: anchorDate, status: activeStatus })}
-            >
-              {v.label === "Dia" && <CalendarDays className="mr-1 h-3.5 w-3.5" />}
-              {v.label === "Lista" && <List className="mr-1 h-3.5 w-3.5" />}
-              {v.label}
+  const body = (
+    <>
+      {!embedded && (
+        <PageHeader
+          title="Agenda"
+          description={
+            isEmpresaPortal
+              ? "Acompanhe os agendamentos da sua equipe"
+              : "Agendamentos de atendimentos e exames ocupacionais"
+          }
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={goToday}>
+              Hoje
             </Button>
-          ))}
-          {canManage && (
-            <Button variant="brand" onClick={() => setNewDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Novo agendamento
+            {VIEW_MODES.map((v) => (
+              <Button
+                key={v.value}
+                variant={activeView === v.value ? "brand" : "outline"}
+                size="sm"
+                onClick={() => updateFilters({ view: v.value, date: anchorDate, status: activeStatus })}
+              >
+                {v.label === "Dia" && <CalendarDays className="mr-1 h-3.5 w-3.5" />}
+                {v.label === "Lista" && <List className="mr-1 h-3.5 w-3.5" />}
+                {v.label}
+              </Button>
+            ))}
+            {canManage && (
+              <Button variant="brand" onClick={() => setNewDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Novo agendamento
+              </Button>
+            )}
+          </div>
+        </PageHeader>
+      )}
+
+      {embedded && (
+        <div className="exames-agenda-toolbar mb-4 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-slate-600">
+            Horários confirmados pela clínica para sua equipe.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={goToday}>
+              Hoje
             </Button>
-          )}
+            {VIEW_MODES.map((v) => (
+              <Button
+                key={v.value}
+                variant={activeView === v.value ? "brand" : "outline"}
+                size="sm"
+                onClick={() => updateFilters({ view: v.value, date: anchorDate, status: activeStatus })}
+              >
+                {v.label === "Dia" && <CalendarDays className="mr-1 h-3.5 w-3.5" />}
+                {v.label === "Lista" && <List className="mr-1 h-3.5 w-3.5" />}
+                {v.label}
+              </Button>
+            ))}
+          </div>
         </div>
-      </PageHeader>
+      )}
 
       <FilterMetricGrid
         items={appointmentCards.map((card) => {
@@ -459,11 +494,17 @@ export function AgendaClient({
           <EmptyState
             icon={CalendarDays}
             title="Nenhum agendamento para o período selecionado"
-            description="Crie um novo agendamento ou ajuste os filtros."
+            description={
+              isEmpresaPortal
+                ? "Quando a clínica confirmar horários, eles aparecerão aqui. Você também pode ajustar os filtros."
+                : "Crie um novo agendamento ou ajuste os filtros."
+            }
             action={
               canManage
                 ? { label: "Novo agendamento", onClick: () => setNewDialogOpen(true) }
-                : undefined
+                : isEmpresaPortal
+                  ? { label: "Solicitar exames", href: "/dashboard/encaminhamentos/novo" }
+                  : undefined
             }
           />
         ) : activeView === "week" ? (
@@ -582,8 +623,12 @@ export function AgendaClient({
           />
         </>
       )}
-    </PageModule>
+    </>
   );
+
+  if (embedded) return body;
+
+  return <PageModule>{body}</PageModule>;
 }
 
 function WeekCalendarGrid({

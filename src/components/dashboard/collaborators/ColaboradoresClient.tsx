@@ -373,7 +373,7 @@ export function ColaboradoresClient({
                       <CollaboratorActionMenu
                         onViewDetails={() => openDetail(c.id)}
                         onSchedule={() =>
-                          router.push(`/dashboard/agenda?new=1&patientId=${c.id}`)
+                          router.push(`/dashboard/encaminhamentos/novo?patientId=${c.id}`)
                         }
                         onViewDocuments={() =>
                           router.push(`/dashboard/documentos?patientId=${c.id}`)

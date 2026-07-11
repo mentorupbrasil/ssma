@@ -372,16 +372,16 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
         },
         {
           key: "referrals_open",
-          title: "Encaminhamentos em aberto",
+          title: "Solicitações em aberto",
           value: openReferrals,
-          href: "/dashboard/encaminhamentos",
+          href: "/dashboard/encaminhamentos?tab=solicitacoes",
           show: true,
         },
         {
           key: "appointments_today",
           title: "Agendamentos hoje",
           value: appointmentsToday,
-          href: "/dashboard/agenda",
+          href: "/dashboard/encaminhamentos?tab=agenda",
           show: true,
         },
         {
