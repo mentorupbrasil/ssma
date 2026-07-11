@@ -139,7 +139,7 @@ export function EncaminhamentosClient({
       if (!updates.page) params.delete("page");
       params.delete("tab");
       startTransition(() => {
-        router.push(`${listPath}?${params.toString()}`);
+        router.push(`${listPath}?${params.toString()}`, { scroll: false });
       });
     },
     [router, searchParams, listPath]
@@ -156,7 +156,7 @@ export function EncaminhamentosClient({
     setDateFrom("");
     setDateTo("");
     startTransition(() => {
-      router.push(listPath);
+      router.push(listPath, { scroll: false });
     });
   };
 
@@ -164,7 +164,12 @@ export function EncaminhamentosClient({
     () =>
       buildFilterChips([
         { key: "q", value: filters.q, label: (v) => `Busca: ${v}` },
-        { key: "status", value: filters.status, label: (v) => `Status: ${isEmpresa ? empresaReferralCardLabel(v) : v}`, skip: (v) => v === "ALL" },
+        {
+          key: "status",
+          value: filters.status,
+          label: (v) => `Status: ${isEmpresa ? empresaReferralCardLabel(v) : v}`,
+          skip: (v) => v === "ALL" || isEmpresa,
+        },
         { key: "companyId", value: filters.companyId, label: (v) => `Empresa: ${companies.find((c) => c.id === v)?.name ?? v}` },
         { key: "clinicalExamType", value: filters.clinicalExamType, label: (v) => `Exame: ${CLINICAL_EXAM_LABELS[v as keyof typeof CLINICAL_EXAM_LABELS] ?? v}` },
         { key: "dateFrom", value: filters.dateFrom, label: (v) => `De ${v}` },

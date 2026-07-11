@@ -30,37 +30,37 @@ const TONE_STYLES: Record<
     shell: "border-slate-200/70 bg-gradient-to-br from-white via-white to-slate-50/90",
     icon: "bg-slate-100 text-slate-600",
     badge: "bg-slate-100 text-slate-600",
-    active: "border-slate-300 ring-2 ring-slate-400/15",
+    active: "border-slate-400/80 ring-2 ring-inset ring-slate-400/25",
   },
   success: {
     shell: "border-emerald-100/90 bg-gradient-to-br from-white via-white to-emerald-50/50",
     icon: "bg-emerald-50 text-emerald-600",
     badge: "bg-emerald-50 text-emerald-700",
-    active: "border-emerald-300/70 ring-2 ring-emerald-500/15",
+    active: "border-emerald-400/80 ring-2 ring-inset ring-emerald-500/20",
   },
   warning: {
     shell: "border-amber-100/90 bg-gradient-to-br from-white via-white to-amber-50/40",
     icon: "bg-amber-50 text-amber-600",
     badge: "bg-amber-50 text-amber-700",
-    active: "border-amber-300/70 ring-2 ring-amber-500/15",
+    active: "border-amber-400/80 ring-2 ring-inset ring-amber-500/20",
   },
   danger: {
     shell: "border-red-100/90 bg-gradient-to-br from-white via-white to-red-50/35",
     icon: "bg-red-50 text-red-600",
     badge: "bg-red-50 text-red-700",
-    active: "border-red-300/70 ring-2 ring-red-500/15",
+    active: "border-red-400/80 ring-2 ring-inset ring-red-500/20",
   },
   info: {
     shell: "border-indigo-100/80 bg-gradient-to-br from-white via-white to-indigo-50/35",
     icon: "bg-indigo-50 text-indigo-600",
     badge: "bg-indigo-50 text-indigo-700",
-    active: "border-indigo-300/70 ring-2 ring-indigo-500/15",
+    active: "border-indigo-400/80 ring-2 ring-inset ring-indigo-500/20",
   },
   finance: {
     shell: "border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-100/60",
     icon: "bg-slate-100 text-[var(--brand-navy,#0e142b)]",
     badge: "bg-slate-100 text-[var(--brand-navy,#0e142b)]",
-    active: "border-slate-300 ring-2 ring-slate-500/12",
+    active: "border-slate-400/80 ring-2 ring-inset ring-slate-500/15",
   },
 };
 
@@ -85,12 +85,13 @@ export function MetricCard({
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
+      aria-pressed={onClick ? active : undefined}
       className={cn(
         "group relative flex w-full min-h-[112px] flex-col rounded-2xl border p-5 text-left",
-        "shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-all duration-200",
-        "hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(15,23,42,0.09)]",
+        "shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow,background-color] duration-200",
+        !active && onClick && "hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(15,23,42,0.08)]",
         styles.shell,
-        active && cn("shadow-[0_16px_40px_rgba(15,23,42,0.09)]", styles.active),
+        active && styles.active,
         onClick && "cursor-pointer",
         className
       )}
