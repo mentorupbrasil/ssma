@@ -163,6 +163,8 @@ export type DocumentListItem = {
   companyName: string | null;
   patientId: string | null;
   patientName: string | null;
+  jobTitle: string | null;
+  clinicalExamType: ClinicalExamType | null;
   referralId: string | null;
   contactPhone: string | null;
   protocol: string | null;
@@ -407,8 +409,8 @@ export function buildDocumentOrderBy(sort?: string): Prisma.DocumentOrderByWithR
 
 type DocWithRelations = Document & {
   company?: { legalName: string; tradeName: string | null; whatsapp?: string | null; phone?: string | null } | null;
-  patient?: { fullName: string } | null;
-  referral?: { protocol: string } | null;
+  patient?: { fullName: string; jobTitle?: string | null } | null;
+  referral?: { protocol: string; clinicalExamType?: ClinicalExamType | null } | null;
 };
 
 export function serializeDocumentListItem(doc: DocWithRelations): DocumentListItem {
@@ -422,6 +424,8 @@ export function serializeDocumentListItem(doc: DocWithRelations): DocumentListIt
     companyName: doc.company?.tradeName ?? doc.company?.legalName ?? null,
     patientId: doc.patientId,
     patientName: doc.patient?.fullName ?? null,
+    jobTitle: doc.patient?.jobTitle ?? null,
+    clinicalExamType: doc.referral?.clinicalExamType ?? doc.asoClinicalType ?? null,
     referralId: doc.referralId,
     contactPhone: doc.company?.whatsapp ?? doc.company?.phone ?? null,
     protocol: doc.referral?.protocol ?? null,

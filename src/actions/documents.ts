@@ -122,8 +122,8 @@ export async function listDocumentsForDashboard(
       take: pageSize,
       include: {
         company: { select: { legalName: true, tradeName: true, whatsapp: true, phone: true } },
-        patient: { select: { fullName: true } },
-        referral: { select: { protocol: true } },
+        patient: { select: { fullName: true, jobTitle: true } },
+        referral: { select: { protocol: true, clinicalExamType: true } },
       },
     }),
     prisma.document.count({ where }),
@@ -200,8 +200,8 @@ export async function listDocumentsForEmpresa(
       take: pageSize,
       include: {
         company: { select: { legalName: true, tradeName: true, whatsapp: true, phone: true } },
-        patient: { select: { fullName: true } },
-        referral: { select: { protocol: true } },
+        patient: { select: { fullName: true, jobTitle: true } },
+        referral: { select: { protocol: true, clinicalExamType: true } },
       },
     }),
     prisma.document.count({ where }),
@@ -250,8 +250,8 @@ export async function listDocumentsForReferralContext(
       },
       include: {
         company: { select: { legalName: true, tradeName: true, whatsapp: true, phone: true } },
-        patient: { select: { fullName: true } },
-        referral: { select: { protocol: true } },
+        patient: { select: { fullName: true, jobTitle: true } },
+        referral: { select: { protocol: true, clinicalExamType: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -279,8 +279,8 @@ export async function getDocumentDetail(
       where: { id },
       include: {
         company: { select: { legalName: true, tradeName: true } },
-        patient: { select: { fullName: true } },
-        referral: { select: { protocol: true } },
+        patient: { select: { fullName: true, jobTitle: true } },
+        referral: { select: { protocol: true, clinicalExamType: true } },
         exam: { select: { name: true } },
         quote: { select: { quoteNumber: true } },
         uploadedBy: { select: { name: true } },

@@ -9,15 +9,15 @@ import {
   ChevronLeft,
   ChevronRight,
   FolderOpen,
-  Paperclip,
+  FolderKanban,
   FileCheck2,
   FileWarning,
-  Download,
+  SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
 import type { DocumentListItem, DocumentFormOptions } from "@/lib/documents";
 import { DOCUMENT_KPI_CARDS, getDocumentDisplayStatus } from "@/lib/documents";
-import { updateDocumentStatus } from "@/actions/documents";
+import { CLINICAL_EXAM_LABELS } from "@/types";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { FilterChips } from "@/components/dashboard/FilterChips";
@@ -30,17 +30,16 @@ import {
 } from "./DocumentAttachPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 const STAT_ICONS: Record<string, LucideIcon> = {
   pendentes_liberacao: FileWarning,
   liberados: FileCheck2,
-};
-
-const STAT_TONES: Record<string, "primary" | "warning"> = {
-  pendentes_liberacao: "warning",
-  liberados: "primary",
 };
 
 type DocumentosClientProps = {
@@ -67,6 +66,13 @@ function toAttachContext(item: DocumentListItem): AttachContext {
   };
 }
 
+function situationLabel(item: DocumentListItem) {
+  const display = getDocumentDisplayStatus(item);
+  if (display.status === "DISPONIVEL" && item.hasFile) return "Liberado";
+  if (!item.hasFile) return "Aguardando arquivo";
+  return display.label;
+}
+
 export function DocumentosClient({
   initialItems,
   initialTotal,
@@ -83,9 +89,10 @@ export function DocumentosClient({
 
   const [q, setQ] = useState(filters.q ?? "");
   const [companyId, setCompanyId] = useState(filters.companyId ?? "");
+  const [statusFilter, setStatusFilter] = useState(filters.status ?? "");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [attachContext, setAttachContext] = useState<AttachContext | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const activeCard = filters.card ?? "PENDENTES_LIBERACAO";
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
@@ -105,23 +112,30 @@ export function DocumentosClient({
     [router, searchParams]
   );
 
-  const pushCurrentFilters = (extra?: Record<string, string | undefined>) => {
+  const applyToolbarFilters = () => {
     updateFilters({
       q: q || undefined,
       card: activeCard || undefined,
       companyId: companyId || undefined,
-      ...extra,
+      status: statusFilter || undefined,
     });
+    setFiltersOpen(false);
   };
 
   const clearFilters = () => {
     setQ("");
     setCompanyId("");
+    setStatusFilter("");
     startTransition(() => router.push("/dashboard/documentos?card=PENDENTES_LIBERACAO"));
   };
 
+  const activeFilterCount = [filters.companyId, filters.status, filters.q].filter(Boolean).length;
+
   const hasActiveFilters = Boolean(
-    filters.q || filters.companyId || (filters.card && filters.card !== "PENDENTES_LIBERACAO")
+    filters.q ||
+      filters.companyId ||
+      filters.status ||
+      (filters.card && filters.card !== "PENDENTES_LIBERACAO")
   );
 
   const activeChips = useMemo(
@@ -143,6 +157,11 @@ export function DocumentosClient({
               v
             }`,
         },
+        {
+          key: "status",
+          value: filters.status,
+          label: (v) => `Situação: ${v === "PENDENTE" ? "Aguardando arquivo" : v === "DISPONIVEL" ? "Liberado" : v}`,
+        },
       ]),
     [filters, formOptions.companies]
   );
@@ -150,6 +169,7 @@ export function DocumentosClient({
   const removeChip = (key: string) => {
     if (key === "q") setQ("");
     if (key === "companyId") setCompanyId("");
+    if (key === "status") setStatusFilter("");
     if (key === "card") {
       updateFilters({ ...removeFilterKey(key, filters), card: "PENDENTES_LIBERACAO" });
       return;
@@ -173,29 +193,12 @@ export function DocumentosClient({
     setPanelOpen(true);
   };
 
-  const openNext = (next: AttachContext) => {
-    setAttachContext(next);
-    setPanelOpen(true);
-  };
-
-  const liberar = async (id: string) => {
-    setActionLoading(id);
-    const result = await updateDocumentStatus(id, "DISPONIVEL");
-    setActionLoading(null);
-    if (!result.success) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Liberado para a empresa.");
-    router.refresh();
-  };
-
   useEffect(() => {
     setQ(filters.q ?? "");
     setCompanyId(filters.companyId ?? "");
+    setStatusFilter(filters.status ?? "");
   }, [filters]);
 
-  // Entrada padrão: fila de pendentes (trabalho em massa)
   useEffect(() => {
     if (!filters.card && !searchParams.get("card")) {
       updateFilters({ card: "PENDENTES_LIBERACAO" });
@@ -206,226 +209,321 @@ export function DocumentosClient({
     initialTotal === 1 ? "1 colaborador na fila" : `${initialTotal} na fila`;
 
   return (
-    <PageModule className="documentos-clinica atendimentos-clinica">
-      <header className="sys-page-header">
-        <div>
-          <h1 className="sys-page-title">Documentos</h1>
-          <p className="sys-page-subtitle">
-            Fila de pendentes por colaborador. Abra cada um, anexe os arquivos e libere para a
-            empresa.
+    <PageModule className="documentos-clinica documentos-ops">
+      <header className="documentos-ops-header">
+        <div className="documentos-ops-header-copy">
+          <h1 className="documentos-ops-title">Documentos</h1>
+          <p className="documentos-ops-subtitle">
+            Gerencie os documentos dos atendimentos e libere-os para as empresas após a
+            conferência.
           </p>
+        </div>
+
+        <div className="documentos-ops-chips" role="group" aria-label="Indicadores da fila">
+          {DOCUMENT_KPI_CARDS.map((card) => {
+            const Icon = STAT_ICONS[card.key] ?? FolderOpen;
+            const isActive = activeCard === card.filter;
+            return (
+              <button
+                key={card.key}
+                type="button"
+                onClick={() => updateFilters({ card: card.filter })}
+                className={cn(
+                  "documentos-ops-chip",
+                  card.key === "pendentes_liberacao" && "documentos-ops-chip--pending",
+                  card.key === "liberados" && "documentos-ops-chip--done",
+                  isActive && "documentos-ops-chip--active"
+                )}
+                aria-pressed={isActive}
+              >
+                <span className="documentos-ops-chip-icon" aria-hidden>
+                  <Icon className="h-3.5 w-3.5" />
+                </span>
+                <span className="documentos-ops-chip-value">{statCounts[card.key] ?? 0}</span>
+                <span className="documentos-ops-chip-label">{card.label}</span>
+              </button>
+            );
+          })}
         </div>
       </header>
 
-      <div className="colaboradores-empresa-stats documentos-clinica-stats">
-        {DOCUMENT_KPI_CARDS.map((card) => {
-          const Icon = STAT_ICONS[card.key] ?? FolderOpen;
-          const isActive = activeCard === card.filter;
-          return (
-            <button
-              key={card.key}
-              type="button"
-              onClick={() => updateFilters({ card: card.filter })}
-              className={cn(
-                "colaboradores-empresa-stat colaboradores-empresa-stat--clickable",
-                isActive && "colaboradores-empresa-stat--active"
-              )}
-            >
-              <span
-                className={cn(
-                  "colaboradores-empresa-stat-icon",
-                  `colaboradores-empresa-stat-icon--${STAT_TONES[card.key] ?? "primary"}`
-                )}
-              >
-                <Icon className="h-4 w-4" aria-hidden />
-              </span>
-              <span className="colaboradores-empresa-stat-body">
-                <span className="colaboradores-empresa-stat-value">
-                  {statCounts[card.key] ?? 0}
-                </span>
-                <span className="colaboradores-empresa-stat-title">{card.label}</span>
-                <span className="colaboradores-empresa-stat-hint">{card.hint}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <div className="documentos-ops-divider" aria-hidden />
 
-      <div className="sys-toolbar colaboradores-empresa-filters">
-        <div className="colaboradores-empresa-filters-row">
-          <div className="colaboradores-empresa-search">
-            <Search className="colaboradores-empresa-search-icon" aria-hidden />
+      <div className="documentos-ops-table-shell relative">
+        {isPending && <LoadingState overlay label="Atualizando fila..." />}
+
+        <div className="documentos-ops-toolbar">
+          <div className="documentos-ops-search">
+            <Search className="documentos-ops-search-icon" aria-hidden />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && pushCurrentFilters()}
-              placeholder="Empresa, colaborador ou protocolo"
-              aria-label="Buscar na fila"
-              className="colaboradores-empresa-search-input"
+              onKeyDown={(e) => e.key === "Enter" && applyToolbarFilters()}
+              placeholder="Buscar por colaborador, empresa, função ou exame"
+              aria-label="Buscar na fila de documentos"
+              className="documentos-ops-search-input"
             />
           </div>
 
-          <select
-            value={companyId}
-            onChange={(e) => {
-              const value = e.target.value;
-              setCompanyId(value);
-              pushCurrentFilters({ companyId: value || undefined });
-            }}
-            aria-label="Empresa"
-            className="colaboradores-empresa-select"
-          >
-            <option value="">Empresa</option>
-            {formOptions.companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.tradeName ?? c.legalName}
-              </option>
-            ))}
-          </select>
+          <Popover open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <PopoverTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="documentos-ops-filter-btn h-9 rounded-lg"
+                  aria-label="Abrir filtros"
+                >
+                  <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />
+                  {activeFilterCount > 0 ? `Filtros (${activeFilterCount})` : "Filtros"}
+                </Button>
+              }
+            />
+            <PopoverContent align="end" className="documentos-ops-filter-popover w-72 p-3">
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Empresa
+                  </label>
+                  <select
+                    value={companyId}
+                    onChange={(e) => setCompanyId(e.target.value)}
+                    className="colaboradores-empresa-select w-full"
+                    aria-label="Filtrar por empresa"
+                  >
+                    <option value="">Todas</option>
+                    {formOptions.companies.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.tradeName ?? c.legalName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Situação
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="colaboradores-empresa-select w-full"
+                    aria-label="Filtrar por situação"
+                  >
+                    <option value="">Todas</option>
+                    <option value="PENDENTE">Aguardando arquivo</option>
+                    <option value="EM_EMISSAO">Em elaboração</option>
+                    <option value="DISPONIVEL">Liberado</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 rounded-lg"
+                    onClick={() => {
+                      setCompanyId("");
+                      setStatusFilter("");
+                    }}
+                  >
+                    Limpar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="brand"
+                    size="sm"
+                    className="flex-1 rounded-lg shadow-none"
+                    onClick={applyToolbarFilters}
+                  >
+                    Aplicar
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
 
           {hasActiveFilters && (
-            <Button type="button" variant="ghost" size="sm" className="rounded-md" onClick={clearFilters}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-9 rounded-lg text-slate-500"
+              onClick={clearFilters}
+            >
               Limpar
             </Button>
           )}
         </div>
 
         {activeChips.length > 0 && (
-          <div className="colaboradores-empresa-chips">
+          <div className="documentos-ops-chips-row">
             <FilterChips chips={activeChips} onRemove={removeChip} onClearAll={clearFilters} />
           </div>
         )}
-      </div>
 
-      <div className="colaboradores-empresa-table-wrap relative sys-table-panel">
-        {isPending && <LoadingState overlay label="Atualizando fila..." />}
-
-        <div className="colaboradores-empresa-result-bar">
-          <span className="text-xs text-slate-500">{resultLabel}</span>
+        <div className="documentos-ops-result-bar">
+          <span>{resultLabel}</span>
         </div>
 
         {initialItems.length === 0 ? (
           <EmptyState
+            compact
             icon={FolderOpen}
-            title="Nenhum pendente na fila"
-            description="Quando houver atendimentos concluídos aguardando documentação, eles aparecem aqui."
+            title="Nenhum documento pendente"
+            description="Os documentos dos atendimentos aparecerão aqui quando precisarem de conferência."
           />
         ) : (
-          <div className="colaboradores-empresa-table-scroll">
-            <table className="colaboradores-empresa-table sys-data-table">
-              <thead>
-                <tr>
-                  <th>Colaborador</th>
-                  <th>Empresa</th>
-                  <th>Protocolo</th>
-                  <th>Data</th>
-                  <th>Situação</th>
-                  {canManage && <th className="colaboradores-empresa-th-actions">Ação</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {initialItems.map((item) => {
-                  const display = getDocumentDisplayStatus(item);
-                  const isLiberado = display.status === "DISPONIVEL" && item.hasFile;
-                  return (
-                    <tr key={item.id} className="atendimentos-clinica-row">
-                      <td>
-                        <div className="atendimentos-clinica-stack">
-                          <span className="atendimentos-clinica-primary-text">
-                            {item.patientName ?? "—"}
+          <>
+            <div className="documentos-ops-table-scroll hidden md:block">
+              <table className="documentos-ops-table">
+                <thead>
+                  <tr>
+                    <th className="documentos-ops-col-collaborator">Colaborador</th>
+                    <th className="documentos-ops-col-company">Empresa</th>
+                    <th className="documentos-ops-col-role">Função</th>
+                    <th className="documentos-ops-col-exam">Tipo de exame</th>
+                    <th className="documentos-ops-col-date">Data</th>
+                    <th className="documentos-ops-col-status">Situação</th>
+                    {canManage && <th className="documentos-ops-col-action">Ação</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {initialItems.map((item) => {
+                    const display = getDocumentDisplayStatus(item);
+                    const isLiberado = display.status === "DISPONIVEL" && item.hasFile;
+                    const examLabel = item.clinicalExamType
+                      ? CLINICAL_EXAM_LABELS[item.clinicalExamType] ?? item.clinicalExamType
+                      : null;
+                    return (
+                      <tr key={item.id}>
+                        <td className="documentos-ops-col-collaborator">
+                          <span className="documentos-ops-name">
+                            {item.patientName ?? "Não informado"}
                           </span>
-                          <span className="atendimentos-clinica-meta">{item.title}</span>
-                        </div>
-                      </td>
-                      <td>{item.companyName ?? "—"}</td>
-                      <td className="font-mono text-xs text-slate-500">
-                        {item.protocol ?? "—"}
-                      </td>
-                      <td className="whitespace-nowrap tabular-nums text-sm text-slate-600">
-                        {format(new Date(item.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-                      </td>
-                      <td>
+                        </td>
+                        <td className="documentos-ops-col-company">
+                          <span className="documentos-ops-ellipsis" title={item.companyName ?? undefined}>
+                            {item.companyName ?? "Não informado"}
+                          </span>
+                        </td>
+                        <td className="documentos-ops-col-role">
+                          {item.jobTitle?.trim() ? item.jobTitle : "Não informado"}
+                        </td>
+                        <td className="documentos-ops-col-exam">
+                          <div className="documentos-ops-exam-stack">
+                            <span className="documentos-ops-exam-primary">
+                              {examLabel ?? "Não informado"}
+                            </span>
+                            {item.type === "ASO" ? (
+                              <span className="documentos-ops-exam-secondary">ASO ocupacional</span>
+                            ) : null}
+                          </div>
+                        </td>
+                        <td className="documentos-ops-col-date">
+                          {format(new Date(item.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                        </td>
+                        <td className="documentos-ops-col-status">
+                          <StatusBadge
+                            status={display.status}
+                            type="document"
+                            label={situationLabel(item)}
+                            className={cn(
+                              "documentos-ops-status",
+                              isLiberado && "documentos-ops-status--liberado"
+                            )}
+                          />
+                        </td>
+                        {canManage && (
+                          <td className="documentos-ops-col-action">
+                            <Button
+                              type="button"
+                              variant="brand"
+                              size="sm"
+                              className="documentos-ops-manage-btn h-8 rounded-lg px-2.5 text-xs shadow-none"
+                              onClick={() => openAttach(item)}
+                            >
+                              <FolderKanban className="mr-1.5 h-3.5 w-3.5" />
+                              Gerenciar
+                            </Button>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="documentos-ops-mobile md:hidden">
+              {initialItems.map((item) => {
+                const display = getDocumentDisplayStatus(item);
+                const examLabel = item.clinicalExamType
+                  ? CLINICAL_EXAM_LABELS[item.clinicalExamType] ?? item.clinicalExamType
+                  : "Não informado";
+                return (
+                  <article key={item.id} className="documentos-ops-mobile-card">
+                    <div className="min-w-0 flex-1">
+                      <p className="documentos-ops-name">{item.patientName ?? "Não informado"}</p>
+                      <p className="documentos-ops-mobile-meta">
+                        {item.companyName ?? "Não informado"} · {examLabel}
+                      </p>
+                      <div className="mt-2">
                         <StatusBadge
                           status={display.status}
                           type="document"
-                          label={isLiberado ? "Liberado" : display.label}
+                          label={situationLabel(item)}
+                          className="documentos-ops-status"
                         />
-                      </td>
-                      {canManage && (
-                        <td className="colaboradores-empresa-td-actions">
-                          <div className="flex flex-wrap items-center justify-end gap-1.5">
-                            {item.hasFile && (
-                              <a
-                                href={`/api/documents/${item.id}/file`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex"
-                              >
-                                <Button type="button" variant="ghost" size="sm" className="rounded-md">
-                                  <Download className="mr-1.5 h-3.5 w-3.5" />
-                                  Ver
-                                </Button>
-                              </a>
-                            )}
-                            {!isLiberado && item.hasFile && (
-                              <Button
-                                type="button"
-                                variant="brand"
-                                size="sm"
-                                className="rounded-md"
-                                disabled={actionLoading === item.id}
-                                onClick={() => liberar(item.id)}
-                              >
-                                Liberar
-                              </Button>
-                            )}
-                            <Button
-                              type="button"
-                              variant={isLiberado ? "outline" : "brand"}
-                              size="sm"
-                              className="rounded-md"
-                              onClick={() => openAttach(item)}
-                            >
-                              <Paperclip className="mr-1.5 h-3.5 w-3.5" />
-                              {isLiberado ? "Arquivos" : "Anexar"}
-                            </Button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                    </div>
+                    {canManage && (
+                      <Button
+                        type="button"
+                        variant="brand"
+                        size="sm"
+                        className="h-8 shrink-0 rounded-lg px-2.5 text-xs shadow-none"
+                        onClick={() => openAttach(item)}
+                      >
+                        Gerenciar
+                      </Button>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </>
         )}
-      </div>
 
-      {initialTotal > pageSize && (
-        <div className="colaboradores-empresa-pagination">
-          <p className="text-sm text-slate-500">
-            {resultLabel} · Página {initialPage} de {totalPages}
+        <div className="documentos-ops-pagination">
+          <p>
+            {resultLabel}
+            {totalPages > 1 ? ` · Página ${initialPage} de ${totalPages}` : null}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <Button
               variant="outline"
               size="sm"
-              disabled={initialPage <= 1 || isPending}
+              className="h-8 w-8 rounded-lg p-0"
+              disabled={initialPage <= 1 || isPending || totalPages <= 1}
               onClick={() => updateFilters({ page: String(initialPage - 1) })}
+              aria-label="Página anterior"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
-              disabled={initialPage >= totalPages || isPending}
+              className="h-8 w-8 rounded-lg p-0"
+              disabled={initialPage >= totalPages || isPending || totalPages <= 1}
               onClick={() => updateFilters({ page: String(initialPage + 1) })}
+              aria-label="Próxima página"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
-      )}
+      </div>
 
       <DocumentAttachPanel
         open={panelOpen}
@@ -433,7 +531,10 @@ export function DocumentosClient({
         context={attachContext}
         pendingQueue={pendingQueue}
         onDone={() => router.refresh()}
-        onOpenNext={(next) => openNext(next)}
+        onOpenNext={(next) => {
+          setAttachContext(next);
+          setPanelOpen(true);
+        }}
       />
     </PageModule>
   );

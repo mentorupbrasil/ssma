@@ -5046,6 +5046,337 @@
   color: rgb(100 116 139);
 }
 
+/* —— Documentos: fila operacional compacta —— */
+.documentos-ops {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 0.25rem;
+}
+
+.documentos-ops-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
+}
+
+.documentos-ops-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: rgb(15 23 42);
+}
+
+.documentos-ops-subtitle {
+  margin: 0.25rem 0 0;
+  max-width: 36rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgb(100 116 139);
+}
+
+.documentos-ops-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.documentos-ops-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 9rem;
+  height: 3.85rem;
+  padding: 0 0.85rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.7rem;
+  background: #fff;
+  text-align: left;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.documentos-ops-chip:hover {
+  background: rgb(248 250 252);
+}
+
+.documentos-ops-chip--active {
+  background: rgb(248 250 252);
+  border-color: rgb(203 213 225);
+  box-shadow: inset 0 0 0 1px rgb(226 232 240);
+}
+
+.documentos-ops-chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.45rem;
+  flex-shrink: 0;
+}
+
+.documentos-ops-chip--pending .documentos-ops-chip-icon {
+  background: rgb(254 249 195);
+  color: rgb(161 98 7);
+}
+
+.documentos-ops-chip--done .documentos-ops-chip-icon {
+  background: rgb(236 253 245);
+  color: rgb(4 120 87);
+}
+
+.documentos-ops-chip-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  color: rgb(15 23 42);
+  font-variant-numeric: tabular-nums;
+}
+
+.documentos-ops-chip-label {
+  font-size: 0.6875rem;
+  font-weight: 550;
+  color: rgb(100 116 139);
+}
+
+.documentos-ops-divider {
+  height: 1px;
+  margin: 1.15rem 0 1.15rem;
+  background: rgb(226 232 240);
+}
+
+.documentos-ops-table-shell {
+  overflow: hidden;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.7rem;
+  background: #fff;
+}
+
+.documentos-ops-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252 / 0.65);
+}
+
+.documentos-ops-search {
+  position: relative;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.documentos-ops-search-icon {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  width: 0.9rem;
+  height: 0.9rem;
+  color: rgb(148 163 184);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.documentos-ops-search-input {
+  height: 2.25rem !important;
+  padding-left: 2.1rem !important;
+  border-radius: 0.55rem !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+
+.documentos-ops-filter-btn {
+  box-shadow: none !important;
+}
+
+.documentos-ops-chips-row {
+  padding: 0.45rem 0.75rem 0;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+
+.documentos-ops-result-bar {
+  display: flex;
+  align-items: center;
+  min-height: 2.15rem;
+  padding: 0 0.85rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  font-size: 0.6875rem;
+  color: rgb(100 116 139);
+}
+
+.documentos-ops-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.documentos-ops-table thead th {
+  height: 2.5rem;
+  padding: 0 0.85rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.documentos-ops-table tbody td {
+  height: 3.65rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  vertical-align: middle;
+  font-size: 0.8125rem;
+  color: rgb(51 65 85);
+}
+
+.documentos-ops-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.documentos-ops-table tbody tr:hover td {
+  background: rgb(248 250 252 / 0.7);
+}
+
+.documentos-ops-col-collaborator { width: 19%; }
+.documentos-ops-col-company { width: 16%; }
+.documentos-ops-col-role { width: 16%; }
+.documentos-ops-col-exam { width: 17%; }
+.documentos-ops-col-date {
+  width: 10%;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.documentos-ops-col-status { width: 13%; text-align: center; }
+.documentos-ops-col-action { width: 9%; text-align: right; }
+
+.documentos-ops-table thead th.documentos-ops-col-date,
+.documentos-ops-table thead th.documentos-ops-col-status,
+.documentos-ops-table thead th.documentos-ops-col-action {
+  text-align: center;
+}
+
+.documentos-ops-table thead th.documentos-ops-col-action {
+  text-align: right;
+}
+
+.documentos-ops-name {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.documentos-ops-ellipsis {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.documentos-ops-exam-stack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.documentos-ops-exam-primary {
+  font-weight: 550;
+  color: rgb(30 41 59);
+}
+
+.documentos-ops-exam-secondary {
+  font-size: 0.6875rem;
+  color: rgb(148 163 184);
+}
+
+.documentos-ops-status {
+  height: 1.55rem !important;
+  padding: 0 0.55rem !important;
+  border-radius: 999px !important;
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.documentos-ops-manage-btn {
+  box-shadow: none !important;
+}
+
+.documentos-ops-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.85rem;
+  border-top: 1px solid rgb(241 245 249);
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.documentos-ops-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.documentos-ops-mobile-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+
+.documentos-ops-mobile-card:last-child {
+  border-bottom: 0;
+}
+
+.documentos-ops-mobile-meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+@media (max-width: 1023px) {
+  .documentos-ops-col-role,
+  .documentos-ops-table thead th.documentos-ops-col-role,
+  .documentos-ops-table tbody td.documentos-ops-col-role {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .documentos-ops-header {
+    flex-direction: column;
+  }
+
+  .documentos-ops-chips {
+    width: 100%;
+  }
+
+  .documentos-ops-chip {
+    flex: 1 1 calc(50% - 0.25rem);
+    min-width: 0;
+  }
+
+  .documentos-ops-col-date,
+  .documentos-ops-table thead th.documentos-ops-col-date,
+  .documentos-ops-table tbody td.documentos-ops-col-date {
+    display: none;
+  }
+}
+
 /* —— Documentos: drawer Anexar documentação —— */
 .doc-attach-overlay {
   background: rgba(15, 23, 42, 0.2) !important;
