@@ -22,9 +22,10 @@ export function CompanyActionMenu({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            className="empresas-clinica-action-btn h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800"
             onClick={(e) => e.stopPropagation()}
-            aria-label="Ações da empresa"
+            aria-label="Mais ações"
+            title="Mais ações"
           >
             <MoreHorizontal className="h-4 w-4" />
           </Button>

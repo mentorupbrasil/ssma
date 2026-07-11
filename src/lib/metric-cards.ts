@@ -78,7 +78,7 @@ export const METRIC_META: Record<string, MetricMeta> = {
   "company:com_portal": {
     tone: "info",
     icon: ClipboardList,
-    description: "Empresas com portal RH ativo",
+    description: "Acesso liberado",
   },
   "company:atendimentos_abertos": {
     tone: "info",

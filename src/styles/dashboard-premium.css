@@ -3727,10 +3727,32 @@
 .empresas-clinica {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
+}
+
+.empresas-clinica .colaboradores-empresa-title {
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+.empresas-clinica .colaboradores-empresa-subtitle {
+  max-width: 36rem;
+  font-size: 0.8125rem;
+}
+
+.empresas-clinica-new-btn {
+  height: 2.25rem !important;
+  gap: 0.4rem;
+  padding-left: 0.85rem !important;
+  padding-right: 0.95rem !important;
+  border-radius: 0.55rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06) !important;
 }
 
 .empresas-clinica-stats {
+  gap: 0.55rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -3740,17 +3762,140 @@
   }
 }
 
-.empresas-clinica-table thead th,
-.empresas-clinica-table tbody td {
+.empresas-clinica-stat {
+  align-items: center;
+  min-height: 4.65rem;
+  height: auto;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.7rem;
+  box-shadow: none;
+}
+
+.empresas-clinica-stat-icon {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 0.45rem;
+}
+
+.empresas-clinica-stat-icon--active {
+  background: rgb(239 246 255);
+  color: rgb(37 99 235);
+}
+
+.empresas-clinica-stat-icon--muted {
+  background: rgb(241 245 249);
+  color: rgb(100 116 139);
+}
+
+.empresas-clinica-stat-icon--warning {
+  background: rgb(255 247 237);
+  color: rgb(194 65 12);
+}
+
+.empresas-clinica-stat-icon--success {
+  background: rgb(236 253 245);
+  color: rgb(5 150 105);
+}
+
+.empresas-clinica-stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.empresas-clinica-stat-title {
+  margin-top: 0.1rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgb(30 41 59);
+}
+
+.empresas-clinica-stat-hint {
+  margin-top: 0.05rem;
+  font-size: 0.675rem;
+  color: rgb(148 163 184);
+}
+
+.empresas-clinica-filters .colaboradores-empresa-filters-row {
+  gap: 0.5rem;
+}
+
+.empresas-clinica-filters .colaboradores-empresa-search-input,
+.empresas-clinica-filters .colaboradores-empresa-select,
+.empresas-clinica-more-btn {
+  height: 2.25rem !important;
+}
+
+.empresas-clinica-filters .colaboradores-empresa-select {
+  min-width: 7.5rem;
+  width: auto;
+  border-radius: 0.55rem;
+}
+
+.empresas-clinica-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  border-radius: 0.55rem !important;
+  font-size: 0.8125rem !important;
+  box-shadow: none !important;
+}
+
+.empresas-clinica-table-wrap {
+  border-radius: 0.7rem;
+  box-shadow: none;
+}
+
+.empresas-clinica-result-bar {
+  display: flex;
+  align-items: center;
+  height: 2.35rem;
+  min-height: 2.35rem;
+  padding: 0 0.9rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.empresas-clinica-table-scroll {
+  overflow: hidden;
+}
+
+.empresas-clinica-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.empresas-clinica-table thead th {
+  height: 2.5rem;
+  padding: 0 0.7rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+  text-align: left;
+  white-space: nowrap;
   vertical-align: middle;
 }
 
 .empresas-clinica-table tbody td {
-  padding: 1rem 1rem;
+  height: 4rem;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  vertical-align: middle;
+  font-size: 0.8125rem;
+  color: rgb(51 65 85);
+  overflow: hidden;
 }
 
 .empresas-clinica-table tbody tr.empresas-clinica-row {
-  height: 4.6rem;
+  height: 4rem;
   border-bottom: 1px solid rgb(241 245 249);
   transition: background-color 0.15s ease;
 }
@@ -3760,7 +3905,44 @@
 }
 
 .empresas-clinica-table tbody tr.empresas-clinica-row:hover {
-  background: rgb(248 250 252 / 0.9);
+  background: rgb(248 250 252 / 0.85);
+}
+
+.empresas-clinica-col-company { width: 18%; }
+.empresas-clinica-col-cnpj { width: 15%; }
+.empresas-clinica-col-owner { width: 15%; }
+.empresas-clinica-col-city { width: 12%; }
+.empresas-clinica-col-employees { width: 10%; text-align: center; }
+.empresas-clinica-col-pending { width: 13%; text-align: center; }
+.empresas-clinica-col-status { width: 9%; text-align: center; }
+.empresas-clinica-col-actions { width: 8%; text-align: center; }
+
+.empresas-clinica-table thead th.empresas-clinica-col-employees,
+.empresas-clinica-table thead th.empresas-clinica-col-pending,
+.empresas-clinica-table thead th.empresas-clinica-col-status,
+.empresas-clinica-table thead th.empresas-clinica-col-actions,
+.empresas-clinica-table tbody td.empresas-clinica-col-employees,
+.empresas-clinica-table tbody td.empresas-clinica-col-pending,
+.empresas-clinica-table tbody td.empresas-clinica-col-status,
+.empresas-clinica-table tbody td.empresas-clinica-col-actions {
+  text-align: center;
+}
+
+.empresas-clinica .colaboradores-empresa-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.empresas-clinica .colaboradores-empresa-muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: rgb(148 163 184);
 }
 
 .empresas-clinica-cnpj {
@@ -3769,42 +3951,173 @@
   font-variant-numeric: tabular-nums;
 }
 
-.empresas-clinica-phone {
+.empresas-clinica-ellipsis {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empresas-clinica-responsible-name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  color: rgb(30 41 59);
+}
+
+.empresas-clinica-responsible-phone {
+  margin: 0.1rem 0 0;
+  font-size: 0.75rem;
+  color: rgb(148 163 184);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-}
-
-.empresas-clinica-link-count {
-  font-weight: 650;
-  color: rgb(180 83 9);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-color: rgb(180 83 9 / 0.35);
-}
-
-.empresas-clinica-link-count:hover {
-  color: rgb(146 64 14);
-  text-decoration-color: rgb(146 64 14 / 0.55);
 }
 
 .empresas-clinica-pending {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  padding: 0 0.55rem;
   border-radius: 9999px;
-  padding: 0.2rem 0.55rem;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   white-space: nowrap;
+  box-shadow: none;
 }
 
 .empresas-clinica-pending--ok {
-  background: rgb(240 253 244);
-  color: rgb(22 101 52);
+  background: rgb(236 253 245);
+  color: rgb(4 120 87);
 }
 
 .empresas-clinica-pending--alert {
   background: rgb(255 247 237);
-  color: rgb(154 52 18);
+  color: rgb(194 65 12);
+}
+
+.empresas-clinica .status-badge-premium {
+  height: 1.5rem !important;
+  padding: 0 0.55rem !important;
+  font-size: 0.6875rem !important;
+  box-shadow: none !important;
+}
+
+.empresas-clinica-action-btn {
+  width: 2rem !important;
+  height: 2rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.empresas-clinica-action-btn:hover {
+  background: rgb(241 245 249) !important;
+  border-color: rgb(226 232 240);
+}
+
+.empresas-clinica-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  height: 2.75rem;
+  padding: 0.4rem 0.9rem;
+  border-top: 1px solid rgb(241 245 249);
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.empresas-clinica-pagination-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.empresas-clinica-pagination-range {
+  color: rgb(71 85 105);
+  font-weight: 550;
+}
+
+.empresas-clinica-pagination-controls {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.empresas-clinica-page-btn {
+  width: 2rem !important;
+  height: 2rem !important;
+  padding: 0 !important;
+  border-radius: 0.5rem !important;
+}
+
+.empresas-clinica-mobile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.85rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  cursor: pointer;
+}
+
+.empresas-clinica-mobile-card:last-child {
+  border-bottom: 0;
+}
+
+.empresas-clinica-mobile-card:hover {
+  background: rgb(248 250 252 / 0.85);
+}
+
+.empresas-clinica-mobile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.empresas-clinica-mobile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+@media (max-width: 1279px) and (min-width: 1024px) {
+  .empresas-clinica-col-cnpj,
+  .empresas-clinica-table thead th.empresas-clinica-col-cnpj,
+  .empresas-clinica-table tbody td.empresas-clinica-col-cnpj {
+    display: none;
+  }
+
+  .empresas-clinica-col-city,
+  .empresas-clinica-table thead th.empresas-clinica-col-city,
+  .empresas-clinica-table tbody td.empresas-clinica-col-city {
+    display: none;
+  }
+
+  .empresas-clinica-col-company { width: 26%; }
+  .empresas-clinica-col-owner { width: 22%; }
+  .empresas-clinica-col-employees { width: 12%; }
+  .empresas-clinica-col-pending { width: 18%; }
+  .empresas-clinica-col-status { width: 12%; }
+  .empresas-clinica-col-actions { width: 10%; }
+}
+
+@media (max-width: 767px) {
+  .empresas-clinica-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .empresas-clinica-stat {
+    min-height: 4.4rem;
+  }
 }
 
 .colaboradores-clinica {

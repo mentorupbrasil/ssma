@@ -14,19 +14,19 @@ import { startOfDay, endOfDay, parseISO, isValid } from "date-fns";
 import { maskCpf } from "@/lib/referrals";
 
 export const COMPANY_STAT_CARDS: { key: string; filter: string; label: string; hint: string }[] = [
-  { key: "ativas", filter: "ATIVA", label: "Empresas ativas", hint: "Cadastros com operação ativa" },
-  { key: "inativas", filter: "INATIVA", label: "Empresas inativas", hint: "Sem operação ativa" },
+  { key: "ativas", filter: "ATIVA", label: "Empresas ativas", hint: "Operação ativa" },
+  { key: "inativas", filter: "INATIVA", label: "Empresas inativas", hint: "Sem operação" },
   {
     key: "com_pendencias",
     filter: "DOCS_PENDING",
     label: "Empresas com pendências",
-    hint: "Documentos a regularizar",
+    hint: "Documentos pendentes",
   },
   {
     key: "com_portal",
     filter: "PORTAL_ENABLED",
-    label: "Com portal ativo",
-    hint: "Acesso RH liberado",
+    label: "Portal RH ativo",
+    hint: "Acesso liberado",
   },
 ];
 

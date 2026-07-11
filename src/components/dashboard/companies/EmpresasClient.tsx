@@ -40,11 +40,11 @@ const STAT_ICONS: Record<string, LucideIcon> = {
   com_portal: Globe,
 };
 
-const STAT_TONES: Record<string, "primary" | "warning"> = {
-  ativas: "primary",
-  inativas: "primary",
+const STAT_TONES: Record<string, "active" | "muted" | "warning" | "success"> = {
+  ativas: "active",
+  inativas: "muted",
   com_pendencias: "warning",
-  com_portal: "primary",
+  com_portal: "success",
 };
 
 type EmpresasClientProps = {
@@ -67,6 +67,29 @@ type EmpresasClientProps = {
     dateTo?: string;
   };
 };
+
+function companyCityLabel(c: CompanyListItem) {
+  return [c.city, c.state].filter(Boolean).join("/") || "—";
+}
+
+function CompanyResponsibleCell({
+  name,
+  phone,
+}: {
+  name: string | null;
+  phone: string | null;
+}) {
+  const displayName = name?.trim() ? name : "Não informado";
+  const phoneLabel = phone ? formatPhone(phone) : null;
+  return (
+    <div className="empresas-clinica-responsible">
+      <p className="empresas-clinica-responsible-name">{displayName}</p>
+      {phoneLabel ? (
+        <p className="empresas-clinica-responsible-phone">{phoneLabel}</p>
+      ) : null}
+    </div>
+  );
+}
 
 export function EmpresasClient({
   initialItems,
@@ -211,6 +234,23 @@ export function EmpresasClient({
   const resultLabel =
     initialTotal === 1 ? "1 empresa encontrada" : `${initialTotal} empresas encontradas`;
 
+  const rangeFrom = initialTotal === 0 ? 0 : (initialPage - 1) * pageSize + 1;
+  const rangeTo = Math.min(initialPage * pageSize, initialTotal);
+
+  const openCompany = (id: string) => router.push(`/dashboard/empresas/${id}`);
+
+  const renderActionMenu = (c: CompanyListItem) => (
+    <CompanyActionMenu
+      onViewDetails={() => openCompany(c.id)}
+      onNewQuote={
+        canManage && canCommercial
+          ? () => router.push(`/dashboard/orcamentos?companyId=${c.id}`)
+          : undefined
+      }
+      onManagePortal={() => router.push(`/dashboard/empresas/${c.id}?tab=portal`)}
+    />
+  );
+
   return (
     <PageModule className="empresas-clinica">
       <header className="colaboradores-empresa-header">
@@ -222,8 +262,13 @@ export function EmpresasClient({
         </div>
         {canManage && (
           <div className="colaboradores-empresa-header-actions">
-            <Button variant="brand" size="sm" className="rounded-lg" onClick={() => setNewDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button
+              variant="brand"
+              size="sm"
+              className="empresas-clinica-new-btn"
+              onClick={() => setNewDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4 shrink-0" aria-hidden />
               Nova empresa
             </Button>
           </div>
@@ -242,31 +287,35 @@ export function EmpresasClient({
                 updateFilters({ status: isActive ? undefined : card.filter })
               }
               className={cn(
-                "colaboradores-empresa-stat colaboradores-empresa-stat--clickable",
+                "colaboradores-empresa-stat colaboradores-empresa-stat--clickable empresas-clinica-stat",
                 isActive && "colaboradores-empresa-stat--active"
               )}
             >
               <span
                 className={cn(
-                  "colaboradores-empresa-stat-icon",
-                  `colaboradores-empresa-stat-icon--${STAT_TONES[card.key] ?? "primary"}`
+                  "colaboradores-empresa-stat-icon empresas-clinica-stat-icon",
+                  `empresas-clinica-stat-icon--${STAT_TONES[card.key] ?? "active"}`
                 )}
               >
-                <Icon className="h-4 w-4" aria-hidden />
+                <Icon className="h-3.5 w-3.5" aria-hidden />
               </span>
               <span className="colaboradores-empresa-stat-body">
-                <span className="colaboradores-empresa-stat-value">
+                <span className="colaboradores-empresa-stat-value empresas-clinica-stat-value">
                   {statCounts[card.key] ?? 0}
                 </span>
-                <span className="colaboradores-empresa-stat-title">{card.label}</span>
-                <span className="colaboradores-empresa-stat-hint">{card.hint}</span>
+                <span className="colaboradores-empresa-stat-title empresas-clinica-stat-title">
+                  {card.label}
+                </span>
+                <span className="colaboradores-empresa-stat-hint empresas-clinica-stat-hint">
+                  {card.hint}
+                </span>
               </span>
             </button>
           );
         })}
       </div>
 
-      <div className="colaboradores-empresa-filters">
+      <div className="colaboradores-empresa-filters empresas-clinica-filters">
         <div className="colaboradores-empresa-filters-row">
           <div className="colaboradores-empresa-search">
             <Search className="colaboradores-empresa-search-icon" aria-hidden />
@@ -325,15 +374,14 @@ export function EmpresasClient({
             type="button"
             variant="outline"
             size="sm"
-            className="colaboradores-empresa-more-btn rounded-lg"
+            className="colaboradores-empresa-more-btn empresas-clinica-more-btn"
             onClick={() => setMoreFiltersOpen((open) => !open)}
             aria-expanded={moreFiltersOpen}
           >
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Mais filtros
-            {advancedFilterCount > 0 && (
-              <span className="colaboradores-empresa-filter-count">{advancedFilterCount}</span>
-            )}
+            <SlidersHorizontal className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            {advancedFilterCount > 0
+              ? `Mais filtros (${advancedFilterCount})`
+              : "Mais filtros"}
           </Button>
 
           {hasActiveFilters && (
@@ -416,18 +464,19 @@ export function EmpresasClient({
         )}
       </div>
 
-      <div className="colaboradores-empresa-table-wrap relative">
+      <div className="colaboradores-empresa-table-wrap empresas-clinica-table-wrap relative">
         {isPending && <LoadingState overlay label="Atualizando empresas..." />}
 
-        <div className="colaboradores-empresa-result-bar">
-          <span className="text-xs text-slate-500">{resultLabel}</span>
+        <div className="colaboradores-empresa-result-bar empresas-clinica-result-bar">
+          <span>{resultLabel}</span>
         </div>
 
         {initialItems.length === 0 ? (
           <EmptyState
+            compact
             icon={Building2}
             title="Nenhuma empresa encontrada"
-            description="Cadastre a primeira empresa ou ajuste os filtros."
+            description="Ajuste os filtros ou cadastre uma nova empresa."
             action={
               canManage
                 ? { label: "Nova empresa", onClick: () => setNewDialogOpen(true) }
@@ -435,119 +484,172 @@ export function EmpresasClient({
             }
           />
         ) : (
-          <div className="colaboradores-empresa-table-scroll">
-            <table className="colaboradores-empresa-table empresas-clinica-table">
-              <thead>
-                <tr>
-                  <th>Empresa</th>
-                  <th>CNPJ</th>
-                  <th>Responsável</th>
-                  <th>Cidade/UF</th>
-                  <th className="text-center">Colaboradores</th>
-                  <th>Pendências</th>
-                  <th>Status</th>
-                  <th className="colaboradores-empresa-th-actions">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {initialItems.map((c) => (
-                  <tr
-                    key={c.id}
-                    className="empresas-clinica-row cursor-pointer"
-                    onClick={() => router.push(`/dashboard/empresas/${c.id}`)}
-                  >
-                    <td>
-                      <div className="colaboradores-empresa-name-cell">
-                        <p className="colaboradores-empresa-name">{c.legalName}</p>
-                        {c.tradeName ? (
-                          <p className="colaboradores-empresa-muted">{c.tradeName}</p>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="empresas-clinica-cnpj">{formatCNPJ(c.cnpj)}</td>
-                    <td>
-                      <p className="text-sm">{c.responsibleName ?? "—"}</p>
-                      <p className="colaboradores-empresa-muted empresas-clinica-phone">
-                        {c.whatsapp ? formatPhone(c.whatsapp) : "—"}
-                      </p>
-                    </td>
-                    <td className="text-sm">
-                      {[c.city, c.state].filter(Boolean).join("/") || "—"}
-                    </td>
-                    <td className="text-center text-sm">{c.employeeCount}</td>
-                    <td>
-                      <span
-                        className={cn(
-                          "empresas-clinica-pending",
-                          c.pendingCount > 0
-                            ? "empresas-clinica-pending--alert"
-                            : "empresas-clinica-pending--ok"
-                        )}
+          <>
+            <div className="colaboradores-empresa-table-scroll empresas-clinica-table-scroll">
+              <table className="colaboradores-empresa-table empresas-clinica-table">
+                <thead>
+                  <tr>
+                    <th className="empresas-clinica-col-company">Empresa</th>
+                    <th className="empresas-clinica-col-cnpj">CNPJ</th>
+                    <th className="empresas-clinica-col-owner">Responsável</th>
+                    <th className="empresas-clinica-col-city">Cidade/UF</th>
+                    <th className="empresas-clinica-col-employees">Colaboradores</th>
+                    <th className="empresas-clinica-col-pending">Pendências</th>
+                    <th className="empresas-clinica-col-status">Status</th>
+                    <th className="empresas-clinica-col-actions colaboradores-empresa-th-actions">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {initialItems.map((c) => {
+                    const cityLabel = companyCityLabel(c);
+                    return (
+                      <tr
+                        key={c.id}
+                        className="empresas-clinica-row cursor-pointer"
+                        onClick={() => openCompany(c.id)}
                       >
-                        {formatCompanyPendingLabel(c.pendingCount)}
-                      </span>
-                    </td>
-                    <td>
-                      <StatusBadge status={c.status} type="company" />
-                    </td>
-                    <td
-                      className="colaboradores-empresa-td-actions"
+                        <td className="empresas-clinica-col-company">
+                          <div className="colaboradores-empresa-name-cell">
+                            <p className="colaboradores-empresa-name" title={c.legalName}>
+                              {c.legalName}
+                            </p>
+                            {c.tradeName ? (
+                              <p className="colaboradores-empresa-muted" title={c.tradeName}>
+                                {c.tradeName}
+                              </p>
+                            ) : null}
+                          </div>
+                        </td>
+                        <td className="empresas-clinica-col-cnpj empresas-clinica-cnpj">
+                          {formatCNPJ(c.cnpj)}
+                        </td>
+                        <td className="empresas-clinica-col-owner">
+                          <CompanyResponsibleCell name={c.responsibleName} phone={c.whatsapp} />
+                        </td>
+                        <td className="empresas-clinica-col-city">
+                          <span className="empresas-clinica-ellipsis" title={cityLabel}>
+                            {cityLabel}
+                          </span>
+                        </td>
+                        <td className="empresas-clinica-col-employees">{c.employeeCount}</td>
+                        <td className="empresas-clinica-col-pending">
+                          <span
+                            className={cn(
+                              "empresas-clinica-pending",
+                              c.pendingCount > 0
+                                ? "empresas-clinica-pending--alert"
+                                : "empresas-clinica-pending--ok"
+                            )}
+                          >
+                            {formatCompanyPendingLabel(c.pendingCount)}
+                          </span>
+                        </td>
+                        <td className="empresas-clinica-col-status">
+                          <StatusBadge status={c.status} type="company" />
+                        </td>
+                        <td
+                          className="empresas-clinica-col-actions colaboradores-empresa-td-actions"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {renderActionMenu(c)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="colaboradores-empresa-mobile-list empresas-clinica-mobile">
+              {initialItems.map((c) => (
+                <article
+                  key={c.id}
+                  className="empresas-clinica-mobile-card"
+                  onClick={() => openCompany(c.id)}
+                >
+                  <div className="empresas-clinica-mobile-head">
+                    <div className="min-w-0 flex-1">
+                      <p className="colaboradores-empresa-name" title={c.legalName}>
+                        {c.legalName}
+                      </p>
+                      {c.tradeName ? (
+                        <p className="colaboradores-empresa-muted">{c.tradeName}</p>
+                      ) : null}
+                    </div>
+                    <div
+                      className="empresas-clinica-mobile-menu"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <CompanyActionMenu
-                        onViewDetails={() => router.push(`/dashboard/empresas/${c.id}`)}
-                        onNewQuote={
-                          canManage && canCommercial
-                            ? () => router.push(`/dashboard/orcamentos?companyId=${c.id}`)
-                            : undefined
-                        }
-                        onManagePortal={() =>
-                          router.push(`/dashboard/empresas/${c.id}?tab=portal`)
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      {renderActionMenu(c)}
+                    </div>
+                  </div>
+                  <CompanyResponsibleCell name={c.responsibleName} phone={c.whatsapp} />
+                  <div className="empresas-clinica-mobile-meta">
+                    <span>{c.employeeCount} colaborador{c.employeeCount === 1 ? "" : "es"}</span>
+                    <span
+                      className={cn(
+                        "empresas-clinica-pending",
+                        c.pendingCount > 0
+                          ? "empresas-clinica-pending--alert"
+                          : "empresas-clinica-pending--ok"
+                      )}
+                    >
+                      {formatCompanyPendingLabel(c.pendingCount)}
+                    </span>
+                    <StatusBadge status={c.status} type="company" />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
         )}
 
-        {totalPages > 1 && (
-          <div className="colaboradores-empresa-pagination">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={initialPage <= 1 || isPending}
-              onClick={() =>
-                updateFilters({
-                  page: String(initialPage - 1),
-                  status: activeStatus || undefined,
-                })
-              }
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-slate-500">
-              Página {initialPage} de {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={initialPage >= totalPages || isPending}
-              onClick={() =>
-                updateFilters({
-                  page: String(initialPage + 1),
-                  status: activeStatus || undefined,
-                })
-              }
-            >
-              {isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </Button>
+        {initialTotal > 0 && (
+          <div className="colaboradores-empresa-pagination empresas-clinica-pagination">
+            <p className="empresas-clinica-pagination-meta">
+              Linhas por página: {pageSize}
+              <span className="empresas-clinica-pagination-range">
+                {rangeFrom}–{rangeTo} de {initialTotal}
+              </span>
+            </p>
+            <div className="empresas-clinica-pagination-controls">
+              <Button
+                variant="outline"
+                size="sm"
+                className="empresas-clinica-page-btn"
+                disabled={initialPage <= 1 || isPending || totalPages <= 1}
+                onClick={() =>
+                  updateFilters({
+                    page: String(initialPage - 1),
+                    status: activeStatus || undefined,
+                  })
+                }
+                aria-label="Página anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="empresas-clinica-page-btn"
+                disabled={initialPage >= totalPages || isPending || totalPages <= 1}
+                onClick={() =>
+                  updateFilters({
+                    page: String(initialPage + 1),
+                    status: activeStatus || undefined,
+                  })
+                }
+                aria-label="Próxima página"
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         )}
       </div>
