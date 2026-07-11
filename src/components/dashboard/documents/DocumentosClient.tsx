@@ -16,7 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { DocumentListItem, DocumentFormOptions } from "@/lib/documents";
-import { DOCUMENT_KPI_CARDS, getDocumentDisplayStatus } from "@/lib/documents";
+import { DOCUMENT_KPI_CARDS, DOCUMENT_TYPE_LABELS, getDocumentDisplayStatus } from "@/lib/documents";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
@@ -71,6 +71,25 @@ function situationLabel(item: DocumentListItem) {
   if (display.status === "DISPONIVEL" && item.hasFile) return "Liberado";
   if (!item.hasFile) return "Aguardando arquivo";
   return display.label;
+}
+
+function examColumn(item: DocumentListItem): { primary: string; secondary?: string } {
+  const examLabel = item.clinicalExamType
+    ? CLINICAL_EXAM_LABELS[item.clinicalExamType] ?? item.clinicalExamType
+    : null;
+  const docCategory =
+    item.type === "ASO"
+      ? "ASO ocupacional"
+      : item.type
+        ? DOCUMENT_TYPE_LABELS[item.type] ?? undefined
+        : undefined;
+
+  if (examLabel && docCategory) {
+    return { primary: examLabel, secondary: docCategory };
+  }
+  if (examLabel) return { primary: examLabel };
+  if (docCategory) return { primary: docCategory };
+  return { primary: "Não informado" };
 }
 
 export function DocumentosClient({
@@ -375,7 +394,7 @@ export function DocumentosClient({
           />
         ) : (
           <>
-            <div className="documentos-ops-table-scroll hidden md:block">
+            <div className="documentos-ops-table-scroll">
               <table className="documentos-ops-table">
                 <thead>
                   <tr>
@@ -392,9 +411,7 @@ export function DocumentosClient({
                   {initialItems.map((item) => {
                     const display = getDocumentDisplayStatus(item);
                     const isLiberado = display.status === "DISPONIVEL" && item.hasFile;
-                    const examLabel = item.clinicalExamType
-                      ? CLINICAL_EXAM_LABELS[item.clinicalExamType] ?? item.clinicalExamType
-                      : null;
+                    const exam = examColumn(item);
                     return (
                       <tr key={item.id}>
                         <td className="documentos-ops-col-collaborator">
@@ -403,20 +420,23 @@ export function DocumentosClient({
                           </span>
                         </td>
                         <td className="documentos-ops-col-company">
-                          <span className="documentos-ops-ellipsis" title={item.companyName ?? undefined}>
+                          <span
+                            className="documentos-ops-ellipsis"
+                            title={item.companyName ?? undefined}
+                          >
                             {item.companyName ?? "Não informado"}
                           </span>
                         </td>
                         <td className="documentos-ops-col-role">
-                          {item.jobTitle?.trim() ? item.jobTitle : "Não informado"}
+                          <span className="documentos-ops-ellipsis" title={item.jobTitle ?? undefined}>
+                            {item.jobTitle?.trim() ? item.jobTitle : "Não informado"}
+                          </span>
                         </td>
                         <td className="documentos-ops-col-exam">
                           <div className="documentos-ops-exam-stack">
-                            <span className="documentos-ops-exam-primary">
-                              {examLabel ?? "Não informado"}
-                            </span>
-                            {item.type === "ASO" ? (
-                              <span className="documentos-ops-exam-secondary">ASO ocupacional</span>
+                            <span className="documentos-ops-exam-primary">{exam.primary}</span>
+                            {exam.secondary ? (
+                              <span className="documentos-ops-exam-secondary">{exam.secondary}</span>
                             ) : null}
                           </div>
                         </td>
@@ -440,10 +460,10 @@ export function DocumentosClient({
                               type="button"
                               variant="brand"
                               size="sm"
-                              className="documentos-ops-manage-btn h-8 rounded-lg px-2.5 text-xs shadow-none"
+                              className="documentos-ops-manage-btn"
                               onClick={() => openAttach(item)}
                             >
-                              <FolderKanban className="mr-1.5 h-3.5 w-3.5" />
+                              <FolderKanban className="h-3.5 w-3.5 shrink-0" aria-hidden />
                               Gerenciar
                             </Button>
                           </td>
@@ -455,36 +475,39 @@ export function DocumentosClient({
               </table>
             </div>
 
-            <div className="documentos-ops-mobile md:hidden">
+            <div className="documentos-ops-mobile">
               {initialItems.map((item) => {
                 const display = getDocumentDisplayStatus(item);
-                const examLabel = item.clinicalExamType
-                  ? CLINICAL_EXAM_LABELS[item.clinicalExamType] ?? item.clinicalExamType
-                  : "Não informado";
+                const exam = examColumn(item);
                 return (
                   <article key={item.id} className="documentos-ops-mobile-card">
-                    <div className="min-w-0 flex-1">
-                      <p className="documentos-ops-name">{item.patientName ?? "Não informado"}</p>
-                      <p className="documentos-ops-mobile-meta">
-                        {item.companyName ?? "Não informado"} · {examLabel}
-                      </p>
-                      <div className="mt-2">
-                        <StatusBadge
-                          status={display.status}
-                          type="document"
-                          label={situationLabel(item)}
-                          className="documentos-ops-status"
-                        />
-                      </div>
+                    <p className="documentos-ops-name">
+                      {item.patientName ?? "Não informado"}
+                    </p>
+                    <p className="documentos-ops-mobile-meta">
+                      {item.companyName ?? "Não informado"}
+                    </p>
+                    <p className="documentos-ops-mobile-meta documentos-ops-mobile-meta--spaced">
+                      {item.jobTitle?.trim() ? item.jobTitle : "Não informado"}
+                    </p>
+                    <p className="documentos-ops-mobile-meta">{exam.primary}</p>
+                    <div className="documentos-ops-mobile-status">
+                      <StatusBadge
+                        status={display.status}
+                        type="document"
+                        label={situationLabel(item)}
+                        className="documentos-ops-status"
+                      />
                     </div>
                     {canManage && (
                       <Button
                         type="button"
                         variant="brand"
                         size="sm"
-                        className="h-8 shrink-0 rounded-lg px-2.5 text-xs shadow-none"
+                        className="documentos-ops-manage-btn"
                         onClick={() => openAttach(item)}
                       >
+                        <FolderKanban className="h-3.5 w-3.5 shrink-0" aria-hidden />
                         Gerenciar
                       </Button>
                     )}
@@ -496,9 +519,8 @@ export function DocumentosClient({
         )}
 
         <div className="documentos-ops-pagination">
-          <p>
-            {resultLabel}
-            {totalPages > 1 ? ` · Página ${initialPage} de ${totalPages}` : null}
+          <p className="documentos-ops-pagination-meta">
+            {totalPages > 1 ? `Página ${initialPage} de ${totalPages}` : "—"}
           </p>
           <div className="flex gap-1.5">
             <Button
