@@ -13,12 +13,21 @@ import type { Prisma } from "@prisma/client";
 import { startOfDay, endOfDay, parseISO, isValid } from "date-fns";
 import { maskCpf } from "@/lib/referrals";
 
-export const COMPANY_STAT_CARDS: { key: string; filter: string; label: string }[] = [
-  { key: "ativas", filter: "ATIVA", label: "Empresas ativas" },
-  { key: "inativas", filter: "INATIVA", label: "Empresas inativas" },
-  { key: "docs_pendentes", filter: "DOCS_PENDING", label: "Com documentos pendentes" },
-  { key: "ref_abertos", filter: "REFERRALS_OPEN", label: "Encaminhamentos em aberto" },
-  { key: "orc_pendentes", filter: "QUOTES_PENDING", label: "Com orçamento pendente" },
+export const COMPANY_STAT_CARDS: { key: string; filter: string; label: string; hint: string }[] = [
+  { key: "ativas", filter: "ATIVA", label: "Empresas ativas", hint: "Cadastros com operação ativa" },
+  { key: "inativas", filter: "INATIVA", label: "Empresas inativas", hint: "Sem operação ativa" },
+  {
+    key: "com_pendencias",
+    filter: "DOCS_PENDING",
+    label: "Empresas com pendências",
+    hint: "Documentos a regularizar",
+  },
+  {
+    key: "atendimentos_abertos",
+    filter: "REFERRALS_OPEN",
+    label: "Atendimentos em aberto",
+    hint: "Exames em andamento",
+  },
 ];
 
 export const COMPANY_STATUS_LABELS: Record<CompanyStatus, string> = {

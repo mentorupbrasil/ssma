@@ -2735,6 +2735,64 @@
   color: rgb(148 163 184);
 }
 
+/* Visão geral — portal empresa */
+.empresa-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.empresa-overview-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .empresa-overview-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .empresa-overview-stats {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.empresa-overview-ok {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.8125rem;
+  border: 1px solid rgb(187 247 208);
+  background: rgb(240 253 244);
+  padding: 0.65rem 0.9rem;
+  font-size: 0.8125rem;
+  font-weight: 550;
+  color: rgb(22 101 52);
+}
+
+.empresa-overview-ok-icon {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+  color: rgb(22 163 74);
+}
+
+.empresa-overview-panels--single {
+  margin-top: 0;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .empresa-overview .empresa-overview-panels--single {
+    grid-template-columns: 1fr;
+  }
+}
+
+.empresa-overview .dashboard-panels-grid {
+  margin-top: 0;
+}
+
 /* Colaboradores — portal empresa */
 .colaboradores-empresa {
   display: flex;
@@ -3636,6 +3694,120 @@
 
 .colaborador-perfil-activity-sub {
   margin: 0;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+/* Empresas — painel interno Unimetra */
+.empresas-clinica {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.empresas-clinica-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .empresas-clinica-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.empresas-clinica-table thead th,
+.empresas-clinica-table tbody td {
+  vertical-align: middle;
+}
+
+.empresas-clinica-table tbody tr:hover {
+  background: rgb(248 250 252);
+}
+
+.empresa-perfil {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.empresa-perfil-header {
+  align-items: flex-start;
+}
+
+.empresa-perfil-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 1024px) {
+  .empresa-perfil-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.empresa-portal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  border-radius: 0.8125rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 1.25rem 1.35rem;
+}
+
+.empresa-portal-empty-icon {
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: rgb(230 237 255);
+  color: rgb(46 103 255);
+}
+
+.empresa-portal-empty-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brand-navy, #0e142b);
+}
+
+.empresa-portal-empty-text {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: rgb(100 116 139);
+}
+
+.empresa-portal-steps {
+  margin: 0.15rem 0 0.35rem;
+  padding-left: 1.1rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: rgb(71 85 105);
+}
+
+.empresa-portal-form {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 28rem;
+}
+
+@media (min-width: 640px) {
+  .empresa-portal-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.colaboradores-empresa-name-cell {
+  min-width: 0;
+}
+
+.colaboradores-empresa-muted {
+  margin: 0.1rem 0 0;
   font-size: 0.75rem;
   color: rgb(100 116 139);
 }

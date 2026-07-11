@@ -45,6 +45,7 @@ export type DashboardOverview = {
     id: string;
     protocol: string;
     patientName: string;
+    clinicalExamType: string;
     status: string;
     scheduledAt: Date | null;
     createdAt: Date;
@@ -285,6 +286,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
             id: true,
             protocol: true,
             status: true,
+            clinicalExamType: true,
             scheduledAt: true,
             createdAt: true,
             patient: { select: { fullName: true } },
@@ -343,7 +345,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           key: "referrals_open",
           title: "Solicitações em aberto",
           value: openReferrals,
-          href: "/dashboard/encaminhamentos",
+          href: "/dashboard/encaminhamentos?status=AGENDADOS",
           show: true,
         },
         {
@@ -357,14 +359,14 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           key: "periodic_due",
           title: "Periódicos a vencer",
           value: periodicDueCount,
-          href: "/dashboard/colaboradores?status=PERIODIC_DUE",
+          href: "/dashboard/colaboradores?periodicDue=true",
           show: true,
         },
         {
           key: "tickets_open",
           title: "Chamados abertos",
           value: openSaasTickets,
-          href: "/dashboard/chamados",
+          href: "/dashboard/chamados?card=abertos",
           show: true,
         },
       ]
@@ -502,6 +504,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           id: r.id,
           protocol: r.protocol,
           patientName: r.patient.fullName,
+          clinicalExamType: r.clinicalExamType,
           status: r.status,
           scheduledAt: r.scheduledAt,
           createdAt: r.createdAt,

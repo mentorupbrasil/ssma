@@ -8,7 +8,6 @@ import {
   OPEN_REFERRAL_STATUSES,
   serializeCompanyListItem,
 } from "@/lib/companies";
-import { PENDING_QUOTE_STATUSES } from "@/lib/commercial";
 import { EmpresasClient } from "@/components/dashboard/companies/EmpresasClient";
 import { getCompanyCities } from "@/actions/companies";
 import { canEditCompanyCommercial } from "@/lib/companies";
@@ -74,23 +73,17 @@ async function EmpresasData({ searchParams }: { searchParams: SearchParams }) {
             key: card.key,
             count: await prisma.company.count({
               where: {
-                documents: { some: { status: { in: ["PENDENTE", "EM_ELABORACAO", "VENCIDO"] } } },
+                documents: {
+                  some: { status: { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO", "VENCIDO"] } },
+                },
               },
-            }),
-          };
-        }
-        if (card.filter === "REFERRALS_OPEN") {
-          return {
-            key: card.key,
-            count: await prisma.company.count({
-              where: { referrals: { some: { status: { in: OPEN_REFERRAL_STATUSES } } } },
             }),
           };
         }
         return {
           key: card.key,
           count: await prisma.company.count({
-            where: { quotes: { some: { status: { in: PENDING_QUOTE_STATUSES } } } },
+            where: { referrals: { some: { status: { in: OPEN_REFERRAL_STATUSES } } } },
           }),
         };
       })

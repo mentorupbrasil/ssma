@@ -63,24 +63,32 @@ export const METRIC_META: Record<string, MetricMeta> = {
   "company:ativas": {
     tone: "success",
     icon: Building2,
-    description: "Clientes com contrato vigente",
-    badge: "Ativa",
+    description: "Clientes com operação ativa",
   },
   "company:inativas": {
     tone: "default",
     icon: Building,
     description: "Cadastros sem operação ativa",
   },
+  "company:com_pendencias": {
+    tone: "warning",
+    icon: FileWarning,
+    description: "Documentos a regularizar",
+  },
+  "company:atendimentos_abertos": {
+    tone: "info",
+    icon: ClipboardList,
+    description: "Atendimentos ainda em andamento",
+  },
   "company:docs_pendentes": {
     tone: "warning",
     icon: FileWarning,
-    description: "Precisa de upload ou liberação",
-    badge: "Ação",
+    description: "Documentos a regularizar",
   },
   "company:ref_abertos": {
     tone: "info",
     icon: ClipboardList,
-    description: "Encaminhamentos ainda em andamento",
+    description: "Atendimentos ainda em andamento",
   },
   "company:orc_pendentes": {
     tone: "warning",

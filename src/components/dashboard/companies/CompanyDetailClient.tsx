@@ -19,6 +19,13 @@ import {
   Phone,
   Plus,
   Tags,
+  Building2,
+  ClipboardList,
+  UserPlus,
+  ShieldOff,
+  KeyRound,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import type { CompanyDetailSerialized } from "@/lib/companies";
 import {
@@ -26,6 +33,7 @@ import {
   COMPANY_CONTRACT_LABELS,
   COMPANY_CONTACT_TYPE_LABELS,
   COMPANY_HISTORY_ACTION_LABELS,
+  COMPANY_STATUS_LABELS,
   buildCompanyWhatsAppMessage,
 } from "@/lib/companies";
 import {
@@ -33,14 +41,10 @@ import {
   normalizeDocumentStatus,
 } from "@/lib/documents";
 import { CLINICAL_EXAM_LABELS } from "@/types";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
-import { MetricGrid } from "@/components/dashboard/MetricGrid";
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import { getMetricMeta } from "@/lib/metric-cards";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -52,15 +56,17 @@ import {
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { toggleCompanyPortal } from "@/actions/companies";
+import { createUser, updateUser } from "@/actions/users";
 import { EditCompanyDialog, CompanyContactDialog } from "./CompanyDialogs";
 import { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import { useBreadcrumbSegmentLabel } from "@/components/dashboard/BreadcrumbLabelProvider";
 import { toast } from "sonner";
 
 const TABS = [
   { id: "overview", label: "Visão geral", icon: LayoutDashboard },
   { id: "employees", label: "Colaboradores", icon: Users },
-  { id: "referrals", label: "Encaminhamentos", icon: FileText },
+  { id: "referrals", label: "Atendimentos", icon: FileText },
   { id: "agenda", label: "Agenda", icon: Calendar },
   { id: "documents", label: "Documentos", icon: FolderOpen },
   { id: "quotes", label: "Orçamentos", icon: DollarSign },
@@ -71,6 +77,20 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
+
+type PortalState = "not_configured" | "active" | "suspended";
+
+function getPortalState(company: CompanyDetailSerialized): PortalState {
+  if (company.portalEnabled) return "active";
+  if (company.portalUsers.length > 0) return "suspended";
+  return "not_configured";
+}
+
+const PORTAL_STATE_LABELS: Record<PortalState, string> = {
+  not_configured: "Portal não configurado",
+  active: "Portal ativo",
+  suspended: "Portal suspenso",
+};
 
 type CompanyDetailClientProps = {
   company: CompanyDetailSerialized;
@@ -89,8 +109,11 @@ export function CompanyDetailClient({
 
   const [editOpen, setEditOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [portalBusy, setPortalBusy] = useState(false);
 
   const displayName = company.tradeName ?? company.legalName;
+  useBreadcrumbSegmentLabel(company.id, displayName);
+
   const phone = company.whatsapp ?? company.phone;
   const waUrl = phone
     ? `https://wa.me/55${phone.replace(/\D/g, "")}?text=${encodeURIComponent(buildCompanyWhatsAppMessage(displayName))}`
@@ -104,104 +127,129 @@ export function CompanyDetailClient({
 
   const refresh = () => router.refresh();
 
-  const handlePortalToggle = async () => {
-    const result = await toggleCompanyPortal(company.id, !company.portalEnabled);
+  const handlePortalToggle = async (enabled: boolean) => {
+    setPortalBusy(true);
+    const result = await toggleCompanyPortal(company.id, enabled);
+    setPortalBusy(false);
     if (result.success) {
-      toast.success(company.portalEnabled ? "Portal desativado" : "Portal ativado");
+      toast.success(enabled ? "Portal ativado" : "Portal suspenso");
       refresh();
-    } else {
-      toast.error(result.error);
+      return true;
     }
+    toast.error(result.error);
+    return false;
   };
 
+  const cityLine = [company.city, company.state].filter(Boolean).join("/") || null;
+
   return (
-    <PageModule>
-      <PageHeader title={company.legalName} description={company.tradeName ?? "Gestão da empresa"}>
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge status={company.status} type="company" />
+    <PageModule className="empresa-perfil">
+      <header className="colaborador-perfil-header empresa-perfil-header">
+        <div className="colaborador-perfil-identity">
+          <div className="colaborador-perfil-avatar" aria-hidden>
+            <Building2 className="h-5 w-5" />
+          </div>
+          <div className="colaborador-perfil-copy">
+            <h1 className="colaboradores-empresa-title">{company.legalName}</h1>
+            <p className="colaborador-perfil-role">
+              {company.tradeName ?? "Sem nome fantasia"}
+            </p>
+            <div className="colaborador-perfil-meta">
+              <span>CNPJ {formatCNPJ(company.cnpj)}</span>
+              {cityLine ? <span>{cityLine}</span> : null}
+              <StatusBadge status={company.status} type="company" />
+            </div>
+          </div>
+        </div>
+
+        <div className="colaboradores-empresa-header-actions">
           {canManage && (
-            <>
-              <Link
-                href={`/dashboard/encaminhamentos/novo?companyId=${company.id}`}
-                className={cn(buttonVariants({ variant: "brand", size: "sm" }))}
-              >
-                <FileText className="mr-1.5 h-4 w-4" /> Novo encaminhamento
-              </Link>
-              {canCommercial && (
-                <Link
-                  href={`/dashboard/orcamentos?companyId=${company.id}`}
-                  className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-                >
-                  <DollarSign className="mr-1.5 h-4 w-4" /> Novo orçamento
-                </Link>
-              )}
-            </>
+            <Link
+              href={`/dashboard/encaminhamentos/novo?companyId=${company.id}`}
+              className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
+            >
+              <FileText className="mr-1.5 h-4 w-4" /> Criar atendimento
+            </Link>
+          )}
+          {canManage && canCommercial && (
+            <Link
+              href={`/dashboard/orcamentos?companyId=${company.id}`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
+            >
+              <DollarSign className="mr-1.5 h-4 w-4" /> Novo orçamento
+            </Link>
           )}
           {waUrl && (
             <a
               href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
             >
               <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
             </a>
           )}
           {canManage && (
-            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-              <Pencil className="mr-1.5 h-4 w-4" /> Editar
+            <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setEditOpen(true)}>
+              <Pencil className="mr-1.5 h-4 w-4" /> Editar cadastro
             </Button>
           )}
         </div>
-      </PageHeader>
+      </header>
 
-      <p className="mb-4 text-sm text-slate-500">CNPJ: {formatCNPJ(company.cnpj)}</p>
-
-      <div className="dash-module-tabs">
+      <nav className="colaborador-perfil-tabs" aria-label="Seções da empresa">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setTab(tab.id)}
             className={cn(
-              "dash-module-tab",
-              activeTab === tab.id && "dash-module-tab-active"
+              "colaborador-perfil-tab",
+              activeTab === tab.id && "colaborador-perfil-tab--active"
             )}
           >
             <tab.icon className="mr-1.5 inline h-3.5 w-3.5" />
             {tab.label}
           </button>
         ))}
-      </div>
+      </nav>
 
-      {activeTab === "overview" && (
-        <OverviewTab company={company} onNavigate={setTab} />
-      )}
-      {activeTab === "employees" && (
-        <EmployeesTab company={company} canManage={canManage} />
-      )}
-      {activeTab === "referrals" && (
-        <ReferralsTab company={company} canManage={canManage} waUrl={waUrl} />
-      )}
-      {activeTab === "agenda" && <AgendaTab company={company} canManage={canManage} />}
-      {activeTab === "documents" && <DocumentsTab company={company} />}
-      {activeTab === "quotes" && <QuotesTab company={company} canCommercial={canCommercial} />}
-      {activeTab === "contract" && <ContractTab company={company} canCommercial={canCommercial} />}
-      {activeTab === "contacts" && (
-        <ContactsTab
-          company={company}
-          canManage={canManage}
-          onAddContact={() => setContactOpen(true)}
-        />
-      )}
-      {activeTab === "portal" && (
-        <PortalTab
-          company={company}
-          canManage={canManage}
-          onToggle={handlePortalToggle}
-        />
-      )}
-      {activeTab === "history" && <HistoryTab company={company} />}
+      <div className="colaborador-perfil-body">
+        {activeTab === "overview" && (
+          <OverviewTab company={company} onNavigate={setTab} />
+        )}
+        {activeTab === "employees" && (
+          <EmployeesTab company={company} canManage={canManage} />
+        )}
+        {activeTab === "referrals" && (
+          <ReferralsTab company={company} canManage={canManage} />
+        )}
+        {activeTab === "agenda" && <AgendaTab company={company} canManage={canManage} />}
+        {activeTab === "documents" && <DocumentsTab company={company} />}
+        {activeTab === "quotes" && (
+          <QuotesTab company={company} canCommercial={canCommercial} />
+        )}
+        {activeTab === "contract" && (
+          <ContractTab company={company} canCommercial={canCommercial} />
+        )}
+        {activeTab === "contacts" && (
+          <ContactsTab
+            company={company}
+            canManage={canManage}
+            onAddContact={() => setContactOpen(true)}
+          />
+        )}
+        {activeTab === "portal" && (
+          <PortalTab
+            company={company}
+            canManage={canManage}
+            busy={portalBusy}
+            onToggle={handlePortalToggle}
+            onRefresh={refresh}
+          />
+        )}
+        {activeTab === "history" && <HistoryTab company={company} />}
+      </div>
 
       <EditCompanyDialog
         open={editOpen}
@@ -238,78 +286,166 @@ function OverviewTab({
   onNavigate: (tab: TabId) => void;
 }) {
   const stats = [
-    { key: "employees", label: "Colaboradores", value: company.stats.employees, tab: "employees" as TabId },
-    { key: "open_referrals", label: "Encaminhamentos em aberto", value: company.stats.openReferrals, tab: "referrals" as TabId },
-    { key: "upcoming_appointments", label: "Agendamentos futuros", value: company.stats.upcomingAppointments, tab: "agenda" as TabId },
-    { key: "pending_documents", label: "Documentos pendentes", value: company.stats.pendingDocuments, tab: "documents" as TabId },
-    { key: "pending_quotes", label: "Orçamentos pendentes", value: company.stats.pendingQuotes, tab: "quotes" as TabId },
+    {
+      key: "employees",
+      label: "Colaboradores",
+      value: company.stats.employees,
+      hint: "Cadastros vinculados",
+      tone: "primary" as const,
+      icon: Users,
+      tab: "employees" as TabId,
+    },
+    {
+      key: "open_referrals",
+      label: "Atendimentos em aberto",
+      value: company.stats.openReferrals,
+      hint: "Em andamento",
+      tone: "warning" as const,
+      icon: ClipboardList,
+      tab: "referrals" as TabId,
+    },
+    {
+      key: "upcoming_appointments",
+      label: "Agendamentos futuros",
+      value: company.stats.upcomingAppointments,
+      hint: "Próximas datas",
+      tone: "primary" as const,
+      icon: Calendar,
+      tab: "agenda" as TabId,
+    },
+    {
+      key: "pending_documents",
+      label: "Documentos pendentes",
+      value: company.stats.pendingDocuments,
+      hint: "A regularizar",
+      tone: "warning" as const,
+      icon: FolderOpen,
+      tab: "documents" as TabId,
+    },
   ];
 
+  const address =
+    [company.address, company.city, company.state, company.zipCode].filter(Boolean).join(", ") ||
+    "—";
+
   return (
-    <div className="space-y-6">
-      <MetricGrid>
+    <div className="colaborador-perfil-overview">
+      <div className="colaboradores-empresa-stats empresa-perfil-stats">
         {stats.map((s) => {
-          const meta = getMetricMeta(`company_detail:${s.key}`);
+          const Icon = s.icon;
           return (
-            <MetricCard
+            <button
               key={s.key}
-              label={s.label}
-              value={s.value}
-              icon={meta.icon}
-              description={meta.description}
-              variant={meta.tone}
+              type="button"
               onClick={() => onNavigate(s.tab)}
-            />
+              className="colaboradores-empresa-stat colaboradores-empresa-stat--clickable"
+            >
+              <span
+                className={cn(
+                  "colaboradores-empresa-stat-icon",
+                  `colaboradores-empresa-stat-icon--${s.tone}`
+                )}
+              >
+                <Icon className="h-4 w-4" aria-hidden />
+              </span>
+              <span className="colaboradores-empresa-stat-body">
+                <span className="colaboradores-empresa-stat-value">{s.value}</span>
+                <span className="colaboradores-empresa-stat-title">{s.label}</span>
+                <span className="colaboradores-empresa-stat-hint">{s.hint}</span>
+              </span>
+            </button>
           );
         })}
-      </MetricGrid>
+      </div>
 
-      <Card>
-        <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
-          <InfoRow label="Razão social" value={company.legalName} />
-          <InfoRow label="Nome fantasia" value={company.tradeName ?? "—"} />
-          <InfoRow label="Responsável" value={company.responsibleName ?? "—"} />
-          <InfoRow label="Cargo" value={company.responsibleRole ?? "—"} />
-          <InfoRow label="WhatsApp" value={company.whatsapp ? formatPhone(company.whatsapp) : "—"} />
-          <InfoRow label="E-mail" value={company.email ?? "—"} />
-          <InfoRow
-            label="Endereço"
-            value={
-              [company.address, company.city, company.state, company.zipCode]
-                .filter(Boolean)
-                .join(", ") || "—"
-            }
-          />
-          <InfoRow label="Porte" value={company.size ? COMPANY_SIZE_LABELS[company.size] : "—"} />
-          <InfoRow
-            label="Contrato"
-            value={company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "—"}
-          />
-          <InfoRow label="Segmento" value={company.segment ?? "—"} />
-          <InfoRow
-            label="Último atendimento"
-            value={
-              company.stats.lastAppointmentAt
-                ? format(new Date(company.stats.lastAppointmentAt), "dd/MM/yyyy", { locale: ptBR })
-                : "—"
-            }
-          />
-          {company.notes && (
-            <div className="sm:col-span-2">
-              <InfoRow label="Observações internas" value={company.notes} />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="colaborador-perfil-grid colaborador-perfil-grid--2">
+        <section className="colaborador-perfil-block">
+          <h2 className="colaborador-perfil-block-title">Dados da empresa</h2>
+          <dl className="colaborador-perfil-fields">
+            <Field label="Razão social" value={company.legalName} />
+            <Field label="Nome fantasia" value={company.tradeName ?? "—"} />
+            <Field label="CNPJ" value={formatCNPJ(company.cnpj)} />
+            <Field label="Inscrição estadual" value={company.stateRegistration ?? "—"} />
+            <Field label="Endereço" value={address} />
+            <Field label="Segmento" value={company.segment ?? "—"} />
+          </dl>
+        </section>
+
+        <section className="colaborador-perfil-block">
+          <h2 className="colaborador-perfil-block-title">Responsável e contatos</h2>
+          <dl className="colaborador-perfil-fields">
+            <Field label="Responsável" value={company.responsibleName ?? "—"} />
+            <Field label="Cargo" value={company.responsibleRole ?? "—"} />
+            <Field
+              label="WhatsApp"
+              value={company.whatsapp ? formatPhone(company.whatsapp) : "—"}
+            />
+            <Field label="Telefone" value={company.phone ? formatPhone(company.phone) : "—"} />
+            <Field label="E-mail" value={company.email ?? "—"} />
+          </dl>
+        </section>
+
+        <section className="colaborador-perfil-block">
+          <h2 className="colaborador-perfil-block-title">Contrato e situação cadastral</h2>
+          <dl className="colaborador-perfil-fields">
+            <Field
+              label="Porte"
+              value={company.size ? COMPANY_SIZE_LABELS[company.size] : "—"}
+            />
+            <Field
+              label="Contrato"
+              value={
+                company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "—"
+              }
+            />
+            <Field label="Status" value={COMPANY_STATUS_LABELS[company.status]} />
+            <Field label="Portal" value={PORTAL_STATE_LABELS[getPortalState(company)]} />
+          </dl>
+        </section>
+
+        <section className="colaborador-perfil-block">
+          <h2 className="colaborador-perfil-block-title">Resumo operacional</h2>
+          <dl className="colaborador-perfil-fields">
+            <Field label="Colaboradores" value={String(company.stats.employees)} />
+            <Field
+              label="Atendimentos em aberto"
+              value={String(company.stats.openReferrals)}
+            />
+            <Field
+              label="Agendamentos futuros"
+              value={String(company.stats.upcomingAppointments)}
+            />
+            <Field
+              label="Documentos pendentes"
+              value={String(company.stats.pendingDocuments)}
+            />
+            <Field
+              label="Último atendimento"
+              value={
+                company.stats.lastAppointmentAt
+                  ? format(new Date(company.stats.lastAppointmentAt), "dd/MM/yyyy", {
+                      locale: ptBR,
+                    })
+                  : "—"
+              }
+            />
+            {company.notes ? (
+              <div className="sm:col-span-2">
+                <Field label="Observações internas" value={company.notes} />
+              </div>
+            ) : null}
+          </dl>
+        </section>
+      </div>
     </div>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-medium text-slate-400">{label}</p>
-      <p className="text-sm text-slate-800">{value}</p>
+      <dt className="colaborador-perfil-field-label">{label}</dt>
+      <dd className="colaborador-perfil-field-value">{value}</dd>
     </div>
   );
 }
@@ -327,47 +463,52 @@ function EmployeesTab({
         <div className="mb-4 flex gap-2">
           <Link
             href={`/dashboard/colaboradores?new=1&companyId=${company.id}`}
-            className={cn(buttonVariants({ variant: "brand", size: "sm" }))}
+            className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
           >
             <Plus className="mr-1.5 h-4 w-4" /> Novo colaborador
           </Link>
         </div>
       )}
       {company.employees.length === 0 ? (
-        <p className="text-sm text-slate-500">Nenhum colaborador cadastrado.</p>
+        <InlineEmptyNote>Nenhum colaborador cadastrado.</InlineEmptyNote>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>CPF</TableHead>
-              <TableHead>Função</TableHead>
-              <TableHead>Setor</TableHead>
-              <TableHead>Último exame</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {company.employees.map((e) => (
-              <TableRow key={e.id}>
-                <TableCell>
-                  <Link href={`/dashboard/colaboradores/${e.id}`} className="text-[#16A085] hover:underline">
-                    {e.fullName}
-                  </Link>
-                </TableCell>
-                <TableCell>{e.cpf}</TableCell>
-                <TableCell>{e.jobTitle ?? "—"}</TableCell>
-                <TableCell>{e.department ?? "—"}</TableCell>
-                <TableCell>
-                  {e.lastReferralAt
-                    ? format(new Date(e.lastReferralAt), "dd/MM/yyyy", { locale: ptBR })
-                    : "—"}
-                </TableCell>
-                <TableCell>{e.status === "ATIVO" ? "Ativo" : e.status}</TableCell>
+        <div className="colaboradores-empresa-table-scroll">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>CPF</TableHead>
+                <TableHead>Função</TableHead>
+                <TableHead>Setor</TableHead>
+                <TableHead>Último exame</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {company.employees.map((e) => (
+                <TableRow key={e.id}>
+                  <TableCell>
+                    <Link
+                      href={`/dashboard/colaboradores/${e.id}`}
+                      className="text-[var(--brand-green)] hover:underline"
+                    >
+                      {e.fullName}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{e.cpf}</TableCell>
+                  <TableCell>{e.jobTitle ?? "—"}</TableCell>
+                  <TableCell>{e.department ?? "—"}</TableCell>
+                  <TableCell>
+                    {e.lastReferralAt
+                      ? format(new Date(e.lastReferralAt), "dd/MM/yyyy", { locale: ptBR })
+                      : "—"}
+                  </TableCell>
+                  <TableCell>{e.status === "ATIVO" ? "Ativo" : e.status}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );
@@ -379,64 +520,78 @@ function ReferralsTab({
 }: {
   company: CompanyDetailSerialized;
   canManage: boolean;
-  waUrl?: string | null;
 }) {
   if (company.referrals.length === 0) {
     return (
       <EmptyState
         compact
-        title="Nenhum encaminhamento"
-        description="Esta empresa ainda não possui encaminhamentos registrados."
+        title="Nenhum atendimento"
+        description="Esta empresa ainda não possui atendimentos registrados."
         action={
           canManage
-            ? { label: "Novo encaminhamento", href: `/dashboard/encaminhamentos/novo?companyId=${company.id}` }
+            ? {
+                label: "Criar atendimento",
+                href: `/dashboard/encaminhamentos/novo?companyId=${company.id}`,
+              }
             : undefined
         }
       />
     );
   }
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Protocolo</TableHead>
-          <TableHead>Colaborador</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Data</TableHead>
-          <TableHead>Agendamento</TableHead>
-          <TableHead>Status</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {company.referrals.map((r) => (
-          <TableRow key={r.id}>
-            <TableCell>
-              <Link
-                href={`/dashboard/encaminhamentos?id=${r.id}`}
-                className="text-[#16A085] hover:underline"
-              >
-                {r.protocol}
-              </Link>
-            </TableCell>
-            <TableCell>{r.employeeName}</TableCell>
-            <TableCell>{CLINICAL_EXAM_LABELS[r.clinicalExamType] ?? r.clinicalExamType}</TableCell>
-            <TableCell>{format(new Date(r.createdAt), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
-            <TableCell>
-              {r.scheduledAt
-                ? format(new Date(r.scheduledAt), "dd/MM HH:mm", { locale: ptBR })
-                : "—"}
-            </TableCell>
-            <TableCell>
-              <StatusBadge status={r.status} />
-            </TableCell>
+    <div className="colaboradores-empresa-table-scroll">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Protocolo</TableHead>
+            <TableHead>Colaborador</TableHead>
+            <TableHead>Tipo</TableHead>
+            <TableHead>Data</TableHead>
+            <TableHead>Agendamento</TableHead>
+            <TableHead>Status</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {company.referrals.map((r) => (
+            <TableRow key={r.id}>
+              <TableCell>
+                <Link
+                  href={`/dashboard/encaminhamentos?id=${r.id}`}
+                  className="text-[var(--brand-green)] hover:underline"
+                >
+                  {r.protocol}
+                </Link>
+              </TableCell>
+              <TableCell>{r.employeeName}</TableCell>
+              <TableCell>
+                {CLINICAL_EXAM_LABELS[r.clinicalExamType] ?? r.clinicalExamType}
+              </TableCell>
+              <TableCell>
+                {format(new Date(r.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+              </TableCell>
+              <TableCell>
+                {r.scheduledAt
+                  ? format(new Date(r.scheduledAt), "dd/MM HH:mm", { locale: ptBR })
+                  : "—"}
+              </TableCell>
+              <TableCell>
+                <StatusBadge status={r.status} />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
-function AgendaTab({ company, canManage }: { company: CompanyDetailSerialized; canManage: boolean }) {
+function AgendaTab({
+  company,
+  canManage,
+}: {
+  company: CompanyDetailSerialized;
+  canManage: boolean;
+}) {
   if (company.appointments.length === 0) {
     return (
       <EmptyState
@@ -452,55 +607,55 @@ function AgendaTab({ company, canManage }: { company: CompanyDetailSerialized; c
     );
   }
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Data</TableHead>
-          <TableHead>Horário</TableHead>
-          <TableHead>Colaborador</TableHead>
-          <TableHead>Tipo</TableHead>
-          <TableHead>Protocolo</TableHead>
-          <TableHead>Status</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {company.appointments.map((a) => (
-          <TableRow key={a.id}>
-            <TableCell>
-              {format(new Date(a.scheduledAt), "dd/MM/yyyy", { locale: ptBR })}
-            </TableCell>
-            <TableCell>
-              <Link
-                href={`/dashboard/agenda?id=${a.id}`}
-                className="text-[#16A085] hover:underline"
-              >
-                {format(new Date(a.scheduledAt), "HH:mm", { locale: ptBR })}
-              </Link>
-            </TableCell>
-            <TableCell>{a.employeeName ?? "—"}</TableCell>
-            <TableCell>
-              {a.clinicalExamType
-                ? CLINICAL_EXAM_LABELS[a.clinicalExamType]
-                : "—"}
-            </TableCell>
-            <TableCell>{a.protocol ?? "—"}</TableCell>
-            <TableCell>
-              <StatusBadge status={a.status} type="appointment" />
-            </TableCell>
+    <div className="colaboradores-empresa-table-scroll">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Data</TableHead>
+            <TableHead>Horário</TableHead>
+            <TableHead>Colaborador</TableHead>
+            <TableHead>Tipo</TableHead>
+            <TableHead>Protocolo</TableHead>
+            <TableHead>Status</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {company.appointments.map((a) => (
+            <TableRow key={a.id}>
+              <TableCell>
+                {format(new Date(a.scheduledAt), "dd/MM/yyyy", { locale: ptBR })}
+              </TableCell>
+              <TableCell>
+                <Link
+                  href={`/dashboard/agenda?id=${a.id}`}
+                  className="text-[var(--brand-green)] hover:underline"
+                >
+                  {format(new Date(a.scheduledAt), "HH:mm", { locale: ptBR })}
+                </Link>
+              </TableCell>
+              <TableCell>{a.employeeName ?? "—"}</TableCell>
+              <TableCell>
+                {a.clinicalExamType ? CLINICAL_EXAM_LABELS[a.clinicalExamType] : "—"}
+              </TableCell>
+              <TableCell>{a.protocol ?? "—"}</TableCell>
+              <TableCell>
+                <StatusBadge status={a.status} type="appointment" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
 function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
   return company.documents.length === 0 ? (
     <div className="space-y-4">
-      <p className="text-sm text-slate-500">Nenhum documento vinculado.</p>
+      <InlineEmptyNote>Nenhum documento vinculado.</InlineEmptyNote>
       <Link
         href={`/dashboard/documentos?companyId=${company.id}`}
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
       >
         <Plus className="mr-2 h-4 w-4" /> Anexar documento
       </Link>
@@ -510,56 +665,63 @@ function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
       <div className="flex justify-end">
         <Link
           href={`/dashboard/documentos?companyId=${company.id}`}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
         >
           Ver na central de documentos
         </Link>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Nome</TableHead>
-            <TableHead>Validade</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Anexado em</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {company.documents.map((d) => (
-            <TableRow key={d.id}>
-              <TableCell>
-                {DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS] ?? d.type}
-              </TableCell>
-              <TableCell>
-                {d.fileUrl ? (
-                  <a
-                    href={`/api/documents/${d.id}/file`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#16A085] hover:underline"
-                  >
-                    {d.title}
-                  </a>
-                ) : (
-                  d.title
-                )}
-              </TableCell>
-              <TableCell>
-                {d.validUntil
-                  ? format(new Date(d.validUntil), "dd/MM/yyyy", { locale: ptBR })
-                  : "—"}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={normalizeDocumentStatus(d.status as import("@prisma/client").DocumentStatus)} type="document" />
-              </TableCell>
-              <TableCell>
-                {format(new Date(d.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-              </TableCell>
+      <div className="colaboradores-empresa-table-scroll">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Nome</TableHead>
+              <TableHead>Validade</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Anexado em</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {company.documents.map((d) => (
+              <TableRow key={d.id}>
+                <TableCell>
+                  {DOCUMENT_TYPE_LABELS[d.type as keyof typeof DOCUMENT_TYPE_LABELS] ?? d.type}
+                </TableCell>
+                <TableCell>
+                  {d.fileUrl ? (
+                    <a
+                      href={`/api/documents/${d.id}/file`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--brand-green)] hover:underline"
+                    >
+                      {d.title}
+                    </a>
+                  ) : (
+                    d.title
+                  )}
+                </TableCell>
+                <TableCell>
+                  {d.validUntil
+                    ? format(new Date(d.validUntil), "dd/MM/yyyy", { locale: ptBR })
+                    : "—"}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge
+                    status={normalizeDocumentStatus(
+                      d.status as import("@prisma/client").DocumentStatus
+                    )}
+                    type="document"
+                  />
+                </TableCell>
+                <TableCell>
+                  {format(new Date(d.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
@@ -586,46 +748,54 @@ function QuotesTab({
     );
   }
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Número</TableHead>
-          <TableHead>Serviço</TableHead>
-          <TableHead>Valor</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Data</TableHead>
-          <TableHead>Validade</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {company.quotes.map((q) => (
-          <TableRow key={q.id}>
-            <TableCell>
-              <Link href={`/dashboard/orcamentos?id=${q.id}`} className="text-[#16A085] hover:underline">
-                {q.quoteNumber ?? q.id.slice(-6).toUpperCase()}
-              </Link>
-            </TableCell>
-            <TableCell>{q.serviceTitle ?? "—"}</TableCell>
-            <TableCell>
-              {q.estimatedValue != null
-                ? q.estimatedValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                : "—"}
-            </TableCell>
-            <TableCell>
-              <StatusBadge status={q.status} type="quote" />
-            </TableCell>
-            <TableCell>
-              {format(new Date(q.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-            </TableCell>
-            <TableCell>
-              {q.validUntil
-                ? format(new Date(q.validUntil), "dd/MM/yyyy", { locale: ptBR })
-                : "—"}
-            </TableCell>
+    <div className="colaboradores-empresa-table-scroll">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Número</TableHead>
+            <TableHead>Serviço</TableHead>
+            <TableHead>Valor</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Data</TableHead>
+            <TableHead>Validade</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {company.quotes.map((q) => (
+            <TableRow key={q.id}>
+              <TableCell>
+                <Link
+                  href={`/dashboard/orcamentos?id=${q.id}`}
+                  className="text-[var(--brand-green)] hover:underline"
+                >
+                  {q.quoteNumber ?? q.id.slice(-6).toUpperCase()}
+                </Link>
+              </TableCell>
+              <TableCell>{q.serviceTitle ?? "—"}</TableCell>
+              <TableCell>
+                {q.estimatedValue != null
+                  ? q.estimatedValue.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })
+                  : "—"}
+              </TableCell>
+              <TableCell>
+                <StatusBadge status={q.status} type="quote" />
+              </TableCell>
+              <TableCell>
+                {format(new Date(q.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+              </TableCell>
+              <TableCell>
+                {q.validUntil
+                  ? format(new Date(q.validUntil), "dd/MM/yyyy", { locale: ptBR })
+                  : "—"}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
@@ -637,24 +807,29 @@ function ContractTab({
   canCommercial: boolean;
 }) {
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent className="grid gap-3 pt-6 sm:grid-cols-2">
-          <InfoRow
+    <div className="space-y-4">
+      <section className="colaborador-perfil-block">
+        <h2 className="colaborador-perfil-block-title">Contrato</h2>
+        <dl className="colaborador-perfil-fields">
+          <Field
             label="Tipo de contrato"
-            value={company.contractType ? COMPANY_CONTRACT_LABELS[company.contractType] : "Não definido"}
+            value={
+              company.contractType
+                ? COMPANY_CONTRACT_LABELS[company.contractType]
+                : "Não definido"
+            }
           />
-          <InfoRow label="Status comercial" value={company.status} />
-          <InfoRow label="Portal empresarial" value={company.portalEnabled ? "Ativo" : "Inativo"} />
-        </CardContent>
-      </Card>
+          <Field label="Status comercial" value={COMPANY_STATUS_LABELS[company.status]} />
+          <Field label="Portal empresarial" value={PORTAL_STATE_LABELS[getPortalState(company)]} />
+        </dl>
+      </section>
 
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-[#0F3D4A]">Preços negociados</h3>
+        <h3 className="text-sm font-semibold text-[var(--brand-navy)]">Preços negociados</h3>
         {canCommercial && (
           <Link
             href={`/dashboard/tabela-precos?companyId=${company.id}`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-lg")}
           >
             Gerenciar na tabela de preços
           </Link>
@@ -666,28 +841,33 @@ function ContractTab({
           Nenhum preço específico para esta empresa. Os valores padrão da clínica serão aplicados.
         </InlineEmptyNote>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Serviço</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Cobrança</TableHead>
-              <TableHead>Preço</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {company.priceListItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell>{item.category}</TableCell>
-                <TableCell>{item.chargeType}</TableCell>
-                <TableCell>
-                  {item.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                </TableCell>
+        <div className="colaboradores-empresa-table-scroll">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Serviço</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Cobrança</TableHead>
+                <TableHead>Preço</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {company.priceListItems.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.category}</TableCell>
+                  <TableCell>{item.chargeType}</TableCell>
+                  <TableCell>
+                    {item.price.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );
@@ -703,15 +883,17 @@ function ContactsTab({
   onAddContact: () => void;
 }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {canManage && (
-        <Button variant="brand" size="sm" onClick={onAddContact}>
+        <Button variant="brand" size="sm" className="rounded-lg" onClick={onAddContact}>
           <Plus className="mr-1.5 h-4 w-4" /> Registrar contato
         </Button>
       )}
       {company.siteMessages.length > 0 && (
         <div>
-          <h3 className="mb-2 font-semibold text-[#0F3D4A]">Mensagens do site</h3>
+          <h3 className="mb-2 text-sm font-semibold text-[var(--brand-navy)]">
+            Mensagens do site
+          </h3>
           <ul className="space-y-2">
             {company.siteMessages.map((m) => (
               <li key={m.id} className="rounded-lg border border-slate-100 p-3 text-sm">
@@ -724,14 +906,16 @@ function ContactsTab({
         </div>
       )}
       {company.contacts.length === 0 && company.siteMessages.length === 0 ? (
-        <p className="text-sm text-slate-500">Nenhum contato registrado.</p>
+        <InlineEmptyNote>Nenhum contato registrado.</InlineEmptyNote>
       ) : (
         <ul className="referral-history-list">
           {company.contacts.map((c) => (
             <li key={c.id} className="referral-history-item">
               <div className="flex justify-between">
-                <span className="font-medium text-sm">
-                  {COMPANY_CONTACT_TYPE_LABELS[c.type as keyof typeof COMPANY_CONTACT_TYPE_LABELS] ?? c.type}
+                <span className="text-sm font-medium">
+                  {COMPANY_CONTACT_TYPE_LABELS[
+                    c.type as keyof typeof COMPANY_CONTACT_TYPE_LABELS
+                  ] ?? c.type}
                   {c.title ? ` — ${c.title}` : ""}
                 </span>
                 <span className="text-xs text-slate-400">
@@ -753,61 +937,296 @@ function ContactsTab({
 function PortalTab({
   company,
   canManage,
+  busy,
   onToggle,
+  onRefresh,
 }: {
   company: CompanyDetailSerialized;
   canManage: boolean;
-  onToggle: () => void;
+  busy: boolean;
+  onToggle: (enabled: boolean) => Promise<boolean>;
+  onRefresh: () => void;
 }) {
+  const portalState = getPortalState(company);
+  const primaryUser = company.portalUsers[0] ?? null;
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [resetUserId, setResetUserId] = useState<string | null>(null);
+  const [name, setName] = useState(company.responsibleName ?? "");
+  const [email, setEmail] = useState(company.email ?? "");
+  const [password, setPassword] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const configurePortal = async () => {
+    const ok = company.portalEnabled ? true : await onToggle(true);
+    if (ok) setShowCreateUser(true);
+  };
+
+  const handleCreateUser = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      toast.error("Preencha nome, e-mail e senha do responsável.");
+      return;
+    }
+    setSaving(true);
+    if (!company.portalEnabled) {
+      const enabled = await onToggle(true);
+      if (!enabled) {
+        setSaving(false);
+        return;
+      }
+    }
+    const result = await createUser({
+      name: name.trim(),
+      email: email.trim(),
+      password,
+      role: "COMPANY_HR",
+      companyId: company.id,
+    });
+    setSaving(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Usuário do RH criado");
+    setPassword("");
+    setShowCreateUser(false);
+    onRefresh();
+  };
+
+  const handleResetAccess = async () => {
+    if (!resetUserId || !resetPassword.trim()) {
+      toast.error("Informe a nova senha.");
+      return;
+    }
+    setSaving(true);
+    const result = await updateUser({ id: resetUserId, password: resetPassword });
+    setSaving(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Acesso redefinido");
+    setResetPassword("");
+    setResetUserId(null);
+  };
+
+  if (portalState === "not_configured" && !showCreateUser) {
+    return (
+      <div className="empresa-portal-empty">
+        <div className="empresa-portal-empty-icon" aria-hidden>
+          <Globe className="h-5 w-5" />
+        </div>
+        <h2 className="empresa-portal-empty-title">Portal ainda não configurado</h2>
+        <p className="empresa-portal-empty-text">
+          Configure o acesso para que o RH da empresa acompanhe colaboradores, exames e
+          documentos.
+        </p>
+        <ol className="empresa-portal-steps">
+          <li>Ativar o portal da empresa</li>
+          <li>Criar o usuário responsável do RH</li>
+        </ol>
+        {canManage && (
+          <Button
+            variant="brand"
+            size="sm"
+            className="rounded-lg"
+            disabled={busy}
+            onClick={configurePortal}
+          >
+            Configurar acesso ao portal
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <Card>
-        <CardContent className="grid gap-3 pt-6 sm:grid-cols-2">
-          <InfoRow label="Portal ativo" value={company.portalEnabled ? "Sim" : "Não"} />
-          <InfoRow label="Usuários vinculados" value={String(company.portalUsers.length)} />
-          <InfoRow
-            label="E-mail de acesso RH"
-            value={company.portalUsers[0]?.email ?? company.email ?? "—"}
-          />
-          <InfoRow label="Status do acesso" value={company.status} />
-        </CardContent>
-      </Card>
-      {canManage && (
-        <div className="flex flex-wrap gap-2">
-          <Button variant="brand" size="sm" onClick={onToggle}>
-            {company.portalEnabled ? "Desativar portal" : "Ativar portal"}
-          </Button>
-          <Link
-            href={`/dashboard/usuarios?companyId=${company.id}`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            Criar usuário do RH
-          </Link>
+      <section className="colaborador-perfil-block">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="colaborador-perfil-block-title">Status do portal</h2>
+            <div className="mt-2 flex items-center gap-2">
+              {portalState === "active" ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" aria-hidden />
+              ) : (
+                <AlertTriangle className="h-4 w-4 text-amber-600" aria-hidden />
+              )}
+              <span className="text-sm font-semibold text-[var(--brand-navy)]">
+                {PORTAL_STATE_LABELS[portalState]}
+              </span>
+            </div>
+          </div>
+          {canManage && portalState !== "not_configured" && (
+            <div className="flex flex-wrap gap-2">
+              {portalState === "active" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg"
+                  disabled={busy}
+                  onClick={() => onToggle(false)}
+                >
+                  <ShieldOff className="mr-1.5 h-4 w-4" /> Suspender portal
+                </Button>
+              ) : (
+                <Button
+                  variant="brand"
+                  size="sm"
+                  className="rounded-lg"
+                  disabled={busy}
+                  onClick={() => onToggle(true)}
+                >
+                  Reativar portal
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-lg"
+                onClick={() => setShowCreateUser(true)}
+              >
+                <UserPlus className="mr-1.5 h-4 w-4" /> Adicionar usuário
+              </Button>
+            </div>
+          )}
         </div>
+
+        <dl className="colaborador-perfil-fields mt-4">
+          <Field label="Usuários vinculados" value={String(company.portalUsers.length)} />
+          <Field label="Responsável" value={primaryUser?.name ?? "—"} />
+          <Field label="E-mail" value={primaryUser?.email ?? company.email ?? "—"} />
+          <Field label="Último acesso" value="—" />
+        </dl>
+      </section>
+
+      {(showCreateUser || portalState === "not_configured") && canManage && (
+        <section className="colaborador-perfil-block">
+          <h2 className="colaborador-perfil-block-title">Criar usuário do RH</h2>
+          <p className="mb-3 text-xs text-slate-500">
+            Após ativar o portal, crie o acesso do responsável para o RH entrar no sistema.
+          </p>
+          <div className="empresa-portal-form">
+            <Input
+              placeholder="Nome do responsável"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Input
+              type="email"
+              placeholder="E-mail de acesso"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              type="password"
+              placeholder="Senha inicial"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="brand"
+                size="sm"
+                className="rounded-lg"
+                disabled={saving || busy}
+                onClick={handleCreateUser}
+              >
+                Criar usuário do RH
+              </Button>
+              {portalState !== "not_configured" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-lg"
+                  onClick={() => setShowCreateUser(false)}
+                >
+                  Cancelar
+                </Button>
+              )}
+            </div>
+          </div>
+        </section>
       )}
+
       {company.portalUsers.length > 0 && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>E-mail</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Cadastro</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {company.portalUsers.map((u) => (
-              <TableRow key={u.id}>
-                <TableCell>{u.name}</TableCell>
-                <TableCell>{u.email}</TableCell>
-                <TableCell>{u.status === "ACTIVE" ? "Ativo" : "Inativo"}</TableCell>
-                <TableCell>
-                  {format(new Date(u.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <section className="colaborador-perfil-block">
+          <h2 className="colaborador-perfil-block-title">Usuários vinculados</h2>
+          <div className="colaboradores-empresa-table-scroll">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>E-mail</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Cadastro</TableHead>
+                  <TableHead className="w-10" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {company.portalUsers.map((u) => (
+                  <TableRow key={u.id}>
+                    <TableCell>{u.name}</TableCell>
+                    <TableCell>{u.email}</TableCell>
+                    <TableCell>{u.status === "ACTIVE" ? "Ativo" : "Inativo"}</TableCell>
+                    <TableCell>
+                      {format(new Date(u.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                    </TableCell>
+                    <TableCell>
+                      {canManage && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-lg"
+                          onClick={() => {
+                            setResetUserId(u.id);
+                            setResetPassword("");
+                          }}
+                        >
+                          <KeyRound className="mr-1.5 h-3.5 w-3.5" />
+                          Redefinir
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+      )}
+
+      {resetUserId && canManage && (
+        <section className="colaborador-perfil-block">
+          <h2 className="colaborador-perfil-block-title">Redefinir acesso</h2>
+          <div className="empresa-portal-form">
+            <Input
+              type="password"
+              placeholder="Nova senha"
+              value={resetPassword}
+              onChange={(e) => setResetPassword(e.target.value)}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="brand"
+                size="sm"
+                className="rounded-lg"
+                disabled={saving}
+                onClick={handleResetAccess}
+              >
+                Salvar nova senha
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-lg"
+                onClick={() => setResetUserId(null)}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </section>
       )}
     </div>
   );
@@ -815,13 +1234,13 @@ function PortalTab({
 
 function HistoryTab({ company }: { company: CompanyDetailSerialized }) {
   return company.history.length === 0 ? (
-    <p className="text-sm text-slate-500">Nenhum registro no histórico.</p>
+    <InlineEmptyNote>Nenhum registro no histórico.</InlineEmptyNote>
   ) : (
     <ul className="referral-history-list">
       {company.history.map((h) => (
         <li key={h.id} className="referral-history-item">
           <div className="flex justify-between">
-            <span className="font-medium text-sm">
+            <span className="text-sm font-medium">
               {COMPANY_HISTORY_ACTION_LABELS[h.action] ?? h.action}
             </span>
             <span className="text-xs text-slate-400">

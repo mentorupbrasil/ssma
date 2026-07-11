@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Plus,
@@ -10,44 +9,30 @@ import {
   Eye,
   FileText,
   DollarSign,
-  MessageCircle,
   ExternalLink,
   Loader2,
   ChevronLeft,
   ChevronRight,
   Building2,
+  Building,
+  FileWarning,
+  ClipboardList,
+  SlidersHorizontal,
+  type LucideIcon,
 } from "lucide-react";
 import type { CompanyListItem } from "@/lib/companies";
 import {
   COMPANY_STAT_CARDS,
   COMPANY_DOCUMENT_SUMMARY_LABELS,
-  buildCompanyWhatsAppMessage,
 } from "@/lib/companies";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageModule } from "@/components/dashboard/PageModule";
-import { FilterMetricGrid } from "@/components/dashboard/FilterMetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import { DataTable } from "@/components/dashboard/DataTable";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { FilterBar } from "@/components/dashboard/FilterBar";
-import { DetailDrawer } from "@/components/dashboard/DetailDrawer";
-import { MobileListCard } from "@/components/dashboard/MobileListCard";
-import { CompanyDetailDrawerContent } from "./CompanyDetailDrawerContent";
-import { getCompanyDetail } from "@/actions/companies";
-import type { CompanyDetailSerialized } from "@/lib/companies";
+import { FilterChips } from "@/components/dashboard/FilterChips";
 import { buildFilterChips, removeFilterKey } from "@/lib/filter-chips-utils";
-import { toast } from "sonner";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +42,20 @@ import {
 import { NewCompanyDialog } from "./CompanyDialogs";
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
+
+const STAT_ICONS: Record<string, LucideIcon> = {
+  ativas: Building2,
+  inativas: Building,
+  com_pendencias: FileWarning,
+  atendimentos_abertos: ClipboardList,
+};
+
+const STAT_TONES: Record<string, "primary" | "warning"> = {
+  ativas: "primary",
+  inativas: "primary",
+  com_pendencias: "warning",
+  atendimentos_abertos: "primary",
+};
 
 type EmpresasClientProps = {
   initialItems: CompanyListItem[];
@@ -101,12 +100,12 @@ export function EmpresasClient({
   const [pending, setPending] = useState(filters.pending ?? "");
   const [dateFrom, setDateFrom] = useState(filters.dateFrom ?? "");
   const [dateTo, setDateTo] = useState(filters.dateTo ?? "");
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(
+    Boolean(filters.size || filters.contractType || filters.pending || filters.dateFrom || filters.dateTo)
+  );
   const [newDialogOpen, setNewDialogOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerLoading, setDrawerLoading] = useState(false);
-  const [drawerCompany, setDrawerCompany] = useState<CompanyDetailSerialized | null>(null);
 
-  const activeStatus = filters.status ?? "ALL";
+  const activeStatus = filters.status ?? "";
   const totalPages = Math.max(1, Math.ceil(initialTotal / pageSize));
 
   const updateFilters = useCallback(
@@ -116,7 +115,7 @@ export function EmpresasClient({
         if (!value || value === "ALL") params.delete(key);
         else params.set(key, value);
       });
-      if (!updates.page) params.delete("page");
+      if (!("page" in updates)) params.delete("page");
       startTransition(() => {
         router.push(`/dashboard/empresas?${params.toString()}`);
       });
@@ -124,16 +123,17 @@ export function EmpresasClient({
     [router, searchParams]
   );
 
-  const handleSearch = () => {
+  const pushCurrentFilters = (extra?: Record<string, string | undefined>) => {
     updateFilters({
-      q,
-      city,
-      size,
-      contractType,
-      pending,
-      dateFrom,
-      dateTo,
-      status: activeStatus,
+      q: q || undefined,
+      city: city || undefined,
+      size: size || undefined,
+      contractType: contractType || undefined,
+      pending: pending || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+      status: activeStatus || undefined,
+      ...extra,
     });
   };
 
@@ -145,8 +145,32 @@ export function EmpresasClient({
     setPending("");
     setDateFrom("");
     setDateTo("");
+    setMoreFiltersOpen(false);
     startTransition(() => router.push("/dashboard/empresas"));
   };
+
+  const hasActiveFilters = useMemo(
+    () =>
+      Boolean(
+        filters.q ||
+          filters.status ||
+          filters.city ||
+          filters.size ||
+          filters.contractType ||
+          filters.pending ||
+          filters.dateFrom ||
+          filters.dateTo
+      ),
+    [filters]
+  );
+
+  const advancedFilterCount = [
+    filters.size,
+    filters.contractType,
+    filters.pending,
+    filters.dateFrom,
+    filters.dateTo,
+  ].filter(Boolean).length;
 
   const activeChips = useMemo(
     () =>
@@ -155,7 +179,15 @@ export function EmpresasClient({
         {
           key: "status",
           value: filters.status,
-          label: (v) => `Status: ${v}`,
+          label: (v) => {
+            const card = COMPANY_STAT_CARDS.find((c) => c.filter === v);
+            if (card) return card.label;
+            if (v === "ATIVA") return "Status: Ativa";
+            if (v === "INATIVA") return "Status: Inativa";
+            if (v === "PENDENTE") return "Status: Pendente";
+            if (v === "BLOQUEADA") return "Status: Bloqueada";
+            return `Status: ${v}`;
+          },
           skip: (v) => v === "ALL",
         },
         { key: "city", value: filters.city, label: (v) => `Cidade: ${v}` },
@@ -180,91 +212,99 @@ export function EmpresasClient({
     updateFilters(next);
   };
 
-  const openDetail = async (id: string) => {
-    setDrawerOpen(true);
-    setDrawerLoading(true);
-    setDrawerCompany(null);
-    const result = await getCompanyDetail(id);
-    setDrawerLoading(false);
-    if (!result.success) {
-      toast.error(result.error);
-      setDrawerOpen(false);
-      return;
-    }
-    setDrawerCompany(result.company);
-  };
-
   useEffect(() => {
     if (searchParams.get("new") === "1" && canManage) {
       setNewDialogOpen(true);
     }
   }, [searchParams, canManage]);
 
-  const getWhatsAppUrl = (item: CompanyListItem) => {
-    const phone = item.whatsapp;
-    if (!phone) return null;
-    const name = item.tradeName ?? item.legalName;
-    const message = buildCompanyWhatsAppMessage(name);
-    return `https://wa.me/55${phone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
-  };
-
-  const docSummaryBadge = (summary: CompanyListItem["documentSummary"]) => {
-    const label = COMPANY_DOCUMENT_SUMMARY_LABELS[summary];
-    const statusMap = {
-      EM_DIA: "EM_DIA",
-      PENDENTE: "PENDENTE",
-      VENCIDO: "VENCIDO",
-      NONE: "ARQUIVADO",
-    } as const;
-    return <StatusBadge status={statusMap[summary]} type="document" />;
-  };
+  const resultLabel =
+    initialTotal === 1 ? "1 empresa encontrada" : `${initialTotal} empresas encontradas`;
 
   return (
-    <PageModule>
-      <PageHeader title="Empresas" description="Gestão de empresas clientes">
+    <PageModule className="empresas-clinica">
+      <header className="colaboradores-empresa-header">
+        <div className="colaboradores-empresa-header-copy">
+          <h1 className="colaboradores-empresa-title">Empresas</h1>
+          <p className="colaboradores-empresa-subtitle">
+            Gerencie empresas clientes, responsáveis e atendimentos.
+          </p>
+        </div>
         {canManage && (
-          <Button variant="brand" onClick={() => setNewDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Nova empresa
-          </Button>
+          <div className="colaboradores-empresa-header-actions">
+            <Button variant="brand" size="sm" className="rounded-lg" onClick={() => setNewDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova empresa
+            </Button>
+          </div>
         )}
-      </PageHeader>
+      </header>
 
-      <FilterMetricGrid
-        items={COMPANY_STAT_CARDS.map((card) => {
+      <div className="colaboradores-empresa-stats empresas-clinica-stats">
+        {COMPANY_STAT_CARDS.map((card) => {
+          const Icon = STAT_ICONS[card.key] ?? Building2;
           const isActive = activeStatus === card.filter;
-          return {
-            key: card.key,
-            metaKey: `company:${card.key}`,
-            label: card.label,
-            value: statCounts[card.key] ?? 0,
-            active: isActive,
-            onClick: () => updateFilters({ status: isActive ? "ALL" : card.filter }),
-          };
+          return (
+            <button
+              key={card.key}
+              type="button"
+              onClick={() =>
+                updateFilters({ status: isActive ? undefined : card.filter })
+              }
+              className={cn(
+                "colaboradores-empresa-stat colaboradores-empresa-stat--clickable",
+                isActive && "colaboradores-empresa-stat--active"
+              )}
+            >
+              <span
+                className={cn(
+                  "colaboradores-empresa-stat-icon",
+                  `colaboradores-empresa-stat-icon--${STAT_TONES[card.key] ?? "primary"}`
+                )}
+              >
+                <Icon className="h-4 w-4" aria-hidden />
+              </span>
+              <span className="colaboradores-empresa-stat-body">
+                <span className="colaboradores-empresa-stat-value">
+                  {statCounts[card.key] ?? 0}
+                </span>
+                <span className="colaboradores-empresa-stat-title">{card.label}</span>
+                <span className="colaboradores-empresa-stat-hint">{card.hint}</span>
+              </span>
+            </button>
+          );
         })}
-      />
+      </div>
 
-      <FilterBar
-        onSearch={handleSearch}
-        onClear={clearFilters}
-        isPending={isPending}
-        activeChips={activeChips}
-        onRemoveChip={removeChip}
-        onClearChips={clearFilters}
-      >
-        <div className="referral-filter-search sm:col-span-2">
-            <Search className="referral-filter-search-icon h-4 w-4" />
+      <div className="colaboradores-empresa-filters">
+        <div className="colaboradores-empresa-filters-row">
+          <div className="colaboradores-empresa-search">
+            <Search className="colaboradores-empresa-search-icon" aria-hidden />
             <Input
-              placeholder="Buscar por razão social, nome fantasia, CNPJ, responsável ou telefone"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-9"
+              onKeyDown={(e) => e.key === "Enter" && pushCurrentFilters()}
+              placeholder="Buscar por razão social, fantasia, CNPJ, responsável ou telefone"
+              aria-label="Buscar empresas"
+              className="colaboradores-empresa-search-input"
             />
           </div>
+
           <select
-            value={activeStatus === "ALL" ? "" : activeStatus}
-            onChange={(e) => updateFilters({ status: e.target.value || "ALL" })}
-            className="form-select h-9"
+            value={
+              activeStatus === "ATIVA" ||
+              activeStatus === "INATIVA" ||
+              activeStatus === "PENDENTE" ||
+              activeStatus === "BLOQUEADA"
+                ? activeStatus
+                : ""
+            }
+            onChange={(e) => {
+              const value = e.target.value;
+              updateFilters({ status: value || undefined });
+            }}
+            aria-label="Filtrar por status"
+            className="colaboradores-empresa-select"
           >
             <option value="">Status</option>
             <option value="ATIVA">Ativa</option>
@@ -272,7 +312,17 @@ export function EmpresasClient({
             <option value="PENDENTE">Pendente</option>
             <option value="BLOQUEADA">Bloqueada</option>
           </select>
-          <select value={city} onChange={(e) => setCity(e.target.value)} className="form-select h-9">
+
+          <select
+            value={city}
+            onChange={(e) => {
+              const value = e.target.value;
+              setCity(value);
+              pushCurrentFilters({ city: value || undefined });
+            }}
+            aria-label="Filtrar por cidade"
+            className="colaboradores-empresa-select"
+          >
             <option value="">Cidade</option>
             {cities.map((c) => (
               <option key={c} value={c}>
@@ -280,43 +330,114 @@ export function EmpresasClient({
               </option>
             ))}
           </select>
-          <select value={size} onChange={(e) => setSize(e.target.value)} className="form-select h-9">
-            <option value="">Porte</option>
-            <option value="PEQUENA">Pequena</option>
-            <option value="MEDIA">Média</option>
-            <option value="GRANDE">Grande</option>
-          </select>
-          <select
-            value={contractType}
-            onChange={(e) => setContractType(e.target.value)}
-            className="form-select h-9"
-          >
-            <option value="">Tipo de contrato</option>
-            <option value="AVULSO">Avulso</option>
-            <option value="MENSAL">Mensal</option>
-            <option value="ANUAL">Anual</option>
-            <option value="EM_NEGOCIACAO">Em negociação</option>
-          </select>
-          <select
-            value={pending}
-            onChange={(e) => setPending(e.target.value)}
-            className="form-select h-9"
-          >
-            <option value="">Possui pendência</option>
-            <option value="true">Sim</option>
-          </select>
-          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} title="Cadastro de" />
-          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} title="Cadastro até" />
-      </FilterBar>
 
-      <div className="relative mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="colaboradores-empresa-more-btn rounded-lg"
+            onClick={() => setMoreFiltersOpen((open) => !open)}
+            aria-expanded={moreFiltersOpen}
+          >
+            <SlidersHorizontal className="mr-2 h-4 w-4" />
+            Mais filtros
+            {advancedFilterCount > 0 && (
+              <span className="colaboradores-empresa-filter-count">{advancedFilterCount}</span>
+            )}
+          </Button>
+
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="colaboradores-empresa-clear-btn rounded-lg"
+              onClick={clearFilters}
+            >
+              Limpar filtros
+            </Button>
+          )}
+        </div>
+
+        {moreFiltersOpen && (
+          <div className="colaboradores-empresa-filters-advanced">
+            <select
+              value={size}
+              onChange={(e) => setSize(e.target.value)}
+              className="colaboradores-empresa-select"
+              aria-label="Porte"
+            >
+              <option value="">Porte</option>
+              <option value="PEQUENA">Pequena</option>
+              <option value="MEDIA">Média</option>
+              <option value="GRANDE">Grande</option>
+            </select>
+            <select
+              value={contractType}
+              onChange={(e) => setContractType(e.target.value)}
+              className="colaboradores-empresa-select"
+              aria-label="Tipo de contrato"
+            >
+              <option value="">Contrato</option>
+              <option value="AVULSO">Avulso</option>
+              <option value="MENSAL">Mensal</option>
+              <option value="ANUAL">Anual</option>
+              <option value="EM_NEGOCIACAO">Em negociação</option>
+            </select>
+            <select
+              value={pending}
+              onChange={(e) => setPending(e.target.value)}
+              className="colaboradores-empresa-select"
+              aria-label="Pendências"
+            >
+              <option value="">Pendências</option>
+              <option value="true">Com pendência</option>
+            </select>
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              title="Cadastro de"
+              className="h-9 rounded-lg text-sm"
+            />
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              title="Cadastro até"
+              className="h-9 rounded-lg text-sm"
+            />
+            <Button
+              type="button"
+              variant="brand"
+              size="sm"
+              className="rounded-lg"
+              onClick={() => pushCurrentFilters()}
+            >
+              Aplicar
+            </Button>
+          </div>
+        )}
+
+        {activeChips.length > 0 && (
+          <div className="colaboradores-empresa-chips">
+            <FilterChips chips={activeChips} onRemove={removeChip} onClearAll={clearFilters} />
+          </div>
+        )}
+      </div>
+
+      <div className="colaboradores-empresa-table-wrap relative">
         {isPending && <LoadingState overlay label="Atualizando empresas..." />}
+
+        <div className="colaboradores-empresa-result-bar">
+          <span className="text-xs text-slate-500">{resultLabel}</span>
+        </div>
 
         {initialItems.length === 0 ? (
           <EmptyState
             icon={Building2}
-            title="Nenhuma empresa cadastrada"
-            description="Cadastre a primeira empresa para iniciar encaminhamentos, documentos e portal empresarial."
+            title="Nenhuma empresa encontrada"
+            description="Cadastre a primeira empresa ou ajuste os filtros."
             action={
               canManage
                 ? { label: "Nova empresa", onClick: () => setNewDialogOpen(true) }
@@ -324,170 +445,165 @@ export function EmpresasClient({
             }
           />
         ) : (
-          <>
-          <div className="hidden md:block">
-          <DataTable>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Empresa</TableHead>
-                  <TableHead>CNPJ</TableHead>
-                  <TableHead>Responsável</TableHead>
-                  <TableHead className="hidden md:table-cell">WhatsApp</TableHead>
-                  <TableHead className="hidden lg:table-cell">Cidade/UF</TableHead>
-                  <TableHead>Colaboradores</TableHead>
-                  <TableHead className="hidden sm:table-cell">Encaminh.</TableHead>
-                  <TableHead className="hidden md:table-cell">Documentos</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {initialItems.map((c) => {
-                  const waUrl = getWhatsAppUrl(c);
-                  return (
-                    <TableRow
-                      key={c.id}
-                      className="cursor-pointer hover:bg-slate-50"
-                      onClick={() => openDetail(c.id)}
-                    >
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-[#0F3D4A]">{c.legalName}</p>
-                          {c.tradeName && (
-                            <p className="text-xs text-slate-500">{c.tradeName}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">{formatCNPJ(c.cnpj)}</TableCell>
-                      <TableCell className="text-sm">{c.responsibleName ?? "—"}</TableCell>
-                      <TableCell className="hidden text-sm md:table-cell">
+          <div className="colaboradores-empresa-table-scroll">
+            <table className="colaboradores-empresa-table empresas-clinica-table">
+              <thead>
+                <tr>
+                  <th>Empresa</th>
+                  <th>CNPJ</th>
+                  <th>Responsável</th>
+                  <th>Cidade/UF</th>
+                  <th className="text-center">Colaboradores</th>
+                  <th className="text-center">Atendimentos</th>
+                  <th>Pendências</th>
+                  <th>Status</th>
+                  <th className="colaboradores-empresa-th-actions">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {initialItems.map((c) => (
+                  <tr
+                    key={c.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/dashboard/empresas/${c.id}`)}
+                  >
+                    <td>
+                      <div className="colaboradores-empresa-name-cell">
+                        <p className="colaboradores-empresa-name">{c.legalName}</p>
+                        {c.tradeName ? (
+                          <p className="colaboradores-empresa-muted">{c.tradeName}</p>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap text-sm">{formatCNPJ(c.cnpj)}</td>
+                    <td>
+                      <p className="text-sm">{c.responsibleName ?? "—"}</p>
+                      <p className="colaboradores-empresa-muted">
                         {c.whatsapp ? formatPhone(c.whatsapp) : "—"}
-                      </TableCell>
-                      <TableCell className="hidden text-sm lg:table-cell">
-                        {[c.city, c.state].filter(Boolean).join("/") || "—"}
-                      </TableCell>
-                      <TableCell className="text-center">{c.employeeCount}</TableCell>
-                      <TableCell className="hidden text-center sm:table-cell">
-                        {c.openReferrals > 0 ? (
-                          <span className="font-medium text-amber-700">{c.openReferrals}</span>
-                        ) : (
-                          c.referralCount
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {docSummaryBadge(c.documentSummary)}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={c.status} type="company" />
-                      </TableCell>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => router.push(`/dashboard/empresas/${c.id}`)}>
-                              <Eye className="mr-2 h-4 w-4" /> Ver detalhes
-                            </DropdownMenuItem>
-                            {canManage && (
-                              <>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    router.push(`/dashboard/encaminhamentos/novo?companyId=${c.id}`)
-                                  }
-                                >
-                                  <FileText className="mr-2 h-4 w-4" /> Novo encaminhamento
-                                </DropdownMenuItem>
-                                {canCommercial && (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      router.push(`/dashboard/orcamentos?companyId=${c.id}`)
-                                    }
-                                  >
-                                    <DollarSign className="mr-2 h-4 w-4" /> Novo orçamento
-                                  </DropdownMenuItem>
-                                )}
-                              </>
-                            )}
-                            {waUrl && (
-                              <DropdownMenuItem
-                                onClick={() => window.open(waUrl, "_blank", "noopener,noreferrer")}
-                              >
-                                <MessageCircle className="mr-2 h-4 w-4" /> Abrir WhatsApp
-                              </DropdownMenuItem>
-                            )}
+                      </p>
+                    </td>
+                    <td className="text-sm">
+                      {[c.city, c.state].filter(Boolean).join("/") || "—"}
+                    </td>
+                    <td className="text-center text-sm">{c.employeeCount}</td>
+                    <td className="text-center text-sm">
+                      {c.openReferrals > 0 ? (
+                        <span className="font-semibold text-amber-700">{c.openReferrals}</span>
+                      ) : (
+                        "0"
+                      )}
+                    </td>
+                    <td>
+                      <StatusBadge
+                        status={
+                          (
+                            {
+                              EM_DIA: "EM_DIA",
+                              PENDENTE: "PENDENTE",
+                              VENCIDO: "VENCIDO",
+                              NONE: "ARQUIVADO",
+                            } as const
+                          )[c.documentSummary]
+                        }
+                        type="document"
+                        label={COMPANY_DOCUMENT_SUMMARY_LABELS[c.documentSummary]}
+                      />
+                    </td>
+                    <td>
+                      <StatusBadge status={c.status} type="company" />
+                    </td>
+                    <td
+                      className="colaboradores-empresa-td-actions"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Ações</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => router.push(`/dashboard/empresas/${c.id}`)}
+                          >
+                            <Eye className="mr-2 h-4 w-4" /> Ver detalhes
+                          </DropdownMenuItem>
+                          {canManage && (
                             <DropdownMenuItem
                               onClick={() =>
-                                router.push(`/dashboard/empresas/${c.id}?tab=portal`)
+                                router.push(
+                                  `/dashboard/encaminhamentos/novo?companyId=${c.id}`
+                                )
                               }
                             >
-                              <ExternalLink className="mr-2 h-4 w-4" /> Portal da empresa
+                              <FileText className="mr-2 h-4 w-4" /> Criar atendimento
                             </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </DataTable>
+                          )}
+                          {canManage && canCommercial && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                router.push(`/dashboard/orcamentos?companyId=${c.id}`)
+                              }
+                            >
+                              <DollarSign className="mr-2 h-4 w-4" /> Novo orçamento
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem
+                            onClick={() =>
+                              router.push(`/dashboard/empresas/${c.id}?tab=portal`)
+                            }
+                          >
+                            <ExternalLink className="mr-2 h-4 w-4" /> Gerenciar portal
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          <div className="grid gap-3 md:hidden">
-            {initialItems.map((c) => (
-              <MobileListCard
-                key={c.id}
-                icon={Building2}
-                title={c.tradeName ?? c.legalName}
-                subtitle={c.tradeName ? c.legalName : formatCNPJ(c.cnpj)}
-                meta={`${c.employeeCount} colaboradores · ${c.city ?? "—"}`}
-                badge={<StatusBadge status={c.status} type="company" />}
-                onClick={() => openDetail(c.id)}
-              />
-            ))}
-          </div>
-          </>
         )}
 
         {totalPages > 1 && (
-          <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="colaboradores-empresa-pagination">
             <Button
               variant="outline"
               size="sm"
-              disabled={initialPage <= 1}
-              onClick={() => updateFilters({ page: String(initialPage - 1), status: activeStatus })}
+              disabled={initialPage <= 1 || isPending}
+              onClick={() =>
+                updateFilters({
+                  page: String(initialPage - 1),
+                  status: activeStatus || undefined,
+                })
+              }
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm text-slate-500">
-              Página {initialPage} de {totalPages} ({initialTotal} empresas)
+              Página {initialPage} de {totalPages}
             </span>
             <Button
               variant="outline"
               size="sm"
-              disabled={initialPage >= totalPages}
-              onClick={() => updateFilters({ page: String(initialPage + 1), status: activeStatus })}
+              disabled={initialPage >= totalPages || isPending}
+              onClick={() =>
+                updateFilters({
+                  page: String(initialPage + 1),
+                  status: activeStatus || undefined,
+                })
+              }
             >
-              <ChevronRight className="h-4 w-4" />
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
             </Button>
           </div>
         )}
       </div>
-
-      <DetailDrawer
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        title={drawerCompany?.tradeName ?? drawerCompany?.legalName ?? "Empresa"}
-        description={drawerCompany ? formatCNPJ(drawerCompany.cnpj) : undefined}
-        loading={drawerLoading}
-        size="xl"
-      >
-        {drawerCompany && <CompanyDetailDrawerContent company={drawerCompany} />}
-      </DetailDrawer>
 
       <NewCompanyDialog
         open={newDialogOpen}
