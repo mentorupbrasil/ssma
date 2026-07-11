@@ -77,21 +77,21 @@ export default async function DashboardPage() {
 
   return (
     <PageShell>
-      <PageHeader
-        eyebrow={isEmpresa ? "Portal empresarial" : "Cockpit operacional"}
-        title="Visão geral"
-        description={
-          isEmpresa
-            ? "Cadastre colaboradores, solicite exames e baixe ASOs anexados pela Unimetra."
-            : "Pendências, produção e ações prioritárias da clínica — atualizado em tempo real."
-        }
-      />
+      {!isEmpresa && (
+        <PageHeader
+          eyebrow="Cockpit operacional"
+          title="Visão geral"
+          description="Pendências, produção e ações prioritárias da clínica — atualizado em tempo real."
+        />
+      )}
 
       {!isEmpresa && <PlatformPositioningBanner />}
 
-      <section>
-        <h2 className="section-label">Atalhos rápidos</h2>
-        <QuickActionGrid actions={quickActions} />
+      <section className={isEmpresa ? "empresa-quick-actions" : undefined}>
+        <h2 className={isEmpresa ? "empresa-quick-actions-label" : "section-label"}>
+          Atalhos rápidos
+        </h2>
+        <QuickActionGrid actions={quickActions} variant={isEmpresa ? "compact" : "default"} />
       </section>
 
       <section>
