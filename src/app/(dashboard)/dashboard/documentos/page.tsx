@@ -56,6 +56,8 @@ async function DocumentosContent({ searchParams }: { searchParams: SearchParams 
         filters={{
           q: param(sp.q),
           card: param(sp.card),
+          type: param(sp.type),
+          status: param(sp.status),
         }}
       />
     );

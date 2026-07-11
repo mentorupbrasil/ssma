@@ -220,7 +220,8 @@ export function parseDateRange(dateFrom?: string, dateTo?: string) {
 
 export function buildDocumentWhere(
   filters: DocumentListFilters,
-  companyScope?: string
+  companyScope?: string,
+  options?: { omitProtocolSearch?: boolean }
 ): Prisma.DocumentWhereInput {
   const where: Prisma.DocumentWhereInput = {};
   if (companyScope) where.companyId = companyScope;
@@ -233,7 +234,9 @@ export function buildDocumentWhere(
       { company: { legalName: { contains: q, mode: "insensitive" } } },
       { company: { tradeName: { contains: q, mode: "insensitive" } } },
       { patient: { fullName: { contains: q, mode: "insensitive" } } },
-      { referral: { protocol: { contains: q, mode: "insensitive" } } },
+      ...(options?.omitProtocolSearch
+        ? []
+        : [{ referral: { protocol: { contains: q, mode: "insensitive" as const } } }]),
     ];
   }
 

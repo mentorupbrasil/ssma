@@ -25,6 +25,7 @@ import {
 } from "@/lib/documents";
 import {
   applyEmpresaDocumentCardFilter,
+  applyEmpresaDocumentStatusFilter,
   empresaDocumentDownloadableWhere,
 } from "@/lib/empresa-portal";
 import { deleteDocumentFile } from "@/lib/document-storage";
@@ -163,15 +164,21 @@ export async function listDocumentsForEmpresa(
 ) {
   const pageSize = getDocumentPageSize();
   const page = Math.max(1, filters.page ?? 1);
-  let where = buildDocumentWhere(filters, companyId);
+  const empresaStatus = filters.status;
+  let where = buildDocumentWhere(
+    { ...filters, status: undefined },
+    companyId,
+    { omitProtocolSearch: true }
+  );
   where = applyEmpresaDocumentCardFilter(where, filters.card);
+  where = applyEmpresaDocumentStatusFilter(where, empresaStatus);
   const orderBy = buildDocumentOrderBy(filters.sort);
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
   const base = { companyId };
 
-  const [items, total, paraBaixar, asos, aguardando, mes] = await Promise.all([
+  const [items, total, paraBaixar, aguardando, mes] = await Promise.all([
     prisma.document.findMany({
       where,
       orderBy,
@@ -186,13 +193,12 @@ export async function listDocumentsForEmpresa(
     prisma.document.count({ where }),
     prisma.document.count({ where: empresaDocumentDownloadableWhere(companyId) }),
     prisma.document.count({
-      where: { ...empresaDocumentDownloadableWhere(companyId), type: "ASO" },
-    }),
-    prisma.document.count({
       where: {
         ...base,
         fileUrl: null,
-        status: { notIn: ["ARQUIVADO", "CANCELADO", "DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] },
+        status: {
+          notIn: ["ARQUIVADO", "CANCELADO", "DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"],
+        },
       },
     }),
     prisma.document.count({
@@ -210,7 +216,6 @@ export async function listDocumentsForEmpresa(
     pageSize,
     statCounts: {
       para_baixar: paraBaixar,
-      asos,
       aguardando,
       mes,
     },

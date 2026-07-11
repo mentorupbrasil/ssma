@@ -19,7 +19,7 @@ export const EMPRESA_HIDDEN_NAV_HREFS = [
 export const EMPRESA_NAV_LABEL_OVERRIDES: Record<string, string> = {
   "/dashboard/encaminhamentos": "Exames",
   "/dashboard/exames": "Preparos",
-  "/dashboard/documentos": "ASOs e documentos",
+  "/dashboard/documentos": "Documentos",
 };
 
 /** Ícones customizados no menu do RH */
@@ -236,10 +236,9 @@ export function referralStatCardsForEmpresa() {
 
 /** Cards da tela Documentos — portal RH (foco em download) */
 export const EMPRESA_DOCUMENT_STAT_CARDS = [
-  { key: "para_baixar", filter: "PARA_BAIXAR", label: "Para baixar" },
-  { key: "asos", filter: "ASO_ARQUIVO", label: "ASOs" },
-  { key: "aguardando", filter: "AGUARDANDO_ARQUIVO", label: "Aguardando arquivo" },
-  { key: "mes", filter: "MES_ARQUIVO", label: "Novos este mês" },
+  { key: "para_baixar", filter: "PARA_BAIXAR", label: "Disponíveis para baixar" },
+  { key: "aguardando", filter: "AGUARDANDO_ARQUIVO", label: "Aguardando liberação" },
+  { key: "mes", filter: "MES_ARQUIVO", label: "Novos neste mês" },
 ] as const;
 
 export function documentStatCardsForEmpresa() {
@@ -275,7 +274,13 @@ export function applyEmpresaDocumentCardFilter(
     };
   }
   if (card === "AGUARDANDO_ARQUIVO") {
-    return { ...where, fileUrl: null, status: { notIn: ["ARQUIVADO", "CANCELADO", "DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"] } };
+    return {
+      ...where,
+      fileUrl: null,
+      status: {
+        notIn: ["ARQUIVADO", "CANCELADO", "DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"],
+      },
+    };
   }
   if (card === "MES_ARQUIVO") {
     const now = new Date();
@@ -288,6 +293,63 @@ export function applyEmpresaDocumentCardFilter(
     };
   }
   return where;
+}
+
+/** Filtro de status simplificado para o portal RH */
+export function applyEmpresaDocumentStatusFilter(
+  where: import("@prisma/client").Prisma.DocumentWhereInput,
+  status?: string
+): import("@prisma/client").Prisma.DocumentWhereInput {
+  if (!status || status === "ALL") return where;
+
+  if (status === "aguardando") {
+    return {
+      ...where,
+      fileUrl: null,
+      status: {
+        notIn: ["ARQUIVADO", "CANCELADO", "DISPONIVEL", "CONCLUIDO", "EM_DIA", "ENVIADO", "ENTREGUE"],
+      },
+    };
+  }
+  if (status === "disponivel") {
+    return {
+      ...where,
+      fileUrl: { not: null },
+      status: { notIn: ["ARQUIVADO", "CANCELADO", "VENCIDO"] },
+    };
+  }
+  if (status === "vencido") {
+    return {
+      ...where,
+      OR: [{ status: "VENCIDO" }, { validUntil: { lt: new Date() } }],
+    };
+  }
+  return where;
+}
+
+export const EMPRESA_DOCUMENT_STATUS_FILTER_OPTIONS = [
+  { value: "", label: "Status" },
+  { value: "aguardando", label: "Aguardando liberação" },
+  { value: "disponivel", label: "Disponível" },
+  { value: "vencido", label: "Vencido" },
+] as const;
+
+export function empresaDocumentDisplayStatus(doc: {
+  hasFile: boolean;
+  status: string;
+  validUntil?: string | null;
+  validityLabel?: string | null;
+}): { label: string; toneStatus: string } {
+  if (doc.status === "VENCIDO" || doc.validityLabel === "Vencido") {
+    return { label: "Vencido", toneStatus: "VENCIDO" };
+  }
+  if (doc.validUntil && new Date(doc.validUntil) < new Date() && doc.hasFile) {
+    return { label: "Vencido", toneStatus: "VENCIDO" };
+  }
+  if (doc.hasFile) {
+    return { label: "Disponível", toneStatus: "DISPONIVEL" };
+  }
+  return { label: "Aguardando liberação", toneStatus: "PENDENTE" };
 }
 
 export function ticketStatCardsForEmpresa() {

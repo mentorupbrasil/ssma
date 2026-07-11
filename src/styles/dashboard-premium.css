@@ -1738,6 +1738,40 @@
   margin-bottom: 1rem;
 }
 
+/* Documentos — portal empresa */
+.documentos-empresa {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.documentos-empresa-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 767px) {
+  .documentos-empresa-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.documentos-empresa .documentos-empresa-table-scroll {
+  display: block;
+}
+
+.documentos-empresa .colaboradores-empresa-th-actions,
+.documentos-empresa .colaboradores-empresa-td-actions {
+  width: auto;
+  text-align: right;
+}
+
+.documentos-empresa-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
 /* Exames — portal empresa */
 .exames-empresa,
 .exames-empresa-novo {
