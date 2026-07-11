@@ -4,6 +4,7 @@ import { startOfDay, endOfDay, parseISO, isValid, addDays } from "date-fns";
 import { maskCpf } from "@/lib/referrals";
 import { formatCPF } from "@/lib/helpers";
 import { CLINICAL_EXAM_LABELS } from "@/types";
+import { DOCUMENT_TYPE_LABELS } from "@/lib/documents";
 
 export const COLLABORATOR_STAT_CARDS: { key: string; filter: string; label: string }[] = [
   { key: "ativos", filter: "ATIVO", label: "Colaboradores ativos" },
@@ -290,19 +291,31 @@ export function getPeriodicExamBadge(nextPeriodicDate: string | null): {
   return { label: "Periódico em dia", tone: "ok" };
 }
 
-export function buildCollaboratorTimeline(collaborator: {
-  history: { id: string; action: string; notes: string | null; performedByName: string | null; createdAt: string }[];
-  referrals: { id: string; protocol: string; clinicalExamType: string; createdAt: string; status: string }[];
-  appointments: { id: string; scheduledAt: string; clinicalExamType: string | null; status: string }[];
-  documents: { id: string; title: string; type: string; createdAt: string }[];
-}): Array<{
+export type CollaboratorTimelineEvent = {
   id: string;
   kind: string;
   title: string;
   subtitle?: string;
   createdAt: string;
-}> {
-  const events: Array<{ id: string; kind: string; title: string; subtitle?: string; createdAt: string }> = [];
+  badgeStatus?: string;
+  badgeType?: "referral" | "appointment" | "document" | "collaborator";
+};
+
+const TIMELINE_DOCUMENT_TYPE_LABELS: Record<string, string> = {
+  ASO: "Atestado de saúde ocupacional",
+};
+
+function timelineDocumentTypeLabel(type: string): string {
+  return TIMELINE_DOCUMENT_TYPE_LABELS[type] ?? DOCUMENT_TYPE_LABELS[type as keyof typeof DOCUMENT_TYPE_LABELS] ?? type;
+}
+
+export function buildCollaboratorTimeline(collaborator: {
+  history: { id: string; action: string; notes: string | null; performedByName: string | null; createdAt: string }[];
+  referrals: { id: string; protocol: string; clinicalExamType: string; createdAt: string; status: string }[];
+  appointments: { id: string; scheduledAt: string; clinicalExamType: string | null; status: string }[];
+  documents: { id: string; title: string; type: string; createdAt: string }[];
+}): CollaboratorTimelineEvent[] {
+  const events: CollaboratorTimelineEvent[] = [];
 
   for (const h of collaborator.history) {
     events.push({
@@ -318,16 +331,23 @@ export function buildCollaboratorTimeline(collaborator: {
       id: `r-${r.id}`,
       kind: "referral",
       title: `Encaminhamento ${r.protocol}`,
-      subtitle: r.status,
+      badgeStatus: r.status,
+      badgeType: "referral",
       createdAt: r.createdAt,
     });
   }
   for (const a of collaborator.appointments) {
+    const examLabel = a.clinicalExamType
+      ? CLINICAL_EXAM_LABELS[a.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS] ??
+        a.clinicalExamType
+      : undefined;
     events.push({
       id: `a-${a.id}`,
       kind: "appointment",
-      title: "Agendamento",
-      subtitle: a.clinicalExamType ?? a.status,
+      title: "Exame agendado",
+      subtitle: examLabel,
+      badgeStatus: a.status,
+      badgeType: "appointment",
       createdAt: a.scheduledAt,
     });
   }
@@ -336,7 +356,7 @@ export function buildCollaboratorTimeline(collaborator: {
       id: `d-${d.id}`,
       kind: "document",
       title: d.title,
-      subtitle: d.type,
+      subtitle: timelineDocumentTypeLabel(d.type),
       createdAt: d.createdAt,
     });
   }

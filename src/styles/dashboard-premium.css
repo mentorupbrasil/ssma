@@ -2819,13 +2819,53 @@
   background: white;
   padding: 0.875rem 1rem;
   text-align: left;
-  cursor: pointer;
+  cursor: default;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.colaborador-perfil-highlight:hover {
+.colaborador-perfil-highlight[role="button"] {
+  cursor: pointer;
+}
+
+.colaborador-perfil-highlight[role="button"]:hover {
   border-color: rgb(46 103 255 / 0.28);
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
+}
+
+.colaborador-perfil-define-date {
+  margin-top: 0.1rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.colaborador-perfil-situacao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+}
+
+.colaborador-perfil-situacao-line {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--brand-navy, #0e142b);
+}
+
+.colaborador-perfil-activity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.colaborador-perfil-doc-awaiting {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(148 163 184);
 }
 
 .colaborador-perfil-highlight-label {
@@ -2895,7 +2935,7 @@
 }
 
 .colaborador-perfil-activity-sub {
-  margin: 0.2rem 0 0;
+  margin: 0;
   font-size: 0.75rem;
   color: rgb(100 116 139);
 }

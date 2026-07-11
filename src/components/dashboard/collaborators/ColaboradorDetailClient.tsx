@@ -12,7 +12,6 @@ import {
   LayoutDashboard,
   Calendar,
   Download,
-  Eye,
   ChevronLeft,
 } from "lucide-react";
 import type { DocumentStatus } from "@prisma/client";
@@ -29,7 +28,6 @@ import { CLINICAL_EXAM_LABELS } from "@/types";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { formatCPF, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { EditCollaboratorDialog } from "./CollaboratorDialogs";
@@ -210,7 +208,9 @@ export function ColaboradorDetailClient({
           timeline={timeline}
           pendingDocsCount={pendingDocsCount}
           periodicBadge={periodicBadge}
+          canManage={canManage}
           onNavigate={setTab}
+          onDefinePeriodic={() => setEditOpen(true)}
         />
       )}
       {activeTab === "referrals" && (
@@ -249,19 +249,29 @@ function OverviewTab({
   timeline,
   pendingDocsCount,
   periodicBadge,
+  canManage,
   onNavigate,
+  onDefinePeriodic,
 }: {
   collaborator: CollaboratorDetailSerialized;
   timeline: ReturnType<typeof buildCollaboratorTimeline>;
   pendingDocsCount: number;
   periodicBadge: ReturnType<typeof getPeriodicExamBadge>;
+  canManage: boolean;
   onNavigate: (tab: TabId) => void;
+  onDefinePeriodic: () => void;
 }) {
   const periodicHint = formatPeriodicHint(collaborator.nextPeriodicDate);
+  const openReferrals = collaborator.stats.openReferrals;
   const lastExamText =
     collaborator.stats.lastExamLabel && collaborator.stats.lastExamDate
       ? `${collaborator.stats.lastExamLabel} · ${format(new Date(collaborator.stats.lastExamDate), "dd/MM/yyyy", { locale: ptBR })}`
       : "Nenhum exame registrado";
+
+  const handleSituacaoClick = () => {
+    if (pendingDocsCount > 0) onNavigate("documents");
+    else if (openReferrals > 0) onNavigate("referrals");
+  };
 
   return (
     <div className="colaborador-perfil-overview">
@@ -315,19 +325,25 @@ function OverviewTab({
       </div>
 
       <div className="colaborador-perfil-grid colaborador-perfil-grid--3">
-        <button type="button" className="colaborador-perfil-highlight" onClick={() => onNavigate("referrals")}>
+        <div
+          role="button"
+          tabIndex={0}
+          className="colaborador-perfil-highlight"
+          onClick={() => onNavigate("referrals")}
+          onKeyDown={(e) => e.key === "Enter" && onNavigate("referrals")}
+        >
           <span className="colaborador-perfil-highlight-label">Último exame</span>
           <span className="colaborador-perfil-highlight-value">{lastExamText}</span>
-        </button>
+        </div>
 
-        <button type="button" className="colaborador-perfil-highlight" onClick={() => onNavigate("referrals")}>
+        <div className="colaborador-perfil-highlight">
           <span className="colaborador-perfil-highlight-label">Próximo periódico</span>
           <span className="colaborador-perfil-highlight-value">
             {collaborator.nextPeriodicDate
               ? format(new Date(collaborator.nextPeriodicDate), "dd/MM/yyyy", { locale: ptBR })
               : "Não definido"}
           </span>
-          {periodicHint && (
+          {periodicHint ? (
             <span
               className={cn(
                 "colaborador-perfil-highlight-hint",
@@ -337,27 +353,48 @@ function OverviewTab({
             >
               {periodicHint}
             </span>
+          ) : (
+            canManage &&
+            !collaborator.nextPeriodicDate && (
+              <button
+                type="button"
+                className="colaboradores-empresa-inline-action colaborador-perfil-define-date"
+                onClick={onDefinePeriodic}
+              >
+                Definir data
+              </button>
+            )
           )}
-        </button>
+        </div>
 
-        <button type="button" className="colaborador-perfil-highlight" onClick={() => onNavigate("documents")}>
-          <span className="colaborador-perfil-highlight-label">Pendências</span>
-          <span className="colaborador-perfil-highlight-value">
-            {pendingDocsCount > 0 ? (
-              <Badge variant="outline" className="colaboradores-empresa-pending-badge">
-                {pendingDocsCount === 1 ? "1 documento" : `${pendingDocsCount} documentos`}
-              </Badge>
-            ) : (
-              <span className="colaboradores-empresa-muted">Sem pendências</span>
+        <div
+          role="button"
+          tabIndex={0}
+          className="colaborador-perfil-highlight"
+          onClick={handleSituacaoClick}
+          onKeyDown={(e) => e.key === "Enter" && handleSituacaoClick()}
+        >
+          <span className="colaborador-perfil-highlight-label">Situação atual</span>
+          <div className="colaborador-perfil-situacao">
+            {pendingDocsCount > 0 && (
+              <span className="colaborador-perfil-situacao-line">
+                {pendingDocsCount === 1
+                  ? "1 documento pendente"
+                  : `${pendingDocsCount} documentos pendentes`}
+              </span>
             )}
-          </span>
-          {collaborator.stats.openReferrals > 0 && (
-            <span className="colaborador-perfil-highlight-hint">
-              {collaborator.stats.openReferrals} encaminhamento
-              {collaborator.stats.openReferrals === 1 ? "" : "s"} em aberto
-            </span>
-          )}
-        </button>
+            {openReferrals > 0 && (
+              <span className="colaborador-perfil-situacao-line">
+                {openReferrals === 1
+                  ? "1 encaminhamento em andamento"
+                  : `${openReferrals} encaminhamentos em andamento`}
+              </span>
+            )}
+            {pendingDocsCount === 0 && openReferrals === 0 && (
+              <span className="colaboradores-empresa-muted">Tudo em dia</span>
+            )}
+          </div>
+        </div>
       </div>
 
       <section className="colaborador-perfil-block colaborador-perfil-block--wide">
@@ -374,7 +411,14 @@ function OverviewTab({
                     {format(new Date(ev.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                   </time>
                 </div>
-                {ev.subtitle && <p className="colaborador-perfil-activity-sub">{ev.subtitle}</p>}
+                {ev.subtitle || ev.badgeStatus ? (
+                  <div className="colaborador-perfil-activity-meta">
+                    {ev.badgeStatus && ev.badgeType && (
+                      <StatusBadge status={ev.badgeStatus} type={ev.badgeType} />
+                    )}
+                    {ev.subtitle && <span className="colaborador-perfil-activity-sub">{ev.subtitle}</span>}
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -445,7 +489,7 @@ function ReferralsTab({
                     : "—"}
                 </td>
                 <td>
-                  <StatusBadge status={r.status} />
+                  <StatusBadge status={r.status} type="referral" />
                 </td>
                 <td className="colaboradores-empresa-td-actions">
                   <Link
@@ -523,10 +567,7 @@ function DocumentsTab({ collaborator }: { collaborator: CollaboratorDetailSerial
                         Baixar
                       </a>
                     ) : (
-                      <span className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "rounded-lg pointer-events-none opacity-50")}>
-                        <Eye className="mr-1.5 h-3.5 w-3.5" />
-                        Indisponível
-                      </span>
+                      <span className="colaborador-perfil-doc-awaiting">Aguardando liberação</span>
                     )}
                   </td>
                 </tr>
