@@ -75,6 +75,11 @@ export const METRIC_META: Record<string, MetricMeta> = {
     icon: FileWarning,
     description: "Documentos a regularizar",
   },
+  "company:com_portal": {
+    tone: "info",
+    icon: ClipboardList,
+    description: "Empresas com portal RH ativo",
+  },
   "company:atendimentos_abertos": {
     tone: "info",
     icon: ClipboardList,

@@ -81,7 +81,7 @@ export async function getCompanyDetail(
           include: { performedBy: { select: { name: true } } },
         },
         users: {
-          where: { role: "EMPRESA" },
+          where: { role: { in: ["COMPANY_HR", "EMPRESA"] } },
           select: { id: true, name: true, email: true, status: true, createdAt: true },
         },
         history: {

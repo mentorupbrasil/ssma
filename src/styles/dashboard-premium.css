@@ -4853,6 +4853,13 @@
   color: var(--brand-navy, #0e142b);
 }
 
+.empresa-perfil-kpi-value--text {
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
 .empresa-perfil-kpi-label {
   font-size: 0.6875rem;
   font-weight: 500;
@@ -5287,23 +5294,8 @@
 .documentos-ops-col-action { width: 16%; }
 
 .documentos-ops-col-date {
-  text-align: center;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-
-.documentos-ops-col-status,
-.documentos-ops-col-action {
-  text-align: center;
-}
-
-.documentos-ops-table thead th.documentos-ops-col-date,
-.documentos-ops-table thead th.documentos-ops-col-status,
-.documentos-ops-table thead th.documentos-ops-col-action,
-.documentos-ops-table tbody td.documentos-ops-col-date,
-.documentos-ops-table tbody td.documentos-ops-col-status,
-.documentos-ops-table tbody td.documentos-ops-col-action {
-  text-align: center;
 }
 
 .documentos-ops-name {
@@ -5313,6 +5305,7 @@
   white-space: nowrap;
   font-weight: 600;
   color: rgb(15 23 42);
+  text-align: center;
 }
 
 .documentos-ops-ellipsis {
@@ -5320,6 +5313,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
 .documentos-ops-exam-stack {
@@ -5327,15 +5321,18 @@
   min-width: 0;
   max-width: 100%;
   flex-direction: column;
+  align-items: center;
   gap: 0.05rem;
 }
 
 .documentos-ops-exam-primary,
 .documentos-ops-exam-secondary {
   display: block;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
 .documentos-ops-exam-primary {

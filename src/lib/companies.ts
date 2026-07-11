@@ -23,10 +23,10 @@ export const COMPANY_STAT_CARDS: { key: string; filter: string; label: string; h
     hint: "Documentos a regularizar",
   },
   {
-    key: "atendimentos_abertos",
-    filter: "REFERRALS_OPEN",
-    label: "Atendimentos em aberto",
-    hint: "Exames em andamento",
+    key: "com_portal",
+    filter: "PORTAL_ENABLED",
+    label: "Com portal ativo",
+    hint: "Acesso RH liberado",
   },
 ];
 
@@ -128,6 +128,8 @@ export function buildCompanyWhere(filters: CompanyListFilters): Prisma.CompanyWh
       where.documents = { some: { status: { in: ["PENDENTE", "EM_EMISSAO", "EM_ELABORACAO", "VENCIDO"] } } };
     } else if (filters.status === "REFERRALS_OPEN") {
       where.referrals = { some: { status: { in: OPEN_REFERRAL_STATUSES } } };
+    } else if (filters.status === "PORTAL_ENABLED") {
+      where.portalEnabled = true;
     } else if (filters.status === "QUOTES_PENDING") {
       where.quotes = { some: { status: { in: PENDING_QUOTE_STATUSES } } };
     } else {

@@ -11,7 +11,7 @@ import {
   Building2,
   Building,
   FileWarning,
-  ClipboardList,
+  Globe,
   SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
@@ -37,14 +37,14 @@ const STAT_ICONS: Record<string, LucideIcon> = {
   ativas: Building2,
   inativas: Building,
   com_pendencias: FileWarning,
-  atendimentos_abertos: ClipboardList,
+  com_portal: Globe,
 };
 
 const STAT_TONES: Record<string, "primary" | "warning"> = {
   ativas: "primary",
   inativas: "primary",
   com_pendencias: "warning",
-  atendimentos_abertos: "primary",
+  com_portal: "primary",
 };
 
 type EmpresasClientProps = {
@@ -217,7 +217,7 @@ export function EmpresasClient({
         <div className="colaboradores-empresa-header-copy">
           <h1 className="colaboradores-empresa-title">Empresas</h1>
           <p className="colaboradores-empresa-subtitle">
-            Gerencie empresas clientes, responsáveis e atendimentos.
+            Cadastro, colaboradores, contrato e acesso ao portal RH.
           </p>
         </div>
         {canManage && (
@@ -444,7 +444,6 @@ export function EmpresasClient({
                   <th>Responsável</th>
                   <th>Cidade/UF</th>
                   <th className="text-center">Colaboradores</th>
-                  <th className="text-center">Atendimentos</th>
                   <th>Pendências</th>
                   <th>Status</th>
                   <th className="colaboradores-empresa-th-actions">Ações</th>
@@ -476,24 +475,6 @@ export function EmpresasClient({
                       {[c.city, c.state].filter(Boolean).join("/") || "—"}
                     </td>
                     <td className="text-center text-sm">{c.employeeCount}</td>
-                    <td className="text-center text-sm">
-                      {c.openReferrals > 0 ? (
-                        <button
-                          type="button"
-                          className="empresas-clinica-link-count"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(
-                              `/dashboard/encaminhamentos?companyId=${c.id}`
-                            );
-                          }}
-                        >
-                          {c.openReferrals}
-                        </button>
-                      ) : (
-                        <span className="text-slate-400">0</span>
-                      )}
-                    </td>
                     <td>
                       <span
                         className={cn(

@@ -34,7 +34,6 @@ import {
   DOCUMENT_TYPE_LABELS,
   normalizeDocumentStatus,
 } from "@/lib/documents";
-import { CLINICAL_EXAM_LABELS } from "@/types";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -70,21 +69,29 @@ type TabId =
   | "portal"
   | "history";
 
-const COMPANY_NAV: { id: TabId; label: string }[] = [
+const COMPANY_NAV_PRIMARY: { id: TabId; label: string }[] = [
   { id: "overview", label: "Visão geral" },
   { id: "employees", label: "Colaboradores" },
-  { id: "referrals", label: "Atendimentos" },
-  { id: "agenda", label: "Agenda" },
+  { id: "contract", label: "Contrato e preços" },
+  { id: "portal", label: "Portal" },
+];
+
+const COMPANY_NAV_MORE: { id: TabId; label: string }[] = [
+  { id: "contacts", label: "Contatos" },
   { id: "documents", label: "Documentos" },
   { id: "quotes", label: "Orçamentos" },
-  { id: "contract", label: "Contrato e preços" },
-  { id: "contacts", label: "Contatos" },
-  { id: "portal", label: "Portal" },
   { id: "history", label: "Histórico" },
 ];
 
+const ALL_COMPANY_TABS: { id: TabId; label: string }[] = [
+  ...COMPANY_NAV_PRIMARY,
+  ...COMPANY_NAV_MORE,
+  { id: "referrals", label: "Atendimentos" },
+  { id: "agenda", label: "Agenda" },
+];
+
 function isTabId(value: string | null): value is TabId {
-  return COMPANY_NAV.some((item) => item.id === value);
+  return ALL_COMPANY_TABS.some((item) => item.id === value);
 }
 
 type PortalState = "not_configured" | "active" | "suspended";
@@ -175,16 +182,13 @@ export function CompanyDetailClient({
         </div>
 
         <div className="empresa-perfil-actions">
-          {canManage && canCommercial && (
+          {canManage && (
             <Link
-              href={`/dashboard/orcamentos?companyId=${company.id}`}
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "empresa-perfil-btn empresa-perfil-action-secondary"
-              )}
+              href={`/dashboard/colaboradores?new=1&companyId=${company.id}`}
+              className={cn(buttonVariants({ variant: "brand", size: "sm" }), "empresa-perfil-btn")}
             >
-              <DollarSign className="mr-1.5 h-3.5 w-3.5" />
-              Novo orçamento
+              <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+              Novo colaborador
             </Link>
           )}
           {canManage && (
@@ -231,7 +235,7 @@ export function CompanyDetailClient({
                 {canManage && canCommercial && (
                   <button
                     type="button"
-                    className="collaborator-action-item empresa-perfil-action-menu-mobile"
+                    className="collaborator-action-item"
                     onClick={() => router.push(`/dashboard/orcamentos?companyId=${company.id}`)}
                   >
                     <span className="collaborator-action-icon collaborator-action-icon--quote">
@@ -240,21 +244,6 @@ export function CompanyDetailClient({
                     <span>
                       <span className="collaborator-action-label">Novo orçamento</span>
                       <span className="collaborator-action-hint">Proposta comercial</span>
-                    </span>
-                  </button>
-                )}
-                {canManage && (
-                  <button
-                    type="button"
-                    className="collaborator-action-item empresa-perfil-action-menu-mobile"
-                    onClick={() => setEditOpen(true)}
-                  >
-                    <span className="collaborator-action-icon collaborator-action-icon--docs">
-                      <Pencil className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <span className="collaborator-action-label">Editar cadastro</span>
-                      <span className="collaborator-action-hint">Dados e responsável</span>
                     </span>
                   </button>
                 )}
@@ -284,6 +273,21 @@ export function CompanyDetailClient({
                     <span className="collaborator-action-hint">Agenda de contatos</span>
                   </span>
                 </button>
+                <button
+                  type="button"
+                  className="collaborator-action-item"
+                  onClick={() =>
+                    router.push(`/dashboard/encaminhamentos?companyId=${company.id}`)
+                  }
+                >
+                  <span className="collaborator-action-icon collaborator-action-icon--schedule">
+                    <Building2 className="h-4 w-4" />
+                  </span>
+                  <span>
+                    <span className="collaborator-action-label">Ver na fila</span>
+                    <span className="collaborator-action-hint">Atendimentos desta empresa</span>
+                  </span>
+                </button>
               </PopoverContent>
             </Popover>
           )}
@@ -291,7 +295,7 @@ export function CompanyDetailClient({
       </header>
 
       <nav className="empresa-perfil-tabs" aria-label="Seções da empresa">
-        {COMPANY_NAV.map((item) => {
+        {COMPANY_NAV_PRIMARY.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
@@ -308,6 +312,35 @@ export function CompanyDetailClient({
             </button>
           );
         })}
+        <Popover>
+          <PopoverTrigger
+            render={
+              <button
+                type="button"
+                className={cn(
+                  "empresa-perfil-tab",
+                  COMPANY_NAV_MORE.some((item) => item.id === activeTab) &&
+                    "empresa-perfil-tab--active"
+                )}
+                aria-label="Mais seções"
+              >
+                Mais
+              </button>
+            }
+          />
+          <PopoverContent className="collaborator-action-menu w-52 p-1.5" align="start" sideOffset={6}>
+            {COMPANY_NAV_MORE.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="collaborator-action-item"
+                onClick={() => setTab(item.id)}
+              >
+                <span className="collaborator-action-label">{item.label}</span>
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
       </nav>
 
       <div className="empresa-perfil-body">
@@ -318,10 +351,20 @@ export function CompanyDetailClient({
           <EmployeesTab company={company} canManage={canManage} />
         )}
         {activeTab === "referrals" && (
-          <ReferralsTab company={company} />
+          <OpsRedirectTab
+            title="Atendimentos desta empresa"
+            description="A operação de fila fica em Atendimentos. Use o atalho abaixo para filtrar por esta empresa."
+            href={`/dashboard/encaminhamentos?companyId=${company.id}`}
+            cta="Abrir fila de atendimentos"
+          />
         )}
         {activeTab === "agenda" && (
-          <AgendaTab company={company} canManage={canManage} />
+          <OpsRedirectTab
+            title="Agenda operacional"
+            description="A clínica não agenda horários nesta tela. Acompanhe o status na fila de atendimentos."
+            href={`/dashboard/encaminhamentos?companyId=${company.id}`}
+            cta="Abrir fila de atendimentos"
+          />
         )}
         {activeTab === "documents" && <DocumentsTab company={company} />}
         {activeTab === "quotes" && (
@@ -392,22 +435,26 @@ function OverviewTab({
       tab: "employees" as TabId,
     },
     {
-      key: "open_referrals",
-      label: "Atendimentos em aberto",
-      value: company.stats.openReferrals,
-      tab: "referrals" as TabId,
-    },
-    {
-      key: "upcoming_appointments",
-      label: "Agendamentos futuros",
-      value: company.stats.upcomingAppointments,
-      tab: "agenda" as TabId,
-    },
-    {
       key: "pending_documents",
-      label: "Documentos pendentes",
+      label: "Pendências",
       value: company.stats.pendingDocuments,
       tab: "documents" as TabId,
+    },
+    {
+      key: "contract",
+      label: "Contrato",
+      value: company.contractType
+        ? COMPANY_CONTRACT_LABELS[company.contractType]
+        : "—",
+      tab: "contract" as TabId,
+      isText: true,
+    },
+    {
+      key: "portal",
+      label: "Portal",
+      value: PORTAL_STATE_LABELS[portalState],
+      tab: "portal" as TabId,
+      isText: true,
     },
   ];
 
@@ -425,7 +472,14 @@ function OverviewTab({
             onClick={() => onNavigate(s.tab)}
             className="empresa-perfil-kpi"
           >
-            <span className="empresa-perfil-kpi-value">{s.value}</span>
+            <span
+              className={cn(
+                "empresa-perfil-kpi-value",
+                "isText" in s && s.isText && "empresa-perfil-kpi-value--text"
+              )}
+            >
+              {s.value}
+            </span>
             <span className="empresa-perfil-kpi-label">{s.label}</span>
           </button>
         ))}
@@ -494,14 +548,8 @@ function OverviewTab({
                 value={formatCompanyPendingLabel(company.stats.pendingDocuments)}
               />
               <FieldRow
-                label="Último atendimento"
-                value={
-                  company.stats.lastAppointmentAt
-                    ? format(new Date(company.stats.lastAppointmentAt), "dd/MM/yyyy", {
-                        locale: ptBR,
-                      })
-                    : "—"
-                }
+                label="Usuários do portal"
+                value={String(company.portalUsers.length)}
               />
               <FieldRow
                 label="Última atualização"
@@ -526,6 +574,31 @@ function FieldRow({ label, value }: { label: string; value: string }) {
 
 function Field({ label, value }: { label: string; value: string }) {
   return <FieldRow label={label} value={value} />;
+}
+
+function OpsRedirectTab({
+  title,
+  description,
+  href,
+  cta,
+}: {
+  title: string;
+  description: string;
+  href: string;
+  cta: string;
+}) {
+  return (
+    <div className="empresa-erp-panel">
+      <h2 className="empresa-erp-panel-title">{title}</h2>
+      <p className="mb-4 text-sm text-slate-600">{description}</p>
+      <Link
+        href={href}
+        className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}
+      >
+        {cta}
+      </Link>
+    </div>
+  );
 }
 
 function EmployeesTab({
@@ -588,134 +661,6 @@ function EmployeesTab({
           </Table>
         </div>
       )}
-    </div>
-  );
-}
-
-function ReferralsTab({
-  company,
-}: {
-  company: CompanyDetailSerialized;
-}) {
-  if (company.referrals.length === 0) {
-    return (
-      <EmptyState
-        compact
-        title="Nenhum atendimento"
-        description="Esta empresa ainda não possui atendimentos registrados."
-      />
-    );
-  }
-  return (
-    <div className="colaboradores-empresa-table-scroll">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Protocolo</TableHead>
-            <TableHead>Colaborador</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Data</TableHead>
-            <TableHead>Agendamento</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {company.referrals.map((r) => (
-            <TableRow key={r.id}>
-              <TableCell>
-                <Link
-                  href={`/dashboard/encaminhamentos?id=${r.id}`}
-                  className="text-[var(--brand-green)] hover:underline"
-                >
-                  {r.protocol}
-                </Link>
-              </TableCell>
-              <TableCell>{r.employeeName}</TableCell>
-              <TableCell>
-                {CLINICAL_EXAM_LABELS[r.clinicalExamType] ?? r.clinicalExamType}
-              </TableCell>
-              <TableCell>
-                {format(new Date(r.createdAt), "dd/MM/yyyy", { locale: ptBR })}
-              </TableCell>
-              <TableCell>
-                {r.scheduledAt
-                  ? format(new Date(r.scheduledAt), "dd/MM HH:mm", { locale: ptBR })
-                  : "—"}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={r.status} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-function AgendaTab({
-  company,
-  canManage,
-}: {
-  company: CompanyDetailSerialized;
-  canManage: boolean;
-}) {
-  if (company.appointments.length === 0) {
-    return (
-      <EmptyState
-        compact
-        title="Nenhum agendamento"
-        description="Não há agendamentos vinculados a esta empresa."
-        action={
-          canManage
-            ? {
-                label: "Ver fila de atendimentos",
-                href: `/dashboard/encaminhamentos?companyId=${company.id}`,
-              }
-            : undefined
-        }
-      />
-    );
-  }
-  return (
-    <div className="colaboradores-empresa-table-scroll">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Data</TableHead>
-            <TableHead>Horário</TableHead>
-            <TableHead>Colaborador</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Protocolo</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {company.appointments.map((a) => (
-            <TableRow key={a.id}>
-              <TableCell>
-                {format(new Date(a.scheduledAt), "dd/MM/yyyy", { locale: ptBR })}
-              </TableCell>
-              <TableCell>
-                <Link
-                  href={`/dashboard/encaminhamentos?companyId=${company.id}`}
-                  className="text-[var(--brand-green)] hover:underline"
-                >
-                  {format(new Date(a.scheduledAt), "HH:mm", { locale: ptBR })}
-                </Link>
-              </TableCell>
-              <TableCell>{a.employeeName ?? "—"}</TableCell>
-              <TableCell>
-                {a.clinicalExamType ? CLINICAL_EXAM_LABELS[a.clinicalExamType] : "—"}
-              </TableCell>
-              <TableCell>{a.protocol ?? "—"}</TableCell>
-              <TableCell>
-                <StatusBadge status={a.status} type="appointment" />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
     </div>
   );
 }

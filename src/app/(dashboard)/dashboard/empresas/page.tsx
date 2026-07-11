@@ -80,6 +80,14 @@ async function EmpresasData({ searchParams }: { searchParams: SearchParams }) {
             }),
           };
         }
+        if (card.filter === "PORTAL_ENABLED") {
+          return {
+            key: card.key,
+            count: await prisma.company.count({
+              where: { portalEnabled: true },
+            }),
+          };
+        }
         return {
           key: card.key,
           count: await prisma.company.count({
