@@ -90,11 +90,13 @@ async function loadReferralsForPage(
     companyName: r.company.tradeName ?? r.company.legalName,
     employeeName: r.patient.fullName,
     jobTitle: r.patient.jobTitle,
+    department: r.patient.department,
     clinicalExamType: r.clinicalExamType,
     requestedDate: r.requestedDate.toISOString(),
     scheduledAt: r.scheduledAt?.toISOString() ?? null,
     status: r.status,
     responsibleName: r.assignedTo?.name ?? null,
+    authorizerName: r.authorizerName,
     companyPhone: r.companyPhone ?? r.company.phone,
     companyWhatsapp: r.company.whatsapp ?? r.company.phone,
   }));

@@ -186,11 +186,13 @@ export type ReferralListItem = {
   companyName: string;
   employeeName: string;
   jobTitle: string | null;
+  department: string | null;
   clinicalExamType: ClinicalExamType;
   requestedDate: string;
   scheduledAt: string | null;
   status: ReferralStatus;
   responsibleName: string | null;
+  authorizerName: string | null;
   companyPhone: string | null;
   companyWhatsapp: string | null;
 };

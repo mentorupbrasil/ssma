@@ -238,42 +238,42 @@ export function ExamesEmpresaListSection({
               <p className="colaboradores-empresa-result-count">{resultLabel}</p>
             </div>
             <div className="colaboradores-empresa-table-scroll">
-              <table className="colaboradores-empresa-table">
+              <table className="colaboradores-empresa-table exames-empresa-table">
                 <thead>
                   <tr>
                     <th>Colaborador</th>
-                    <th>Função</th>
-                    <th>Tipo de exame</th>
-                    <th>Data da solicitação</th>
-                    <th>Data e horário do agendamento</th>
+                    <th>Solicitação</th>
+                    <th>Agendamento</th>
                     <th>Status</th>
-                    <th className="colaboradores-empresa-th-actions">Ações</th>
+                    <th className="colaboradores-empresa-th-actions">Ação</th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item) => {
                     const display = empresaReferralDisplayStatus(item.status, item.scheduledAt);
+                    const roleLine = [item.jobTitle, item.department].filter(Boolean).join(" · ");
                     return (
                       <tr key={item.id} className="colaboradores-empresa-row">
                         <td>
                           <div className="colaboradores-empresa-name">{item.employeeName}</div>
-                        </td>
-                        <td>
-                          {item.jobTitle ? (
-                            <span className="colaboradores-empresa-role">{item.jobTitle}</span>
+                          {roleLine ? (
+                            <div className="colaboradores-empresa-role">{roleLine}</div>
                           ) : (
-                            <span className="colaboradores-empresa-muted">—</span>
+                            <div className="colaboradores-empresa-muted">Sem função informada</div>
                           )}
                         </td>
                         <td>
-                          {
-                            CLINICAL_EXAM_LABELS[
-                              item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS
-                            ]
-                          }
-                        </td>
-                        <td>
-                          {format(new Date(item.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
+                          <div className="colaboradores-empresa-exam-type">
+                            {
+                              CLINICAL_EXAM_LABELS[
+                                item.clinicalExamType as keyof typeof CLINICAL_EXAM_LABELS
+                              ]
+                            }
+                          </div>
+                          <div className="colaboradores-empresa-exam-date">
+                            {format(new Date(item.requestedDate), "dd/MM/yyyy", { locale: ptBR })}
+                            {item.authorizerName ? ` · ${item.authorizerName}` : ""}
+                          </div>
                         </td>
                         <td>
                           {item.scheduledAt ? (
@@ -288,7 +288,7 @@ export function ExamesEmpresaListSection({
                               </div>
                             </>
                           ) : (
-                            <span className="colaboradores-empresa-muted">—</span>
+                            <span className="colaboradores-empresa-muted">Aguardando definição</span>
                           )}
                         </td>
                         <td>
