@@ -372,10 +372,10 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
       ]
     : [
         {
-          key: "pre_referrals",
-          title: "Pré-encaminhamentos novos",
-          value: newPreReferrals,
-          href: "/dashboard/pre-encaminhamentos?queue=active",
+          key: "referrals_open",
+          title: "Encaminhamentos em aberto",
+          value: openReferrals,
+          href: "/dashboard/encaminhamentos",
           show: true,
         },
         {
@@ -472,15 +472,6 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           href: `/dashboard/documentos`,
           type: "documento",
         })),
-        ...recentPreReferrals
-          .filter((p) => p.status === "NOVO")
-          .map((p) => ({
-            id: p.id,
-            title: `Pré-encaminhamento ${p.protocol}`,
-            subtitle: `${p.employeeName} — ${p.companyName}`,
-            href: `/dashboard/pre-encaminhamentos/${p.id}`,
-            type: "pre-encaminhamento",
-          })),
       ].slice(0, 8);
 
   return {

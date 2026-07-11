@@ -171,10 +171,12 @@ export function ColaboradorDetailClient({
 
         {canManage && (
           <div className="colaboradores-empresa-header-actions">
-            <Link href={scheduleHref} className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}>
-              <Calendar className="mr-2 h-4 w-4" />
-              Solicitar exame
-            </Link>
+            {isEmpresaPortal && (
+              <Link href={scheduleHref} className={cn(buttonVariants({ variant: "brand", size: "sm" }), "rounded-lg")}>
+                <Calendar className="mr-2 h-4 w-4" />
+                Encaminhar para exame
+              </Link>
+            )}
             <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setEditOpen(true)}>
               <Pencil className="mr-2 h-4 w-4" />
               Editar cadastro
@@ -214,7 +216,12 @@ export function ColaboradorDetailClient({
         />
       )}
       {activeTab === "referrals" && (
-        <ReferralsTab collaborator={collaborator} canManage={canManage} scheduleHref={scheduleHref} />
+        <ReferralsTab
+          collaborator={collaborator}
+          canManage={canManage}
+          scheduleHref={scheduleHref}
+          isEmpresaPortal={isEmpresaPortal}
+        />
       )}
       {activeTab === "documents" && <DocumentsTab collaborator={collaborator} />}
 
@@ -441,10 +448,12 @@ function ReferralsTab({
   collaborator,
   canManage,
   scheduleHref,
+  isEmpresaPortal = false,
 }: {
   collaborator: CollaboratorDetailSerialized;
   canManage: boolean;
   scheduleHref: string;
+  isEmpresaPortal?: boolean;
 }) {
   if (collaborator.referrals.length === 0) {
     return (
@@ -454,7 +463,9 @@ function ReferralsTab({
         title="Nenhum encaminhamento"
         description="Este colaborador ainda não possui encaminhamentos."
         action={
-          canManage ? { label: "Solicitar exame", href: scheduleHref } : undefined
+          canManage && isEmpresaPortal
+            ? { label: "Encaminhar para exame", href: scheduleHref }
+            : undefined
         }
       />
     );

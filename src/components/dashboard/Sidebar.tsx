@@ -15,7 +15,6 @@ import {
   Shield,
   LogOut,
   Menu,
-  Inbox,
   Calculator,
   Wallet,
   CheckSquare,
@@ -54,7 +53,6 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   UserCog,
   Settings,
   Shield,
-  Inbox,
   Calculator,
   Wallet,
   CheckSquare,
@@ -76,7 +74,6 @@ const NAV_SECTIONS = [
     hrefs: [
       "/dashboard/empresas",
       "/dashboard/colaboradores",
-      "/dashboard/pre-encaminhamentos",
       "/dashboard/encaminhamentos",
       "/dashboard/agenda",
       "/dashboard/documentos",

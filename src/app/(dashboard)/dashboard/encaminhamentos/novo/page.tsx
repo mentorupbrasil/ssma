@@ -9,7 +9,6 @@ import { requireAuthSession } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { maskCpf } from "@/lib/collaborators";
-import Link from "next/link";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -100,11 +99,7 @@ export default async function NovoEncaminhamentoPage({
       </div>
       {!prefill && (
         <p className="mt-4 text-sm text-slate-500">
-          Ou direcione a empresa ao{" "}
-          <Link href="/encaminhamento-online" className="text-[#16A085] underline">
-            pré-encaminhamento rápido
-          </Link>
-          .
+          Cadastre o colaborador e registre o encaminhamento oficial para execução na clínica.
         </p>
       )}
     </div>

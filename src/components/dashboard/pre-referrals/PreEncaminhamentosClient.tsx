@@ -226,20 +226,20 @@ export function PreEncaminhamentosClient(props: Props) {
   return (
     <PageModule>
       <PageHeader
-        title="Pré-encaminhamentos"
-        description="Solicitações rápidas do site — leads para análise e conversão em encaminhamento oficial"
+        title="Solicitações recebidas"
+        description="Solicitações rápidas do site — leads para análise e conversão em atendimento"
       >
         <div className="flex flex-wrap gap-2">
           <Link href="/dashboard/encaminhamentos">
             <Button variant="outline" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Encaminhamentos
+              Atendimentos
             </Button>
           </Link>
           <Link href="/dashboard/encaminhamentos/novo">
             <Button variant="brand" size="sm">
               <Plus className="mr-2 h-4 w-4" />
-              Criar encaminhamento manual
+              Criar atendimento
             </Button>
           </Link>
         </div>
@@ -395,7 +395,7 @@ export function PreEncaminhamentosClient(props: Props) {
               <EmptyState
                 compact
                 className="border-0 bg-transparent"
-                title="Nenhum pré-encaminhamento encontrado"
+                title="Nenhuma solicitação encontrada"
                 description="As solicitações enviadas pelo formulário público aparecerão aqui para análise e conversão em encaminhamento oficial."
                 secondaryAction={{
                   label: "Ver formulário público",
@@ -528,7 +528,7 @@ export function PreEncaminhamentosClient(props: Props) {
       <Sheet open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
         <SheetContent side="right" className="referral-detail-sheet w-full overflow-y-auto sm:max-w-2xl lg:max-w-3xl">
           <SheetHeader className="border-b pb-4">
-            <SheetTitle>{detail?.protocol ?? "Pré-encaminhamento"}</SheetTitle>
+            <SheetTitle>{detail?.protocol ?? "Solicitação recebida"}</SheetTitle>
             <SheetDescription>
               {detail ? `${detail.companyName} · ${detail.employeeName}` : "Carregando..."}
             </SheetDescription>

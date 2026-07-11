@@ -10,16 +10,54 @@ import { CLINICAL_EXAM_LABELS, REFERRAL_STATUS_LABELS } from "@/types";
 
 export const REFERRAL_STATUS_TABS: { value: ReferralStatus | "ALL"; label: string }[] = [
   { value: "ALL", label: "Todos" },
-  { value: "NOVO", label: "Novos" },
+  { value: "NOVO", label: "Novo" },
   { value: "EM_ANALISE", label: "Em análise" },
   { value: "AGUARDANDO_AGENDAMENTO", label: "Aguardando agendamento" },
-  { value: "AGENDADO", label: "Agendados" },
+  { value: "AGENDADO", label: "Agendado" },
   { value: "EM_ATENDIMENTO", label: "Em atendimento" },
   { value: "AGUARDANDO_RESULTADO", label: "Aguardando resultado" },
   { value: "AGUARDANDO_DOCUMENTO", label: "Aguardando documento" },
   { value: "ASO_DISPONIVEL", label: "ASO disponível" },
-  { value: "CONCLUIDO", label: "Concluídos" },
-  { value: "CANCELADO", label: "Cancelados" },
+  { value: "CONCLUIDO", label: "Concluído" },
+  { value: "CANCELADO", label: "Cancelado" },
+];
+
+/** 4 indicadores compactos da listagem clínica */
+export const REFERRAL_KPI_CARDS: {
+  key: string;
+  label: string;
+  hint: string;
+  filter: string;
+  statuses: ReferralStatus[];
+}[] = [
+  {
+    key: "novos",
+    label: "Novos",
+    hint: "Recém-recebidos",
+    filter: "NOVO",
+    statuses: ["NOVO"],
+  },
+  {
+    key: "aguardando_agendamento",
+    label: "Aguardando agendamento",
+    hint: "Sem data marcada",
+    filter: "AGUARDANDO_AGENDAMENTO",
+    statuses: ["AGUARDANDO_AGENDAMENTO"],
+  },
+  {
+    key: "em_atendimento",
+    label: "Em atendimento",
+    hint: "Em execução clínica",
+    filter: "EM_ATENDIMENTO",
+    statuses: ["EM_ATENDIMENTO"],
+  },
+  {
+    key: "pendencias",
+    label: "Com pendências",
+    hint: "Resultado ou documento",
+    filter: "PENDENCIAS",
+    statuses: ["AGUARDANDO_RESULTADO", "AGUARDANDO_DOCUMENTO"],
+  },
 ];
 
 export const REFERRAL_STAT_CARDS: { status: ReferralStatus; label: string }[] = [
@@ -38,7 +76,7 @@ export const REFERRAL_STAT_CARDS: { status: ReferralStatus; label: string }[] = 
 export const REFERRAL_SOURCE_LABELS: Record<ReferralSource, string> = {
   PORTAL: "Portal empresarial",
   ADMIN: "Painel administrativo",
-  PRE_REFERRAL: "Pré-encaminhamento",
+  PRE_REFERRAL: "Solicitação recebida",
   SITE: "Site público",
 };
 
@@ -112,6 +150,11 @@ export type ReferralListFilters = {
   clinicalExamType?: string;
   dateFrom?: string;
   dateTo?: string;
+  assignedToId?: string;
+  scheduledFrom?: string;
+  scheduledTo?: string;
+  pending?: string;
+  documentSituation?: string;
   page?: number;
   pageSize?: number;
   sortBy?: "createdAt" | "status" | "company";
@@ -129,7 +172,23 @@ export function buildReferralWhere(
   }
 
   if (filters.status && filters.status !== "ALL") {
-    where.status = filters.status as ReferralStatus;
+    if (filters.status === "PENDENCIAS") {
+      where.status = { in: ["AGUARDANDO_RESULTADO", "AGUARDANDO_DOCUMENTO"] };
+    } else {
+      where.status = filters.status as ReferralStatus;
+    }
+  }
+
+  if (filters.pending === "true" && (!filters.status || filters.status === "ALL")) {
+    where.status = { in: ["AGUARDANDO_RESULTADO", "AGUARDANDO_DOCUMENTO"] };
+  }
+
+  if (filters.documentSituation === "AGUARDANDO_DOCUMENTO") {
+    where.status = "AGUARDANDO_DOCUMENTO";
+  } else if (filters.documentSituation === "ASO_DISPONIVEL") {
+    where.status = "ASO_DISPONIVEL";
+  } else if (filters.documentSituation === "AGUARDANDO_RESULTADO") {
+    where.status = "AGUARDANDO_RESULTADO";
   }
 
   if (filters.companyId) {
@@ -138,6 +197,10 @@ export function buildReferralWhere(
 
   if (filters.clinicalExamType) {
     where.clinicalExamType = filters.clinicalExamType as ClinicalExamType;
+  }
+
+  if (filters.assignedToId) {
+    where.assignedToId = filters.assignedToId;
   }
 
   if (filters.dateFrom || filters.dateTo) {
@@ -149,6 +212,18 @@ export function buildReferralWhere(
       const end = new Date(filters.dateTo);
       end.setHours(23, 59, 59, 999);
       where.createdAt.lte = end;
+    }
+  }
+
+  if (filters.scheduledFrom || filters.scheduledTo) {
+    where.scheduledAt = {};
+    if (filters.scheduledFrom) {
+      where.scheduledAt.gte = new Date(filters.scheduledFrom);
+    }
+    if (filters.scheduledTo) {
+      const end = new Date(filters.scheduledTo);
+      end.setHours(23, 59, 59, 999);
+      where.scheduledAt.lte = end;
     }
   }
 
@@ -183,8 +258,11 @@ export function buildReferralWhere(
 export type ReferralListItem = {
   id: string;
   protocol: string;
+  companyId: string;
   companyName: string;
+  patientId: string;
   employeeName: string;
+  employeeCpf: string;
   jobTitle: string | null;
   department: string | null;
   clinicalExamType: ClinicalExamType;

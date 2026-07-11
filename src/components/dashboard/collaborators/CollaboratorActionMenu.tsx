@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 type CollaboratorActionMenuProps = {
   onViewDetails: () => void;
-  onSchedule: () => void;
+  onSchedule?: () => void;
   onViewDocuments: () => void;
   onViewProfile?: () => void;
   variant?: "default" | "empresa";
@@ -59,17 +59,19 @@ export function CollaboratorActionMenu({
             </span>
           </span>
         </button>
-        <button type="button" className="collaborator-action-item" onClick={onSchedule}>
-          <span className="collaborator-action-icon collaborator-action-icon--schedule">
-            <Calendar className="h-4 w-4" />
-          </span>
-          <span>
-            <span className="collaborator-action-label">
-              {isEmpresa ? "Encaminhar para exame" : "Solicitar exame"}
+        {onSchedule && (
+          <button type="button" className="collaborator-action-item" onClick={onSchedule}>
+            <span className="collaborator-action-icon collaborator-action-icon--schedule">
+              <Calendar className="h-4 w-4" />
             </span>
-            <span className="collaborator-action-hint">Novo encaminhamento</span>
-          </span>
-        </button>
+            <span>
+              <span className="collaborator-action-label">
+                {isEmpresa ? "Encaminhar para exame" : "Solicitar exame"}
+              </span>
+              <span className="collaborator-action-hint">Novo encaminhamento</span>
+            </span>
+          </button>
+        )}
         <button type="button" className="collaborator-action-item" onClick={onViewDocuments}>
           <span className="collaborator-action-icon collaborator-action-icon--docs">
             <FolderOpen className="h-4 w-4" />

@@ -18,6 +18,7 @@ import {
   serializeReferralDetail,
   type ReferralListItem,
 } from "@/lib/referrals";
+import { formatCPF } from "@/lib/helpers";
 
 type ActionResult<T extends Record<string, unknown> = Record<string, unknown>> =
   | ({ success: true } & T)
@@ -109,8 +110,11 @@ export async function listReferrals(filters: ReferralListFilters = {}) {
     const items: ReferralListItem[] = referrals.map((r) => ({
       id: r.id,
       protocol: r.protocol,
+      companyId: r.companyId,
       companyName: r.company.tradeName ?? r.company.legalName,
+      patientId: r.patientId,
       employeeName: r.patient.fullName,
+      employeeCpf: formatCPF(r.patient.cpf),
       jobTitle: r.patient.jobTitle,
       department: r.patient.department,
       clinicalExamType: r.clinicalExamType,

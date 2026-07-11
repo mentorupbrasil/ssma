@@ -266,7 +266,7 @@ export function ReferralDetailContent({
         )}
         {referral.preReferral && (
           <DetailRow
-            label="Pré-encaminhamento"
+            label="Solicitação recebida"
             value={referral.preReferral.protocol}
           />
         )}

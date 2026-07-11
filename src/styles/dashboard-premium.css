@@ -3902,6 +3902,100 @@
   color: rgb(100 116 139);
 }
 
+/* Atendimentos — painel interno Unimetra */
+.atendimentos-clinica {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.atendimentos-clinica-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .atendimentos-clinica-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.atendimentos-clinica-table thead th,
+.atendimentos-clinica-table tbody td {
+  vertical-align: middle;
+}
+
+.atendimentos-clinica-table tbody td {
+  padding: 0.85rem 1rem;
+}
+
+.atendimentos-clinica-table tbody tr.atendimentos-clinica-row {
+  height: 4.6rem;
+  border-bottom: 1px solid rgb(241 245 249);
+  transition: background-color 0.15s ease;
+}
+
+.atendimentos-clinica-table tbody tr.atendimentos-clinica-row:last-child {
+  border-bottom: 0;
+}
+
+.atendimentos-clinica-table tbody tr.atendimentos-clinica-row:hover {
+  background: rgb(248 250 252 / 0.9);
+}
+
+.atendimentos-clinica-stack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.atendimentos-clinica-primary-text {
+  font-weight: 600;
+  color: rgb(15 23 42);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14rem;
+}
+
+.atendimentos-clinica-meta {
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14rem;
+}
+
+.atendimentos-clinica-cpf {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: rgb(148 163 184);
+  white-space: nowrap;
+}
+
+.atendimentos-clinica-protocol {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.atendimentos-clinica-schedule {
+  font-size: 0.8125rem;
+  color: rgb(71 85 105);
+}
+
+.atendimentos-clinica-link {
+  font-weight: 650;
+  color: var(--brand-navy, #0e142b);
+  text-decoration: none;
+}
+
+.atendimentos-clinica-link:hover {
+  color: var(--brand-green, #0f766e);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .empresa-perfil {
   display: flex;
   flex-direction: column;

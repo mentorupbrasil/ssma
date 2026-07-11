@@ -3,10 +3,15 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuthSession } from "@/lib/page-auth";
 import { getCompanyFilter, isEmpresaUser } from "@/lib/authz";
-import { buildReferralWhere, REFERRAL_STAT_CARDS, type ReferralListItem } from "@/lib/referrals";
+import {
+  buildReferralWhere,
+  REFERRAL_KPI_CARDS,
+  type ReferralListItem,
+} from "@/lib/referrals";
 import { applyEmpresaReferralStatusFilter } from "@/lib/empresa-portal";
 import { EncaminhamentosClient } from "@/components/dashboard/referrals/EncaminhamentosClient";
 import { ExamesOperacaoEmpresaClient } from "@/components/dashboard/referrals/ExamesOperacaoEmpresaClient";
+import { formatCPF } from "@/lib/helpers";
 import { Loader2 } from "lucide-react";
 
 const REFERRAL_PAGE_SIZE = 20;
@@ -35,6 +40,11 @@ async function loadReferralsForPage(
     clinicalExamType: getParam(params, "clinicalExamType") || undefined,
     dateFrom: getParam(params, "dateFrom") || undefined,
     dateTo: getParam(params, "dateTo") || undefined,
+    assignedToId: getParam(params, "assignedToId") || undefined,
+    scheduledFrom: getParam(params, "scheduledFrom") || undefined,
+    scheduledTo: getParam(params, "scheduledTo") || undefined,
+    pending: getParam(params, "pending") || undefined,
+    documentSituation: getParam(params, "documentSituation") || undefined,
   };
 
   const page = Math.max(1, parseInt(getParam(params, "page") || "1", 10) || 1);
@@ -53,15 +63,21 @@ async function loadReferralsForPage(
   const countResultsPromise = isEmpresa
     ? Promise.resolve([])
     : Promise.all(
-        REFERRAL_STAT_CARDS.map(async (card) => ({
-          key: card.status,
+        REFERRAL_KPI_CARDS.map(async (card) => ({
+          key: card.key,
           count: await prisma.referral.count({
-            where: { ...baseWhere, status: card.status },
+            where: {
+              ...baseWhere,
+              status:
+                card.statuses.length === 1
+                  ? card.statuses[0]
+                  : { in: card.statuses },
+            },
           }),
         }))
       );
 
-  const [total, referrals, countResults, companies] = await Promise.all([
+  const [total, referrals, countResults, companies, responsibles] = await Promise.all([
     prisma.referral.count({ where }),
     prisma.referral.findMany({
       where,
@@ -78,6 +94,29 @@ async function loadReferralsForPage(
           orderBy: { legalName: "asc" },
           take: 200,
         }),
+    isEmpresa
+      ? Promise.resolve([])
+      : prisma.user.findMany({
+          where: {
+            status: "ACTIVE",
+            role: {
+              in: [
+                "CLINIC_ADMIN",
+                "ADMIN",
+                "RECEPTION",
+                "RECEPCAO",
+                "MEDICO",
+                "HEALTH_PROFESSIONAL",
+                "TECNICO",
+                "SST_TECHNICIAN",
+              ],
+            },
+            ...(session.user.clinicId ? { clinicId: session.user.clinicId } : {}),
+          },
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+          take: 100,
+        }),
   ]);
 
   const statusCounts = Object.fromEntries(
@@ -87,8 +126,11 @@ async function loadReferralsForPage(
   const items: ReferralListItem[] = referrals.map((r) => ({
     id: r.id,
     protocol: r.protocol,
+    companyId: r.companyId,
     companyName: r.company.tradeName ?? r.company.legalName,
+    patientId: r.patientId,
     employeeName: r.patient.fullName,
+    employeeCpf: formatCPF(r.patient.cpf),
     jobTitle: r.patient.jobTitle,
     department: r.patient.department,
     clinicalExamType: r.clinicalExamType,
@@ -112,6 +154,10 @@ async function loadReferralsForPage(
     companies: companies.map((c) => ({
       id: c.id,
       name: c.tradeName ?? c.legalName,
+    })),
+    responsibles: responsibles.map((u) => ({
+      id: u.id,
+      name: u.name,
     })),
     isEmpresa,
     canManage,

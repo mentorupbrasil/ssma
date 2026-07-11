@@ -298,27 +298,15 @@ export default async function DashboardPage() {
           )}
         </DashboardPanel>
 
-        <DashboardPanel title="Atividades recentes" description="Pré-encaminhamentos recebidos" icon={FileText}>
-          {overview.recentPreReferrals.length === 0 ? (
-            <InlineEmptyNote>Nenhum pré-encaminhamento recente.</InlineEmptyNote>
+        <DashboardPanel title="Atividades recentes" description="Pendências operacionais" icon={FileText}>
+          {overview.pendingActions.length === 0 ? (
+            <InlineEmptyNote>Nenhuma atividade recente no momento.</InlineEmptyNote>
           ) : (
             <div className="dashboard-list">
-              {overview.recentPreReferrals.map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/dashboard/pre-encaminhamentos/${p.id}`}
-                  className="dashboard-list-item dashboard-list-item-row"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--brand-navy)]">{p.protocol}</p>
-                    <p className="text-xs text-[var(--dash-text-muted)]">
-                      {p.employeeName} — {p.companyName}
-                    </p>
-                    <p className="text-xs text-[var(--dash-text-subtle)]">
-                      {format(p.createdAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                    </p>
-                  </div>
-                  <StatusBadge status={p.status} type="preReferral" />
+              {overview.pendingActions.slice(0, 5).map((item) => (
+                <Link key={`${item.type}-${item.id}`} href={item.href} className="dashboard-list-item">
+                  <p className="text-sm font-semibold text-[var(--brand-navy)]">{item.title}</p>
+                  <p className="text-xs text-[var(--dash-text-muted)]">{item.subtitle}</p>
                 </Link>
               ))}
             </div>
