@@ -1,4 +1,4 @@
-import { Upload, Search, AlertTriangle, CheckCircle2, Wallet, FileCheck } from "lucide-react";
+import { Upload, Search, AlertTriangle, CheckCircle2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -6,12 +6,13 @@ const STEPS = [
   { id: "review", label: "Conferir", icon: Search },
   { id: "fix", label: "Corrigir", icon: AlertTriangle },
   { id: "close", label: "Fechar", icon: CheckCircle2 },
-  { id: "invoice", label: "Faturar", icon: FileCheck },
-  { id: "receive", label: "Receber", icon: Wallet },
+  { id: "send", label: "Enviar ao Financeiro", icon: Send },
 ] as const;
 
+export type ClosingPipelineStep = (typeof STEPS)[number]["id"];
+
 type ClosingPipelineProps = {
-  activeStep?: (typeof STEPS)[number]["id"];
+  activeStep?: ClosingPipelineStep;
   className?: string;
 };
 
@@ -19,7 +20,7 @@ export function ClosingPipeline({ activeStep = "import", className }: ClosingPip
   const activeIndex = STEPS.findIndex((s) => s.id === activeStep);
 
   return (
-    <div className={cn("closing-pipeline", className)}>
+    <div className={cn("closing-pipeline", className)} aria-label="Fluxo do fechamento mensal">
       {STEPS.map((step, index) => {
         const Icon = step.icon;
         const isActive = index === activeIndex;

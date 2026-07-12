@@ -6,8 +6,9 @@ import type { ProductionImportRowStatus } from "@prisma/client";
 import { requirePermission, actionError } from "@/lib/authz";
 import { createAuditLog } from "@/lib/server";
 import { resolveClinicId, scopedWhere, withClinicId } from "@/lib/scoped-db";
-import { lookupPriceInternal } from "@/lib/pricing-server";
+import { competenceToDate, resolveClosingWorkflowStatus } from "@/lib/closings";
 import { normalizeCnpj } from "@/lib/pricing";
+import { lookupPriceInternal } from "@/lib/pricing-server";
 
 type Result<T extends Record<string, unknown> = Record<string, never>> =
   | ({ success: true } & T)
@@ -114,24 +115,49 @@ async function matchCompany(clinicScope: { clinicId?: string }, cnpj?: string, n
   return null;
 }
 
+async function companyHasPackage(companyId: string, clinicId?: string | null) {
+  const count = await prisma.priceListItem.count({
+    where: {
+      companyId,
+      status: "ATIVA",
+      ...(clinicId ? { clinicId } : {}),
+    },
+  });
+  return count > 0;
+}
+
 async function classifyRow(
   row: ParsedRow,
   clinicScope: { clinicId?: string },
-  seenKeys: Set<string>
+  seenKeys: Set<string>,
+  packageCache: Map<string, boolean>
 ): Promise<{
   status: ProductionImportRowStatus;
   companyId: string | null;
   priceListItemId: string | null;
   matchedPrice: number | null;
+  situation: string;
 }> {
   const company = await matchCompany(clinicScope, row.companyCnpj, row.companyName);
   if (!company) {
-    return { status: "SEM_EMPRESA", companyId: null, priceListItemId: null, matchedPrice: null };
+    return {
+      status: "SEM_EMPRESA",
+      companyId: null,
+      priceListItemId: null,
+      matchedPrice: null,
+      situation: "SEM_EMPRESA",
+    };
   }
 
   const dupKey = `${company.id}:${row.patientCpf ?? row.patientName}:${row.serviceDate}:${row.examType}:${row.protocol}`;
   if (seenKeys.has(dupKey)) {
-    return { status: "DUPLICADO", companyId: company.id, priceListItemId: null, matchedPrice: null };
+    return {
+      status: "DUPLICADO",
+      companyId: company.id,
+      priceListItemId: null,
+      matchedPrice: null,
+      situation: "DUPLICADO",
+    };
   }
   seenKeys.add(dupKey);
 
@@ -144,7 +170,13 @@ async function classifyRow(
   });
 
   if (lookup.price == null) {
-    return { status: "SEM_PRECO", companyId: company.id, priceListItemId: lookup.itemId, matchedPrice: null };
+    return {
+      status: "SEM_PRECO",
+      companyId: company.id,
+      priceListItemId: lookup.itemId,
+      matchedPrice: null,
+      situation: "SEM_PRECO",
+    };
   }
 
   if (row.importedValue != null && Math.abs(row.importedValue - lookup.price) > 0.01) {
@@ -153,6 +185,22 @@ async function classifyRow(
       companyId: company.id,
       priceListItemId: lookup.itemId,
       matchedPrice: lookup.price,
+      situation: "DIVERGENCIA",
+    };
+  }
+
+  let hasPackage = packageCache.get(company.id);
+  if (hasPackage === undefined) {
+    hasPackage = await companyHasPackage(company.id, clinicScope.clinicId);
+    packageCache.set(company.id, hasPackage);
+  }
+  if (hasPackage && lookup.source === "default") {
+    return {
+      status: "PRONTO",
+      companyId: company.id,
+      priceListItemId: lookup.itemId,
+      matchedPrice: lookup.price,
+      situation: "FORA_PACOTE",
     };
   }
 
@@ -161,6 +209,7 @@ async function classifyRow(
     companyId: company.id,
     priceListItemId: lookup.itemId,
     matchedPrice: lookup.price,
+    situation: "OK",
   };
 }
 
@@ -177,18 +226,26 @@ export async function importProductionCsv(input: {
       return { success: false, error: "Planilha vazia ou formato não reconhecido." };
     }
 
-    const month = new Date(input.referenceMonth);
-    month.setDate(1);
-    month.setHours(0, 0, 0, 0);
+    const month = competenceToDate(input.referenceMonth);
 
     const clinicScope = clinicId ? { clinicId } : {};
     const seenKeys = new Set<string>();
-    const classified = await Promise.all(
-      parsed.map(async (row, index) => {
-        const result = await classifyRow(row, clinicScope, seenKeys);
-        return { row, index, ...result };
-      })
-    );
+    const packageCache = new Map<string, boolean>();
+    const classified: Array<{
+      row: ParsedRow;
+      index: number;
+      status: ProductionImportRowStatus;
+      companyId: string | null;
+      priceListItemId: string | null;
+      matchedPrice: number | null;
+      situation: string;
+    }> = [];
+
+    // Sequencial para dedupe e cache de pacote consistentes
+    for (let index = 0; index < parsed.length; index++) {
+      const result = await classifyRow(parsed[index], clinicScope, seenKeys, packageCache);
+      classified.push({ row: parsed[index], index, ...result });
+    }
 
     const stats = {
       totalRows: classified.length,
@@ -200,7 +257,10 @@ export async function importProductionCsv(input: {
     };
 
     const importStatus =
-      stats.withoutCompany > 0 || stats.withoutPrice > 0 || stats.divergences > 0
+      stats.withoutCompany > 0 ||
+      stats.withoutPrice > 0 ||
+      stats.divergences > 0 ||
+      stats.duplicates > 0
         ? "COM_DIVERGENCIA"
         : "EM_CONFERENCIA";
 
@@ -218,22 +278,25 @@ export async function importProductionCsv(input: {
           divergences: stats.divergences,
           importedByUserId: session.user.id,
           rows: {
-            create: classified.map(({ row, index, status, companyId, priceListItemId, matchedPrice }) => ({
-              rowNumber: index + 1,
-              companyName: row.companyName ?? null,
-              companyCnpj: row.companyCnpj ?? null,
-              patientName: row.patientName ?? null,
-              patientCpf: row.patientCpf ?? null,
-              serviceDate: row.serviceDate ? new Date(row.serviceDate) : null,
-              examType: row.examType ?? null,
-              complementaryExams: row.complementaryExams ?? null,
-              protocol: row.protocol ?? null,
-              importedValue: row.importedValue ?? null,
-              matchedPrice,
-              status,
-              companyId,
-              priceListItemId,
-            })),
+            create: classified.map(
+              ({ row, index, status, companyId, priceListItemId, matchedPrice, situation }) => ({
+                rowNumber: index + 1,
+                companyName: row.companyName ?? null,
+                companyCnpj: row.companyCnpj ?? null,
+                patientName: row.patientName ?? null,
+                patientCpf: row.patientCpf ?? null,
+                serviceDate: row.serviceDate ? new Date(row.serviceDate) : null,
+                examType: row.examType ?? null,
+                complementaryExams: row.complementaryExams ?? null,
+                protocol: row.protocol ?? null,
+                importedValue: row.importedValue ?? null,
+                matchedPrice,
+                status,
+                companyId,
+                priceListItemId,
+                notes: `SIT:${situation}`,
+              })
+            ),
           },
         },
         clinicId
@@ -249,8 +312,18 @@ export async function importProductionCsv(input: {
       details: `${stats.totalRows} registros importados`,
     });
 
+    // Gera um fechamento por empresa (sem criar cobrança no Financeiro)
+    const generated = await generateClosingsFromImport(productionImport.id);
+
     revalidatePath("/dashboard/fechamento-mensal");
-    return { success: true, importId: productionImport.id, stats };
+    return {
+      success: true,
+      importId: productionImport.id,
+      stats: {
+        ...stats,
+        closingsCreated: generated.success ? generated.created : 0,
+      },
+    };
   } catch (e) {
     return { success: false, error: actionError(e, "Erro ao importar produção.") };
   }
@@ -278,89 +351,120 @@ export async function listProductionImports() {
   });
 }
 
-export async function generateClosingFromImport(
-  importId: string,
-  options?: { companyId?: string | null; createReceivable?: boolean }
-): Promise<Result<{ closingId: string }>> {
+export async function generateClosingsFromImport(
+  importId: string
+): Promise<Result<{ created: number; closingIds: string[] }>> {
   try {
     const session = await requirePermission("closings.manage");
     const clinicId = await resolveClinicId(session);
     const productionImport = await getProductionImport(importId);
     if (!productionImport) return { success: false, error: "Importação não encontrada." };
 
-    const readyRows = productionImport.rows.filter(
-      (r) =>
-        (r.status === "PRONTO" || r.status === "DIVERGENCIA") &&
-        (!options?.companyId || r.companyId === options.companyId)
-    );
-
-    if (readyRows.length === 0) {
-      return { success: false, error: "Nenhum registro pronto para fechamento." };
+    const byCompany = new Map<string, typeof productionImport.rows>();
+    for (const row of productionImport.rows) {
+      if (!row.companyId) continue;
+      const list = byCompany.get(row.companyId) ?? [];
+      list.push(row);
+      byCompany.set(row.companyId, list);
     }
 
-    const totalAmount = readyRows.reduce((sum, r) => sum + (r.matchedPrice ?? r.importedValue ?? 0), 0);
-    const companyId = options?.companyId ?? readyRows[0]?.companyId ?? null;
+    if (byCompany.size === 0) {
+      return { success: false, error: "Nenhum registro com empresa identificada." };
+    }
 
-    const closing = await prisma.monthlyClosing.create({
-      data: withClinicId(
-        {
-          referenceMonth: productionImport.referenceMonth,
-          companyId,
-          importId: productionImport.id,
-          status: "EM_CONFERENCIA",
-          totalAmount,
-          importedCount: readyRows.length,
-          withoutPriceCount: productionImport.withoutPrice,
-          divergenceCount: productionImport.divergences,
-          createdByUserId: session.user.id,
-          lineItems: {
-            create: readyRows.map((r) => ({
-              companyId: r.companyId,
-              serviceName: r.examType ?? "Atendimento ocupacional",
-              patientName: r.patientName,
-              patientCpf: r.patientCpf,
-              serviceDate: r.serviceDate,
-              examType: r.examType,
-              unitPrice: r.matchedPrice ?? r.importedValue ?? 0,
-              totalPrice: r.matchedPrice ?? r.importedValue ?? 0,
-            })),
-          },
-        },
-        clinicId
-      ),
-    });
+    const closingIds: string[] = [];
 
-    await prisma.productionImportRow.updateMany({
-      where: { id: { in: readyRows.map((r) => r.id) } },
-      data: { closingId: closing.id },
-    });
+    for (const [companyId, rows] of byCompany) {
+      const withoutPrice = rows.filter((r) => r.status === "SEM_PRECO").length;
+      const divergences = rows.filter(
+        (r) => r.status === "DIVERGENCIA" || r.status === "DUPLICADO"
+      ).length;
+      const duplicates = rows.filter((r) => r.status === "DUPLICADO").length;
+      const status = resolveClosingWorkflowStatus({
+        withoutPriceCount: withoutPrice,
+        divergenceCount: divergences,
+        duplicateCount: duplicates,
+      });
 
-    if (options?.createReceivable && companyId && totalAmount > 0) {
-      const due = new Date(productionImport.referenceMonth);
-      due.setMonth(due.getMonth() + 1);
-      due.setDate(10);
-      await prisma.financialEntry.create({
+      const pricedTotal = rows.reduce((sum, r) => {
+        if (r.status === "SEM_PRECO" || r.status === "DUPLICADO") return sum;
+        return sum + (r.matchedPrice ?? 0);
+      }, 0);
+
+      const closing = await prisma.monthlyClosing.create({
         data: withClinicId(
           {
-            type: "RECEBER",
-            source: "FECHAMENTO",
-            description: `Fechamento ${due.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}`,
-            amount: totalAmount,
-            dueDate: due,
-            companyId,
-            closingId: closing.id,
             referenceMonth: productionImport.referenceMonth,
-            status: "AGUARDANDO_FATURAMENTO",
+            companyId,
+            importId: productionImport.id,
+            status,
+            totalAmount: pricedTotal,
+            importedCount: rows.length,
+            withoutPriceCount: withoutPrice,
+            divergenceCount: divergences + duplicates,
+            createdByUserId: session.user.id,
+            lineItems: {
+              create: rows.map((r) => {
+                const situation =
+                  r.notes?.startsWith("SIT:")
+                    ? r.notes.slice(4)
+                    : r.status === "SEM_PRECO"
+                      ? "SEM_PRECO"
+                      : r.status === "DUPLICADO"
+                        ? "DUPLICADO"
+                        : r.status === "DIVERGENCIA"
+                          ? "DIVERGENCIA"
+                          : "OK";
+                const unit =
+                  situation === "SEM_PRECO" || situation === "DUPLICADO"
+                    ? 0
+                    : (r.matchedPrice ?? 0);
+                return {
+                  companyId: r.companyId,
+                  serviceName: r.examType ?? "Atendimento ocupacional",
+                  patientName: r.patientName,
+                  patientCpf: r.patientCpf,
+                  serviceDate: r.serviceDate,
+                  examType: r.examType,
+                  quantity: 1,
+                  unitPrice: unit,
+                  totalPrice: unit,
+                  notes: `SIT:${situation}`,
+                };
+              }),
+            },
           },
           clinicId
         ),
       });
+
+      await prisma.productionImportRow.updateMany({
+        where: { id: { in: rows.map((r) => r.id) } },
+        data: { closingId: closing.id },
+      });
+
+      closingIds.push(closing.id);
     }
 
+    await prisma.productionImport.update({
+      where: { id: productionImport.id },
+      data: { status: "CONFERIDO" },
+    });
+
     revalidatePath("/dashboard/fechamento-mensal");
-    revalidatePath("/dashboard/financeiro");
-    return { success: true, closingId: closing.id };
+    return { success: true, created: closingIds.length, closingIds };
   } catch (e) {
-    return { success: false, error: actionError(e, "Erro ao gerar fechamento.") };
+    return { success: false, error: actionError(e, "Erro ao gerar fechamentos.") };
   }
 }
+
+/** @deprecated Use generateClosingsFromImport — mantido para compatibilidade. */
+export async function generateClosingFromImport(
+  importId: string,
+  _options?: { companyId?: string | null; createReceivable?: boolean }
+): Promise<Result<{ closingId: string }>> {
+  const result = await generateClosingsFromImport(importId);
+  if (!result.success) return result;
+  return { success: true, closingId: result.closingIds[0] ?? "" };
+}
+
