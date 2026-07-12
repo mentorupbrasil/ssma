@@ -8214,16 +8214,22 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.85rem;
-  align-items: start;
+  align-items: stretch;
 }
 @media (min-width: 960px) {
   .visao-geral-clinica .vg-columns {
-    grid-template-columns: 1.15fr 0.85fr;
+    grid-template-columns: 1.05fr 0.95fr;
     gap: 1rem;
+  }
+  .visao-geral-clinica .vg-columns--activity-wide {
+    grid-template-columns: 0.82fr 1.18fr;
   }
 }
 .visao-geral-clinica .vg-panel {
   min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   border-top: 1px solid rgb(226 232 240);
   padding-top: 0.75rem;
 }
@@ -8246,6 +8252,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  flex: 1 1 auto;
 }
 .visao-geral-clinica .vg-priority-item {
   display: flex;
@@ -8342,4 +8349,16 @@
   margin: 0.15rem 0 0;
   font-size: 0.7rem;
   color: rgb(148 163 184);
+}
+.visao-geral-clinica .vg-activity-more {
+  display: inline-flex;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(15 118 110);
+  text-decoration: none;
+}
+.visao-geral-clinica .vg-activity-more:hover {
+  text-decoration: underline;
 }

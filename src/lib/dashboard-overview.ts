@@ -33,6 +33,83 @@ export type DashboardActivityItem = {
   href?: string;
 };
 
+type ActivityDraft = {
+  id: string;
+  groupKind: string;
+  groupScope: string;
+  descriptionSingular: string;
+  descriptionGrouped: (count: number) => string;
+  listHref: string;
+  actor: string;
+  at: Date;
+  href?: string;
+  exactKey: string;
+};
+
+function resolveActivityActor(name: string | null | undefined): string {
+  if (!name?.trim()) return "Ação automática";
+  const normalized = name.trim();
+  if (/^(system|sistema|seed)$/i.test(normalized)) return "Ação automática";
+  return normalized;
+}
+
+function consolidateRecentActivities(drafts: ActivityDraft[]): DashboardActivityItem[] {
+  const sorted = [...drafts].sort((a, b) => b.at.getTime() - a.at.getTime());
+  const seenExact = new Set<string>();
+  const unique = sorted.filter((item) => {
+    if (seenExact.has(item.exactKey)) return false;
+    seenExact.add(item.exactKey);
+    return true;
+  });
+
+  const WINDOW_MS = 2 * 60 * 60 * 1000;
+  const result: DashboardActivityItem[] = [];
+  let i = 0;
+  while (i < unique.length) {
+    const first = unique[i];
+    let count = 1;
+    let j = i + 1;
+    const canGroup = Boolean(first.groupScope) || first.groupKind.startsWith("doc_");
+
+    while (canGroup && j < unique.length) {
+      const next = unique[j];
+      const sameKind = next.groupKind === first.groupKind;
+      const sameScope = next.groupScope === first.groupScope;
+      const closeEnough = Math.abs(first.at.getTime() - next.at.getTime()) <= WINDOW_MS;
+      if (!sameKind || !sameScope || !closeEnough) break;
+      count += 1;
+      j += 1;
+    }
+
+    if (count > 1) {
+      const realActor = unique
+        .slice(i, j)
+        .map((item) => item.actor)
+        .find((name) => name !== "Ação automática");
+
+      result.push({
+        id: `grp-${first.groupKind}-${first.id}-${count}`,
+        description: first.descriptionGrouped(count),
+        actor: realActor ?? "Ação automática",
+        at: first.at,
+        href: first.listHref,
+      });
+      i = j;
+    } else {
+      result.push({
+        id: first.id,
+        description: first.descriptionSingular,
+        actor: first.actor,
+        at: first.at,
+        href: first.href,
+      });
+      i += 1;
+    }
+  }
+
+  return result.slice(0, 6);
+}
+
 export type DashboardOverview = {
   stats: {
     key: string;
@@ -355,7 +432,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
     },
     {
       key: "docs_expiring",
-      title: "Documentos vencendo",
+      title: "Documentos a vencer",
       value: docsExpiring,
       href: "/dashboard/documentos?validity=a_vencer",
       show: true,
@@ -465,63 +542,102 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
 
   priorityItems.sort((a, b) => a.urgency - b.urgency || a.title.localeCompare(b.title));
 
-  const activities: DashboardActivityItem[] = [];
+  const activityDrafts: ActivityDraft[] = [];
 
   for (const h of recentDocHistory) {
     const isRelease = h.action === "PORTAL_ENABLED" || h.action === "SENT";
-    activities.push({
+    const groupKind = isRelease ? "doc_released" : "doc_attached";
+    activityDrafts.push({
       id: `dochist-${h.id}`,
-      description: isRelease
+      groupKind,
+      groupScope: groupKind,
+      descriptionSingular: isRelease
         ? `Documento liberado: ${h.document.title}`
         : `Documento anexado: ${h.document.title}`,
-      actor: h.performedBy?.name ?? "Sistema",
+      descriptionGrouped: (count) =>
+        isRelease
+          ? `${count} documentos liberados`
+          : `${count} documentos anexados`,
+      listHref: "/dashboard/documentos",
+      actor: resolveActivityActor(h.performedBy?.name),
       at: h.createdAt,
       href: `/dashboard/documentos?id=${h.document.id}`,
+      exactKey: `${groupKind}:${h.document.id}:${h.action}`,
     });
   }
 
   for (const c of recentCompanies) {
-    activities.push({
+    const name = companyLabel(c);
+    activityDrafts.push({
       id: `company-${c.id}`,
-      description: `Empresa cadastrada: ${companyLabel(c)}`,
-      actor: "Sistema",
+      groupKind: "company_created",
+      groupScope: "all",
+      descriptionSingular: `Empresa cadastrada: ${name}`,
+      descriptionGrouped: (count) => `${count} empresas cadastradas`,
+      listHref: "/dashboard/empresas",
+      actor: "Ação automática",
       at: c.createdAt,
       href: `/dashboard/empresas/${c.id}`,
+      exactKey: `company:${c.id}`,
     });
   }
 
   for (const p of recentPatients) {
-    activities.push({
+    const company = companyLabel(p.company);
+    const scope = company === "Sem empresa" ? "" : company;
+    activityDrafts.push({
       id: `patient-${p.id}`,
-      description: `Colaborador cadastrado: ${p.fullName}`,
-      actor: companyLabel(p.company),
+      groupKind: "patient_created",
+      groupScope: scope.toLowerCase(),
+      descriptionSingular: `Colaborador cadastrado: ${p.fullName}`,
+      descriptionGrouped: (count) =>
+        scope
+          ? `${count} colaboradores cadastrados na ${scope}`
+          : `${count} colaboradores cadastrados`,
+      listHref: "/dashboard/colaboradores",
+      actor: "Ação automática",
       at: p.createdAt,
       href: `/dashboard/colaboradores/${p.id}`,
+      exactKey: `patient:${p.id}`,
     });
   }
 
   for (const r of recentReferralsCreated) {
-    activities.push({
+    const company = companyLabel(r.company);
+    const scope = company === "Sem empresa" ? "" : company;
+    activityDrafts.push({
       id: `referral-${r.id}`,
-      description: `Atendimento criado: ${r.patient.fullName}`,
-      actor: companyLabel(r.company),
+      groupKind: "referral_created",
+      groupScope: scope.toLowerCase(),
+      descriptionSingular: `Atendimento criado: ${r.patient.fullName}`,
+      descriptionGrouped: (count) =>
+        scope
+          ? `${count} atendimentos criados na ${scope}`
+          : `${count} atendimentos criados`,
+      listHref: "/dashboard/encaminhamentos",
+      actor: "Ação automática",
       at: r.createdAt,
       href: `/dashboard/encaminhamentos?id=${r.id}`,
+      exactKey: `referral:${r.id}`,
     });
   }
 
   for (const t of recentTicketsUpdated) {
-    activities.push({
+    activityDrafts.push({
       id: `ticket-${t.id}`,
-      description: `Chamado atualizado: ${t.subject}`,
-      actor: t.assignedTo?.name ?? t.createdBy.name,
+      groupKind: "ticket_updated",
+      groupScope: "all",
+      descriptionSingular: `Chamado atualizado: ${t.subject}`,
+      descriptionGrouped: (count) => `${count} chamados atualizados`,
+      listHref: "/dashboard/chamados",
+      actor: resolveActivityActor(t.assignedTo?.name ?? t.createdBy.name),
       at: t.updatedAt,
       href: `/dashboard/chamados?id=${t.id}`,
+      exactKey: `ticket:${t.id}:${t.updatedAt.toISOString()}`,
     });
   }
 
-  activities.sort((a, b) => b.at.getTime() - a.at.getTime());
-  const recentActivities = activities.slice(0, 10);
+  const recentActivities = consolidateRecentActivities(activityDrafts);
 
   const pendingActions = priorityItems.slice(0, 8).map((item) => ({
     id: item.id,

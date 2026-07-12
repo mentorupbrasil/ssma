@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Building2,
@@ -72,6 +72,12 @@ const CLINIC_STAT_TONES: Record<string, string> = {
   tickets_open: "sky",
   companies_pending: "violet",
 };
+
+function formatCompactActivityAt(at: Date) {
+  if (isToday(at)) return format(at, "HH:mm");
+  if (isYesterday(at)) return `ontem ${format(at, "HH:mm")}`;
+  return format(at, "dd/MM HH:mm", { locale: ptBR });
+}
 
 export default async function DashboardPage() {
   const session = await requireAuthSession();
@@ -304,8 +310,13 @@ export default async function DashboardPage() {
         })}
       </section>
 
-      <div className="vg-columns">
-        <section className="vg-panel" aria-labelledby="vg-pending-title">
+      <div
+        className={cn(
+          "vg-columns",
+          priorityItems.length <= 3 && "vg-columns--activity-wide"
+        )}
+      >
+        <section className="vg-panel vg-panel--pending" aria-labelledby="vg-pending-title">
           <h2 id="vg-pending-title" className="vg-panel-title">
             Pendências prioritárias
           </h2>
@@ -337,7 +348,7 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <section className="vg-panel" aria-labelledby="vg-activity-title">
+        <section className="vg-panel vg-panel--activity" aria-labelledby="vg-activity-title">
           <h2 id="vg-activity-title" className="vg-panel-title">
             Atividades recentes
           </h2>
@@ -355,7 +366,7 @@ export default async function DashboardPage() {
                         ·
                       </span>
                       <time dateTime={item.at.toISOString()}>
-                        {format(item.at, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        {formatCompactActivityAt(item.at)}
                       </time>
                     </p>
                   </>
@@ -375,6 +386,9 @@ export default async function DashboardPage() {
               })}
             </ul>
           )}
+          <Link href="/dashboard/auditoria" className="vg-activity-more">
+            Ver todas as atividades
+          </Link>
         </section>
       </div>
     </PageShell>
