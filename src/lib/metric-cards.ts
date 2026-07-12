@@ -38,8 +38,6 @@ import {
   LifeBuoy,
   ListTodo,
   UserCheck,
-  Newspaper,
-  FilePen,
   AlertTriangle,
   Calendar,
 } from "lucide-react";
@@ -440,11 +438,6 @@ export const METRIC_META: Record<string, MetricMeta> = {
   "ticket:resolvidos": { tone: "success", icon: CheckCircle2, description: "Problemas resolvidos" },
   "ticket:fechados": { tone: "default", icon: XCircle, description: "Chamados encerrados" },
   "ticket:alta_prioridade": { tone: "danger", icon: AlertCircle, description: "Prioridade alta ou crítica" },
-
-  // Conteúdo
-  "content:total": { tone: "default", icon: Newspaper, description: "Total de publicações" },
-  "content:published": { tone: "success", icon: Eye, description: "Visíveis no site" },
-  "content:drafts": { tone: "warning", icon: FilePen, description: "Rascunhos não publicados" },
 
   // Usuários
   "user:total": { tone: "default", icon: Users, description: "Contas cadastradas" },

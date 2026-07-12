@@ -42,7 +42,6 @@ export async function createBlogPost(input: {
       ),
     });
     await createAuditLog({ action: "CREATE", entity: "BlogPost", entityId: post.id });
-    revalidatePath("/dashboard/conteudo");
     revalidatePath("/blog");
     return { success: true, id: post.id };
   } catch (e) {
@@ -71,7 +70,6 @@ export async function updateBlogPost(input: {
     if (input.category) data.category = input.category.trim();
     if (input.published !== undefined) data.published = input.published;
     await prisma.blogPost.update({ where: { id: input.id }, data });
-    revalidatePath("/dashboard/conteudo");
     revalidatePath("/blog");
     return { success: true, id: input.id };
   } catch (e) {
@@ -83,7 +81,6 @@ export async function deleteBlogPost(id: string): Promise<Result> {
   try {
     await requirePermission("settings.manage");
     await prisma.blogPost.delete({ where: { id } });
-    revalidatePath("/dashboard/conteudo");
     revalidatePath("/blog");
     return { success: true, id };
   } catch (e) {

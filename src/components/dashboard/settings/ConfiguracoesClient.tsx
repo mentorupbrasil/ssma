@@ -1,29 +1,68 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageModule } from "@/components/dashboard/PageModule";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { upsertSettingsBulk } from "@/actions/settings";
-import { SETTINGS_SECTIONS, settingsMapFromRows } from "@/lib/settings-schema";
+import {
+  SETTINGS_SECTIONS,
+  sectionValuesSnapshot,
+  settingsMapFromRows,
+  type SettingFieldDef,
+} from "@/lib/settings-schema";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type SettingRow = { key: string; value: string };
 
+function snapshotsEqual(a: Record<string, string>, b: Record<string, string>) {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  for (const key of keys) {
+    if ((a[key] ?? "") !== (b[key] ?? "")) return false;
+  }
+  return true;
+}
+
 export function ConfiguracoesClient({
-  clinic,
+  defaults,
   settings,
 }: {
-  clinic: { name: string; phone: string; whatsapp: string; email: string; address: string; hours: string };
+  defaults: Record<string, string>;
   settings: SettingRow[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [values, setValues] = useState<Record<string, string>>(() => settingsMapFromRows(settings));
+  const [activeTab, setActiveTab] = useState(SETTINGS_SECTIONS[0].id);
+  const [values, setValues] = useState<Record<string, string>>(() =>
+    settingsMapFromRows(settings, defaults)
+  );
+  const [saved, setSaved] = useState<Record<string, string>>(() =>
+    settingsMapFromRows(settings, defaults)
+  );
+
+  useEffect(() => {
+    const next = settingsMapFromRows(settings, defaults);
+    setValues(next);
+    setSaved(next);
+  }, [settings, defaults]);
+
+  const dirtyBySection = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    for (const section of SETTINGS_SECTIONS) {
+      map[section.id] = !snapshotsEqual(
+        sectionValuesSnapshot(section.id, values),
+        sectionValuesSnapshot(section.id, saved)
+      );
+    }
+    return map;
+  }, [values, saved]);
+
+  const sectionDirty = dirtyBySection[activeTab] ?? false;
 
   const setValue = (key: string, value: string) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -32,103 +71,132 @@ export function ConfiguracoesClient({
   async function saveSection(sectionId: string) {
     const section = SETTINGS_SECTIONS.find((s) => s.id === sectionId);
     if (!section) return;
-    const payload: Record<string, string> = {};
-    for (const field of section.fields) {
-      payload[field.key] = values[field.key] ?? field.defaultValue ?? "";
-    }
+    const payload = sectionValuesSnapshot(sectionId, values);
     const result = await upsertSettingsBulk(payload);
     if (!result.success) {
       toast.error(result.error);
       return;
     }
-    toast.success("Configurações salvas");
+    setSaved((prev) => ({ ...prev, ...payload }));
+    toast.success("Alterações salvas com sucesso.");
     startTransition(() => router.refresh());
   }
 
+  function renderField(field: SettingFieldDef) {
+    const id = field.key;
+    const value = values[field.key] ?? "";
+
+    return (
+      <div
+        key={field.key}
+        className={cn("config-field", field.wide && "config-field--wide")}
+      >
+        <Label htmlFor={id} className="config-field-label">
+          {field.label}
+        </Label>
+        {field.description && <p className="config-field-hint">{field.description}</p>}
+        {field.type === "textarea" ? (
+          <Textarea
+            id={id}
+            value={value}
+            onChange={(e) => setValue(field.key, e.target.value)}
+            placeholder={field.placeholder}
+            rows={3}
+            className="config-control"
+          />
+        ) : field.type === "boolean" ? (
+          <select
+            id={id}
+            className="config-select"
+            value={value || field.defaultValue || "false"}
+            onChange={(e) => setValue(field.key, e.target.value)}
+          >
+            <option value="true">Sim</option>
+            <option value="false">Não</option>
+          </select>
+        ) : (
+          <Input
+            id={id}
+            type={
+              field.type === "number"
+                ? "number"
+                : field.type === "email"
+                  ? "email"
+                  : field.type === "url"
+                    ? "url"
+                    : "text"
+            }
+            value={value}
+            onChange={(e) => setValue(field.key, e.target.value)}
+            placeholder={field.placeholder}
+            className="config-control"
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <PageModule className="configuracoes-clinica">
       <header className="colaboradores-empresa-header">
         <div className="colaboradores-empresa-header-copy">
           <h1 className="colaboradores-empresa-title">Configurações</h1>
           <p className="colaboradores-empresa-subtitle">
-            Parâmetros institucionais, operacionais e LGPD
+            Dados da clínica, operação, documentos, financeiro, portal e privacidade.
           </p>
         </div>
       </header>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-base">Referência estática</CardTitle>
-          <CardDescription>Valores padrão em `src/config/clinic.ts` — use as abas abaixo para sobrescrever no banco.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
-          <p><strong>Nome:</strong> {clinic.name}</p>
-          <p><strong>Telefone:</strong> {clinic.phone}</p>
-          <p><strong>WhatsApp:</strong> {clinic.whatsapp}</p>
-          <p><strong>E-mail:</strong> {clinic.email}</p>
-          <p className="sm:col-span-2"><strong>Endereço:</strong> {clinic.address}</p>
-        </CardContent>
-      </Card>
-
-      <Tabs defaultValue="clinica">
-        <TabsList className="mb-4 flex h-auto flex-wrap gap-1">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => {
+          if (v) setActiveTab(v);
+        }}
+      >
+        <TabsList className="config-tabs mb-4 flex h-auto w-full flex-wrap justify-start gap-1">
           {SETTINGS_SECTIONS.map((s) => (
-            <TabsTrigger key={s.id} value={s.id}>{s.label}</TabsTrigger>
+            <TabsTrigger key={s.id} value={s.id} className="config-tab">
+              {s.label}
+              {dirtyBySection[s.id] ? <span className="config-tab-dot" aria-hidden /> : null}
+            </TabsTrigger>
           ))}
         </TabsList>
 
         {SETTINGS_SECTIONS.map((section) => (
-          <TabsContent key={section.id} value={section.id}>
-            <Card>
-              <CardHeader>
-                <CardTitle>{section.label}</CardTitle>
-                <CardDescription>{section.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {section.fields.map((field) => (
-                  <div key={field.key} className="space-y-1.5">
-                    <Label htmlFor={field.key}>{field.label}</Label>
-                    {field.description && (
-                      <p className="text-xs text-slate-500">{field.description}</p>
-                    )}
-                    {field.type === "textarea" ? (
-                      <Textarea
-                        id={field.key}
-                        value={values[field.key] ?? ""}
-                        onChange={(e) => setValue(field.key, e.target.value)}
-                        placeholder={field.placeholder}
-                        rows={3}
-                      />
-                    ) : field.type === "boolean" ? (
-                      <select
-                        id={field.key}
-                        className="flex h-10 w-full max-w-xs rounded-lg border border-slate-200 px-3 text-sm"
-                        value={values[field.key] ?? field.defaultValue ?? "false"}
-                        onChange={(e) => setValue(field.key, e.target.value)}
-                      >
-                        <option value="true">Sim</option>
-                        <option value="false">Não</option>
-                      </select>
-                    ) : (
-                      <Input
-                        id={field.key}
-                        type={field.type === "number" ? "number" : field.type === "email" ? "email" : "text"}
-                        value={values[field.key] ?? ""}
-                        onChange={(e) => setValue(field.key, e.target.value)}
-                        placeholder={field.placeholder}
-                        className="max-w-lg"
-                      />
-                    )}
-                  </div>
-                ))}
-                <Button onClick={() => saveSection(section.id)} disabled={pending}>
-                  Salvar {section.label.toLowerCase()}
+          <TabsContent key={section.id} value={section.id} className="mt-0">
+            <section className="config-section">
+              <header className="config-section-head">
+                <div>
+                  <h2 className="config-section-title">{section.label}</h2>
+                  <p className="config-section-desc">{section.description}</p>
+                </div>
+                {dirtyBySection[section.id] && (
+                  <p className="config-unsaved" role="status">
+                    Alterações não salvas
+                  </p>
+                )}
+              </header>
+
+              <div className="config-form-grid">{section.fields.map(renderField)}</div>
+
+              <div className="config-section-footer">
+                <Button
+                  variant="brand"
+                  size="sm"
+                  className="rounded-lg"
+                  onClick={() => void saveSection(section.id)}
+                  disabled={pending || !dirtyBySection[section.id]}
+                >
+                  Salvar alterações
                 </Button>
-              </CardContent>
-            </Card>
+                {sectionDirty && activeTab === section.id && (
+                  <span className="config-footer-hint">Há alterações pendentes nesta seção.</span>
+                )}
+              </div>
+            </section>
           </TabsContent>
         ))}
       </Tabs>
-    </div>
+    </PageModule>
   );
 }

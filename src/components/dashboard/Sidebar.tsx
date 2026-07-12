@@ -21,7 +21,6 @@ import {
   LifeBuoy,
   Sparkles,
   CalendarDays,
-  Newspaper,
   Tags,
   ClipboardList,
   ChevronDown,
@@ -63,7 +62,6 @@ const ICONS: Record<string, LucideIcon> = {
   LifeBuoy,
   Sparkles,
   CalendarDays,
-  Newspaper,
   Tags,
   ClipboardList,
 };
@@ -71,7 +69,6 @@ const ICONS: Record<string, LucideIcon> = {
 const SISTEMA_HREFS = [
   "/dashboard/usuarios",
   "/dashboard/configuracoes",
-  "/dashboard/conteudo",
   "/dashboard/auditoria",
 ] as const;
 

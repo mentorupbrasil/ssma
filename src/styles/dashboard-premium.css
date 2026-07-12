@@ -7830,3 +7830,125 @@
   font-size: 0.7rem;
   color: rgb(148 163 184);
 }
+
+/* ── Configurações ──────────────────────────────────────── */
+.configuracoes-clinica .config-tabs {
+  padding: 0.3rem;
+  border-radius: var(--dash-radius-lg);
+  border: 1px solid var(--dash-border);
+  background: rgb(248 250 252 / 0.85);
+}
+.configuracoes-clinica .config-tab {
+  position: relative;
+  gap: 0.35rem;
+}
+.configuracoes-clinica .config-tab-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: rgb(245 158 11);
+}
+.configuracoes-clinica .config-section {
+  border: 1px solid var(--dash-border);
+  border-radius: var(--dash-radius-lg);
+  background: white;
+  padding: 0.95rem 1rem 1rem;
+}
+.configuracoes-clinica .config-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+.configuracoes-clinica .config-section-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--brand-navy);
+}
+.configuracoes-clinica .config-section-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: var(--dash-text-muted);
+  line-height: 1.4;
+}
+.configuracoes-clinica .config-unsaved {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgb(180 83 9);
+  background: rgb(255 251 235);
+  border: 1px solid rgb(253 230 138);
+  border-radius: 0.4rem;
+  padding: 0.28rem 0.55rem;
+}
+.configuracoes-clinica .config-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem 0.85rem;
+}
+@media (min-width: 768px) {
+  .configuracoes-clinica .config-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.configuracoes-clinica .config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.configuracoes-clinica .config-field--wide {
+  grid-column: 1 / -1;
+}
+.configuracoes-clinica .config-field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(71 85 105);
+}
+.configuracoes-clinica .config-field-hint {
+  margin: 0;
+  font-size: 0.7rem;
+  color: rgb(148 163 184);
+  line-height: 1.35;
+}
+.configuracoes-clinica .config-control {
+  height: 2.25rem;
+  max-width: none;
+}
+.configuracoes-clinica textarea.config-control {
+  height: auto;
+  min-height: 4.5rem;
+}
+.configuracoes-clinica .config-select {
+  height: 2.25rem;
+  width: 100%;
+  max-width: 12rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0 0.7rem;
+  font-size: 0.8125rem;
+  color: rgb(30 41 59);
+}
+.configuracoes-clinica .config-section-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(241 245 249);
+  background: linear-gradient(to top, white 70%, rgb(255 255 255 / 0.85));
+}
+.configuracoes-clinica .config-footer-hint {
+  font-size: 0.72rem;
+  color: rgb(148 163 184);
+}
