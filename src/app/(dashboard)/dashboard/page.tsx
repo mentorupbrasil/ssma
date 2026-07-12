@@ -11,6 +11,8 @@ import {
   LifeBuoy,
   Clock,
   CheckCircle2,
+  Activity,
+  ArrowRight,
   type LucideIcon,
 } from "lucide-react";
 import { PageShell } from "@/components/dashboard/PageShell";
@@ -60,20 +62,35 @@ const EMPRESA_STAT_META: Record<
   },
 };
 
-const CLINIC_STAT_ICONS: Record<string, LucideIcon> = {
-  referrals_open: ClipboardList,
-  pending_docs: FolderOpen,
-  docs_expiring: Clock,
-  tickets_open: LifeBuoy,
-  companies_pending: Building2,
-};
-
-const CLINIC_STAT_TONES: Record<string, string> = {
-  referrals_open: "slate",
-  pending_docs: "amber",
-  docs_expiring: "rose",
-  tickets_open: "sky",
-  companies_pending: "violet",
+const CLINIC_STAT_META: Record<
+  string,
+  { icon: LucideIcon; tone: "primary" | "warning"; hint: string }
+> = {
+  referrals_open: {
+    icon: ClipboardList,
+    tone: "primary",
+    hint: "Aguardando confirmação ou atendimento",
+  },
+  pending_docs: {
+    icon: FolderOpen,
+    tone: "warning",
+    hint: "Emissão ou elaboração pendente",
+  },
+  docs_expiring: {
+    icon: Clock,
+    tone: "warning",
+    hint: "Vencem nos próximos 30 dias",
+  },
+  tickets_open: {
+    icon: LifeBuoy,
+    tone: "primary",
+    hint: "Suporte em andamento",
+  },
+  companies_pending: {
+    icon: Building2,
+    tone: "warning",
+    hint: "Documentação incompleta",
+  },
 };
 
 function formatCompactActivityAt(at: Date) {
@@ -261,17 +278,20 @@ export default async function DashboardPage() {
   const clinicShortcuts = [
     {
       href: "/dashboard/encaminhamentos",
-      label: "Abrir fila de atendimentos",
+      label: "Fila de atendimentos",
+      description: "Pedidos do portal RH e do site",
       icon: ClipboardList,
     },
     {
       href: "/dashboard/documentos",
-      label: "Gerenciar documentos",
+      label: "Documentos",
+      description: "ASOs, laudos e liberações",
       icon: FolderOpen,
     },
     {
       href: "/dashboard/empresas",
-      label: "Ver empresas",
+      label: "Empresas",
+      description: "Contratos e pendências documentais",
       icon: Building2,
     },
   ];
@@ -279,13 +299,17 @@ export default async function DashboardPage() {
   const priorityItems = overview.priorityItems;
   const activities = overview.recentActivities;
 
+  const hasPriority = priorityItems.length > 0;
+
   return (
     <PageShell className="visao-geral-clinica" width="wide">
-      <header className="vg-header">
-        <h1 className="vg-title">Visão geral</h1>
-        <p className="vg-subtitle">
-          Acompanhe atendimentos, documentos e pendências da operação.
-        </p>
+      <header className="sys-page-header">
+        <div>
+          <h1 className="sys-page-title">Visão geral</h1>
+          <p className="sys-page-subtitle">
+            Acompanhe atendimentos, documentos e pendências da operação.
+          </p>
+        </div>
       </header>
 
       {billingNotice ? (
@@ -304,116 +328,147 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      <section className="vg-shortcuts" aria-label="Atalhos rápidos">
-        {clinicShortcuts.map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href} className="vg-shortcut">
-            <Icon className="vg-shortcut-icon" aria-hidden />
-            <span>{label}</span>
+      <section className="empresa-quick-actions">
+        <h2 className="empresa-quick-actions-label">Atalhos rápidos</h2>
+        <QuickActionGrid actions={clinicShortcuts} />
+      </section>
+
+      <section>
+        <h2 className="empresa-quick-actions-label">Indicadores</h2>
+        <div className="colaboradores-empresa-stats visao-geral-clinica-stats">
+          {overview.stats.map((stat) => {
+            const meta = CLINIC_STAT_META[stat.key] ?? {
+              icon: ClipboardList,
+              tone: "primary" as const,
+              hint: "",
+            };
+            const Icon = meta.icon;
+            return (
+              <Link
+                key={stat.key}
+                href={stat.href}
+                className="colaboradores-empresa-stat colaboradores-empresa-stat--clickable"
+              >
+                <span
+                  className={cn(
+                    "colaboradores-empresa-stat-icon",
+                    `colaboradores-empresa-stat-icon--${meta.tone}`
+                  )}
+                >
+                  <Icon className="h-4 w-4" aria-hidden />
+                </span>
+                <span className="colaboradores-empresa-stat-body">
+                  <span className="colaboradores-empresa-stat-value">{stat.value}</span>
+                  <span className="colaboradores-empresa-stat-title">{stat.title}</span>
+                  {meta.hint ? (
+                    <span className="colaboradores-empresa-stat-hint">{meta.hint}</span>
+                  ) : null}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {hasPriority ? (
+        <DashboardPanel title="Pendências prioritárias" icon={AlertTriangle}>
+          <div className="dashboard-list">
+            {priorityItems.map((item) => (
+              <Link
+                key={`${item.statusType}-${item.id}`}
+                href={item.href}
+                className="dashboard-list-item dashboard-list-item-row"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-[var(--brand-navy)]">{item.title}</p>
+                  <p className="text-xs text-[var(--dash-text-muted)]">
+                    {item.entityLabel} · {item.kind}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <StatusBadge
+                    status={item.status}
+                    type={
+                      item.statusType === "ticket"
+                        ? "contact"
+                        : item.statusType === "company"
+                          ? "company"
+                          : item.statusType
+                    }
+                    label={item.status}
+                  />
+                  <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-[var(--brand-green)]">
+                    {item.actionLabel}
+                    <ArrowRight className="h-3 w-3" aria-hidden />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </DashboardPanel>
+      ) : (
+        <div className="empresa-overview-ok" role="status">
+          <CheckCircle2 className="empresa-overview-ok-icon" aria-hidden />
+          <p>Tudo em dia — nenhuma pendência crítica.</p>
+        </div>
+      )}
+
+      <DashboardPanel
+        title="Atividades recentes"
+        icon={Activity}
+        action={
+          <Link
+            href="/dashboard/auditoria"
+            className="text-xs font-semibold text-[var(--brand-green)] hover:underline"
+          >
+            Ver todas
           </Link>
-        ))}
-      </section>
-
-      <section className="vg-stats" aria-label="Indicadores">
-        {overview.stats.map((stat) => {
-          const Icon = CLINIC_STAT_ICONS[stat.key] ?? ClipboardList;
-          const tone = CLINIC_STAT_TONES[stat.key] ?? "slate";
-          return (
-            <Link
-              key={stat.key}
-              href={stat.href}
-              className={cn("vg-stat", `vg-stat--${tone}`)}
-            >
-              <span className="vg-stat-icon" aria-hidden>
-                <Icon className="h-3.5 w-3.5" />
-              </span>
-              <span className="vg-stat-value">{stat.value}</span>
-              <span className="vg-stat-title">{stat.title}</span>
-            </Link>
-          );
-        })}
-      </section>
-
-      <div
-        className={cn(
-          "vg-columns",
-          priorityItems.length <= 3 && "vg-columns--activity-wide"
-        )}
+        }
       >
-        <section className="vg-panel vg-panel--pending" aria-labelledby="vg-pending-title">
-          <h2 id="vg-pending-title" className="vg-panel-title">
-            Pendências prioritárias
-          </h2>
-          {priorityItems.length === 0 ? (
-            <p className="vg-empty">Nenhuma pendência no momento</p>
-          ) : (
-            <ul className="vg-priority-list">
-              {priorityItems.map((item) => (
-                <li key={`${item.statusType}-${item.id}`} className="vg-priority-item">
-                  <div className="vg-priority-main">
-                    <p className="vg-priority-title">{item.title}</p>
-                    <p className="vg-priority-meta">
-                      <span>{item.entityLabel}</span>
-                      <span className="vg-priority-dot" aria-hidden>
-                        ·
-                      </span>
-                      <span>{item.kind}</span>
+        {activities.length === 0 ? (
+          <InlineEmptyNote>Nenhuma atividade recente.</InlineEmptyNote>
+        ) : (
+          <div className="dashboard-list visao-geral-activity-list">
+            {activities.map((item) => {
+              const content = (
+                <>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[var(--brand-navy)]">
+                      {item.description}
                     </p>
-                  </div>
-                  <div className="vg-priority-side">
-                    <span className="vg-priority-status">{item.status}</span>
-                    <Link href={item.href} className="vg-priority-action">
-                      {item.actionLabel}
-                    </Link>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="vg-panel vg-panel--activity" aria-labelledby="vg-activity-title">
-          <h2 id="vg-activity-title" className="vg-panel-title">
-            Atividades recentes
-          </h2>
-          {activities.length === 0 ? (
-            <p className="vg-empty">Nenhuma atividade recente</p>
-          ) : (
-            <ul className="vg-activity-list">
-              {activities.map((item) => {
-                const body = (
-                  <>
-                    <p className="vg-activity-desc">{item.description}</p>
-                    <p className="vg-activity-meta">
-                      <span>{item.actor}</span>
-                      <span className="vg-priority-dot" aria-hidden>
-                        ·
-                      </span>
+                    <p className="text-xs text-[var(--dash-text-muted)]">
+                      {item.actor} ·{" "}
                       <time dateTime={item.at.toISOString()}>
                         {formatCompactActivityAt(item.at)}
                       </time>
                     </p>
-                  </>
-                );
-                return (
-                  <li key={item.id} className="vg-activity-item">
-                    <span className="vg-activity-dot" aria-hidden />
-                    {item.href ? (
-                      <Link href={item.href} className="vg-activity-body">
-                        {body}
-                      </Link>
-                    ) : (
-                      <div className="vg-activity-body">{body}</div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          <Link href="/dashboard/auditoria" className="vg-activity-more">
-            Ver todas as atividades
-          </Link>
-        </section>
-      </div>
+                  </div>
+                  {item.href ? (
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 text-[var(--dash-text-subtle)]"
+                      aria-hidden
+                    />
+                  ) : null}
+                </>
+              );
+
+              return item.href ? (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="dashboard-list-item dashboard-list-item-row"
+                >
+                  {content}
+                </Link>
+              ) : (
+                <div key={item.id} className="dashboard-list-item dashboard-list-item-row">
+                  {content}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </DashboardPanel>
     </PageShell>
   );
 }

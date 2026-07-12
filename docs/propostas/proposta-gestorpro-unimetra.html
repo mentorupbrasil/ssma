@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proposta Comercial — GestorPro para Unimetra</title>
+  <style>
+    :root {
+      --navy: #0e142b;
+      --accent: #2e67ff;
+      --accent-dark: #1e4fd4;
+      --mint: #e8f7f2;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-500: #64748b;
+      --gray-700: #334155;
+      --gray-900: #0f172a;
+      --success: #059669;
+      --warning: #d97706;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--gray-900);
+      line-height: 1.6;
+      background: #fff;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 56px;
+    }
+
+    @media print {
+      .page { padding: 32px 40px; max-width: 100%; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 32px;
+      border-bottom: 3px solid var(--accent);
+      margin-bottom: 40px;
+    }
+
+    .header-left h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+    }
+
+    .header-left .subtitle {
+      font-size: 15px;
+      color: var(--gray-500);
+      margin-top: 4px;
+    }
+
+    .header-right {
+      text-align: right;
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+
+    .header-right strong { color: var(--navy); display: block; font-size: 15px; }
+
+    .badge-demo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 16px;
+    }
+
+    .badge-demo:hover { opacity: 0.92; }
+
+    /* Sections */
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 36px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gray-100);
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 24px 0 10px;
+    }
+
+    p { margin-bottom: 12px; color: var(--gray-700); }
+
+    .lead {
+      font-size: 17px;
+      color: var(--gray-700);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    /* Highlight box */
+    .highlight {
+      background: linear-gradient(135deg, #eef4ff 0%, #f0fdf4 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin: 24px 0;
+    }
+
+    .highlight.warning {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border-color: #fcd34d;
+    }
+
+    .highlight strong { color: var(--navy); }
+
+    /* Grid cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    @media (max-width: 640px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .page { padding: 24px 20px; }
+    }
+
+    .card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .card ul {
+      list-style: none;
+      font-size: 14px;
+      color: var(--gray-700);
+    }
+
+    .card ul li {
+      padding: 4px 0;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .card ul li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* Pricing */
+    .pricing-box {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      margin: 28px 0;
+    }
+
+    .pricing-box h3 {
+      color: #fff;
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      font-size: 15px;
+    }
+
+    .price-row:last-child { border-bottom: none; }
+
+    .price-row .label { opacity: 0.85; }
+
+    .price-row .value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #93c5fd;
+    }
+
+    .price-row.total {
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .price-row.total .value {
+      font-size: 32px;
+      color: #fff;
+    }
+
+    .price-note {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 16px;
+    }
+
+    /* Bonus */
+    .bonus-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    @media (max-width: 640px) { .bonus-list { grid-template-columns: 1fr; } }
+
+    .bonus-item {
+      background: #fff;
+      border: 1px dashed var(--accent);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 14px;
+    }
+
+    .bonus-item strong { color: var(--accent); }
+
+    /* Screenshots */
+    .screenshot {
+      margin: 20px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    .screenshot img {
+      width: 100%;
+      display: block;
+    }
+
+    .screenshot figcaption {
+      background: var(--gray-50);
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--gray-500);
+      text-align: center;
+    }
+
+    /* Comparison table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    th {
+      background: var(--gray-50);
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .check { color: var(--success); font-weight: 700; }
+    .cross { color: #dc2626; font-weight: 700; }
+
+    /* Flow */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+
+    .flow-step {
+      background: var(--accent);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .flow-arrow { color: var(--gray-500); font-size: 18px; }
+
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 2px solid var(--gray-100);
+      text-align: center;
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+
+    .cta-box {
+      background: var(--mint);
+      border: 2px solid #6ee7b7;
+      border-radius: 14px;
+      padding: 28px;
+      text-align: center;
+      margin: 32px 0;
+    }
+
+    .cta-box h3 { margin-top: 0; color: var(--navy); }
+
+    .cta-box p { font-size: 15px; }
+
+    ul.bullet {
+      margin: 12px 0 12px 20px;
+      color: var(--gray-700);
+    }
+
+    ul.bullet li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- CAPA -->
+  <header class="header">
+    <div class="header-left">
+      <h1>Proposta Comercial</h1>
+      <p class="subtitle">Plataforma digital completa para a Unimetra</p>
+      <a class="badge-demo no-print" href="https://unimetra.gestorpro.sbs" target="_blank">
+        🔗 Demonstração ao vivo: unimetra.gestorpro.sbs
+      </a>
+    </div>
+    <div class="header-right">
+      <strong>GestorPro</strong>
+      by MentorUp Brasil<br />
+      Proposta nº GP-UNI-2026-001<br />
+      Validade: 30 dias<br />
+      Julho de 2026
+    </div>
+  </header>
+
+  <!-- INTRO -->
+  <p class="lead">
+    Preparamos esta proposta especialmente para a <strong>Unimetra</strong>, clínica referência em Medicina e Segurança do Trabalho em Imperatriz-MA. O objetivo é simples: substituir o site atual por uma presença digital profissional e entregar um sistema que organiza a rotina da clínica, entrega documentos digitalmente e oferece um portal exclusivo para cada empresa cliente — tudo em uma única plataforma.
+  </p>
+
+  <div class="highlight">
+    <strong>Demonstração disponível agora.</strong> Para que o proprietário possa avaliar com calma, disponibilizamos o site completo em
+    <a href="https://unimetra.gestorpro.sbs" target="_blank"><strong>unimetra.gestorpro.sbs</strong></a>.
+    Este endereço é apenas para demonstração. Após a contratação, todo o sistema será migrado para o domínio oficial da Unimetra — o site que está no ar hoje será substituído pelo novo.
+  </div>
+
+  <!-- PROBLEMA -->
+  <h2>1. O cenário de hoje</h2>
+  <p>A Unimetra presta um serviço de qualidade, mas a presença digital não acompanha. Isso gera impactos reais no dia a dia:</p>
+  <ul class="bullet">
+    <li><strong>Site desatualizado</strong> — transmite imagem amadora e afasta empresas que pesquisam clínicas de SST online</li>
+    <li><strong>RH dependente de WhatsApp e ligações</strong> — para saber status de exames, cobrar ASOs e encaminhar colaboradores</li>
+    <li><strong>Recepção sobrecarregada</strong> — com perguntas repetitivas que um portal resolveria automaticamente</li>
+    <li><strong>Documentos entregues manualmente</strong> — e-mail, WhatsApp, papel — sem histórico, sem controle, sem LGPD</li>
+    <li><strong>Concorrentes avançando</strong> — clínicas que oferecem portal empresarial ganham contratos B2B</li>
+    <li><strong>Google e Instagram parados</strong> — quando alguém pesquisa "clínica SST Imperatriz", a Unimetra perde visibilidade</li>
+  </ul>
+
+  <div class="highlight warning">
+    <strong>O risco de não fazer nada:</strong> continuar perdendo contratos corporativos para clínicas com presença digital moderna, manter a recepção ocupada com tarefas que um sistema automatiza, e deixar de ser encontrada no Google por empresas que estão ativamente buscando serviços de SST.
+  </div>
+
+  <!-- SOLUÇÃO -->
+  <h2>2. A solução: GestorPro para Unimetra</h2>
+  <p>Uma plataforma completa em três camadas, já desenvolvida e funcionando:</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>🌐 Site Institucional Premium</h4>
+      <ul>
+        <li>Design moderno e responsivo (celular, tablet, desktop)</li>
+        <li>Páginas: Home, Sobre, Serviços, Exames, Blog, Contato</li>
+        <li>Encaminhamento online em 3 etapas com protocolo</li>
+        <li>Catálogo de exames com preparos e prazos</li>
+        <li>Integração WhatsApp, mapa e SEO otimizado</li>
+        <li>Política de privacidade e LGPD</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>🏥 Painel Unimetra (Clínica)</h4>
+      <ul>
+        <li>Gestão de empresas clientes</li>
+        <li>Cadastro e importação de colaboradores (CSV)</li>
+        <li>Fila de encaminhamentos e atendimentos</li>
+        <li>Upload e liberação de documentos (ASO, laudos, PCMSO)</li>
+        <li>Chamados de suporte interno</li>
+        <li>Usuários com perfis e permissões (recepção, admin, etc.)</li>
+        <li>Auditoria e logs de acesso (LGPD)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>🏢 Portal das Empresas (RH)</h4>
+      <ul>
+        <li>Acesso exclusivo por empresa</li>
+        <li>Encaminhamento online com protocolo automático</li>
+        <li>Acompanhamento de status por colaborador</li>
+        <li>Download de ASOs e laudos liberados</li>
+        <li>Consulta de preparos de exames</li>
+        <li>Chamados de suporte integrados</li>
+        <li>Importação em massa de colaboradores</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>📄 Entrega Digital de Documentos</h4>
+      <ul>
+        <li>Upload por slot (ASO, ficha, exames, PDF completo)</li>
+        <li>Liberação controlada para a empresa</li>
+        <li>Download self-service pelo RH</li>
+        <li>Histórico completo por colaborador</li>
+        <li>Logs de acesso e conformidade LGPD</li>
+        <li>Atualização automática do status do encaminhamento</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Fluxo de entrega de documentos</h3>
+  <div class="flow">
+    <span class="flow-step">Encaminhamento</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Atendimento</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Upload (clínica)</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Liberação</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Download (RH)</span>
+  </div>
+  <p>Sem WhatsApp. Sem e-mail perdido. Sem "cadê meu ASO?". O RH baixa quando quiser, a clínica controla o que libera.</p>
+
+  <!-- COMPARATIVO -->
+  <h2>3. Antes vs. Depois</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Aspecto</th>
+        <th>Hoje</th>
+        <th>Com GestorPro</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Site institucional</td>
+        <td><span class="cross">✗</span> Desatualizado, amador</td>
+        <td><span class="check">✓</span> Premium, moderno, SEO</td>
+      </tr>
+      <tr>
+        <td>Encaminhamento de colaboradores</td>
+        <td><span class="cross">✗</span> WhatsApp / telefone</td>
+        <td><span class="check">✓</span> Online com protocolo</td>
+      </tr>
+      <tr>
+        <td>Entrega de ASOs</td>
+        <td><span class="cross">✗</span> Manual, sem controle</td>
+        <td><span class="check">✓</span> Digital, com histórico LGPD</td>
+      </tr>
+      <tr>
+        <td>Portal para empresas</td>
+        <td><span class="cross">✗</span> Não existe</td>
+        <td><span class="check">✓</span> Exclusivo por empresa</td>
+      </tr>
+      <tr>
+        <td>Status de exames</td>
+        <td><span class="cross">✗</span> RH liga toda hora</td>
+        <td><span class="check">✓</span> Acompanhamento online</td>
+      </tr>
+      <tr>
+        <td>Google Meu Negócio</td>
+        <td><span class="cross">✗</span> Sem gestão</td>
+        <td><span class="check">✓</span> Otimizado mensalmente</td>
+      </tr>
+      <tr>
+        <td>Instagram</td>
+        <td><span class="cross">✗</span> Identidade fraca</td>
+        <td><span class="check">✓</span> 10 criativos profissionais</td>
+      </tr>
+      <tr>
+        <td>Diferencial competitivo</td>
+        <td><span class="cross">✗</span> Igual às outras clínicas</td>
+        <td><span class="check">✓</span> Referência digital em SST</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PRINTS -->
+  <div class="page-break"></div>
+  <h2>4. Veja como ficou — Demonstração</h2>
+  <p>Acesse <a href="https://unimetra.gestorpro.sbs" target="_blank"><strong>unimetra.gestorpro.sbs</strong></a> no celular ou computador. Abaixo, capturas do sistema já no ar:</p>
+
+  <figure class="screenshot">
+    <img src="assets/site-home.png" alt="Site institucional Unimetra — página inicial" />
+    <figcaption>Site institucional — página inicial com design premium, serviços e CTAs</figcaption>
+  </figure>
+
+  <figure class="screenshot">
+    <img src="assets/portal-empresas.png" alt="Portal empresarial para RH das empresas clientes" />
+    <figcaption>Portal empresarial — área exclusiva do RH com encaminhamentos, status e download de ASOs</figcaption>
+  </figure>
+
+  <figure class="screenshot">
+    <img src="assets/painel-login.png" alt="Painel de gestão Unimetra — login" />
+    <figcaption>Painel Unimetra — acesso seguro para gestão de empresas, documentos e encaminhamentos</figcaption>
+  </figure>
+
+  <!-- MARKETING -->
+  <h2>5. Presença digital completa</h2>
+  <p>Além do site e do sistema, incluímos serviços para fortalecer a marca Unimetra onde os clientes realmente estão:</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>📱 10 Criativos para Instagram</h4>
+      <ul>
+        <li>Artes profissionais alinhadas à identidade Unimetra</li>
+        <li>Conteúdo sobre SST, exames, PCMSO, dicas para RH</li>
+        <li>Formatos otimizados (feed, stories, reels cover)</li>
+        <li>Prontos para publicação imediata</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>📍 Gestão Google Meu Negócio</h4>
+      <ul>
+        <li>Otimização do perfil para buscas locais</li>
+        <li>Atualização de horários, serviços e fotos</li>
+        <li>Respostas a avaliações e perguntas</li>
+        <li>Monitoramento de posição no Google Maps</li>
+        <li>Relatório mensal de desempenho</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <strong>Por que isso importa:</strong> Quando o RH de uma empresa pesquisa "clínica medicina do trabalho Imperatriz" no Google, a Unimetra precisa aparecer com foto profissional, avaliações positivas e link para um site que transmita confiança. Hoje, essa oportunidade está sendo perdida.
+  </div>
+
+  <!-- INVESTIMENTO -->
+  <div class="page-break"></div>
+  <h2>6. Investimento</h2>
+
+  <div class="pricing-box">
+    <h3>Implementação — Pagamento único</h3>
+    <div class="price-row">
+      <span class="label">Site institucional premium completo</span>
+      <span class="value" style="font-size:16px">R$ 7.900</span>
+    </div>
+    <div class="price-row">
+      <span class="label">Sistema GestorPro (Painel Unimetra + Portal Empresas)</span>
+      <span class="value" style="font-size:16px">R$ 8.900</span>
+    </div>
+    <div class="price-row">
+      <span class="label">Configuração, migração de domínio e treinamento</span>
+      <span class="value" style="font-size:16px">R$ 2.100</span>
+    </div>
+    <div class="price-row">
+      <span class="label">Desconto pacote Unimetra</span>
+      <span class="value" style="font-size:16px;color:#fca5a5">− R$ 4.000</span>
+    </div>
+    <div class="price-row total">
+      <span class="label">Total implementação</span>
+      <span class="value">R$ 14.900</span>
+    </div>
+    <p class="price-note">Parcelamento em até 6x no cartão ou condição especial à vista. Sistema já desenvolvido — implementação rápida.</p>
+  </div>
+
+  <div class="pricing-box" style="background: linear-gradient(135deg, #1e3a5f, #0e142b);">
+    <h3>Mensalidade — Manutenção e operação do sistema</h3>
+    <div class="price-row total">
+      <span class="label">Valor mensal</span>
+      <span class="value">R$ 997<span style="font-size:14px;font-weight:400">/mês</span></span>
+    </div>
+    <p class="price-note" style="margin-top:20px">Inclui:</p>
+    <ul style="list-style:none;font-size:14px;opacity:0.9;margin-top:8px">
+      <li style="padding:3px 0">✓ Hospedagem cloud profissional (alta disponibilidade)</li>
+      <li style="padding:3px 0">✓ Manutenção técnica, atualizações e correções</li>
+      <li style="padding:3px 0">✓ Suporte prioritário por WhatsApp/e-mail</li>
+      <li style="padding:3px 0">✓ Licença do sistema — empresas clientes ilimitadas</li>
+      <li style="padding:3px 0">✓ Backups automáticos e segurança LGPD</li>
+      <li style="padding:3px 0">✓ Gestão mensal do Google Meu Negócio</li>
+      <li style="padding:3px 0">✓ Monitoramento de uptime e performance</li>
+      <li style="padding:3px 0">✓ Armazenamento de documentos na nuvem</li>
+    </ul>
+  </div>
+
+  <h3>Bônus inclusos na contratação</h3>
+  <div class="bonus-list">
+    <div class="bonus-item"><strong>10 criativos Instagram</strong> — valor de mercado R$ 1.500, incluso sem custo</div>
+    <div class="bonus-item"><strong>Treinamento da equipe</strong> — 2 horas presencial ou remoto para recepção e admin</div>
+    <div class="bonus-item"><strong>Migração de domínio</strong> — site atual sai, novo entra no domínio oficial da Unimetra</div>
+    <div class="bonus-item"><strong>Suporte de lançamento</strong> — acompanhamento nos primeiros 30 dias pós-implantação</div>
+  </div>
+
+  <!-- ROI -->
+  <h2>7. Por que este investimento se paga</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h4>Para a clínica</h4>
+      <ul>
+        <li>Recepção livre de ligações repetitivas do RH</li>
+        <li>Diferencial que fecha contratos corporativos</li>
+        <li>Imagem profissional que atrai empresas maiores</li>
+        <li>Documentos organizados com conformidade LGPD</li>
+        <li>Visibilidade no Google = novos clientes</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Para as empresas clientes</h4>
+      <ul>
+        <li>Encaminha colaborador online, sem ligar</li>
+        <li>Acompanha status sem depender de WhatsApp</li>
+        <li>Baixa ASO quando precisa, 24h por dia</li>
+        <li>Histórico organizado para auditorias</li>
+        <li>Menos risco, mais produtividade no RH</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <strong>Conta rápida:</strong> Se o portal empresarial ajudar a fechar ou reter <em>apenas 1 contrato corporativo</em> a mais por ano, o investimento da implementação já se pagou. A mensalidade de R$ 997 equivale a menos de R$ 33 por dia — menos que um exame admissional. E cada empresa que usa o portal deixa de ligar 5, 10, 15 vezes por mês para a recepção.
+  </div>
+
+  <!-- PRÓXIMOS PASSOS -->
+  <h2>8. Próximos passos</h2>
+  <table>
+    <thead>
+      <tr><th>Etapa</th><th>Prazo</th><th>O que acontece</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1. Aprovação</strong></td>
+        <td>Imediato</td>
+        <td>Assinatura da proposta e pagamento da implementação</td>
+      </tr>
+      <tr>
+        <td><strong>2. Personalização</strong></td>
+        <td>3–5 dias</td>
+        <td>Ajustes finais de conteúdo, fotos e dados da clínica</td>
+      </tr>
+      <tr>
+        <td><strong>3. Migração</strong></td>
+        <td>1–2 dias</td>
+        <td>Domínio oficial apontado, site antigo substituído</td>
+      </tr>
+      <tr>
+        <td><strong>4. Treinamento</strong></td>
+        <td>1 dia</td>
+        <td>Equipe Unimetra treinada no painel e fluxo de documentos</td>
+      </tr>
+      <tr>
+        <td><strong>5. Go-live</strong></td>
+        <td>~7 dias úteis</td>
+        <td>Sistema no ar, empresas convidadas, Instagram e Google ativos</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cta-box">
+    <h3>O sistema já está pronto. Falta só a Unimetra dizer sim.</h3>
+    <p>
+      Acesse a demonstração em <a href="https://unimetra.gestorpro.sbs" target="_blank"><strong>unimetra.gestorpro.sbs</strong></a>,
+      navegue pelo site, veja o portal empresarial e imagine suas empresas clientes usando isso amanhã.
+      <br /><br />
+      Estamos à disposição para uma apresentação presencial ou online.
+    </p>
+  </div>
+
+  <footer class="footer">
+    <p>
+      <strong>GestorPro</strong> — Plataforma de Medicina e Segurança do Trabalho<br />
+      MentorUp Brasil · Proposta exclusiva para Unimetra · Imperatriz-MA<br />
+      Validade: 30 dias a partir de julho/2026
+    </p>
+  </footer>
+
+</div>
+
+</body>
+</html>
