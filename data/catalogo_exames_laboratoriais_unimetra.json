@@ -1,0 +1,3442 @@
+[
+  {
+    "codigo": "LAB-0001",
+    "nome": "Hemograma completo",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hemograma-completo"
+  },
+  {
+    "codigo": "LAB-0002",
+    "nome": "Eritrograma",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "eritrograma"
+  },
+  {
+    "codigo": "LAB-0003",
+    "nome": "Leucograma",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "leucograma"
+  },
+  {
+    "codigo": "LAB-0004",
+    "nome": "Contagem de plaquetas",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "contagem-de-plaquetas"
+  },
+  {
+    "codigo": "LAB-0005",
+    "nome": "Contagem de reticulócitos",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "contagem-de-reticulocitos"
+  },
+  {
+    "codigo": "LAB-0006",
+    "nome": "Velocidade de hemossedimentação (VHS)",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "velocidade-de-hemossedimentacao-vhs"
+  },
+  {
+    "codigo": "LAB-0007",
+    "nome": "Contagem de eosinófilos",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "contagem-de-eosinofilos"
+  },
+  {
+    "codigo": "LAB-0008",
+    "nome": "Hemoglobina",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hemoglobina"
+  },
+  {
+    "codigo": "LAB-0009",
+    "nome": "Hematócrito",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hematocrito"
+  },
+  {
+    "codigo": "LAB-0010",
+    "nome": "Índices hematimétricos",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "indices-hematimetricos"
+  },
+  {
+    "codigo": "LAB-0011",
+    "nome": "Pesquisa de hemoparasitas",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-hemoparasitas"
+  },
+  {
+    "codigo": "LAB-0012",
+    "nome": "Pesquisa de células falciformes",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-celulas-falciformes"
+  },
+  {
+    "codigo": "LAB-0013",
+    "nome": "Teste de falcização",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "teste-de-falcizacao"
+  },
+  {
+    "codigo": "LAB-0014",
+    "nome": "Eletroforese de hemoglobina",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "eletroforese-de-hemoglobina"
+  },
+  {
+    "codigo": "LAB-0015",
+    "nome": "Hemoglobina fetal",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hemoglobina-fetal"
+  },
+  {
+    "codigo": "LAB-0016",
+    "nome": "Hemoglobina A2",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hemoglobina-a2"
+  },
+  {
+    "codigo": "LAB-0017",
+    "nome": "Coombs direto",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "coombs-direto"
+  },
+  {
+    "codigo": "LAB-0018",
+    "nome": "Coombs indireto",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "coombs-indireto"
+  },
+  {
+    "codigo": "LAB-0019",
+    "nome": "Dosagem de G6PD",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "dosagem-de-g6pd"
+  },
+  {
+    "codigo": "LAB-0020",
+    "nome": "Contagem de linfócitos T CD4",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "contagem-de-linfocitos-t-cd4"
+  },
+  {
+    "codigo": "LAB-0021",
+    "nome": "Contagem de linfócitos T CD8",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "contagem-de-linfocitos-t-cd8"
+  },
+  {
+    "codigo": "LAB-0022",
+    "nome": "Imunofenotipagem de linfócitos",
+    "categoria": "Hematologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "imunofenotipagem-de-linfocitos"
+  },
+  {
+    "codigo": "LAB-0023",
+    "nome": "Tempo de protrombina (TP)",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tempo-de-protrombina-tp"
+  },
+  {
+    "codigo": "LAB-0024",
+    "nome": "Relação normalizada internacional (INR)",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "relacao-normalizada-internacional-inr"
+  },
+  {
+    "codigo": "LAB-0025",
+    "nome": "Tempo de tromboplastina parcial ativada (TTPa)",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tempo-de-tromboplastina-parcial-ativada-ttpa"
+  },
+  {
+    "codigo": "LAB-0026",
+    "nome": "Fibrinogênio",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fibrinogenio"
+  },
+  {
+    "codigo": "LAB-0027",
+    "nome": "Tempo de trombina",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tempo-de-trombina"
+  },
+  {
+    "codigo": "LAB-0028",
+    "nome": "D-dímero",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "d-dimero"
+  },
+  {
+    "codigo": "LAB-0029",
+    "nome": "Tempo de sangramento",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tempo-de-sangramento"
+  },
+  {
+    "codigo": "LAB-0030",
+    "nome": "Tempo de coagulação",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tempo-de-coagulacao"
+  },
+  {
+    "codigo": "LAB-0031",
+    "nome": "Agregação plaquetária",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "agregacao-plaquetaria"
+  },
+  {
+    "codigo": "LAB-0032",
+    "nome": "Anticoagulante lúpico",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticoagulante-lupico"
+  },
+  {
+    "codigo": "LAB-0033",
+    "nome": "Proteína C",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "proteina-c"
+  },
+  {
+    "codigo": "LAB-0034",
+    "nome": "Proteína S",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "proteina-s"
+  },
+  {
+    "codigo": "LAB-0035",
+    "nome": "Antitrombina III",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "antitrombina-iii"
+  },
+  {
+    "codigo": "LAB-0036",
+    "nome": "Fator VIII",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fator-viii"
+  },
+  {
+    "codigo": "LAB-0037",
+    "nome": "Fator IX",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fator-ix"
+  },
+  {
+    "codigo": "LAB-0038",
+    "nome": "Antígeno do fator de von Willebrand",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "antigeno-do-fator-de-von-willebrand"
+  },
+  {
+    "codigo": "LAB-0039",
+    "nome": "Atividade do fator de von Willebrand",
+    "categoria": "Coagulação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "atividade-do-fator-de-von-willebrand"
+  },
+  {
+    "codigo": "LAB-0040",
+    "nome": "Ureia",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ureia"
+  },
+  {
+    "codigo": "LAB-0041",
+    "nome": "Creatinina",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "creatinina"
+  },
+  {
+    "codigo": "LAB-0042",
+    "nome": "Ácido úrico",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-urico"
+  },
+  {
+    "codigo": "LAB-0043",
+    "nome": "Proteínas totais",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "proteinas-totais"
+  },
+  {
+    "codigo": "LAB-0044",
+    "nome": "Albumina",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "albumina"
+  },
+  {
+    "codigo": "LAB-0045",
+    "nome": "Globulinas",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "globulinas"
+  },
+  {
+    "codigo": "LAB-0046",
+    "nome": "Relação albumina/globulina",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "relacao-albumina-globulina"
+  },
+  {
+    "codigo": "LAB-0047",
+    "nome": "Bilirrubina total",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "bilirrubina-total"
+  },
+  {
+    "codigo": "LAB-0048",
+    "nome": "Bilirrubina direta",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "bilirrubina-direta"
+  },
+  {
+    "codigo": "LAB-0049",
+    "nome": "Bilirrubina indireta",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "bilirrubina-indireta"
+  },
+  {
+    "codigo": "LAB-0050",
+    "nome": "TGO (AST)",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tgo-ast"
+  },
+  {
+    "codigo": "LAB-0051",
+    "nome": "TGP (ALT)",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tgp-alt"
+  },
+  {
+    "codigo": "LAB-0052",
+    "nome": "Gama-glutamiltransferase (GGT)",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "gama-glutamiltransferase-ggt"
+  },
+  {
+    "codigo": "LAB-0053",
+    "nome": "Fosfatase alcalina",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fosfatase-alcalina"
+  },
+  {
+    "codigo": "LAB-0054",
+    "nome": "Desidrogenase lática (LDH)",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "desidrogenase-latica-ldh"
+  },
+  {
+    "codigo": "LAB-0055",
+    "nome": "Amilase",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "amilase"
+  },
+  {
+    "codigo": "LAB-0056",
+    "nome": "Lipase",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "lipase"
+  },
+  {
+    "codigo": "LAB-0057",
+    "nome": "Creatinoquinase total (CK)",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "creatinoquinase-total-ck"
+  },
+  {
+    "codigo": "LAB-0058",
+    "nome": "CK-MB",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ck-mb"
+  },
+  {
+    "codigo": "LAB-0059",
+    "nome": "Troponina I",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "troponina-i"
+  },
+  {
+    "codigo": "LAB-0060",
+    "nome": "Troponina T",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "troponina-t"
+  },
+  {
+    "codigo": "LAB-0061",
+    "nome": "Mioglobina",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "mioglobina"
+  },
+  {
+    "codigo": "LAB-0062",
+    "nome": "Colinesterase sérica",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "colinesterase-serica"
+  },
+  {
+    "codigo": "LAB-0063",
+    "nome": "Lactato",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "lactato"
+  },
+  {
+    "codigo": "LAB-0064",
+    "nome": "Bicarbonato",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "bicarbonato"
+  },
+  {
+    "codigo": "LAB-0065",
+    "nome": "Osmolalidade sérica",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "osmolalidade-serica"
+  },
+  {
+    "codigo": "LAB-0066",
+    "nome": "Beta-hidroxibutirato",
+    "categoria": "Bioquímica geral",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "beta-hidroxibutirato"
+  },
+  {
+    "codigo": "LAB-0067",
+    "nome": "Glicemia de jejum",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "glicemia-de-jejum"
+  },
+  {
+    "codigo": "LAB-0068",
+    "nome": "Glicemia ao acaso",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "glicemia-ao-acaso"
+  },
+  {
+    "codigo": "LAB-0069",
+    "nome": "Glicemia pós-prandial",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "glicemia-pos-prandial"
+  },
+  {
+    "codigo": "LAB-0070",
+    "nome": "Hemoglobina glicada (HbA1c)",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hemoglobina-glicada-hba1c"
+  },
+  {
+    "codigo": "LAB-0071",
+    "nome": "Frutosamina",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "frutosamina"
+  },
+  {
+    "codigo": "LAB-0072",
+    "nome": "Insulina basal",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "insulina-basal"
+  },
+  {
+    "codigo": "LAB-0073",
+    "nome": "Insulina pós-prandial",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "insulina-pos-prandial"
+  },
+  {
+    "codigo": "LAB-0074",
+    "nome": "Peptídeo C",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "peptideo-c"
+  },
+  {
+    "codigo": "LAB-0075",
+    "nome": "Curva glicêmica de 2 horas (75 g)",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "curva-glicemica-de-2-horas-75-g"
+  },
+  {
+    "codigo": "LAB-0076",
+    "nome": "Curva glicêmica gestacional (75 g)",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "curva-glicemica-gestacional-75-g"
+  },
+  {
+    "codigo": "LAB-0077",
+    "nome": "Curva glicêmica gestacional (100 g)",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "curva-glicemica-gestacional-100-g"
+  },
+  {
+    "codigo": "LAB-0078",
+    "nome": "Glicose urinária",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "glicose-urinaria"
+  },
+  {
+    "codigo": "LAB-0079",
+    "nome": "Cetonemia",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cetonemia"
+  },
+  {
+    "codigo": "LAB-0080",
+    "nome": "Cetonúria",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cetonuria"
+  },
+  {
+    "codigo": "LAB-0081",
+    "nome": "Microalbuminúria",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "microalbuminuria"
+  },
+  {
+    "codigo": "LAB-0082",
+    "nome": "Relação albumina/creatinina urinária",
+    "categoria": "Diabetes e metabolismo glicídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "relacao-albumina-creatinina-urinaria"
+  },
+  {
+    "codigo": "LAB-0083",
+    "nome": "Colesterol total",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "colesterol-total"
+  },
+  {
+    "codigo": "LAB-0084",
+    "nome": "Colesterol HDL",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "colesterol-hdl"
+  },
+  {
+    "codigo": "LAB-0085",
+    "nome": "Colesterol LDL direto",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "colesterol-ldl-direto"
+  },
+  {
+    "codigo": "LAB-0086",
+    "nome": "Colesterol VLDL",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "colesterol-vldl"
+  },
+  {
+    "codigo": "LAB-0087",
+    "nome": "Triglicerídeos",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "triglicerideos"
+  },
+  {
+    "codigo": "LAB-0088",
+    "nome": "Apolipoproteína A1",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "apolipoproteina-a1"
+  },
+  {
+    "codigo": "LAB-0089",
+    "nome": "Apolipoproteína B",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "apolipoproteina-b"
+  },
+  {
+    "codigo": "LAB-0090",
+    "nome": "Lipoproteína(a)",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "lipoproteina-a"
+  },
+  {
+    "codigo": "LAB-0091",
+    "nome": "Colesterol não HDL",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "colesterol-nao-hdl"
+  },
+  {
+    "codigo": "LAB-0092",
+    "nome": "Eletroforese de lipoproteínas",
+    "categoria": "Perfil lipídico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "eletroforese-de-lipoproteinas"
+  },
+  {
+    "codigo": "LAB-0093",
+    "nome": "Sódio",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "sodio"
+  },
+  {
+    "codigo": "LAB-0094",
+    "nome": "Potássio",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "potassio"
+  },
+  {
+    "codigo": "LAB-0095",
+    "nome": "Cloro",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cloro"
+  },
+  {
+    "codigo": "LAB-0096",
+    "nome": "Cálcio total",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "calcio-total"
+  },
+  {
+    "codigo": "LAB-0097",
+    "nome": "Cálcio ionizado",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "calcio-ionizado"
+  },
+  {
+    "codigo": "LAB-0098",
+    "nome": "Fósforo",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fosforo"
+  },
+  {
+    "codigo": "LAB-0099",
+    "nome": "Magnésio",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "magnesio"
+  },
+  {
+    "codigo": "LAB-0100",
+    "nome": "Zinco",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "zinco"
+  },
+  {
+    "codigo": "LAB-0101",
+    "nome": "Cobre",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cobre"
+  },
+  {
+    "codigo": "LAB-0102",
+    "nome": "Selênio",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "selenio"
+  },
+  {
+    "codigo": "LAB-0103",
+    "nome": "Manganês",
+    "categoria": "Eletrólitos e minerais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "manganes"
+  },
+  {
+    "codigo": "LAB-0104",
+    "nome": "Ferro sérico",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ferro-serico"
+  },
+  {
+    "codigo": "LAB-0105",
+    "nome": "Ferritina",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ferritina"
+  },
+  {
+    "codigo": "LAB-0106",
+    "nome": "Transferrina",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "transferrina"
+  },
+  {
+    "codigo": "LAB-0107",
+    "nome": "Capacidade total de ligação do ferro (TIBC)",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "capacidade-total-de-ligacao-do-ferro-tibc"
+  },
+  {
+    "codigo": "LAB-0108",
+    "nome": "Capacidade latente de ligação do ferro (UIBC)",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "capacidade-latente-de-ligacao-do-ferro-uibc"
+  },
+  {
+    "codigo": "LAB-0109",
+    "nome": "Saturação da transferrina",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "saturacao-da-transferrina"
+  },
+  {
+    "codigo": "LAB-0110",
+    "nome": "Receptor solúvel de transferrina",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "receptor-soluvel-de-transferrina"
+  },
+  {
+    "codigo": "LAB-0111",
+    "nome": "Haptoglobina",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "haptoglobina"
+  },
+  {
+    "codigo": "LAB-0112",
+    "nome": "Vitamina B12",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-b12"
+  },
+  {
+    "codigo": "LAB-0113",
+    "nome": "Ácido fólico",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-folico"
+  },
+  {
+    "codigo": "LAB-0114",
+    "nome": "Ácido metilmalônico",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-metilmalonico"
+  },
+  {
+    "codigo": "LAB-0115",
+    "nome": "Homocisteína",
+    "categoria": "Ferro e anemias",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "homocisteina"
+  },
+  {
+    "codigo": "LAB-0116",
+    "nome": "Vitamina D 25-OH",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-d-25-oh"
+  },
+  {
+    "codigo": "LAB-0117",
+    "nome": "Vitamina D 1,25-di-hidroxi",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-d-1-25-di-hidroxi"
+  },
+  {
+    "codigo": "LAB-0118",
+    "nome": "Vitamina A",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-a"
+  },
+  {
+    "codigo": "LAB-0119",
+    "nome": "Vitamina B1",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-b1"
+  },
+  {
+    "codigo": "LAB-0120",
+    "nome": "Vitamina B2",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-b2"
+  },
+  {
+    "codigo": "LAB-0121",
+    "nome": "Vitamina B6",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-b6"
+  },
+  {
+    "codigo": "LAB-0122",
+    "nome": "Vitamina C",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-c"
+  },
+  {
+    "codigo": "LAB-0123",
+    "nome": "Vitamina E",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-e"
+  },
+  {
+    "codigo": "LAB-0124",
+    "nome": "Vitamina K",
+    "categoria": "Vitaminas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vitamina-k"
+  },
+  {
+    "codigo": "LAB-0125",
+    "nome": "TSH",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tsh"
+  },
+  {
+    "codigo": "LAB-0126",
+    "nome": "T4 livre",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "t4-livre"
+  },
+  {
+    "codigo": "LAB-0127",
+    "nome": "T4 total",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "t4-total"
+  },
+  {
+    "codigo": "LAB-0128",
+    "nome": "T3 livre",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "t3-livre"
+  },
+  {
+    "codigo": "LAB-0129",
+    "nome": "T3 total",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "t3-total"
+  },
+  {
+    "codigo": "LAB-0130",
+    "nome": "T3 reverso",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "t3-reverso"
+  },
+  {
+    "codigo": "LAB-0131",
+    "nome": "Anticorpo antitireoperoxidase (anti-TPO)",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antitireoperoxidase-anti-tpo"
+  },
+  {
+    "codigo": "LAB-0132",
+    "nome": "Anticorpo antitireoglobulina",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antitireoglobulina"
+  },
+  {
+    "codigo": "LAB-0133",
+    "nome": "Anticorpo antirreceptor de TSH (TRAb)",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antirreceptor-de-tsh-trab"
+  },
+  {
+    "codigo": "LAB-0134",
+    "nome": "Tireoglobulina",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tireoglobulina"
+  },
+  {
+    "codigo": "LAB-0135",
+    "nome": "Calcitonina",
+    "categoria": "Tireoide",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "calcitonina"
+  },
+  {
+    "codigo": "LAB-0136",
+    "nome": "Cortisol basal",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cortisol-basal"
+  },
+  {
+    "codigo": "LAB-0137",
+    "nome": "Cortisol das 16 horas",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cortisol-das-16-horas"
+  },
+  {
+    "codigo": "LAB-0138",
+    "nome": "ACTH",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acth"
+  },
+  {
+    "codigo": "LAB-0139",
+    "nome": "DHEA-S",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "dhea-s"
+  },
+  {
+    "codigo": "LAB-0140",
+    "nome": "17-hidroxiprogesterona",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "17-hidroxiprogesterona"
+  },
+  {
+    "codigo": "LAB-0141",
+    "nome": "Aldosterona",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "aldosterona"
+  },
+  {
+    "codigo": "LAB-0142",
+    "nome": "Renina",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "renina"
+  },
+  {
+    "codigo": "LAB-0143",
+    "nome": "Relação aldosterona/renina",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "relacao-aldosterona-renina"
+  },
+  {
+    "codigo": "LAB-0144",
+    "nome": "Metanefrinas plasmáticas",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "metanefrinas-plasmaticas"
+  },
+  {
+    "codigo": "LAB-0145",
+    "nome": "Normetanefrinas plasmáticas",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "normetanefrinas-plasmaticas"
+  },
+  {
+    "codigo": "LAB-0146",
+    "nome": "Catecolaminas plasmáticas",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "catecolaminas-plasmaticas"
+  },
+  {
+    "codigo": "LAB-0147",
+    "nome": "Hormônio do crescimento (GH)",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hormonio-do-crescimento-gh"
+  },
+  {
+    "codigo": "LAB-0148",
+    "nome": "IGF-1",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "igf-1"
+  },
+  {
+    "codigo": "LAB-0149",
+    "nome": "Prolactina",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "prolactina"
+  },
+  {
+    "codigo": "LAB-0150",
+    "nome": "FSH",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fsh"
+  },
+  {
+    "codigo": "LAB-0151",
+    "nome": "LH",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "lh"
+  },
+  {
+    "codigo": "LAB-0152",
+    "nome": "Estradiol",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "estradiol"
+  },
+  {
+    "codigo": "LAB-0153",
+    "nome": "Progesterona",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "progesterona"
+  },
+  {
+    "codigo": "LAB-0154",
+    "nome": "Testosterona total",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "testosterona-total"
+  },
+  {
+    "codigo": "LAB-0155",
+    "nome": "Testosterona livre",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "testosterona-livre"
+  },
+  {
+    "codigo": "LAB-0156",
+    "nome": "SHBG",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "shbg"
+  },
+  {
+    "codigo": "LAB-0157",
+    "nome": "Androstenediona",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "androstenediona"
+  },
+  {
+    "codigo": "LAB-0158",
+    "nome": "Hormônio antimülleriano (AMH)",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hormonio-antimulleriano-amh"
+  },
+  {
+    "codigo": "LAB-0159",
+    "nome": "Inibina B",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "inibina-b"
+  },
+  {
+    "codigo": "LAB-0160",
+    "nome": "Paratormônio (PTH)",
+    "categoria": "Hormônios e endocrinologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "paratormonio-pth"
+  },
+  {
+    "codigo": "LAB-0161",
+    "nome": "Beta-hCG qualitativo",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "beta-hcg-qualitativo"
+  },
+  {
+    "codigo": "LAB-0162",
+    "nome": "Beta-hCG quantitativo",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "beta-hcg-quantitativo"
+  },
+  {
+    "codigo": "LAB-0163",
+    "nome": "PAPP-A",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "papp-a"
+  },
+  {
+    "codigo": "LAB-0164",
+    "nome": "Beta-hCG livre",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "beta-hcg-livre"
+  },
+  {
+    "codigo": "LAB-0165",
+    "nome": "Alfafetoproteína materna",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "alfafetoproteina-materna"
+  },
+  {
+    "codigo": "LAB-0166",
+    "nome": "Estriol não conjugado",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "estriol-nao-conjugado"
+  },
+  {
+    "codigo": "LAB-0167",
+    "nome": "Inibina A",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "inibina-a"
+  },
+  {
+    "codigo": "LAB-0168",
+    "nome": "Teste quádruplo pré-natal",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "teste-quadruplo-pre-natal"
+  },
+  {
+    "codigo": "LAB-0169",
+    "nome": "Espermograma",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "espermograma"
+  },
+  {
+    "codigo": "LAB-0170",
+    "nome": "Contagem de espermatozoides pós-vasectomia",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "contagem-de-espermatozoides-pos-vasectomia"
+  },
+  {
+    "codigo": "LAB-0171",
+    "nome": "Anticorpos antiespermatozoides",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpos-antiespermatozoides"
+  },
+  {
+    "codigo": "LAB-0172",
+    "nome": "Fibronectina fetal",
+    "categoria": "Fertilidade e gestação",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fibronectina-fetal"
+  },
+  {
+    "codigo": "LAB-0173",
+    "nome": "Alfafetoproteína (AFP)",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "alfafetoproteina-afp"
+  },
+  {
+    "codigo": "LAB-0174",
+    "nome": "Antígeno carcinoembrionário (CEA)",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "antigeno-carcinoembrionario-cea"
+  },
+  {
+    "codigo": "LAB-0175",
+    "nome": "CA 125",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ca-125"
+  },
+  {
+    "codigo": "LAB-0176",
+    "nome": "CA 15-3",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ca-15-3"
+  },
+  {
+    "codigo": "LAB-0177",
+    "nome": "CA 19-9",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ca-19-9"
+  },
+  {
+    "codigo": "LAB-0178",
+    "nome": "CA 72-4",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ca-72-4"
+  },
+  {
+    "codigo": "LAB-0179",
+    "nome": "PSA total",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "psa-total"
+  },
+  {
+    "codigo": "LAB-0180",
+    "nome": "PSA livre",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "psa-livre"
+  },
+  {
+    "codigo": "LAB-0181",
+    "nome": "Relação PSA livre/total",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "relacao-psa-livre-total"
+  },
+  {
+    "codigo": "LAB-0182",
+    "nome": "Beta-2 microglobulina",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "beta-2-microglobulina"
+  },
+  {
+    "codigo": "LAB-0183",
+    "nome": "Enolase neurônio-específica (NSE)",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "enolase-neuronio-especifica-nse"
+  },
+  {
+    "codigo": "LAB-0184",
+    "nome": "CYFRA 21-1",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cyfra-21-1"
+  },
+  {
+    "codigo": "LAB-0185",
+    "nome": "Antígeno SCC",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "antigeno-scc"
+  },
+  {
+    "codigo": "LAB-0186",
+    "nome": "HE4",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "he4"
+  },
+  {
+    "codigo": "LAB-0187",
+    "nome": "Índice ROMA",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "indice-roma"
+  },
+  {
+    "codigo": "LAB-0188",
+    "nome": "Cromogranina A",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cromogranina-a"
+  },
+  {
+    "codigo": "LAB-0189",
+    "nome": "Beta-hCG como marcador tumoral",
+    "categoria": "Marcadores tumorais",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "beta-hcg-como-marcador-tumoral"
+  },
+  {
+    "codigo": "LAB-0190",
+    "nome": "Proteína C reativa (PCR)",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "proteina-c-reativa-pcr"
+  },
+  {
+    "codigo": "LAB-0191",
+    "nome": "Proteína C reativa ultrassensível",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "proteina-c-reativa-ultrassensivel"
+  },
+  {
+    "codigo": "LAB-0192",
+    "nome": "Procalcitonina",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "procalcitonina"
+  },
+  {
+    "codigo": "LAB-0193",
+    "nome": "Fator reumatoide",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fator-reumatoide"
+  },
+  {
+    "codigo": "LAB-0194",
+    "nome": "Antiestreptolisina O (ASLO)",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "antiestreptolisina-o-aslo"
+  },
+  {
+    "codigo": "LAB-0195",
+    "nome": "Imunoglobulina IgG",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "imunoglobulina-igg"
+  },
+  {
+    "codigo": "LAB-0196",
+    "nome": "Imunoglobulina IgA",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "imunoglobulina-iga"
+  },
+  {
+    "codigo": "LAB-0197",
+    "nome": "Imunoglobulina IgM",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "imunoglobulina-igm"
+  },
+  {
+    "codigo": "LAB-0198",
+    "nome": "Imunoglobulina IgE total",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "imunoglobulina-ige-total"
+  },
+  {
+    "codigo": "LAB-0199",
+    "nome": "Subclasses de IgG",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "subclasses-de-igg"
+  },
+  {
+    "codigo": "LAB-0200",
+    "nome": "Complemento C3",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "complemento-c3"
+  },
+  {
+    "codigo": "LAB-0201",
+    "nome": "Complemento C4",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "complemento-c4"
+  },
+  {
+    "codigo": "LAB-0202",
+    "nome": "Complemento CH50",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "complemento-ch50"
+  },
+  {
+    "codigo": "LAB-0203",
+    "nome": "Crioglobulinas",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "crioglobulinas"
+  },
+  {
+    "codigo": "LAB-0204",
+    "nome": "Aglutininas frias",
+    "categoria": "Inflamação e imunologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "aglutininas-frias"
+  },
+  {
+    "codigo": "LAB-0205",
+    "nome": "Fator antinuclear (FAN/ANA)",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fator-antinuclear-fan-ana"
+  },
+  {
+    "codigo": "LAB-0206",
+    "nome": "Anticorpo anti-DNA dupla hélice",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anti-dna-dupla-helice"
+  },
+  {
+    "codigo": "LAB-0207",
+    "nome": "Painel ENA",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "painel-ena"
+  },
+  {
+    "codigo": "LAB-0208",
+    "nome": "Anticorpo anti-SSA/Ro",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anti-ssa-ro"
+  },
+  {
+    "codigo": "LAB-0209",
+    "nome": "Anticorpo anti-SSB/La",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anti-ssb-la"
+  },
+  {
+    "codigo": "LAB-0210",
+    "nome": "Anticorpo anti-Sm",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anti-sm"
+  },
+  {
+    "codigo": "LAB-0211",
+    "nome": "Anticorpo anti-RNP",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anti-rnp"
+  },
+  {
+    "codigo": "LAB-0212",
+    "nome": "Anticorpo anti-Scl-70",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anti-scl-70"
+  },
+  {
+    "codigo": "LAB-0213",
+    "nome": "Anticorpo anti-Jo-1",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anti-jo-1"
+  },
+  {
+    "codigo": "LAB-0214",
+    "nome": "Anticorpo anticentrômero",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anticentromero"
+  },
+  {
+    "codigo": "LAB-0215",
+    "nome": "Anticorpo anti-CCP",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-anti-ccp"
+  },
+  {
+    "codigo": "LAB-0216",
+    "nome": "ANCA citoplasmático (c-ANCA)",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anca-citoplasmatico-c-anca"
+  },
+  {
+    "codigo": "LAB-0217",
+    "nome": "ANCA perinuclear (p-ANCA)",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anca-perinuclear-p-anca"
+  },
+  {
+    "codigo": "LAB-0218",
+    "nome": "Anticardiolipina IgG",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticardiolipina-igg"
+  },
+  {
+    "codigo": "LAB-0219",
+    "nome": "Anticardiolipina IgM",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticardiolipina-igm"
+  },
+  {
+    "codigo": "LAB-0220",
+    "nome": "Anti-beta-2-glicoproteína I IgG",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anti-beta-2-glicoproteina-i-igg"
+  },
+  {
+    "codigo": "LAB-0221",
+    "nome": "Anti-beta-2-glicoproteína I IgM",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anti-beta-2-glicoproteina-i-igm"
+  },
+  {
+    "codigo": "LAB-0222",
+    "nome": "Anticorpo antiendomísio IgA",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antiendomisio-iga"
+  },
+  {
+    "codigo": "LAB-0223",
+    "nome": "Anticorpo antiendomísio IgG",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antiendomisio-igg"
+  },
+  {
+    "codigo": "LAB-0224",
+    "nome": "Anticorpo antitransglutaminase IgA",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antitransglutaminase-iga"
+  },
+  {
+    "codigo": "LAB-0225",
+    "nome": "Anticorpo antitransglutaminase IgG",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antitransglutaminase-igg"
+  },
+  {
+    "codigo": "LAB-0226",
+    "nome": "Anticorpo antigliadina deamidada IgA",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antigliadina-deamidada-iga"
+  },
+  {
+    "codigo": "LAB-0227",
+    "nome": "Anticorpo antigliadina deamidada IgG",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antigliadina-deamidada-igg"
+  },
+  {
+    "codigo": "LAB-0228",
+    "nome": "Anticorpo antimicrossomal hepático e renal (anti-LKM)",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antimicrossomal-hepatico-e-renal-anti-lkm"
+  },
+  {
+    "codigo": "LAB-0229",
+    "nome": "Anticorpo antimitocôndria",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antimitocondria"
+  },
+  {
+    "codigo": "LAB-0230",
+    "nome": "Anticorpo antimúsculo liso",
+    "categoria": "Autoimunidade",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anticorpo-antimusculo-liso"
+  },
+  {
+    "codigo": "LAB-0231",
+    "nome": "HIV 1 e 2 - teste combinado Ag/Ac",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hiv-1-e-2-teste-combinado-ag-ac"
+  },
+  {
+    "codigo": "LAB-0232",
+    "nome": "Carga viral do HIV",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "carga-viral-do-hiv"
+  },
+  {
+    "codigo": "LAB-0233",
+    "nome": "Hepatite A - anti-HAV IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-a-anti-hav-igm"
+  },
+  {
+    "codigo": "LAB-0234",
+    "nome": "Hepatite A - anti-HAV total",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-a-anti-hav-total"
+  },
+  {
+    "codigo": "LAB-0235",
+    "nome": "Hepatite B - HBsAg",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-b-hbsag"
+  },
+  {
+    "codigo": "LAB-0236",
+    "nome": "Hepatite B - anti-HBs",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-b-anti-hbs"
+  },
+  {
+    "codigo": "LAB-0237",
+    "nome": "Hepatite B - anti-HBc total",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-b-anti-hbc-total"
+  },
+  {
+    "codigo": "LAB-0238",
+    "nome": "Hepatite B - anti-HBc IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-b-anti-hbc-igm"
+  },
+  {
+    "codigo": "LAB-0239",
+    "nome": "Hepatite B - HBeAg",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-b-hbeag"
+  },
+  {
+    "codigo": "LAB-0240",
+    "nome": "Hepatite B - anti-HBe",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-b-anti-hbe"
+  },
+  {
+    "codigo": "LAB-0241",
+    "nome": "Hepatite C - anti-HCV",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-c-anti-hcv"
+  },
+  {
+    "codigo": "LAB-0242",
+    "nome": "Carga viral da hepatite C",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "carga-viral-da-hepatite-c"
+  },
+  {
+    "codigo": "LAB-0243",
+    "nome": "Sífilis - VDRL",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "sifilis-vdrl"
+  },
+  {
+    "codigo": "LAB-0244",
+    "nome": "Sífilis - RPR",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "sifilis-rpr"
+  },
+  {
+    "codigo": "LAB-0245",
+    "nome": "Sífilis - teste treponêmico",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "sifilis-teste-treponemico"
+  },
+  {
+    "codigo": "LAB-0246",
+    "nome": "Toxoplasmose IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "toxoplasmose-igg"
+  },
+  {
+    "codigo": "LAB-0247",
+    "nome": "Toxoplasmose IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "toxoplasmose-igm"
+  },
+  {
+    "codigo": "LAB-0248",
+    "nome": "Avidez de IgG para toxoplasmose",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "avidez-de-igg-para-toxoplasmose"
+  },
+  {
+    "codigo": "LAB-0249",
+    "nome": "Rubéola IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "rubeola-igg"
+  },
+  {
+    "codigo": "LAB-0250",
+    "nome": "Rubéola IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "rubeola-igm"
+  },
+  {
+    "codigo": "LAB-0251",
+    "nome": "Citomegalovírus IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "citomegalovirus-igg"
+  },
+  {
+    "codigo": "LAB-0252",
+    "nome": "Citomegalovírus IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "citomegalovirus-igm"
+  },
+  {
+    "codigo": "LAB-0253",
+    "nome": "Avidez de IgG para citomegalovírus",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "avidez-de-igg-para-citomegalovirus"
+  },
+  {
+    "codigo": "LAB-0254",
+    "nome": "Epstein-Barr VCA IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "epstein-barr-vca-igm"
+  },
+  {
+    "codigo": "LAB-0255",
+    "nome": "Epstein-Barr VCA IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "epstein-barr-vca-igg"
+  },
+  {
+    "codigo": "LAB-0256",
+    "nome": "Epstein-Barr EBNA IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "epstein-barr-ebna-igg"
+  },
+  {
+    "codigo": "LAB-0257",
+    "nome": "Herpes simples 1 IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "herpes-simples-1-igg"
+  },
+  {
+    "codigo": "LAB-0258",
+    "nome": "Herpes simples 1 IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "herpes-simples-1-igm"
+  },
+  {
+    "codigo": "LAB-0259",
+    "nome": "Herpes simples 2 IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "herpes-simples-2-igg"
+  },
+  {
+    "codigo": "LAB-0260",
+    "nome": "Herpes simples 2 IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "herpes-simples-2-igm"
+  },
+  {
+    "codigo": "LAB-0261",
+    "nome": "Varicela-zóster IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "varicela-zoster-igg"
+  },
+  {
+    "codigo": "LAB-0262",
+    "nome": "Varicela-zóster IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "varicela-zoster-igm"
+  },
+  {
+    "codigo": "LAB-0263",
+    "nome": "Dengue NS1",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "dengue-ns1"
+  },
+  {
+    "codigo": "LAB-0264",
+    "nome": "Dengue IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "dengue-igm"
+  },
+  {
+    "codigo": "LAB-0265",
+    "nome": "Dengue IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "dengue-igg"
+  },
+  {
+    "codigo": "LAB-0266",
+    "nome": "Chikungunya IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "chikungunya-igm"
+  },
+  {
+    "codigo": "LAB-0267",
+    "nome": "Chikungunya IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "chikungunya-igg"
+  },
+  {
+    "codigo": "LAB-0268",
+    "nome": "Zika IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "zika-igm"
+  },
+  {
+    "codigo": "LAB-0269",
+    "nome": "Zika IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "zika-igg"
+  },
+  {
+    "codigo": "LAB-0270",
+    "nome": "HTLV 1 e 2",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "htlv-1-e-2"
+  },
+  {
+    "codigo": "LAB-0271",
+    "nome": "Doença de Chagas - sorologia",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "doenca-de-chagas-sorologia"
+  },
+  {
+    "codigo": "LAB-0272",
+    "nome": "Leptospirose IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "leptospirose-igm"
+  },
+  {
+    "codigo": "LAB-0273",
+    "nome": "Brucelose - sorologia",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "brucelose-sorologia"
+  },
+  {
+    "codigo": "LAB-0274",
+    "nome": "Mononucleose - anticorpos heterófilos",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "mononucleose-anticorpos-heterofilos"
+  },
+  {
+    "codigo": "LAB-0275",
+    "nome": "Helicobacter pylori IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "helicobacter-pylori-igg"
+  },
+  {
+    "codigo": "LAB-0276",
+    "nome": "Tuberculose - teste IGRA",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tuberculose-teste-igra"
+  },
+  {
+    "codigo": "LAB-0277",
+    "nome": "COVID-19 - antígeno",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "covid-19-antigeno"
+  },
+  {
+    "codigo": "LAB-0278",
+    "nome": "COVID-19 - anticorpos IgG",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "covid-19-anticorpos-igg"
+  },
+  {
+    "codigo": "LAB-0279",
+    "nome": "COVID-19 - anticorpos IgM",
+    "categoria": "Sorologias e doenças infecciosas",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "covid-19-anticorpos-igm"
+  },
+  {
+    "codigo": "LAB-0280",
+    "nome": "Urocultura",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "urocultura"
+  },
+  {
+    "codigo": "LAB-0281",
+    "nome": "Hemocultura",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hemocultura"
+  },
+  {
+    "codigo": "LAB-0282",
+    "nome": "Coprocultura",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "coprocultura"
+  },
+  {
+    "codigo": "LAB-0283",
+    "nome": "Cultura de secreção de orofaringe",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-de-secrecao-de-orofaringe"
+  },
+  {
+    "codigo": "LAB-0284",
+    "nome": "Cultura de secreção nasal",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-de-secrecao-nasal"
+  },
+  {
+    "codigo": "LAB-0285",
+    "nome": "Cultura de ferida",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-de-ferida"
+  },
+  {
+    "codigo": "LAB-0286",
+    "nome": "Cultura de escarro",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-de-escarro"
+  },
+  {
+    "codigo": "LAB-0287",
+    "nome": "Cultura de secreção vaginal",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-de-secrecao-vaginal"
+  },
+  {
+    "codigo": "LAB-0288",
+    "nome": "Cultura de secreção uretral",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-de-secrecao-uretral"
+  },
+  {
+    "codigo": "LAB-0289",
+    "nome": "Cultura de sêmen",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-de-semen"
+  },
+  {
+    "codigo": "LAB-0290",
+    "nome": "Cultura para fungos",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-para-fungos"
+  },
+  {
+    "codigo": "LAB-0291",
+    "nome": "Cultura para micobactérias",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-para-micobacterias"
+  },
+  {
+    "codigo": "LAB-0292",
+    "nome": "Bacterioscopia pelo Gram",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "bacterioscopia-pelo-gram"
+  },
+  {
+    "codigo": "LAB-0293",
+    "nome": "Pesquisa de bacilos álcool-ácido resistentes (BAAR)",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-bacilos-alcool-acido-resistentes-baar"
+  },
+  {
+    "codigo": "LAB-0294",
+    "nome": "Exame micológico direto",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "exame-micologico-direto"
+  },
+  {
+    "codigo": "LAB-0295",
+    "nome": "Cultura bacteriana com antibiograma",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cultura-bacteriana-com-antibiograma"
+  },
+  {
+    "codigo": "LAB-0296",
+    "nome": "Rastreamento de MRSA",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "rastreamento-de-mrsa"
+  },
+  {
+    "codigo": "LAB-0297",
+    "nome": "Pesquisa de Streptococcus do grupo B",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-streptococcus-do-grupo-b"
+  },
+  {
+    "codigo": "LAB-0298",
+    "nome": "Clostridioides difficile - toxinas A e B",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "clostridioides-difficile-toxinas-a-e-b"
+  },
+  {
+    "codigo": "LAB-0299",
+    "nome": "Clostridioides difficile - PCR",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "clostridioides-difficile-pcr"
+  },
+  {
+    "codigo": "LAB-0300",
+    "nome": "Rotavírus - antígeno",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "rotavirus-antigeno"
+  },
+  {
+    "codigo": "LAB-0301",
+    "nome": "Adenovírus em fezes - antígeno",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "adenovirus-em-fezes-antigeno"
+  },
+  {
+    "codigo": "LAB-0302",
+    "nome": "Helicobacter pylori - antígeno fecal",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "helicobacter-pylori-antigeno-fecal"
+  },
+  {
+    "codigo": "LAB-0303",
+    "nome": "Teste respiratório da ureia para Helicobacter pylori",
+    "categoria": "Microbiologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "teste-respiratorio-da-ureia-para-helicobacter-pylori"
+  },
+  {
+    "codigo": "LAB-0304",
+    "nome": "Urina tipo I (EAS)",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "urina-tipo-i-eas"
+  },
+  {
+    "codigo": "LAB-0305",
+    "nome": "Sedimento urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "sedimento-urinario"
+  },
+  {
+    "codigo": "LAB-0306",
+    "nome": "Proteína urinária de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "proteina-urinaria-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0307",
+    "nome": "Microalbuminúria de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "microalbuminuria-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0308",
+    "nome": "Relação proteína/creatinina urinária",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "relacao-proteina-creatinina-urinaria"
+  },
+  {
+    "codigo": "LAB-0309",
+    "nome": "Creatinina urinária",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "creatinina-urinaria"
+  },
+  {
+    "codigo": "LAB-0310",
+    "nome": "Creatinina urinária de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "creatinina-urinaria-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0311",
+    "nome": "Ureia urinária de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ureia-urinaria-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0312",
+    "nome": "Ácido úrico urinário de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-urico-urinario-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0313",
+    "nome": "Sódio urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "sodio-urinario"
+  },
+  {
+    "codigo": "LAB-0314",
+    "nome": "Potássio urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "potassio-urinario"
+  },
+  {
+    "codigo": "LAB-0315",
+    "nome": "Cloro urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cloro-urinario"
+  },
+  {
+    "codigo": "LAB-0316",
+    "nome": "Cálcio urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "calcio-urinario"
+  },
+  {
+    "codigo": "LAB-0317",
+    "nome": "Cálcio urinário de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "calcio-urinario-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0318",
+    "nome": "Fósforo urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fosforo-urinario"
+  },
+  {
+    "codigo": "LAB-0319",
+    "nome": "Magnésio urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "magnesio-urinario"
+  },
+  {
+    "codigo": "LAB-0320",
+    "nome": "Oxalato urinário de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "oxalato-urinario-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0321",
+    "nome": "Citrato urinário de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "citrato-urinario-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0322",
+    "nome": "Cistina urinária",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cistina-urinaria"
+  },
+  {
+    "codigo": "LAB-0323",
+    "nome": "Proteína de Bence Jones",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "proteina-de-bence-jones"
+  },
+  {
+    "codigo": "LAB-0324",
+    "nome": "Pesquisa de eosinófilos na urina",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-eosinofilos-na-urina"
+  },
+  {
+    "codigo": "LAB-0325",
+    "nome": "Teste de gravidez na urina",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "teste-de-gravidez-na-urina"
+  },
+  {
+    "codigo": "LAB-0326",
+    "nome": "Mioglobina urinária",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "mioglobina-urinaria"
+  },
+  {
+    "codigo": "LAB-0327",
+    "nome": "Cobre urinário de 24 horas",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cobre-urinario-de-24-horas"
+  },
+  {
+    "codigo": "LAB-0328",
+    "nome": "Cortisol livre urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cortisol-livre-urinario"
+  },
+  {
+    "codigo": "LAB-0329",
+    "nome": "Metanefrinas urinárias",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "metanefrinas-urinarias"
+  },
+  {
+    "codigo": "LAB-0330",
+    "nome": "Catecolaminas urinárias",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "catecolaminas-urinarias"
+  },
+  {
+    "codigo": "LAB-0331",
+    "nome": "Ácido 5-hidroxi-indolacético (5-HIAA) urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-5-hidroxi-indolacetico-5-hiaa-urinario"
+  },
+  {
+    "codigo": "LAB-0332",
+    "nome": "Ácido vanilmandélico (VMA) urinário",
+    "categoria": "Urinálise",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-vanilmandelico-vma-urinario"
+  },
+  {
+    "codigo": "LAB-0333",
+    "nome": "Exame parasitológico de fezes - 1 amostra",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "exame-parasitologico-de-fezes-1-amostra"
+  },
+  {
+    "codigo": "LAB-0334",
+    "nome": "Exame parasitológico de fezes - 3 amostras",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "exame-parasitologico-de-fezes-3-amostras"
+  },
+  {
+    "codigo": "LAB-0335",
+    "nome": "Pesquisa de Giardia - antígeno",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-giardia-antigeno"
+  },
+  {
+    "codigo": "LAB-0336",
+    "nome": "Pesquisa de Cryptosporidium",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-cryptosporidium"
+  },
+  {
+    "codigo": "LAB-0337",
+    "nome": "Pesquisa de sangue oculto nas fezes",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-sangue-oculto-nas-fezes"
+  },
+  {
+    "codigo": "LAB-0338",
+    "nome": "Calprotectina fecal",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "calprotectina-fecal"
+  },
+  {
+    "codigo": "LAB-0339",
+    "nome": "Elastase pancreática fecal",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "elastase-pancreatica-fecal"
+  },
+  {
+    "codigo": "LAB-0340",
+    "nome": "Gordura fecal",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "gordura-fecal"
+  },
+  {
+    "codigo": "LAB-0341",
+    "nome": "Substâncias redutoras nas fezes",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "substancias-redutoras-nas-fezes"
+  },
+  {
+    "codigo": "LAB-0342",
+    "nome": "pH fecal",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ph-fecal"
+  },
+  {
+    "codigo": "LAB-0343",
+    "nome": "Pesquisa de leucócitos fecais",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "pesquisa-de-leucocitos-fecais"
+  },
+  {
+    "codigo": "LAB-0344",
+    "nome": "Alfa-1-antitripsina fecal",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "alfa-1-antitripsina-fecal"
+  },
+  {
+    "codigo": "LAB-0345",
+    "nome": "Norovírus - PCR em fezes",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "norovirus-pcr-em-fezes"
+  },
+  {
+    "codigo": "LAB-0346",
+    "nome": "Painel molecular gastrointestinal",
+    "categoria": "Fezes e parasitologia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "painel-molecular-gastrointestinal"
+  },
+  {
+    "codigo": "LAB-0347",
+    "nome": "IgE total",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-total"
+  },
+  {
+    "codigo": "LAB-0348",
+    "nome": "IgE específica para Dermatophagoides pteronyssinus",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-dermatophagoides-pteronyssinus"
+  },
+  {
+    "codigo": "LAB-0349",
+    "nome": "IgE específica para Dermatophagoides farinae",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-dermatophagoides-farinae"
+  },
+  {
+    "codigo": "LAB-0350",
+    "nome": "IgE específica para Blomia tropicalis",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-blomia-tropicalis"
+  },
+  {
+    "codigo": "LAB-0351",
+    "nome": "IgE específica para epitélio de gato",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-epitelio-de-gato"
+  },
+  {
+    "codigo": "LAB-0352",
+    "nome": "IgE específica para epitélio de cão",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-epitelio-de-cao"
+  },
+  {
+    "codigo": "LAB-0353",
+    "nome": "IgE específica para barata",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-barata"
+  },
+  {
+    "codigo": "LAB-0354",
+    "nome": "IgE específica para fungos",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-fungos"
+  },
+  {
+    "codigo": "LAB-0355",
+    "nome": "IgE específica para pólens",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-polens"
+  },
+  {
+    "codigo": "LAB-0356",
+    "nome": "IgE específica para leite de vaca",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-leite-de-vaca"
+  },
+  {
+    "codigo": "LAB-0357",
+    "nome": "IgE específica para clara de ovo",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-clara-de-ovo"
+  },
+  {
+    "codigo": "LAB-0358",
+    "nome": "IgE específica para trigo",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-trigo"
+  },
+  {
+    "codigo": "LAB-0359",
+    "nome": "IgE específica para soja",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-soja"
+  },
+  {
+    "codigo": "LAB-0360",
+    "nome": "IgE específica para amendoim",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-amendoim"
+  },
+  {
+    "codigo": "LAB-0361",
+    "nome": "IgE específica para camarão",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-camarao"
+  },
+  {
+    "codigo": "LAB-0362",
+    "nome": "IgE específica para peixe",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-peixe"
+  },
+  {
+    "codigo": "LAB-0363",
+    "nome": "IgE específica para castanhas",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-castanhas"
+  },
+  {
+    "codigo": "LAB-0364",
+    "nome": "IgE específica para látex",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ige-especifica-para-latex"
+  },
+  {
+    "codigo": "LAB-0365",
+    "nome": "Painel respiratório de alérgenos",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "painel-respiratorio-de-alergenos"
+  },
+  {
+    "codigo": "LAB-0366",
+    "nome": "Painel alimentar de alérgenos",
+    "categoria": "Alergia",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "painel-alimentar-de-alergenos"
+  },
+  {
+    "codigo": "LAB-0367",
+    "nome": "Triagem toxicológica em urina",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "triagem-toxicologica-em-urina"
+  },
+  {
+    "codigo": "LAB-0368",
+    "nome": "Cocaína e metabólitos",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cocaina-e-metabolitos"
+  },
+  {
+    "codigo": "LAB-0369",
+    "nome": "Canabinoides (THC)",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "canabinoides-thc"
+  },
+  {
+    "codigo": "LAB-0370",
+    "nome": "Anfetaminas",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "anfetaminas"
+  },
+  {
+    "codigo": "LAB-0371",
+    "nome": "Metanfetaminas",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "metanfetaminas"
+  },
+  {
+    "codigo": "LAB-0372",
+    "nome": "Opiáceos",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "opiaceos"
+  },
+  {
+    "codigo": "LAB-0373",
+    "nome": "Benzodiazepínicos",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "benzodiazepinicos"
+  },
+  {
+    "codigo": "LAB-0374",
+    "nome": "Barbitúricos",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "barbituricos"
+  },
+  {
+    "codigo": "LAB-0375",
+    "nome": "Metadona",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "metadona"
+  },
+  {
+    "codigo": "LAB-0376",
+    "nome": "Fenciclidina (PCP)",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fenciclidina-pcp"
+  },
+  {
+    "codigo": "LAB-0377",
+    "nome": "Antidepressivos tricíclicos",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "antidepressivos-triciclicos"
+  },
+  {
+    "codigo": "LAB-0378",
+    "nome": "Álcool etílico no sangue",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "alcool-etilico-no-sangue"
+  },
+  {
+    "codigo": "LAB-0379",
+    "nome": "Etilglicuronídeo (EtG)",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "etilglicuronideo-etg"
+  },
+  {
+    "codigo": "LAB-0380",
+    "nome": "Cotinina",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cotinina"
+  },
+  {
+    "codigo": "LAB-0381",
+    "nome": "Chumbo no sangue",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "chumbo-no-sangue"
+  },
+  {
+    "codigo": "LAB-0382",
+    "nome": "Mercúrio no sangue",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "mercurio-no-sangue"
+  },
+  {
+    "codigo": "LAB-0383",
+    "nome": "Mercúrio urinário",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "mercurio-urinario"
+  },
+  {
+    "codigo": "LAB-0384",
+    "nome": "Arsênio no sangue",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "arsenio-no-sangue"
+  },
+  {
+    "codigo": "LAB-0385",
+    "nome": "Arsênio urinário",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "arsenio-urinario"
+  },
+  {
+    "codigo": "LAB-0386",
+    "nome": "Cádmio no sangue",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cadmio-no-sangue"
+  },
+  {
+    "codigo": "LAB-0387",
+    "nome": "Cádmio urinário",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "cadmio-urinario"
+  },
+  {
+    "codigo": "LAB-0388",
+    "nome": "Ácido hipúrico urinário",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-hipurico-urinario"
+  },
+  {
+    "codigo": "LAB-0389",
+    "nome": "Ácido metil-hipúrico urinário",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-metil-hipurico-urinario"
+  },
+  {
+    "codigo": "LAB-0390",
+    "nome": "Ácido mandélico urinário",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-mandelico-urinario"
+  },
+  {
+    "codigo": "LAB-0391",
+    "nome": "Ácido fenilglioxílico urinário",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-fenilglioxilico-urinario"
+  },
+  {
+    "codigo": "LAB-0392",
+    "nome": "Ácido trans,trans-mucônico urinário",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-trans-trans-muconico-urinario"
+  },
+  {
+    "codigo": "LAB-0393",
+    "nome": "Ácido delta-aminolevulínico urinário (ALA-U)",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-delta-aminolevulinico-urinario-ala-u"
+  },
+  {
+    "codigo": "LAB-0394",
+    "nome": "Carboxi-hemoglobina",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "carboxi-hemoglobina"
+  },
+  {
+    "codigo": "LAB-0395",
+    "nome": "Meta-hemoglobina",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "meta-hemoglobina"
+  },
+  {
+    "codigo": "LAB-0396",
+    "nome": "Colinesterase plasmática",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "colinesterase-plasmatica"
+  },
+  {
+    "codigo": "LAB-0397",
+    "nome": "Colinesterase eritrocitária",
+    "categoria": "Toxicologia e ocupacional",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "colinesterase-eritrocitaria"
+  },
+  {
+    "codigo": "LAB-0398",
+    "nome": "Lítio",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "litio"
+  },
+  {
+    "codigo": "LAB-0399",
+    "nome": "Digoxina",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "digoxina"
+  },
+  {
+    "codigo": "LAB-0400",
+    "nome": "Carbamazepina",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "carbamazepina"
+  },
+  {
+    "codigo": "LAB-0401",
+    "nome": "Fenitoína",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fenitoina"
+  },
+  {
+    "codigo": "LAB-0402",
+    "nome": "Ácido valproico",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "acido-valproico"
+  },
+  {
+    "codigo": "LAB-0403",
+    "nome": "Fenobarbital",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fenobarbital"
+  },
+  {
+    "codigo": "LAB-0404",
+    "nome": "Vancomicina",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "vancomicina"
+  },
+  {
+    "codigo": "LAB-0405",
+    "nome": "Gentamicina",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "gentamicina"
+  },
+  {
+    "codigo": "LAB-0406",
+    "nome": "Amicacina",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "amicacina"
+  },
+  {
+    "codigo": "LAB-0407",
+    "nome": "Tacrolimo",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "tacrolimo"
+  },
+  {
+    "codigo": "LAB-0408",
+    "nome": "Ciclosporina",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ciclosporina"
+  },
+  {
+    "codigo": "LAB-0409",
+    "nome": "Teofilina",
+    "categoria": "Monitoramento terapêutico",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "teofilina"
+  },
+  {
+    "codigo": "LAB-0410",
+    "nome": "SARS-CoV-2 - RT-PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "sars-cov-2-rt-pcr"
+  },
+  {
+    "codigo": "LAB-0411",
+    "nome": "Painel molecular respiratório",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "painel-molecular-respiratorio"
+  },
+  {
+    "codigo": "LAB-0412",
+    "nome": "Influenza A e B - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "influenza-a-e-b-pcr"
+  },
+  {
+    "codigo": "LAB-0413",
+    "nome": "Vírus sincicial respiratório - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "virus-sincicial-respiratorio-pcr"
+  },
+  {
+    "codigo": "LAB-0414",
+    "nome": "HPV - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hpv-pcr"
+  },
+  {
+    "codigo": "LAB-0415",
+    "nome": "Genotipagem de HPV",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "genotipagem-de-hpv"
+  },
+  {
+    "codigo": "LAB-0416",
+    "nome": "Chlamydia trachomatis - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "chlamydia-trachomatis-pcr"
+  },
+  {
+    "codigo": "LAB-0417",
+    "nome": "Neisseria gonorrhoeae - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "neisseria-gonorrhoeae-pcr"
+  },
+  {
+    "codigo": "LAB-0418",
+    "nome": "Mycoplasma genitalium - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "mycoplasma-genitalium-pcr"
+  },
+  {
+    "codigo": "LAB-0419",
+    "nome": "Ureaplasma urealyticum - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "ureaplasma-urealyticum-pcr"
+  },
+  {
+    "codigo": "LAB-0420",
+    "nome": "Herpes simples 1 e 2 - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "herpes-simples-1-e-2-pcr"
+  },
+  {
+    "codigo": "LAB-0421",
+    "nome": "Citomegalovírus - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "citomegalovirus-pcr"
+  },
+  {
+    "codigo": "LAB-0422",
+    "nome": "Epstein-Barr vírus - PCR",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "epstein-barr-virus-pcr"
+  },
+  {
+    "codigo": "LAB-0423",
+    "nome": "Hepatite B - DNA viral",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-b-dna-viral"
+  },
+  {
+    "codigo": "LAB-0424",
+    "nome": "Hepatite C - RNA viral",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hepatite-c-rna-viral"
+  },
+  {
+    "codigo": "LAB-0425",
+    "nome": "HIV - RNA viral",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "hiv-rna-viral"
+  },
+  {
+    "codigo": "LAB-0426",
+    "nome": "Painel molecular de IST",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "painel-molecular-de-ist"
+  },
+  {
+    "codigo": "LAB-0427",
+    "nome": "BCR-ABL",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "bcr-abl"
+  },
+  {
+    "codigo": "LAB-0428",
+    "nome": "Mutação JAK2 V617F",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "mutacao-jak2-v617f"
+  },
+  {
+    "codigo": "LAB-0429",
+    "nome": "Fator V de Leiden",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "fator-v-de-leiden"
+  },
+  {
+    "codigo": "LAB-0430",
+    "nome": "Mutação da protrombina G20210A",
+    "categoria": "Biologia molecular",
+    "tipo": "Laboratorial",
+    "status": "Ativo",
+    "slug": "mutacao-da-protrombina-g20210a"
+  }
+]
