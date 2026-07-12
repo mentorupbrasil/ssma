@@ -4368,7 +4368,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgb(100 116 139);
-  text-align: left;
+  text-align: center;
   white-space: nowrap;
   vertical-align: middle;
 }
@@ -4378,6 +4378,7 @@
   padding: 0.55rem 0.7rem;
   border-bottom: 1px solid rgb(241 245 249);
   vertical-align: middle;
+  text-align: center;
   font-size: 0.8125rem;
   color: rgb(51 65 85);
   overflow: hidden;
@@ -4401,10 +4402,24 @@
 .empresas-clinica-col-cnpj { width: 15%; }
 .empresas-clinica-col-owner { width: 15%; }
 .empresas-clinica-col-city { width: 12%; }
-.empresas-clinica-col-employees { width: 10%; text-align: center; }
-.empresas-clinica-col-pending { width: 13%; text-align: center; }
-.empresas-clinica-col-status { width: 9%; text-align: center; }
-.empresas-clinica-col-actions { width: 8%; text-align: center; }
+.empresas-clinica-col-employees { width: 10%; }
+.empresas-clinica-col-pending { width: 13%; }
+.empresas-clinica-col-status { width: 9%; }
+.empresas-clinica-col-actions { width: 8%; }
+
+.empresas-clinica-table .empresas-clinica-responsible {
+  text-align: center;
+}
+
+.empresas-clinica-table .status-badge-premium {
+  justify-content: center;
+  margin-inline: auto;
+}
+
+.empresas-clinica-table .colaboradores-empresa-th-actions,
+.empresas-clinica-table .colaboradores-empresa-td-actions {
+  text-align: center;
+}
 
 .empresas-clinica-table thead th.empresas-clinica-col-employees,
 .empresas-clinica-table thead th.empresas-clinica-col-pending,
@@ -4627,7 +4642,28 @@
 
 .colaboradores-clinica-table thead th,
 .colaboradores-clinica-table tbody td {
+  text-align: center;
   vertical-align: middle;
+}
+
+.colaboradores-clinica-table .colaboradores-empresa-name-cell {
+  text-align: center;
+}
+
+.colaboradores-clinica-table .colaboradores-clinica-primary-text {
+  max-width: none;
+  margin-inline: auto;
+}
+
+.colaboradores-clinica-table .status-badge-premium,
+.colaboradores-clinica-table .colaboradores-clinica-badge {
+  justify-content: center;
+  margin-inline: auto;
+}
+
+.colaboradores-clinica-table .colaboradores-empresa-th-actions,
+.colaboradores-clinica-table .colaboradores-empresa-td-actions {
+  text-align: center;
 }
 
 .colaboradores-clinica-table tbody td {
@@ -4803,7 +4839,29 @@
 
 .atendimentos-clinica-table thead th,
 .atendimentos-clinica-table tbody td {
+  text-align: center;
   vertical-align: middle;
+}
+
+.atendimentos-clinica-table .atendimentos-clinica-stack {
+  align-items: center;
+}
+
+.atendimentos-clinica-table .atendimentos-clinica-primary-text,
+.atendimentos-clinica-table .atendimentos-clinica-meta {
+  max-width: none;
+  margin-inline: auto;
+}
+
+.atendimentos-clinica-table .sys-origin-badge,
+.atendimentos-clinica-table .status-badge-premium {
+  justify-content: center;
+  margin-inline: auto;
+}
+
+.atendimentos-clinica-table .colaboradores-empresa-th-actions,
+.atendimentos-clinica-table .colaboradores-empresa-td-actions {
+  text-align: center;
 }
 
 .atendimentos-clinica-table tbody td {
