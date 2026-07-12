@@ -1,24 +1,10 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import {
-  Plus,
-  Search,
-  Tags,
-  CheckCircle2,
-  Building2,
-  CircleSlash,
-  SlidersHorizontal,
-  Eye,
-  Pencil,
-  Copy,
-  Power,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react";
+import { Search, Pencil, Power, Upload, Tags } from "lucide-react";
 import { PageModule } from "@/components/dashboard/PageModule";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
@@ -33,122 +19,42 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  createPriceItem,
-  deletePriceItem,
-  updatePriceItem,
-  type PriceListItemInput,
+  upsertCatalogPrice,
+  toggleCatalogPriceStatus,
+  batchUpdateCatalogPrices,
+  importCatalogPricesFromRows,
+  type PriceCatalogRow,
+  type CompanyPriceRow,
 } from "@/actions/pricing";
 import {
   PRICE_CATEGORY_LABELS,
-  PRICE_CHARGE_LABELS,
   PRICE_STATUS_LABELS,
   formatCurrency,
-  effectivePrice,
 } from "@/lib/pricing";
+import type { PriceListStatus } from "@prisma/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type PriceItem = {
-  id: string;
-  name: string;
-  code: string | null;
-  category: string;
-  defaultPrice: number;
-  negotiatedPrice: number | null;
-  companyId: string | null;
-  chargeType: string;
-  status: string;
-  notes: string | null;
-  validFrom: string | Date | null;
-  validUntil: string | Date | null;
-  company: { id: string; tradeName: string | null; legalName: string } | null;
-  exam: { id: string; name: string } | null;
-};
-
 type CompanyOption = { id: string; label: string };
-
-type Stats = {
-  total: number;
-  active: number;
-  companySpecific: number;
-  withoutDefault: number;
-};
-
 type PriceTab = "padrao" | "empresa";
-type StatFilter = "active" | "company" | "without_price" | null;
 
-const EMPTY_FORM: PriceListItemInput = {
-  name: "",
-  code: "",
-  category: "EXAME",
-  defaultPrice: 0,
-  companyId: null,
-  negotiatedPrice: null,
-  chargeType: "AVULSA",
-  status: "ATIVA",
-  notes: "",
-};
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
 
-const STAT_CARDS: {
-  key: StatFilter;
-  label: string;
-  hint: string;
-  icon: LucideIcon;
-  tone: "primary" | "warning";
-  getValue: (stats: Stats) => number;
-}[] = [
-  {
-    key: "active",
-    label: "Itens ativos",
-    hint: "Com status ativo",
-    icon: CheckCircle2,
-    tone: "primary",
-    getValue: (s) => s.active,
-  },
-  {
-    key: "company",
-    label: "Preços por empresa",
-    hint: "Negociados",
-    icon: Building2,
-    tone: "primary",
-    getValue: (s) => s.companySpecific,
-  },
-  {
-    key: "without_price",
-    label: "Sem preço definido",
-    hint: "Padrão zerado",
-    icon: CircleSlash,
-    tone: "warning",
-    getValue: (s) => s.withoutDefault,
-  },
-];
-
-function formatValidity(item: PriceItem) {
-  const from = item.validFrom ? new Date(item.validFrom) : null;
-  const until = item.validUntil ? new Date(item.validUntil) : null;
+function formatValidity(from: string | null, until: string | null) {
   if (!from && !until) return "—";
-  if (from && until) {
-    return `${format(from, "dd/MM/yyyy", { locale: ptBR })} – ${format(until, "dd/MM/yyyy", { locale: ptBR })}`;
-  }
-  if (until) return `Até ${format(until, "dd/MM/yyyy", { locale: ptBR })}`;
-  return `Desde ${format(from!, "dd/MM/yyyy", { locale: ptBR })}`;
+  const f = from ? format(new Date(from), "dd/MM/yyyy", { locale: ptBR }) : null;
+  const u = until ? format(new Date(until), "dd/MM/yyyy", { locale: ptBR }) : null;
+  if (f && u) return `${f} – ${u}`;
+  if (u) return `Até ${u}`;
+  return `Desde ${f}`;
 }
 
-function toDateInput(value: string | Date | null | undefined) {
+function formatPrice(value: number | null) {
+  if (value == null || value <= 0) return "Não definido";
+  return formatCurrency(value);
+}
+
+function toDateInput(value: string | null | undefined) {
   if (!value) return "";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
@@ -156,185 +62,253 @@ function toDateInput(value: string | Date | null | undefined) {
 }
 
 export function TabelaPrecosClient({
-  items,
-  stats,
+  defaults,
+  companyItems,
   companies,
 }: {
-  items: PriceItem[];
-  stats: Stats;
+  defaults: PriceCatalogRow[];
+  companyItems: CompanyPriceRow[];
   companies: CompanyOption[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const [tab, setTab] = useState<PriceTab>("padrao");
-  const [statFilter, setStatFilter] = useState<StatFilter>(null);
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("");
-  const [scope, setScope] = useState("");
   const [status, setStatus] = useState("");
-  const [chargeType, setChargeType] = useState("");
-  const [companyFilter, setCompanyFilter] = useState("");
-  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<PriceItem | null>(null);
-  const [form, setForm] = useState<PriceListItemInput>(EMPTY_FORM);
-  const [detailItem, setDetailItem] = useState<PriceItem | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editRow, setEditRow] = useState<PriceCatalogRow | CompanyPriceRow | null>(null);
+  const [priceValue, setPriceValue] = useState("");
+  const [negotiatedValue, setNegotiatedValue] = useState("");
+  const [validFrom, setValidFrom] = useState("");
+  const [validUntil, setValidUntil] = useState("");
+  const [editStatus, setEditStatus] = useState<PriceListStatus>("ATIVA");
+  const [companyId, setCompanyId] = useState("");
 
-  const filtered = useMemo(() => {
-    return items.filter((item) => {
-      if (tab === "padrao" && item.companyId) return false;
-      if (tab === "empresa" && !item.companyId) return false;
+  const [batchOpen, setBatchOpen] = useState(false);
+  const [batchPrice, setBatchPrice] = useState("");
 
-      if (statFilter === "active" && item.status !== "ATIVA") return false;
-      if (statFilter === "company" && !item.companyId) return false;
-      if (statFilter === "without_price") {
-        if (item.companyId || item.defaultPrice !== 0) return false;
-      }
-
+  const filteredDefaults = useMemo(() => {
+    return defaults.filter((item) => {
       if (category && item.category !== category) return false;
       if (status && item.status !== status) return false;
-      if (chargeType && item.chargeType !== chargeType) return false;
-      if (companyFilter && item.companyId !== companyFilter) return false;
-
-      if (scope === "padrao" && item.companyId) return false;
-      if (scope === "empresa" && !item.companyId) return false;
-
       if (!q.trim()) return true;
       const term = q.toLowerCase();
-      const companyName = item.company
-        ? `${item.company.tradeName ?? ""} ${item.company.legalName}`.toLowerCase()
-        : "";
       return (
         item.name.toLowerCase().includes(term) ||
         item.code?.toLowerCase().includes(term) ||
-        item.exam?.name.toLowerCase().includes(term) ||
-        companyName.includes(term) ||
-        (PRICE_CATEGORY_LABELS[item.category as keyof typeof PRICE_CATEGORY_LABELS] ?? "")
-          .toLowerCase()
-          .includes(term)
+        item.categoryLabel.toLowerCase().includes(term)
       );
     });
-  }, [items, tab, statFilter, category, status, chargeType, companyFilter, scope, q]);
+  }, [defaults, category, status, q]);
 
-  const hasActiveFilters = Boolean(
-    q || category || scope || status || chargeType || companyFilter || statFilter
-  );
+  const filteredCompany = useMemo(() => {
+    return companyItems.filter((item) => {
+      if (category && item.category !== category) return false;
+      if (status && item.status !== status) return false;
+      if (!q.trim()) return true;
+      const term = q.toLowerCase();
+      return (
+        item.name.toLowerCase().includes(term) ||
+        item.companyName.toLowerCase().includes(term) ||
+        item.code?.toLowerCase().includes(term)
+      );
+    });
+  }, [companyItems, category, status, q]);
 
-  const advancedFilterCount = [chargeType, companyFilter].filter(Boolean).length;
+  const rows = tab === "padrao" ? filteredDefaults : filteredCompany;
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageRows = rows.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const rangeFrom = total === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const rangeTo = Math.min(safePage * pageSize, total);
+
+  const hasFilters = Boolean(q || category || status);
+  const allPageSelected =
+    pageRows.length > 0 && pageRows.every((r) => selected.has(r.key));
 
   function clearFilters() {
     setQ("");
     setCategory("");
-    setScope("");
     setStatus("");
-    setChargeType("");
-    setCompanyFilter("");
-    setStatFilter(null);
-    setMoreFiltersOpen(false);
+    setPage(1);
   }
 
-  function openCreate() {
-    setEditing(null);
-    setForm({
-      ...EMPTY_FORM,
-      companyId: tab === "empresa" ? companyFilter || null : null,
+  function toggleSelect(key: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
     });
-    setOpen(true);
   }
 
-  function openEdit(item: PriceItem) {
-    setEditing(item);
-    setForm({
-      name: item.name,
-      code: item.code ?? "",
-      category: item.category as PriceListItemInput["category"],
-      defaultPrice: item.defaultPrice,
-      companyId: item.companyId,
-      negotiatedPrice: item.negotiatedPrice,
-      chargeType: item.chargeType as PriceListItemInput["chargeType"],
-      status: item.status as PriceListItemInput["status"],
-      notes: item.notes ?? "",
-      examId: item.exam?.id ?? null,
-      validFrom: toDateInput(item.validFrom) || null,
-      validUntil: toDateInput(item.validUntil) || null,
+  function toggleSelectPage() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allPageSelected) {
+        pageRows.forEach((r) => next.delete(r.key));
+      } else {
+        pageRows.forEach((r) => next.add(r.key));
+      }
+      return next;
     });
-    setOpen(true);
   }
 
-  function openDuplicateForCompany(item: PriceItem) {
-    setEditing(null);
-    setForm({
-      name: item.name,
-      code: item.code ?? "",
-      category: item.category as PriceListItemInput["category"],
-      defaultPrice: item.defaultPrice,
-      companyId: companies[0]?.id ?? null,
-      negotiatedPrice: item.negotiatedPrice ?? item.defaultPrice,
-      chargeType: item.chargeType as PriceListItemInput["chargeType"],
-      status: "ATIVA",
-      notes: item.notes ?? "",
-      examId: item.exam?.id ?? null,
-      validFrom: toDateInput(item.validFrom) || null,
-      validUntil: toDateInput(item.validUntil) || null,
+  function openEdit(row: PriceCatalogRow | CompanyPriceRow) {
+    setEditRow(row);
+    if ("companyName" in row) {
+      setPriceValue(row.defaultPrice != null ? String(row.defaultPrice) : "");
+      setNegotiatedValue(row.negotiatedPrice != null ? String(row.negotiatedPrice) : "");
+      setCompanyId(row.companyId);
+    } else {
+      setPriceValue(row.defaultPrice != null ? String(row.defaultPrice) : "");
+      setNegotiatedValue("");
+      setCompanyId("");
+    }
+    setValidFrom(toDateInput(row.validFrom));
+    setValidUntil(toDateInput(row.validUntil));
+    setEditStatus(row.status);
+    setEditOpen(true);
+  }
+
+  async function handleSaveEdit() {
+    if (!editRow) return;
+    const isCompany = "companyName" in editRow;
+    const parsed = priceValue ? parseFloat(priceValue) : null;
+    const negotiated = negotiatedValue ? parseFloat(negotiatedValue) : null;
+
+    const result = await upsertCatalogPrice({
+      priceId: editRow.priceId,
+      examId: editRow.examId,
+      name: editRow.name,
+      category: editRow.category,
+      defaultPrice: isCompany ? editRow.defaultPrice : parsed,
+      companyId: isCompany ? companyId || editRow.companyId : null,
+      negotiatedPrice: isCompany ? negotiated : null,
+      validFrom: validFrom || null,
+      validUntil: validUntil || null,
+      status: editStatus,
     });
-    setTab("empresa");
-    setOpen(true);
-  }
 
-  async function handleSave() {
-    const result = editing
-      ? await updatePriceItem(editing.id, form)
-      : await createPriceItem(form);
     if (!result.success) {
       toast.error(result.error);
       return;
     }
-    toast.success(editing ? "Preço atualizado" : "Preço cadastrado");
-    setOpen(false);
+    toast.success("Preço atualizado.");
+    setEditOpen(false);
+    setEditRow(null);
     startTransition(() => router.refresh());
   }
 
-  async function handleToggleStatus(item: PriceItem) {
-    const nextStatus = item.status === "ATIVA" ? "INATIVA" : "ATIVA";
-    const result = await updatePriceItem(item.id, {
-      name: item.name,
-      code: item.code ?? "",
-      category: item.category as PriceListItemInput["category"],
-      defaultPrice: item.defaultPrice,
-      companyId: item.companyId,
-      negotiatedPrice: item.negotiatedPrice,
-      chargeType: item.chargeType as PriceListItemInput["chargeType"],
-      status: nextStatus,
-      notes: item.notes ?? "",
-      examId: item.exam?.id ?? null,
-      validFrom: toDateInput(item.validFrom) || null,
-      validUntil: toDateInput(item.validUntil) || null,
+  async function handleToggle(row: PriceCatalogRow | CompanyPriceRow) {
+    const result = await toggleCatalogPriceStatus({
+      priceId: row.priceId,
+      examId: row.examId,
+      name: row.name,
+      category: row.category,
+      currentStatus: row.status,
+      defaultPrice: "defaultPrice" in row ? row.defaultPrice : null,
     });
     if (!result.success) {
       toast.error(result.error);
       return;
     }
-    toast.success(nextStatus === "ATIVA" ? "Preço ativado" : "Preço inativado");
+    toast.success(row.status === "ATIVA" ? "Item desativado." : "Item ativado.");
     startTransition(() => router.refresh());
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Excluir este item da tabela de preços?")) return;
-    const result = await deletePriceItem(id);
+  async function handleBatchUpdate() {
+    const price = parseFloat(batchPrice);
+    if (!(price > 0)) {
+      toast.error("Informe um preço válido.");
+      return;
+    }
+    if (tab !== "padrao") {
+      toast.error("Atualização em lote disponível na aba Preços padrão.");
+      return;
+    }
+
+    const items = filteredDefaults
+      .filter((r) => selected.has(r.key))
+      .map((r) => ({
+        priceId: r.priceId,
+        examId: r.examId,
+        name: r.name,
+        category: r.category,
+        defaultPrice: price,
+      }));
+
+    const result = await batchUpdateCatalogPrices({ items });
     if (!result.success) {
       toast.error(result.error);
       return;
     }
-    toast.success("Item removido");
+    toast.success(`${result.updated} preço(s) atualizado(s).`);
+    setBatchOpen(false);
+    setBatchPrice("");
+    setSelected(new Set());
     startTransition(() => router.refresh());
   }
 
-  const resultLabel =
-    filtered.length === 1
-      ? "1 preço encontrado"
-      : `${filtered.length} preços encontrados`;
+  async function handleImportFile(file: File) {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      toast.error("Planilha vazia.");
+      return;
+    }
+
+    const rows: { name: string; price: number; category?: string }[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      const parts = lines[i].split(/[;,\t]/).map((p) => p.trim().replace(/^"|"$/g, ""));
+      if (i === 0 && /nome|item|exame|servi/i.test(parts[0] ?? "")) continue;
+      const name = parts[0];
+      const price = parseFloat((parts[1] ?? "").replace(/\./g, "").replace(",", "."));
+      const category = parts[2];
+      if (!name) continue;
+      rows.push({
+        name,
+        price: Number.isFinite(price) ? price : 0,
+        category: category || undefined,
+      });
+    }
+
+    const result = await importCatalogPricesFromRows(rows);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success(`Importação: ${result.updated} atualizado(s), ${result.skipped} ignorado(s).`);
+    startTransition(() => router.refresh());
+  }
+
+  function rowActions(row: PriceCatalogRow | CompanyPriceRow): SystemActionItem[] {
+    return [
+      {
+        label: "Editar",
+        hint: "Definir ou alterar preço",
+        icon: Pencil,
+        iconTone: "docs",
+        onClick: () => openEdit(row),
+      },
+      {
+        label: row.status === "ATIVA" ? "Desativar" : "Ativar",
+        hint: row.status === "ATIVA" ? "Tornar inativo" : "Reativar item",
+        icon: Power,
+        iconTone: row.status === "ATIVA" ? "cancel" : "done",
+        onClick: () => void handleToggle(row),
+        disabled: pending,
+      },
+    ];
+  }
 
   return (
     <PageModule className="tabela-precos-clinica">
@@ -346,9 +320,42 @@ export function TabelaPrecosClient({
           </p>
         </div>
         <div className="colaboradores-empresa-header-actions">
-          <Button variant="brand" size="sm" className="rounded-lg" onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar preço
+          <button
+            type="button"
+            className="tabela-precos-import-link"
+            onClick={() => fileRef.current?.click()}
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Importar planilha
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv,.txt,.tsv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleImportFile(file);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            variant="brand"
+            size="sm"
+            className="rounded-lg"
+            onClick={() => {
+              if (tab !== "padrao") {
+                toast.message("Selecione a aba Preços padrão para atualizar em lote.");
+                return;
+              }
+              if (selected.size === 0) {
+                toast.message("Selecione um ou mais itens na tabela.");
+                return;
+              }
+              setBatchOpen(true);
+            }}
+          >
+            Atualizar preços
           </Button>
         </div>
       </header>
@@ -362,8 +369,8 @@ export function TabelaPrecosClient({
           )}
           onClick={() => {
             setTab("padrao");
-            if (statFilter === "company") setStatFilter(null);
-            setCompanyFilter("");
+            setSelected(new Set());
+            setPage(1);
           }}
         >
           Preços padrão
@@ -376,599 +383,416 @@ export function TabelaPrecosClient({
           )}
           onClick={() => {
             setTab("empresa");
-            if (statFilter === "without_price") setStatFilter(null);
+            setSelected(new Set());
+            setPage(1);
           }}
         >
           Preços por empresa
         </button>
       </nav>
 
-      <div className="colaboradores-empresa-stats tabela-precos-clinica-stats">
-        {STAT_CARDS.map((card) => {
-          const Icon = card.icon;
-          const isActive = statFilter === card.key;
-          return (
-            <button
-              key={card.key}
-              type="button"
-              onClick={() => {
-                const next = isActive ? null : card.key;
-                setStatFilter(next);
-                if (next === "company") setTab("empresa");
-                if (next === "without_price") setTab("padrao");
-              }}
-              className={cn(
-                "colaboradores-empresa-stat colaboradores-empresa-stat--clickable",
-                isActive && "colaboradores-empresa-stat--active"
-              )}
-            >
-              <span
-                className={cn(
-                  "colaboradores-empresa-stat-icon",
-                  `colaboradores-empresa-stat-icon--${card.tone}`
-                )}
-              >
-                <Icon className="h-4 w-4" aria-hidden />
-              </span>
-              <span className="colaboradores-empresa-stat-body">
-                <span className="colaboradores-empresa-stat-value">
-                  {card.getValue(stats)}
-                </span>
-                <span className="colaboradores-empresa-stat-title">{card.label}</span>
-                <span className="colaboradores-empresa-stat-hint">{card.hint}</span>
-              </span>
-            </button>
-          );
-        })}
+      <div className="tabela-precos-filters">
+        <div className="tabela-precos-search">
+          <Search className="tabela-precos-search-icon" aria-hidden />
+          <Input
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setPage(1);
+            }}
+            placeholder={
+              tab === "padrao"
+                ? "Buscar item"
+                : "Buscar por empresa ou item"
+            }
+            className="tabela-precos-search-input"
+          />
+        </div>
+        <select
+          className="tabela-precos-select"
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setPage(1);
+          }}
+          aria-label="Categoria"
+        >
+          <option value="">Categoria</option>
+          {Object.entries(PRICE_CATEGORY_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <select
+          className="tabela-precos-select"
+          value={status}
+          onChange={(e) => {
+            setStatus(e.target.value);
+            setPage(1);
+          }}
+          aria-label="Status"
+        >
+          <option value="">Status</option>
+          {Object.entries(PRICE_STATUS_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        {hasFilters && (
+          <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>
+            Limpar
+          </Button>
+        )}
+        {tab === "padrao" && selected.size > 0 && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setBatchOpen(true)}
+          >
+            Atualizar {selected.size} selecionado(s)
+          </Button>
+        )}
       </div>
 
-      <div className="colaboradores-empresa-filters">
-        <div className="colaboradores-empresa-filters-row">
-          <div className="colaboradores-empresa-search">
-            <Search className="colaboradores-empresa-search-icon" aria-hidden />
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar por serviço, exame, código ou empresa"
-              aria-label="Buscar preços"
-              className="colaboradores-empresa-search-input"
-            />
+      <div className="colaboradores-empresa-table-wrap relative">
+        <div className="colaboradores-empresa-result-bar">
+          <span className="text-xs text-slate-500">
+            {total === 1 ? "1 item" : `${total} itens`}
+          </span>
+        </div>
+
+        {pageRows.length === 0 ? (
+          <EmptyState
+            icon={Tags}
+            compact
+            title={hasFilters ? "Nenhum item encontrado" : "Nenhum item na tabela"}
+            description={
+              hasFilters
+                ? "Ajuste a busca ou os filtros."
+                : tab === "padrao"
+                  ? "Cadastre exames no módulo Exames para listá-los aqui automaticamente."
+                  : "Ainda não há preços negociados por empresa."
+            }
+          />
+        ) : (
+          <>
+            <div className="hidden lg:block overflow-x-hidden">
+              <table className="colaboradores-empresa-table tabela-precos-clinica-table">
+                <thead>
+                  {tab === "padrao" ? (
+                    <tr>
+                      <th className="tabela-precos-check-col">
+                        <input
+                          type="checkbox"
+                          checked={allPageSelected}
+                          onChange={toggleSelectPage}
+                          aria-label="Selecionar página"
+                        />
+                      </th>
+                      <th>Item</th>
+                      <th>Tipo</th>
+                      <th>Categoria</th>
+                      <th>Preço padrão</th>
+                      <th>Status</th>
+                      <th>Atualizado em</th>
+                      <th>Ações</th>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <th>Empresa</th>
+                      <th>Item</th>
+                      <th>Preço padrão</th>
+                      <th>Preço negociado</th>
+                      <th>Vigência</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  )}
+                </thead>
+                <tbody>
+                  {tab === "padrao" &&
+                    (pageRows as PriceCatalogRow[]).map((item) => (
+                      <tr key={item.key} className="tabela-precos-clinica-row">
+                        <td className="tabela-precos-check-col">
+                          <input
+                            type="checkbox"
+                            checked={selected.has(item.key)}
+                            onChange={() => toggleSelect(item.key)}
+                            aria-label={`Selecionar ${item.name}`}
+                          />
+                        </td>
+                        <td>
+                          <span className="tabela-precos-clinica-primary">{item.name}</span>
+                        </td>
+                        <td>{item.itemType === "EXAME" ? "Exame" : "Serviço"}</td>
+                        <td>{item.categoryLabel}</td>
+                        <td
+                          className={cn(
+                            "tabela-precos-clinica-value",
+                            item.defaultPrice == null && "tabela-precos-undefined"
+                          )}
+                        >
+                          {formatPrice(item.defaultPrice)}
+                        </td>
+                        <td>
+                          <StatusBadge
+                            status={item.status}
+                            label={PRICE_STATUS_LABELS[item.status] ?? item.status}
+                          />
+                        </td>
+                        <td className="whitespace-nowrap text-sm text-slate-600">
+                          {format(new Date(item.updatedAt), "dd/MM/yyyy", { locale: ptBR })}
+                        </td>
+                        <td className="colaboradores-empresa-td-actions">
+                          <SystemActionMenu items={rowActions(item)} />
+                        </td>
+                      </tr>
+                    ))}
+
+                  {tab === "empresa" &&
+                    (pageRows as CompanyPriceRow[]).map((item) => (
+                      <tr key={item.key} className="tabela-precos-clinica-row">
+                        <td>
+                          <span className="tabela-precos-clinica-primary">
+                            {item.companyName}
+                          </span>
+                        </td>
+                        <td>{item.name}</td>
+                        <td
+                          className={cn(
+                            item.defaultPrice == null && "tabela-precos-undefined"
+                          )}
+                        >
+                          {formatPrice(item.defaultPrice)}
+                        </td>
+                        <td
+                          className={cn(
+                            "tabela-precos-clinica-value",
+                            item.negotiatedPrice == null && "tabela-precos-undefined"
+                          )}
+                        >
+                          {formatPrice(item.negotiatedPrice)}
+                        </td>
+                        <td className="text-sm text-slate-600">
+                          {formatValidity(item.validFrom, item.validUntil)}
+                        </td>
+                        <td>
+                          <StatusBadge
+                            status={item.status}
+                            label={PRICE_STATUS_LABELS[item.status] ?? item.status}
+                          />
+                        </td>
+                        <td className="colaboradores-empresa-td-actions">
+                          <SystemActionMenu items={rowActions(item)} />
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="lg:hidden space-y-2 p-3">
+              {tab === "padrao" &&
+                (pageRows as PriceCatalogRow[]).map((item) => (
+                  <div key={item.key} className="tabela-precos-clinica-mobile-card">
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        className="mt-1"
+                        checked={selected.has(item.key)}
+                        onChange={() => toggleSelect(item.key)}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="tabela-precos-clinica-primary">{item.name}</span>
+                        <p className="text-xs text-slate-500">
+                          {item.itemType === "EXAME" ? "Exame" : "Serviço"} ·{" "}
+                          {item.categoryLabel}
+                        </p>
+                        <p
+                          className={cn(
+                            "mt-1 text-sm font-semibold",
+                            item.defaultPrice == null && "tabela-precos-undefined"
+                          )}
+                        >
+                          {formatPrice(item.defaultPrice)}
+                        </p>
+                      </div>
+                      <SystemActionMenu items={rowActions(item)} />
+                    </div>
+                  </div>
+                ))}
+              {tab === "empresa" &&
+                (pageRows as CompanyPriceRow[]).map((item) => (
+                  <div key={item.key} className="tabela-precos-clinica-mobile-card">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <span className="tabela-precos-clinica-primary">
+                          {item.companyName}
+                        </span>
+                        <p className="text-xs text-slate-500">{item.name}</p>
+                        <p className="mt-1 text-sm font-semibold">
+                          {formatPrice(item.negotiatedPrice)}
+                        </p>
+                      </div>
+                      <SystemActionMenu items={rowActions(item)} />
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
+
+        {total > 0 && (
+          <div className="tabela-precos-pagination">
+            <label className="tabela-precos-page-size">
+              <span>Linhas</span>
+              <select
+                value={String(pageSize)}
+                onChange={(e) => {
+                  setPageSize(parseInt(e.target.value, 10));
+                  setPage(1);
+                }}
+              >
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="text-xs text-slate-500">
+              {rangeFrom}–{rangeTo} de {total}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Anterior
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Próxima
+              </Button>
+            </div>
           </div>
+        )}
+      </div>
 
+      <SystemModalShell
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        title="Editar preço"
+        description={editRow?.name}
+        badges={[
+          { label: "Tabela de preços", variant: "category" },
+          { label: "Edição", variant: "status" },
+        ]}
+        footer={
+          <div className="collaborator-modal-actions">
+            <Button variant="outline" className="collaborator-modal-btn" onClick={() => setEditOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="brand" className="collaborator-modal-btn" onClick={() => void handleSaveEdit()}>
+              Salvar
+            </Button>
+          </div>
+        }
+      >
+        {editRow && "companyName" in editRow ? (
+          <>
+            <SystemModalField label="Empresa" wide>
+              <select value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
+                {companies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </SystemModalField>
+            <SystemModalField label="Preço padrão">
+              <input value={formatPrice(editRow.defaultPrice)} disabled />
+            </SystemModalField>
+            <SystemModalField label="Preço negociado (R$)" required>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={negotiatedValue}
+                onChange={(e) => setNegotiatedValue(e.target.value)}
+              />
+            </SystemModalField>
+            <SystemModalField label="Vigência — início">
+              <input type="date" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} />
+            </SystemModalField>
+            <SystemModalField label="Vigência — fim">
+              <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+            </SystemModalField>
+          </>
+        ) : (
+          <SystemModalField label="Preço padrão (R$)" required wide>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={priceValue}
+              onChange={(e) => setPriceValue(e.target.value)}
+              placeholder="Deixe vazio para Não definido"
+            />
+          </SystemModalField>
+        )}
+        <SystemModalField label="Status">
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            aria-label="Categoria"
-            className="colaboradores-empresa-select"
+            value={editStatus}
+            onChange={(e) => setEditStatus(e.target.value as PriceListStatus)}
           >
-            <option value="">Categoria</option>
-            {Object.entries(PRICE_CATEGORY_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={scope}
-            onChange={(e) => setScope(e.target.value)}
-            aria-label="Escopo"
-            className="colaboradores-empresa-select"
-          >
-            <option value="">Escopo</option>
-            <option value="padrao">Padrão</option>
-            <option value="empresa">Por empresa</option>
-          </select>
-
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            aria-label="Status"
-            className="colaboradores-empresa-select"
-          >
-            <option value="">Status</option>
             {Object.entries(PRICE_STATUS_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
             ))}
           </select>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="colaboradores-empresa-more-btn rounded-lg"
-            onClick={() => setMoreFiltersOpen((open) => !open)}
-            aria-expanded={moreFiltersOpen}
-          >
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Mais filtros
-            {advancedFilterCount > 0 && (
-              <span className="colaboradores-empresa-filter-count">{advancedFilterCount}</span>
-            )}
-          </Button>
-
-          {hasActiveFilters && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="colaboradores-empresa-clear-btn rounded-lg"
-              onClick={clearFilters}
-            >
-              Limpar filtros
-            </Button>
-          )}
-        </div>
-
-        {moreFiltersOpen && (
-          <div className="colaboradores-empresa-filters-advanced">
-            <select
-              value={chargeType}
-              onChange={(e) => setChargeType(e.target.value)}
-              aria-label="Tipo de cobrança"
-              className="colaboradores-empresa-select"
-            >
-              <option value="">Tipo de cobrança</option>
-              {Object.entries(PRICE_CHARGE_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={companyFilter}
-              onChange={(e) => setCompanyFilter(e.target.value)}
-              aria-label="Empresa"
-              className="colaboradores-empresa-select"
-            >
-              <option value="">Empresa</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-      </div>
-
-      <div className="colaboradores-empresa-table-wrap relative">
-        <div className="colaboradores-empresa-result-bar">
-          <span className="text-xs text-slate-500">{resultLabel}</span>
-        </div>
-
-        {filtered.length === 0 ? (
-          <EmptyState
-            icon={Tags}
-            compact
-            title={
-              hasActiveFilters ? "Nenhum preço encontrado" : "Nenhum preço cadastrado"
-            }
-            description={
-              hasActiveFilters
-                ? "Ajuste os filtros para localizar preços."
-                : "Cadastre os valores padrão dos exames e serviços para utilizar em orçamentos e fechamentos."
-            }
-            action={
-              !hasActiveFilters
-                ? { label: "Adicionar primeiro preço", onClick: openCreate }
-                : undefined
-            }
-          />
-        ) : (
-          <>
-            <div className="colaboradores-empresa-table-scroll">
-              <table className="colaboradores-empresa-table tabela-precos-clinica-table">
-                <thead>
-                  <tr>
-                    <th>Serviço ou exame</th>
-                    <th>Código</th>
-                    <th>Categoria</th>
-                    <th>Escopo</th>
-                    <th>Empresa</th>
-                    <th>Valor</th>
-                    <th>Vigência</th>
-                    <th>Status</th>
-                    <th className="colaboradores-empresa-th-actions">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((item) => (
-                    <tr key={item.id} className="tabela-precos-clinica-row">
-                      <td>
-                        <div className="tabela-precos-clinica-service">
-                          <span className="tabela-precos-clinica-primary">{item.name}</span>
-                          {item.exam && (
-                            <span className="tabela-precos-clinica-meta">
-                              Exame: {item.exam.name}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="whitespace-nowrap text-slate-500">
-                        {item.code ?? "—"}
-                      </td>
-                      <td className="whitespace-nowrap">
-                        {PRICE_CATEGORY_LABELS[
-                          item.category as keyof typeof PRICE_CATEGORY_LABELS
-                        ] ?? item.category}
-                      </td>
-                      <td className="whitespace-nowrap">
-                        {item.companyId ? "Empresa" : "Padrão"}
-                      </td>
-                      <td>
-                        {item.company
-                          ? item.company.tradeName ?? item.company.legalName
-                          : "—"}
-                      </td>
-                      <td className="tabela-precos-clinica-value whitespace-nowrap">
-                        {formatCurrency(effectivePrice(item))}
-                      </td>
-                      <td className="whitespace-nowrap text-sm text-slate-600">
-                        {formatValidity(item)}
-                      </td>
-                      <td>
-                        <StatusBadge
-                          status={item.status}
-                          label={
-                            PRICE_STATUS_LABELS[
-                              item.status as keyof typeof PRICE_STATUS_LABELS
-                            ] ?? item.status
-                          }
-                        />
-                      </td>
-                      <td className="colaboradores-empresa-td-actions">
-                        <SystemActionMenu
-                          items={
-                            [
-                              {
-                                label: "Ver detalhes",
-                                hint: "Abrir preço",
-                                icon: Eye,
-                                iconTone: "view",
-                                onClick: () => setDetailItem(item),
-                              },
-                              {
-                                label: "Editar preço",
-                                hint: "Alterar valores",
-                                icon: Pencil,
-                                iconTone: "docs",
-                                onClick: () => openEdit(item),
-                              },
-                              {
-                                label: "Duplicar para empresa",
-                                hint: "Criar preço negociado",
-                                icon: Copy,
-                                iconTone: "quote",
-                                onClick: () => openDuplicateForCompany(item),
-                              },
-                              {
-                                label: item.status === "ATIVA" ? "Inativar" : "Ativar",
-                                hint:
-                                  item.status === "ATIVA"
-                                    ? "Desativar preço"
-                                    : "Reativar preço",
-                                icon: Power,
-                                iconTone: "progress",
-                                onClick: () => handleToggleStatus(item),
-                                disabled: pending,
-                              },
-                              {
-                                label: "Excluir",
-                                hint: "Remover da tabela",
-                                icon: Trash2,
-                                iconTone: "cancel",
-                                onClick: () => handleDelete(item.id),
-                              },
-                            ] satisfies SystemActionItem[]
-                          }
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="colaboradores-empresa-mobile-list">
-              {filtered.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="tabela-precos-clinica-mobile-card"
-                  onClick={() => setDetailItem(item)}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="tabela-precos-clinica-primary">{item.name}</span>
-                    <StatusBadge
-                      status={item.status}
-                      label={
-                        PRICE_STATUS_LABELS[
-                          item.status as keyof typeof PRICE_STATUS_LABELS
-                        ] ?? item.status
-                      }
-                    />
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    {item.companyId ? "Empresa" : "Padrão"} ·{" "}
-                    {formatCurrency(effectivePrice(item))}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      <Sheet open={!!detailItem} onOpenChange={(o) => !o && setDetailItem(null)}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>Detalhe do preço</SheetTitle>
-            <SheetDescription>{detailItem?.name}</SheetDescription>
-          </SheetHeader>
-          {detailItem && (
-            <div className="mt-6 space-y-3 text-sm">
-              <DetailRow label="Código" value={detailItem.code ?? "—"} />
-              <DetailRow
-                label="Categoria"
-                value={
-                  PRICE_CATEGORY_LABELS[
-                    detailItem.category as keyof typeof PRICE_CATEGORY_LABELS
-                  ] ?? detailItem.category
-                }
-              />
-              <DetailRow
-                label="Escopo"
-                value={detailItem.companyId ? "Empresa" : "Padrão"}
-              />
-              <DetailRow
-                label="Empresa"
-                value={
-                  detailItem.company
-                    ? detailItem.company.tradeName ?? detailItem.company.legalName
-                    : "—"
-                }
-              />
-              <DetailRow
-                label="Valor"
-                value={formatCurrency(effectivePrice(detailItem))}
-              />
-              <DetailRow
-                label="Cobrança"
-                value={
-                  PRICE_CHARGE_LABELS[
-                    detailItem.chargeType as keyof typeof PRICE_CHARGE_LABELS
-                  ] ?? detailItem.chargeType
-                }
-              />
-              <DetailRow label="Vigência" value={formatValidity(detailItem)} />
-              <DetailRow
-                label="Status"
-                value={
-                  PRICE_STATUS_LABELS[
-                    detailItem.status as keyof typeof PRICE_STATUS_LABELS
-                  ] ?? detailItem.status
-                }
-              />
-              <DetailRow label="Observações" value={detailItem.notes ?? "—"} />
-              <div className="flex flex-wrap gap-2 border-t pt-4">
-                <Button size="sm" variant="outline" onClick={() => openEdit(detailItem)}>
-                  Editar preço
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => openDuplicateForCompany(detailItem)}
-                >
-                  Duplicar para empresa
-                </Button>
-              </div>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+        </SystemModalField>
+      </SystemModalShell>
 
       <SystemModalShell
-        open={open}
-        onOpenChange={setOpen}
-        title={editing ? "Editar preço" : "Adicionar preço"}
-        description="Defina valores padrão ou negociados por empresa."
-        badges={[
-          { label: "Tabela de preços", variant: "category" },
-          { label: editing ? "Edição" : "Novo item", variant: "status" },
-        ]}
-        className="max-w-lg"
+        open={batchOpen}
+        onOpenChange={setBatchOpen}
+        title="Atualizar preços em lote"
+        description={`${selected.size} item(ns) selecionado(s). O mesmo valor será aplicado a todos.`}
+        badges={[{ label: "Lote", variant: "status" }]}
         footer={
           <div className="collaborator-modal-actions">
-            <Button
-              variant="outline"
-              className="collaborator-modal-btn"
-              onClick={() => setOpen(false)}
-              disabled={pending}
-            >
+            <Button variant="outline" className="collaborator-modal-btn" onClick={() => setBatchOpen(false)}>
               Cancelar
             </Button>
-            <Button
-              variant="brand"
-              className="collaborator-modal-btn"
-              onClick={handleSave}
-              disabled={pending || !form.name.trim()}
-            >
-              Salvar
+            <Button variant="brand" className="collaborator-modal-btn" onClick={() => void handleBatchUpdate()}>
+              Aplicar
             </Button>
           </div>
         }
       >
-        <SystemModalField label="Serviço / exame" required wide>
+        <SystemModalField label="Novo preço padrão (R$)" required wide>
           <input
-            id="price-name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-        </SystemModalField>
-
-        <SystemModalField label="Código">
-          <input
-            id="price-code"
-            value={form.code ?? ""}
-            onChange={(e) => setForm({ ...form, code: e.target.value })}
-          />
-        </SystemModalField>
-
-        <SystemModalField label="Categoria">
-          <Select
-            value={form.category}
-            onValueChange={(v) =>
-              v && setForm({ ...form, category: v as PriceListItemInput["category"] })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(PRICE_CATEGORY_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </SystemModalField>
-
-        <SystemModalField label="Tipo de cobrança">
-          <Select
-            value={form.chargeType}
-            onValueChange={(v) =>
-              v &&
-              setForm({ ...form, chargeType: v as PriceListItemInput["chargeType"] })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(PRICE_CHARGE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </SystemModalField>
-
-        <SystemModalField label="Status">
-          <Select
-            value={form.status}
-            onValueChange={(v) =>
-              v && setForm({ ...form, status: v as PriceListItemInput["status"] })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(PRICE_STATUS_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </SystemModalField>
-
-        <SystemModalField label="Preço padrão (R$)">
-          <input
-            id="price-default"
             type="number"
             step="0.01"
-            value={form.defaultPrice || ""}
-            onChange={(e) =>
-              setForm({ ...form, defaultPrice: parseFloat(e.target.value) || 0 })
-            }
-          />
-        </SystemModalField>
-
-        <SystemModalField label="Empresa específica">
-          <Select
-            value={form.companyId ?? "none"}
-            onValueChange={(v) =>
-              setForm({
-                ...form,
-                companyId: v === "none" ? null : v,
-                negotiatedPrice: v === "none" ? null : form.negotiatedPrice,
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Padrão" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Preço padrão</SelectItem>
-              {companies.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </SystemModalField>
-
-        {form.companyId && (
-          <SystemModalField label="Preço negociado (R$)" wide>
-            <input
-              id="price-negotiated"
-              type="number"
-              step="0.01"
-              value={form.negotiatedPrice ?? ""}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  negotiatedPrice: e.target.value ? parseFloat(e.target.value) : null,
-                })
-              }
-            />
-          </SystemModalField>
-        )}
-
-        <SystemModalField label="Vigência — início">
-          <input
-            id="price-valid-from"
-            type="date"
-            value={form.validFrom ?? ""}
-            onChange={(e) => setForm({ ...form, validFrom: e.target.value || null })}
-          />
-        </SystemModalField>
-
-        <SystemModalField label="Vigência — fim">
-          <input
-            id="price-valid-until"
-            type="date"
-            value={form.validUntil ?? ""}
-            onChange={(e) => setForm({ ...form, validUntil: e.target.value || null })}
-          />
-        </SystemModalField>
-
-        <SystemModalField label="Observações comerciais" wide>
-          <textarea
-            id="price-notes"
-            rows={3}
-            value={form.notes ?? ""}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            min="0"
+            value={batchPrice}
+            onChange={(e) => setBatchPrice(e.target.value)}
           />
         </SystemModalField>
       </SystemModalShell>
     </PageModule>
-  );
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-2">
-      <span className="text-slate-500">{label}</span>
-      <span className="max-w-[60%] text-right font-medium text-slate-800">{value}</span>
-    </div>
   );
 }

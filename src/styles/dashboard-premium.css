@@ -5272,14 +5272,102 @@
   gap: 1rem;
 }
 
-.tabela-precos-clinica-stats {
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+.tabela-precos-import-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  background: transparent;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(100 116 139);
+  cursor: pointer;
 }
 
-@media (min-width: 768px) {
-  .tabela-precos-clinica-stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.tabela-precos-import-link:hover {
+  color: rgb(29 78 216);
+}
+
+.tabela-precos-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tabela-precos-search {
+  position: relative;
+  min-width: min(100%, 14rem);
+  flex: 1 1 14rem;
+}
+
+.tabela-precos-search-icon {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 0.7rem;
+  z-index: 1;
+  height: 0.95rem;
+  width: 0.95rem;
+  transform: translateY(-50%);
+  color: rgb(148 163 184);
+}
+
+.tabela-precos-search-input {
+  height: 2.25rem !important;
+  width: 100%;
+  border-radius: 0.5rem !important;
+  padding-left: 2.1rem !important;
+  font-size: 0.8125rem !important;
+}
+
+.tabela-precos-select {
+  height: 2.25rem;
+  min-width: 8.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0 0.65rem;
+  font-size: 0.8125rem;
+  color: rgb(51 65 85);
+}
+
+.tabela-precos-check-col {
+  width: 2.5rem;
+  text-align: center;
+}
+
+.tabela-precos-undefined {
+  font-weight: 500 !important;
+  color: rgb(148 163 184) !important;
+}
+
+.tabela-precos-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-top: 1px solid rgb(241 245 249);
+}
+
+.tabela-precos-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.tabela-precos-page-size select {
+  height: 2rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0 0.45rem;
+  font-size: 0.75rem;
 }
 
 .tabela-precos-clinica-table thead th,
@@ -5288,11 +5376,11 @@
 }
 
 .tabela-precos-clinica-table tbody td {
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 0.85rem;
 }
 
 .tabela-precos-clinica-table tbody tr.tabela-precos-clinica-row {
-  height: 4.35rem;
+  height: 3.75rem;
   border-bottom: 1px solid rgb(241 245 249);
   transition: background-color 0.15s ease;
 }
@@ -5305,21 +5393,9 @@
   background: rgb(248 250 252 / 0.9);
 }
 
-.tabela-precos-clinica-service {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
 .tabela-precos-clinica-primary {
   font-weight: 600;
   color: rgb(15 23 42);
-}
-
-.tabela-precos-clinica-meta {
-  font-size: 0.75rem;
-  color: rgb(148 163 184);
 }
 
 .tabela-precos-clinica-value {
