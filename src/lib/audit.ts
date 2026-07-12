@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { startOfDay, endOfDay, parseISO, isValid, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { isModuleEnabled, type AppModuleId } from "@/lib/modules";
 
 export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   User: "Usuário",
@@ -27,6 +28,33 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   ReferralDocument: "Anexo de encaminhamento",
 };
 
+/** Entidade → módulo (feature flag). Sem mapeamento = oculto na UI. */
+const AUDIT_ENTITY_MODULE: Record<string, AppModuleId | null> = {
+  Company: "companies",
+  Patient: "collaborators",
+  Referral: "referrals",
+  PublicReferralRequest: "referrals",
+  Document: "documents",
+  ReferralDocument: "documents",
+  Ticket: "tickets",
+  User: "users",
+  RolePermissions: "users",
+  Setting: "settings",
+  Quote: "commercial",
+  Lead: "commercial",
+  ContactMessage: "commercial",
+  PriceListItem: "pricing",
+  Exam: "examCatalog",
+  FinancialEntry: "finance",
+  MonthlyClosing: "monthlyClosing",
+  ProductionImport: "monthlyClosing",
+  Task: "tasks",
+  SstDraft: "sstAssistant",
+  Appointment: null,
+  BlogPost: null,
+  Clinic: null,
+};
+
 export const AUDIT_ACTION_LABELS: Record<string, string> = {
   CREATE: "Criação",
   UPDATE: "Atualização",
@@ -41,6 +69,40 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   SYNC: "Sincronização",
   IMPORT: "Importação",
 };
+
+/** Ações técnicas ocultas na listagem (registros permanecem no banco). */
+export const AUDIT_HIDDEN_ACTIONS = new Set([
+  "SEED",
+  "SYNC",
+  "IMPORT",
+  "MIGRATE",
+  "MIGRATION",
+]);
+
+/** Ações exibidas no filtro da UI. */
+export const AUDIT_UI_ACTION_LABELS: Record<string, string> = Object.fromEntries(
+  Object.entries(AUDIT_ACTION_LABELS).filter(([key]) => !AUDIT_HIDDEN_ACTIONS.has(key))
+);
+
+export function isAuditEntityVisible(entity: string): boolean {
+  const moduleId = AUDIT_ENTITY_MODULE[entity];
+  if (moduleId === undefined) return false;
+  if (moduleId === null) return false;
+  return isModuleEnabled(moduleId);
+}
+
+export function getVisibleAuditEntities(): string[] {
+  return Object.keys(AUDIT_ENTITY_MODULE).filter((entity) => isAuditEntityVisible(entity));
+}
+
+export function getVisibleAuditEntityOptions(): { value: string; label: string }[] {
+  return getVisibleAuditEntities()
+    .map((value) => ({
+      value,
+      label: AUDIT_ENTITY_LABELS[value] ?? value,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+}
 
 export const CRITICAL_ENTITIES = new Set([
   "User",
@@ -76,19 +138,79 @@ function isAll(value?: string) {
   return !value || value === "ALL" || value === "all";
 }
 
+/** Cláusulas que ocultam logs técnicos e de módulos desativados (sem apagar dados). */
+export function buildAuditVisibilityWhere(): Prisma.AuditLogWhereInput {
+  const visibleEntities = getVisibleAuditEntities();
+  return {
+    AND: [
+      {
+        NOT: {
+          OR: [
+            { action: { equals: "SEED", mode: "insensitive" } },
+            { action: { equals: "SYNC", mode: "insensitive" } },
+            { action: { equals: "IMPORT", mode: "insensitive" } },
+            { action: { equals: "MIGRATE", mode: "insensitive" } },
+            { action: { equals: "MIGRATION", mode: "insensitive" } },
+            { action: { contains: "SEED", mode: "insensitive" } },
+            {
+              user: {
+                is: {
+                  OR: [
+                    { name: { equals: "System", mode: "insensitive" } },
+                    { name: { equals: "Sistema", mode: "insensitive" } },
+                    { name: { equals: "Seed", mode: "insensitive" } },
+                  ],
+                },
+              },
+            },
+            { details: { contains: "carga inicial", mode: "insensitive" } },
+            { details: { contains: "seed", mode: "insensitive" } },
+            { details: { contains: "migra", mode: "insensitive" } },
+          ],
+        },
+      },
+      visibleEntities.length > 0
+        ? { entity: { in: visibleEntities } }
+        : { id: "__none__" },
+    ],
+  };
+}
+
 export function buildAuditWhere(filters: AuditFilters): Prisma.AuditLogWhereInput {
-  const where: Prisma.AuditLogWhereInput = {};
+  const clauses: Prisma.AuditLogWhereInput[] = [buildAuditVisibilityWhere()];
+
   const q = filters.q?.trim();
   if (q) {
-    where.OR = [
-      { action: { contains: q, mode: "insensitive" } },
-      { details: { contains: q, mode: "insensitive" } },
-      { entity: { contains: q, mode: "insensitive" } },
-    ];
+    clauses.push({
+      OR: [
+        { action: { contains: q, mode: "insensitive" } },
+        { details: { contains: q, mode: "insensitive" } },
+        { entity: { contains: q, mode: "insensitive" } },
+      ],
+    });
   }
-  if (!isAll(filters.entity)) where.entity = filters.entity;
-  if (!isAll(filters.action)) where.action = filters.action;
-  if (!isAll(filters.userId)) where.userId = filters.userId;
+
+  const visibleEntities = getVisibleAuditEntities();
+  if (!isAll(filters.entity)) {
+    clauses.push(
+      visibleEntities.includes(filters.entity!)
+        ? { entity: filters.entity }
+        : { entity: { in: [] } }
+    );
+  }
+
+  if (!isAll(filters.action)) {
+    const actionUpper = filters.action!.toUpperCase();
+    clauses.push(
+      AUDIT_HIDDEN_ACTIONS.has(actionUpper)
+        ? { action: { in: [] } }
+        : { action: filters.action }
+    );
+  }
+
+  if (!isAll(filters.userId)) {
+    clauses.push({ userId: filters.userId });
+  }
 
   const range: { gte?: Date; lte?: Date } = {};
   if (filters.dateFrom) {
@@ -99,9 +221,11 @@ export function buildAuditWhere(filters: AuditFilters): Prisma.AuditLogWhereInpu
     const d = parseISO(filters.dateTo);
     if (isValid(d)) range.lte = endOfDay(d);
   }
-  if (Object.keys(range).length) where.createdAt = range;
+  if (Object.keys(range).length) {
+    clauses.push({ createdAt: range });
+  }
 
-  return where;
+  return { AND: clauses };
 }
 
 export function translateEntity(entity: string) {

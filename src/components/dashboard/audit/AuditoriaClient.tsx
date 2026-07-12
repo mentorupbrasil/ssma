@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -29,12 +29,12 @@ import {
 } from "@/components/ui/table";
 import { exportAuditLogsCsv } from "@/actions/audit";
 import {
-  AUDIT_ACTION_LABELS,
-  AUDIT_ENTITY_LABELS,
+  AUDIT_UI_ACTION_LABELS,
   formatAuditActor,
   formatAuditDateTime,
   formatAuditOrigin,
   formatAuditSummary,
+  getVisibleAuditEntityOptions,
   isCriticalAudit,
   parseAuditChanges,
   translateAction,
@@ -89,7 +89,9 @@ export function AuditoriaClient({
   const [entity, setEntity] = useState(filters.entity ?? "");
   const [dateFrom, setDateFrom] = useState(filters.dateFrom ?? "");
   const [dateTo, setDateTo] = useState(filters.dateTo ?? "");
+  const skipAuto = useRef(true);
 
+  const entityOptions = useMemo(() => getVisibleAuditEntityOptions(), []);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const enriched = useMemo(
@@ -107,26 +109,39 @@ export function AuditoriaClient({
     [logs]
   );
 
-  function pushFilters(next: Record<string, string>) {
+  function pushFilters(next: Record<string, string | undefined>) {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(next)) {
-      if (value.trim()) params.set(key, value.trim());
+      if (value?.trim()) params.set(key, value.trim());
     }
     startTransition(() => router.push(`/dashboard/auditoria?${params.toString()}`));
   }
 
-  function applyFilters() {
-    pushFilters({
-      q,
-      userId,
-      action,
-      entity,
-      dateFrom,
-      dateTo,
-    });
+  function currentFilterPayload(overrides: Partial<AuditoriaClientProps["filters"]> = {}) {
+    return {
+      q: overrides.q ?? q,
+      userId: overrides.userId ?? userId,
+      action: overrides.action ?? action,
+      entity: overrides.entity ?? entity,
+      dateFrom: overrides.dateFrom ?? dateFrom,
+      dateTo: overrides.dateTo ?? dateTo,
+    };
   }
 
+  useEffect(() => {
+    if (skipAuto.current) {
+      skipAuto.current = false;
+      return;
+    }
+    const handle = window.setTimeout(() => {
+      pushFilters(currentFilterPayload());
+    }, 350);
+    return () => window.clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, userId, action, entity, dateFrom, dateTo]);
+
   function clearFilters() {
+    skipAuto.current = true;
     setQ("");
     setUserId("");
     setAction("");
@@ -134,18 +149,21 @@ export function AuditoriaClient({
     setDateFrom("");
     setDateTo("");
     startTransition(() => router.push("/dashboard/auditoria"));
+    window.setTimeout(() => {
+      skipAuto.current = false;
+    }, 0);
   }
 
   function goPage(next: number) {
-    const params = new URLSearchParams();
-    if (filters.q) params.set("q", filters.q);
-    if (filters.userId) params.set("userId", filters.userId);
-    if (filters.action) params.set("action", filters.action);
-    if (filters.entity) params.set("entity", filters.entity);
-    if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
-    if (filters.dateTo) params.set("dateTo", filters.dateTo);
-    if (next > 1) params.set("page", String(next));
-    startTransition(() => router.push(`/dashboard/auditoria?${params.toString()}`));
+    pushFilters({
+      q: filters.q,
+      userId: filters.userId,
+      action: filters.action,
+      entity: filters.entity,
+      dateFrom: filters.dateFrom,
+      dateTo: filters.dateTo,
+      page: next > 1 ? String(next) : "",
+    });
   }
 
   async function handleExport() {
@@ -210,16 +228,13 @@ export function AuditoriaClient({
         </div>
       </header>
 
-      <div className="tabela-precos-filters auditoria-filters">
-        <div className="tabela-precos-search">
+      <div className="tabela-precos-filters auditoria-filters auditoria-filters--row">
+        <div className="tabela-precos-search auditoria-search">
           <Search className="tabela-precos-search-icon" aria-hidden />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") applyFilters();
-            }}
-            placeholder="Buscar no resumo ou detalhes"
+            placeholder="Buscar"
             className="tabela-precos-search-input"
             aria-label="Busca"
           />
@@ -244,7 +259,7 @@ export function AuditoriaClient({
           aria-label="Ação"
         >
           <option value="">Ação</option>
-          {Object.entries(AUDIT_ACTION_LABELS).map(([k, v]) => (
+          {Object.entries(AUDIT_UI_ACTION_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
             </option>
@@ -257,36 +272,40 @@ export function AuditoriaClient({
           aria-label="Módulo"
         >
           <option value="">Módulo</option>
-          {Object.entries(AUDIT_ENTITY_LABELS).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v}
+          {entityOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
             </option>
           ))}
         </select>
-        <Input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className="tabela-precos-select auditoria-date"
-          aria-label="Período — início"
-        />
-        <Input
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          className="tabela-precos-select auditoria-date"
-          aria-label="Período — fim"
-        />
+        <div className="auditoria-period" role="group" aria-label="Período">
+          <span className="auditoria-period-label">Período</span>
+          <Input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="tabela-precos-select auditoria-date"
+            aria-label="Data inicial"
+          />
+          <span className="auditoria-period-sep" aria-hidden>
+            –
+          </span>
+          <Input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="tabela-precos-select auditoria-date"
+            aria-label="Data final"
+          />
+        </div>
         <Button type="button" variant="outline" size="sm" onClick={clearFilters} disabled={pending}>
-          Limpar filtros
-        </Button>
-        <Button type="button" variant="brand" size="sm" onClick={applyFilters} disabled={pending}>
-          Filtrar
+          Limpar
         </Button>
       </div>
 
       <p className="auditoria-result-meta">
         {total} registro{total === 1 ? "" : "s"} · ordenados do mais recente para o mais antigo
+        {pending ? " · atualizando…" : ""}
       </p>
 
       {enriched.length === 0 ? (
@@ -321,7 +340,8 @@ export function AuditoriaClient({
                       <span
                         className={cn(
                           "auditoria-action-badge",
-                          isCriticalAudit(log.entity, log.action) && "auditoria-action-badge--critical"
+                          isCriticalAudit(log.entity, log.action) &&
+                            "auditoria-action-badge--critical"
                         )}
                       >
                         {translateAction(log.action)}

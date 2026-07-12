@@ -186,6 +186,68 @@ export function getAllSettingKeys(): string[] {
   return SETTINGS_SECTIONS.flatMap((s) => s.fields.map((f) => f.key));
 }
 
+export function getSettingFieldByKey(key: string): SettingFieldDef | undefined {
+  for (const section of SETTINGS_SECTIONS) {
+    const field = section.fields.find((f) => f.key === key);
+    if (field) return field;
+  }
+  return undefined;
+}
+
+/**
+ * Layout compacto da tela Configurações.
+ * Campos omitidos permanecem em SETTINGS_SECTIONS (dados/código preservados).
+ *
+ * docs.retention_years / docs.lgpd_notice / docs.require_consent:
+ * não são lidos pelo fluxo ativo — ocultos na UI até haver uso real.
+ */
+export const SETTINGS_UI_SECTIONS: {
+  id: string;
+  label: string;
+  fieldKeys: readonly string[];
+}[] = [
+  {
+    id: "clinica",
+    label: "Dados da clínica",
+    fieldKeys: [
+      "clinic.display_name",
+      "clinic.legal_name",
+      "clinic.cnpj",
+      "clinic.email",
+      "clinic.phone",
+      "clinic.whatsapp",
+      "clinic.zip",
+      "clinic.city_state",
+      "clinic.address",
+    ],
+  },
+  {
+    id: "operacao",
+    label: "Operação",
+    fieldKeys: ["ops.pre_referral_sla_hours"],
+  },
+  {
+    id: "portal",
+    label: "Portal empresarial",
+    fieldKeys: ["portal.welcome_message", "portal.allow_pre_referral"],
+  },
+];
+
+export function getSettingsUiFieldKeys(): string[] {
+  return SETTINGS_UI_SECTIONS.flatMap((s) => [...s.fieldKeys]);
+}
+
+export function settingsUiValuesSnapshot(
+  values: Record<string, string>
+): Record<string, string> {
+  const snap: Record<string, string> = {};
+  for (const key of getSettingsUiFieldKeys()) {
+    const field = getSettingFieldByKey(key);
+    snap[key] = values[key] ?? field?.defaultValue ?? "";
+  }
+  return snap;
+}
+
 export function settingsMapFromRows(
   rows: { key: string; value: string }[],
   defaults: Record<string, string> = {}

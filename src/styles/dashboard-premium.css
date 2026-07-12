@@ -7836,8 +7836,59 @@
   margin-bottom: 0.55rem;
   align-items: center;
 }
+.auditoria-logs .auditoria-filters--row {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+.auditoria-logs .auditoria-filters--row .auditoria-search {
+  flex: 1 1 11rem;
+  min-width: 10rem;
+  max-width: 16rem;
+}
+.auditoria-logs .auditoria-filters--row .tabela-precos-select {
+  flex: 0 0 auto;
+  min-width: 7.5rem;
+  max-width: 10rem;
+}
+.auditoria-logs .auditoria-period {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  min-height: 2.25rem;
+  padding: 0 0.4rem 0 0.55rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  background: white;
+}
+.auditoria-logs .auditoria-period-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgb(100 116 139);
+  white-space: nowrap;
+}
+.auditoria-logs .auditoria-period-sep {
+  color: rgb(203 213 225);
+  font-size: 0.8rem;
+}
+.auditoria-logs .auditoria-period .auditoria-date {
+  min-width: 7.75rem;
+  max-width: 8.5rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  height: 2rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
 .auditoria-logs .auditoria-date {
   min-width: 8.5rem;
+}
+@media (max-width: 1100px) {
+  .auditoria-logs .auditoria-filters--row {
+    flex-wrap: wrap;
+  }
 }
 .auditoria-logs .auditoria-result-meta {
   margin: 0 0 0.65rem;
@@ -7941,50 +7992,6 @@
 }
 
 /* ── Configurações ──────────────────────────────────────── */
-.configuracoes-clinica .config-tabs {
-  padding: 0.3rem;
-  border-radius: var(--dash-radius-lg);
-  border: 1px solid var(--dash-border);
-  background: rgb(248 250 252 / 0.85);
-}
-.configuracoes-clinica .config-tab {
-  position: relative;
-  gap: 0.35rem;
-}
-.configuracoes-clinica .config-tab-dot {
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 999px;
-  background: rgb(245 158 11);
-}
-.configuracoes-clinica .config-section {
-  border: 1px solid var(--dash-border);
-  border-radius: var(--dash-radius-lg);
-  background: white;
-  padding: 0.95rem 1rem 1rem;
-}
-.configuracoes-clinica .config-section-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  margin-bottom: 0.85rem;
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid rgb(241 245 249);
-}
-.configuracoes-clinica .config-section-title {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 650;
-  color: var(--brand-navy);
-}
-.configuracoes-clinica .config-section-desc {
-  margin: 0.2rem 0 0;
-  font-size: 0.78rem;
-  color: var(--dash-text-muted);
-  line-height: 1.4;
-}
 .configuracoes-clinica .config-unsaved {
   margin: 0;
   font-size: 0.72rem;
@@ -7994,6 +8001,26 @@
   border: 1px solid rgb(253 230 138);
   border-radius: 0.4rem;
   padding: 0.28rem 0.55rem;
+  align-self: center;
+}
+.configuracoes-clinica .config-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.configuracoes-clinica .config-block {
+  padding: 0.15rem 0 1.15rem;
+}
+.configuracoes-clinica .config-block--divided {
+  margin-top: 0.35rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--dash-border);
+}
+.configuracoes-clinica .config-block-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--brand-navy);
 }
 .configuracoes-clinica .config-form-grid {
   display: grid;
@@ -8044,20 +8071,275 @@
   font-size: 0.8125rem;
   color: rgb(30 41 59);
 }
-.configuracoes-clinica .config-section-footer {
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
+.configuracoes-clinica .config-page-footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.65rem 1rem;
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgb(241 245 249);
-  background: linear-gradient(to top, white 70%, rgb(255 255 255 / 0.85));
+  margin-top: 0.35rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--dash-border);
 }
 .configuracoes-clinica .config-footer-hint {
   font-size: 0.72rem;
+  color: rgb(148 163 184);
+}
+
+/* ── Visão geral clínica ─────────────────────────────────── */
+.visao-geral-clinica {
+  gap: 1rem;
+}
+.visao-geral-clinica .vg-header {
+  margin: 0;
+  padding: 0;
+}
+.visao-geral-clinica .vg-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--brand-navy);
+  line-height: 1.25;
+}
+.visao-geral-clinica .vg-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--dash-text-muted);
+  line-height: 1.4;
+  max-width: 40rem;
+}
+.visao-geral-clinica .vg-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.visao-geral-clinica .vg-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2rem;
+  padding: 0 0.75rem 0 0.55rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  font-size: 0.78rem;
+  font-weight: 550;
+  color: rgb(51 65 85);
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.visao-geral-clinica .vg-shortcut:hover {
+  border-color: rgb(203 213 225);
+  background: rgb(248 250 252);
+  color: var(--brand-navy);
+}
+.visao-geral-clinica .vg-shortcut-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  color: rgb(100 116 139);
+  flex-shrink: 0;
+}
+.visao-geral-clinica .vg-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+@media (min-width: 900px) {
+  .visao-geral-clinica .vg-stats {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+.visao-geral-clinica .vg-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.65rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.visao-geral-clinica .vg-stat:hover {
+  border-color: rgb(203 213 225);
+  background: rgb(248 250 252);
+}
+.visao-geral-clinica .vg-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 0.4rem;
+  flex-shrink: 0;
+}
+.visao-geral-clinica .vg-stat--slate .vg-stat-icon {
+  background: rgb(241 245 249);
+  color: rgb(71 85 105);
+}
+.visao-geral-clinica .vg-stat--amber .vg-stat-icon {
+  background: rgb(255 251 235);
+  color: rgb(180 83 9);
+}
+.visao-geral-clinica .vg-stat--rose .vg-stat-icon {
+  background: rgb(255 241 242);
+  color: rgb(190 18 60);
+}
+.visao-geral-clinica .vg-stat--sky .vg-stat-icon {
+  background: rgb(240 249 255);
+  color: rgb(3 105 161);
+}
+.visao-geral-clinica .vg-stat--violet .vg-stat-icon {
+  background: rgb(245 243 255);
+  color: rgb(109 40 217);
+}
+.visao-geral-clinica .vg-stat-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--brand-navy);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.visao-geral-clinica .vg-stat-title {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgb(100 116 139);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.visao-geral-clinica .vg-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  align-items: start;
+}
+@media (min-width: 960px) {
+  .visao-geral-clinica .vg-columns {
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 1rem;
+  }
+}
+.visao-geral-clinica .vg-panel {
+  min-width: 0;
+  border-top: 1px solid rgb(226 232 240);
+  padding-top: 0.75rem;
+}
+.visao-geral-clinica .vg-panel-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--brand-navy);
+}
+.visao-geral-clinica .vg-empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgb(148 163 184);
+}
+.visao-geral-clinica .vg-priority-list,
+.visao-geral-clinica .vg-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.visao-geral-clinica .vg-priority-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.15rem;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+.visao-geral-clinica .vg-priority-item:last-child {
+  border-bottom: none;
+}
+.visao-geral-clinica .vg-priority-main {
+  min-width: 0;
+  flex: 1;
+}
+.visao-geral-clinica .vg-priority-title {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--brand-navy);
+  line-height: 1.3;
+}
+.visao-geral-clinica .vg-priority-meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: rgb(100 116 139);
+  line-height: 1.35;
+}
+.visao-geral-clinica .vg-priority-dot {
+  margin: 0 0.25rem;
+  color: rgb(203 213 225);
+}
+.visao-geral-clinica .vg-priority-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+.visao-geral-clinica .vg-priority-status {
+  font-size: 0.68rem;
+  font-weight: 550;
+  color: rgb(71 85 105);
+  background: rgb(248 250 252);
+  border: 1px solid rgb(226 232 240);
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  white-space: nowrap;
+}
+.visao-geral-clinica .vg-priority-action {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgb(15 118 110);
+  text-decoration: none;
+}
+.visao-geral-clinica .vg-priority-action:hover {
+  text-decoration: underline;
+}
+.visao-geral-clinica .vg-activity-item {
+  display: grid;
+  grid-template-columns: 0.55rem 1fr;
+  gap: 0.55rem;
+  align-items: start;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+.visao-geral-clinica .vg-activity-item:last-child {
+  border-bottom: none;
+}
+.visao-geral-clinica .vg-activity-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-top: 0.4rem;
+  border-radius: 999px;
+  background: rgb(148 163 184);
+}
+.visao-geral-clinica .vg-activity-body {
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+.visao-geral-clinica a.vg-activity-body:hover .vg-activity-desc {
+  color: rgb(15 118 110);
+}
+.visao-geral-clinica .vg-activity-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 550;
+  color: var(--brand-navy);
+  line-height: 1.35;
+}
+.visao-geral-clinica .vg-activity-meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.7rem;
   color: rgb(148 163 184);
 }

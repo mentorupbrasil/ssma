@@ -5,8 +5,6 @@ import {
   Building2,
   AlertTriangle,
   FileText,
-  DollarSign,
-  Upload,
   ClipboardList,
   FolderOpen,
   Users,
@@ -15,26 +13,17 @@ import {
   CheckCircle2,
   type LucideIcon,
 } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { PageShell } from "@/components/dashboard/PageShell";
-import { PlatformPositioningBanner } from "@/components/dashboard/PlatformPositioningBanner";
 import { QuickActionGrid } from "@/components/dashboard/QuickActionGrid";
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import { MetricGrid } from "@/components/dashboard/MetricGrid";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { InlineEmptyNote } from "@/components/dashboard/InlineEmptyNote";
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel";
 import { requireAuthSession } from "@/lib/page-auth";
 import { isEmpresaUser } from "@/lib/authz";
 import { getDashboardOverview } from "@/lib/dashboard-overview";
-import { getMetricMeta } from "@/lib/metric-cards";
 import { empresaReferralDisplayStatus } from "@/lib/empresa-portal";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
-import {
-  filterEnabledHrefItems,
-  isCommercialModuleEnabled,
-} from "@/lib/modules";
 import type { ReferralStatus } from "@prisma/client";
 
 const EMPRESA_STAT_META: Record<
@@ -68,80 +57,55 @@ const EMPRESA_STAT_META: Record<
   },
 };
 
+const CLINIC_STAT_ICONS: Record<string, LucideIcon> = {
+  referrals_open: ClipboardList,
+  pending_docs: FolderOpen,
+  docs_expiring: Clock,
+  tickets_open: LifeBuoy,
+  companies_pending: Building2,
+};
+
+const CLINIC_STAT_TONES: Record<string, string> = {
+  referrals_open: "slate",
+  pending_docs: "amber",
+  docs_expiring: "rose",
+  tickets_open: "sky",
+  companies_pending: "violet",
+};
+
 export default async function DashboardPage() {
   const session = await requireAuthSession();
   const isEmpresa = isEmpresaUser(session);
   const overview = await getDashboardOverview(session);
 
-  const quickActions = filterEnabledHrefItems(
-    isEmpresa
-      ? [
-          {
-            href: "/dashboard/colaboradores?new=1",
-            label: "Novo colaborador",
-            description: "Cadastrar admissional ou individual",
-            icon: Users,
-          },
-          {
-            href: "/dashboard/encaminhamentos/novo",
-            label: "Solicitar exame",
-            description: "Solicitar exames ocupacionais para colaboradores",
-            icon: FileText,
-          },
-          {
-            href: "/dashboard/encaminhamentos",
-            label: "Acompanhar exames",
-            description: "Status dos encaminhamentos enviados",
-            icon: ClipboardList,
-          },
-          {
-            href: "/dashboard/documentos?card=PARA_BAIXAR",
-            label: "Baixar documentos",
-            description: "Documentos anexados pela Unimetra",
-            icon: FolderOpen,
-          },
-        ]
-      : [
-          {
-            href: "/dashboard/encaminhamentos?status=RECEBIDOS",
-            label: "Fila de atendimentos",
-            description: "Pedidos do RH e do site para confirmar",
-            icon: FileText,
-          },
-          {
-            href: "/dashboard/documentos",
-            label: "Liberar documentos",
-            description: "Anexar ASO e disponibilizar para a empresa",
-            icon: FolderOpen,
-          },
-          {
-            href: "/dashboard/empresas",
-            label: "Empresas",
-            description: "Cadastro e portal dos clientes",
-            icon: Building2,
-          },
-          {
-            href: "/dashboard/fechamento-mensal",
-            label: "Importar produção",
-            description: "Fechamento mensal da clínica",
-            icon: Upload,
-          },
-          {
-            href: "/dashboard/orcamentos?tab=orcamentos",
-            label: "Novo orçamento",
-            description: "Proposta comercial",
-            icon: DollarSign,
-          },
-          {
-            href: "/dashboard/tarefas",
-            label: "Nova tarefa",
-            description: "Pendência interna",
-            icon: ClipboardList,
-          },
-        ]
-  );
-
   if (isEmpresa) {
+    const quickActions = [
+      {
+        href: "/dashboard/colaboradores?new=1",
+        label: "Novo colaborador",
+        description: "Cadastrar admissional ou individual",
+        icon: Users,
+      },
+      {
+        href: "/dashboard/encaminhamentos/novo",
+        label: "Solicitar exame",
+        description: "Solicitar exames ocupacionais para colaboradores",
+        icon: FileText,
+      },
+      {
+        href: "/dashboard/encaminhamentos",
+        label: "Acompanhar exames",
+        description: "Status dos encaminhamentos enviados",
+        icon: ClipboardList,
+      },
+      {
+        href: "/dashboard/documentos?card=PARA_BAIXAR",
+        label: "Baixar documentos",
+        description: "Documentos anexados pela Unimetra",
+        icon: FolderOpen,
+      },
+    ];
+
     const hasPending = overview.pendingActions.length > 0;
     const hasDocs = Boolean(overview.availableDocuments?.length);
 
@@ -281,124 +245,137 @@ export default async function DashboardPage() {
     );
   }
 
+  const clinicShortcuts = [
+    {
+      href: "/dashboard/encaminhamentos",
+      label: "Abrir fila de atendimentos",
+      icon: ClipboardList,
+    },
+    {
+      href: "/dashboard/documentos",
+      label: "Gerenciar documentos",
+      icon: FolderOpen,
+    },
+    {
+      href: "/dashboard/empresas",
+      label: "Ver empresas",
+      icon: Building2,
+    },
+  ];
+
+  const priorityItems = overview.priorityItems;
+  const activities = overview.recentActivities;
+
   return (
-    <PageShell>
-      <PageHeader
-        eyebrow="Cockpit operacional"
-        title="Visão geral"
-        description="Pendências, produção e ações prioritárias da clínica — atualizado em tempo real."
-      />
+    <PageShell className="visao-geral-clinica" width="wide">
+      <header className="vg-header">
+        <h1 className="vg-title">Visão geral</h1>
+        <p className="vg-subtitle">
+          Acompanhe atendimentos, documentos e pendências da operação.
+        </p>
+      </header>
 
-      <PlatformPositioningBanner />
-
-      <section>
-        <h2 className="section-label">Atalhos rápidos</h2>
-        <QuickActionGrid actions={quickActions} />
+      <section className="vg-shortcuts" aria-label="Atalhos rápidos">
+        {clinicShortcuts.map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href} className="vg-shortcut">
+            <Icon className="vg-shortcut-icon" aria-hidden />
+            <span>{label}</span>
+          </Link>
+        ))}
       </section>
 
-      <section>
-        <h2 className="section-label">Indicadores</h2>
-        <MetricGrid>
-          {overview.stats.map((stat) => {
-            const meta = getMetricMeta(`overview:${stat.key}`);
-            return (
-              <Link key={stat.key} href={stat.href} className="block h-full">
-                <MetricCard
-                  label={stat.title}
-                  value={stat.value}
-                  icon={meta.icon}
-                  description={meta.description}
-                  variant={meta.tone}
-                  badge={meta.badge}
-                  className="h-full"
-                />
-              </Link>
-            );
-          })}
-        </MetricGrid>
+      <section className="vg-stats" aria-label="Indicadores">
+        {overview.stats.map((stat) => {
+          const Icon = CLINIC_STAT_ICONS[stat.key] ?? ClipboardList;
+          const tone = CLINIC_STAT_TONES[stat.key] ?? "slate";
+          return (
+            <Link
+              key={stat.key}
+              href={stat.href}
+              className={cn("vg-stat", `vg-stat--${tone}`)}
+            >
+              <span className="vg-stat-icon" aria-hidden>
+                <Icon className="h-3.5 w-3.5" />
+              </span>
+              <span className="vg-stat-value">{stat.value}</span>
+              <span className="vg-stat-title">{stat.title}</span>
+            </Link>
+          );
+        })}
       </section>
 
-      <div
-        className={cn(
-          "dashboard-panels-grid",
-          !isCommercialModuleEnabled() && "dashboard-panels-grid--compact"
-        )}
-      >
-        <DashboardPanel title="Precisa de ação agora" icon={AlertTriangle}>
-          {overview.pendingActions.length === 0 ? (
-            <InlineEmptyNote>Nenhuma pendência crítica no momento. Operação em dia.</InlineEmptyNote>
+      <div className="vg-columns">
+        <section className="vg-panel" aria-labelledby="vg-pending-title">
+          <h2 id="vg-pending-title" className="vg-panel-title">
+            Pendências prioritárias
+          </h2>
+          {priorityItems.length === 0 ? (
+            <p className="vg-empty">Nenhuma pendência no momento</p>
           ) : (
-            <div className="dashboard-list">
-              {overview.pendingActions.map((item) => (
-                <Link key={`${item.type}-${item.id}`} href={item.href} className="dashboard-list-item">
-                  <p className="text-sm font-semibold text-[var(--brand-navy)]">{item.title}</p>
-                  <p className="text-xs text-[var(--dash-text-muted)]">{item.subtitle}</p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </DashboardPanel>
-
-        <DashboardPanel title="Atividades recentes" description="Pendências operacionais" icon={FileText}>
-          {overview.pendingActions.length === 0 ? (
-            <InlineEmptyNote>Nenhuma atividade recente no momento.</InlineEmptyNote>
-          ) : (
-            <div className="dashboard-list">
-              {overview.pendingActions.slice(0, 5).map((item) => (
-                <Link key={`${item.type}-${item.id}`} href={item.href} className="dashboard-list-item">
-                  <p className="text-sm font-semibold text-[var(--brand-navy)]">{item.title}</p>
-                  <p className="text-xs text-[var(--dash-text-muted)]">{item.subtitle}</p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </DashboardPanel>
-
-        <DashboardPanel title="Documentos pendentes" icon={FolderOpen}>
-          {overview.pendingDocuments.length === 0 ? (
-            <InlineEmptyNote>Nenhum documento pendente.</InlineEmptyNote>
-          ) : (
-            <div className="dashboard-list">
-              {overview.pendingDocuments.map((d) => (
-                <Link key={d.id} href="/dashboard/documentos" className="dashboard-list-item dashboard-list-item-row">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--brand-navy)]">{d.title}</p>
-                    {d.companyName && (
-                      <p className="text-xs text-[var(--dash-text-muted)]">{d.companyName}</p>
-                    )}
+            <ul className="vg-priority-list">
+              {priorityItems.map((item) => (
+                <li key={`${item.statusType}-${item.id}`} className="vg-priority-item">
+                  <div className="vg-priority-main">
+                    <p className="vg-priority-title">{item.title}</p>
+                    <p className="vg-priority-meta">
+                      <span>{item.entityLabel}</span>
+                      <span className="vg-priority-dot" aria-hidden>
+                        ·
+                      </span>
+                      <span>{item.kind}</span>
+                    </p>
                   </div>
-                  <StatusBadge status={d.status} type="document" />
-                </Link>
+                  <div className="vg-priority-side">
+                    <span className="vg-priority-status">{item.status}</span>
+                    <Link href={item.href} className="vg-priority-action">
+                      {item.actionLabel}
+                    </Link>
+                  </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
-        </DashboardPanel>
+        </section>
 
-        {isCommercialModuleEnabled() ? (
-          <DashboardPanel title="Orçamentos em negociação" icon={DollarSign}>
-            {overview.negotiatingQuotes.length === 0 ? (
-              <InlineEmptyNote>Nenhum orçamento em negociação.</InlineEmptyNote>
-            ) : (
-              <div className="dashboard-list">
-                {overview.negotiatingQuotes.map((q) => (
-                  <Link
-                    key={q.id}
-                    href={`/dashboard/orcamentos?tab=orcamentos&id=${q.id}`}
-                    className="dashboard-list-item dashboard-list-item-row"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[var(--brand-navy)]">
-                        {q.quoteNumber ?? "Sem número"}
-                      </p>
-                      <p className="text-xs text-[var(--dash-text-muted)]">{q.companyName}</p>
-                    </div>
-                    <StatusBadge status={q.status} type="quote" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </DashboardPanel>
-        ) : null}
+        <section className="vg-panel" aria-labelledby="vg-activity-title">
+          <h2 id="vg-activity-title" className="vg-panel-title">
+            Atividades recentes
+          </h2>
+          {activities.length === 0 ? (
+            <p className="vg-empty">Nenhuma atividade recente</p>
+          ) : (
+            <ul className="vg-activity-list">
+              {activities.map((item) => {
+                const body = (
+                  <>
+                    <p className="vg-activity-desc">{item.description}</p>
+                    <p className="vg-activity-meta">
+                      <span>{item.actor}</span>
+                      <span className="vg-priority-dot" aria-hidden>
+                        ·
+                      </span>
+                      <time dateTime={item.at.toISOString()}>
+                        {format(item.at, "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      </time>
+                    </p>
+                  </>
+                );
+                return (
+                  <li key={item.id} className="vg-activity-item">
+                    <span className="vg-activity-dot" aria-hidden />
+                    {item.href ? (
+                      <Link href={item.href} className="vg-activity-body">
+                        {body}
+                      </Link>
+                    ) : (
+                      <div className="vg-activity-body">{body}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
     </PageShell>
   );
