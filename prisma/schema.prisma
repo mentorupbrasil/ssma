@@ -1039,8 +1039,17 @@ model Task {
   createdBy         User         @relation("CreatedTasks", fields: [createdByUserId], references: [id])
   companyId         String?
   company           Company?     @relation(fields: [companyId], references: [id])
+  /// EMPRESA | COLABORADOR | FECHAMENTO | DOCUMENTO | COMERCIAL | FINANCEIRO | CHAMADO | MANUAL
+  origin            String?
+  linkUrl           String?
+  systemGenerated   Boolean      @default(false)
+  /// Chave estável para deduplicar tarefas automáticas
+  sourceKey         String?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
+
+  @@index([clinicId, status])
+  @@index([sourceKey])
 }
 
 model Ticket {

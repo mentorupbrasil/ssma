@@ -8,6 +8,7 @@ import { createAuditLog } from "@/lib/server";
 import { resolveClinicId, scopedWhere, withClinicId } from "@/lib/scoped-db";
 import { createNotification } from "@/lib/notifications";
 import { buildTaskWhere, getTaskPageSize, type TaskFilters } from "@/lib/tasks";
+import { syncOperationalTasks, type TaskOrigin } from "@/lib/auto-tasks";
 
 type Result = { success: true; id: string } | { success: false; error: string };
 
@@ -18,11 +19,7 @@ export async function listTasksDashboard(filters: TaskFilters = {}) {
   const page = Math.max(1, filters.page ?? 1);
   const where = { ...scope, ...buildTaskWhere(filters) };
 
-  const now = new Date();
-  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endToday = new Date(startToday.getTime() + 86400000 - 1);
-
-  const [items, total, statCounts] = await Promise.all([
+  const [items, total] = await Promise.all([
     prisma.task.findMany({
       where,
       orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
@@ -35,39 +32,6 @@ export async function listTasksDashboard(filters: TaskFilters = {}) {
       },
     }),
     prisma.task.count({ where }),
-    Promise.all([
-      prisma.task.count({ where: { ...scope, status: "PENDENTE" } }),
-      prisma.task.count({ where: { ...scope, status: "EM_ANDAMENTO" } }),
-      prisma.task.count({ where: { ...scope, status: "CONCLUIDA" } }),
-      prisma.task.count({
-        where: {
-          ...scope,
-          status: { in: ["PENDENTE", "EM_ANDAMENTO"] },
-          dueDate: { lt: startToday },
-        },
-      }),
-      prisma.task.count({
-        where: {
-          ...scope,
-          status: { in: ["PENDENTE", "EM_ANDAMENTO"] },
-          dueDate: { gte: startToday, lte: endToday },
-        },
-      }),
-      prisma.task.count({
-        where: {
-          ...scope,
-          priority: "URGENTE",
-          status: { in: ["PENDENTE", "EM_ANDAMENTO"] },
-        },
-      }),
-    ]).then(([pendentes, em_andamento, concluidas, atrasadas, hoje, urgentes]) => ({
-      pendentes,
-      em_andamento,
-      concluidas,
-      atrasadas,
-      hoje,
-      urgentes,
-    })),
   ]);
 
   return {
@@ -80,14 +44,32 @@ export async function listTasksDashboard(filters: TaskFilters = {}) {
       dueDate: t.dueDate?.toISOString() ?? null,
       assignedTo: t.assignedTo,
       createdByName: t.createdBy.name,
+      companyId: t.companyId,
       companyName: t.company?.tradeName ?? t.company?.legalName ?? null,
+      origin: t.origin,
+      linkUrl: t.linkUrl,
+      systemGenerated: t.systemGenerated,
       createdAt: t.createdAt.toISOString(),
     })),
     total,
     page,
     pageSize,
-    statCounts,
   };
+}
+
+export async function syncTasksFromOperations(): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const session = await requirePermission("tasks.manage");
+    const clinicId = await resolveClinicId(session);
+    await syncOperationalTasks({
+      clinicId,
+      actorUserId: session.user.id,
+    });
+    revalidatePath("/dashboard/tarefas");
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: actionError(e, "Erro ao sincronizar tarefas.") };
+  }
 }
 
 export async function createTask(input: {
@@ -97,10 +79,16 @@ export async function createTask(input: {
   dueDate?: string;
   assignedToUserId?: string;
   companyId?: string;
+  origin?: TaskOrigin | string;
+  linkUrl?: string;
 }): Promise<Result> {
   try {
     const session = await requirePermission("tasks.manage");
     const clinicId = await resolveClinicId(session);
+    if (!input.title?.trim()) return { success: false, error: "Informe o título." };
+
+    const origin = (input.origin as TaskOrigin | undefined) || (input.companyId ? "EMPRESA" : "MANUAL");
+
     const task = await prisma.task.create({
       data: withClinicId(
         {
@@ -111,6 +99,9 @@ export async function createTask(input: {
           assignedToUserId: input.assignedToUserId || null,
           companyId: input.companyId || null,
           createdByUserId: session.user.id,
+          origin,
+          linkUrl: input.linkUrl?.trim() || null,
+          systemGenerated: false,
         },
         clinicId
       ),
@@ -139,19 +130,44 @@ export async function updateTask(input: {
   priority?: TaskPriority;
   dueDate?: string | null;
   assignedToUserId?: string | null;
+  companyId?: string | null;
+  origin?: string | null;
+  linkUrl?: string | null;
   status?: TaskStatus;
 }): Promise<Result> {
   try {
     const session = await requirePermission("tasks.manage");
     const where = scopedWhere(session, { id: input.id });
+    const existing = await prisma.task.findFirst({ where, select: { id: true, assignedToUserId: true } });
+    if (!existing) return { success: false, error: "Tarefa não encontrada." };
+
     const data: Record<string, unknown> = {};
     if (input.title) data.title = input.title.trim();
     if (input.description !== undefined) data.description = input.description?.trim() || null;
     if (input.priority) data.priority = input.priority;
     if (input.dueDate !== undefined) data.dueDate = input.dueDate ? new Date(input.dueDate) : null;
     if (input.assignedToUserId !== undefined) data.assignedToUserId = input.assignedToUserId;
+    if (input.companyId !== undefined) data.companyId = input.companyId;
+    if (input.origin !== undefined) data.origin = input.origin;
+    if (input.linkUrl !== undefined) data.linkUrl = input.linkUrl?.trim() || null;
     if (input.status) data.status = input.status;
+
     await prisma.task.updateMany({ where, data });
+
+    if (
+      input.assignedToUserId &&
+      input.assignedToUserId !== existing.assignedToUserId &&
+      input.assignedToUserId !== session.user.id
+    ) {
+      await createNotification({
+        userId: input.assignedToUserId,
+        title: "Tarefa reatribuída a você",
+        message: input.title?.trim() || "Uma tarefa foi atribuída a você.",
+        link: "/dashboard/tarefas",
+        sendEmail: true,
+      });
+    }
+
     revalidatePath("/dashboard/tarefas");
     return { success: true, id: input.id };
   } catch (e) {
@@ -191,6 +207,9 @@ export async function convertTicketToTask(ticketId: string): Promise<Result> {
           companyId: ticket.companyId,
           assignedToUserId: ticket.assignedToUserId,
           createdByUserId: session.user.id,
+          origin: "CHAMADO",
+          linkUrl: `/dashboard/chamados`,
+          systemGenerated: false,
         },
         clinicId
       ),

@@ -1223,6 +1223,9 @@ export async function updateQuoteStatusCommercial(
         priority: "ALTA",
         dueDate: new Date(Date.now() + 3 * 86400000),
         companyId: existing.companyId ?? undefined,
+        origin: "COMERCIAL",
+        linkUrl: "/dashboard/orcamentos",
+        sourceKey: `quote-approved:${quoteId}`,
       });
     }
 

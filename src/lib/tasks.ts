@@ -1,14 +1,5 @@
 import type { Prisma, TaskPriority, TaskStatus } from "@prisma/client";
-import { startOfDay, endOfDay, parseISO, isValid } from "date-fns";
-
-export const TASK_STAT_CARDS: { key: string; status?: TaskStatus; label: string }[] = [
-  { key: "pendentes", status: "PENDENTE", label: "Pendentes" },
-  { key: "em_andamento", status: "EM_ANDAMENTO", label: "Em andamento" },
-  { key: "concluidas", status: "CONCLUIDA", label: "Concluídas" },
-  { key: "atrasadas", keyFilter: "overdue", label: "Atrasadas" } as { key: string; label: string; status?: TaskStatus; keyFilter?: string },
-  { key: "hoje", keyFilter: "today", label: "Vencem hoje" } as { key: string; label: string; status?: TaskStatus; keyFilter?: string },
-  { key: "urgentes", keyFilter: "urgent", label: "Urgentes" } as { key: string; label: string; status?: TaskStatus; keyFilter?: string },
-];
+import { startOfDay, endOfDay, addDays, parseISO, isValid } from "date-fns";
 
 export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
   PENDENTE: "Pendente",
@@ -19,9 +10,20 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 
 export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
   BAIXA: "Baixa",
-  MEDIA: "Média",
+  MEDIA: "Normal",
   ALTA: "Alta",
   URGENTE: "Urgente",
+};
+
+export const TASK_ORIGIN_LABELS: Record<string, string> = {
+  EMPRESA: "Empresa",
+  COLABORADOR: "Colaborador",
+  FECHAMENTO: "Fechamento mensal",
+  DOCUMENTO: "Documento",
+  COMERCIAL: "Comercial",
+  FINANCEIRO: "Financeiro",
+  CHAMADO: "Chamado",
+  MANUAL: "Manual",
 };
 
 export const KANBAN_COLUMNS: TaskStatus[] = ["PENDENTE", "EM_ANDAMENTO", "CONCLUIDA"];
@@ -31,8 +33,9 @@ export type TaskFilters = {
   status?: string;
   priority?: string;
   assignedTo?: string;
+  due?: string;
+  origin?: string;
   companyId?: string;
-  card?: string;
   page?: number;
 };
 
@@ -40,6 +43,23 @@ const PAGE_SIZE = 50;
 
 export function getTaskPageSize() {
   return PAGE_SIZE;
+}
+
+export function taskOriginLabel(origin: string | null | undefined, companyName?: string | null) {
+  if (!origin) {
+    return companyName ? `Empresa · ${companyName}` : "—";
+  }
+  const base = TASK_ORIGIN_LABELS[origin] ?? origin;
+  if (origin === "EMPRESA" && companyName) return `${base} · ${companyName}`;
+  if (companyName && origin !== "MANUAL") return `${base} · ${companyName}`;
+  return base;
+}
+
+export function isTaskOverdue(dueDate: string | Date | null | undefined, status: string) {
+  if (!dueDate || status === "CONCLUIDA" || status === "CANCELADA") return false;
+  const due = typeof dueDate === "string" ? new Date(dueDate) : dueDate;
+  if (Number.isNaN(due.getTime())) return false;
+  return due < startOfDay(new Date());
 }
 
 export function buildTaskWhere(filters: TaskFilters): Prisma.TaskWhereInput {
@@ -51,31 +71,22 @@ export function buildTaskWhere(filters: TaskFilters): Prisma.TaskWhereInput {
       { description: { contains: q, mode: "insensitive" } },
     ];
   }
-  if (filters.status && filters.status !== "ALL") {
-    where.status = filters.status as TaskStatus;
-  }
-  if (filters.priority && filters.priority !== "ALL") {
-    where.priority = filters.priority as TaskPriority;
-  }
+  if (filters.status) where.status = filters.status as TaskStatus;
+  if (filters.priority) where.priority = filters.priority as TaskPriority;
   if (filters.assignedTo) where.assignedToUserId = filters.assignedTo;
   if (filters.companyId) where.companyId = filters.companyId;
+  if (filters.origin) where.origin = filters.origin;
 
   const now = new Date();
-  const card = filters.card;
-  if (card === "pendentes") where.status = "PENDENTE";
-  if (card === "em_andamento") where.status = "EM_ANDAMENTO";
-  if (card === "concluidas") where.status = "CONCLUIDA";
-  if (card === "overdue") {
+  if (filters.due === "atrasadas") {
     where.status = { in: ["PENDENTE", "EM_ANDAMENTO"] };
     where.dueDate = { lt: startOfDay(now) };
-  }
-  if (card === "today") {
+  } else if (filters.due === "hoje") {
     where.status = { in: ["PENDENTE", "EM_ANDAMENTO"] };
     where.dueDate = { gte: startOfDay(now), lte: endOfDay(now) };
-  }
-  if (card === "urgentes") {
-    where.priority = "URGENTE";
+  } else if (filters.due === "semana") {
     where.status = { in: ["PENDENTE", "EM_ANDAMENTO"] };
+    where.dueDate = { gte: startOfDay(now), lte: endOfDay(addDays(now, 7)) };
   }
 
   return where;

@@ -1514,6 +1514,220 @@
     color: var(--brand-green-dark);
   }
 
+  .financeiro-resumo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.75rem;
+    background: white;
+    overflow: hidden;
+  }
+
+  .financeiro-resumo-item {
+    display: flex;
+    flex: 1 1 8rem;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+    padding: 0.65rem 0.9rem;
+    border-right: 1px solid rgb(241 245 249);
+  }
+
+  .financeiro-resumo-item:last-child {
+    border-right: none;
+  }
+
+  .financeiro-resumo-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+  }
+
+  .financeiro-resumo-value {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--brand-navy, #0e142b);
+  }
+
+  .financeiro-resumo-value--danger {
+    color: #dc2626;
+  }
+
+  .financeiro-resumo-value--ok {
+    color: var(--brand-green-dark);
+  }
+
+  .financeiro-filters {
+    margin-bottom: 0.75rem;
+  }
+
+  .financeiro-desc {
+    display: block;
+    max-width: 28rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tarefas-view-toggle {
+    display: inline-flex;
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.65rem;
+    background: white;
+    overflow: hidden;
+  }
+
+  .tarefas-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(100 116 139);
+    background: transparent;
+  }
+
+  .tarefas-view-btn--active {
+    background: rgb(241 245 249);
+    color: var(--brand-navy, #0e142b);
+  }
+
+  .tarefas-filters {
+    margin-bottom: 0.75rem;
+  }
+
+  .tarefas-system-tag {
+    display: inline-flex;
+    margin-top: 0.2rem;
+    border-radius: 0.35rem;
+    background: rgb(239 246 255);
+    color: rgb(29 78 216);
+    padding: 0.1rem 0.4rem;
+    font-size: 0.625rem;
+    font-weight: 650;
+  }
+
+  .tarefas-row-overdue {
+    background: rgb(255 251 235 / 0.55);
+  }
+
+  .tarefas-due-overdue {
+    color: rgb(180 83 9);
+    font-weight: 650;
+  }
+
+  .tarefas-board {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tarefas-board-col {
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.75rem;
+    background: rgb(248 250 252 / 0.7);
+    min-height: 12rem;
+  }
+
+  .tarefas-board-col-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid rgb(226 232 240);
+  }
+
+  .tarefas-board-col-head h3 {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--brand-navy, #0e142b);
+  }
+
+  .tarefas-board-col-head span {
+    border-radius: 999px;
+    background: white;
+    color: rgb(100 116 139);
+    padding: 0.1rem 0.45rem;
+    font-size: 0.6875rem;
+    font-weight: 650;
+  }
+
+  .tarefas-board-col-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.65rem;
+  }
+
+  .tarefas-board-card {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.65rem;
+    background: white;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .tarefas-board-card--overdue {
+    border-color: rgb(253 230 138);
+    background: rgb(255 251 235);
+  }
+
+  .tarefas-board-card-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 650;
+    color: rgb(15 23 42);
+  }
+
+  .tarefas-board-card-meta {
+    margin: 0.35rem 0 0;
+    font-size: 0.6875rem;
+    color: rgb(100 116 139);
+  }
+
+  .tarefas-board-card-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.6875rem;
+    color: rgb(71 85 105);
+  }
+
+  .tarefas-board-empty {
+    margin: 0;
+    padding: 1.25rem 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: rgb(148 163 184);
+  }
+
+  @media (max-width: 900px) {
+    .tarefas-board {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .financeiro-resumo-item {
+      border-right: none;
+      border-bottom: 1px solid rgb(241 245 249);
+      flex: 1 1 100%;
+    }
+
+    .financeiro-resumo-item:last-child {
+      border-bottom: none;
+    }
+  }
+
   /* Colaboradores — filtros e ações */
   .collaborator-filter-panel {
     margin-top: 1.5rem;
