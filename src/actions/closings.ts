@@ -210,7 +210,9 @@ export async function reopenMonthlyClosing(id: string): Promise<Result> {
 }
 
 /** Envia o valor final ao Financeiro (cria conta a receber uma única vez). */
-export async function sendClosingToFinance(id: string): Promise<Result<{ entryId: string }>> {
+export async function sendClosingToFinance(
+  id: string
+): Promise<Result<{ id: string; entryId: string }>> {
   try {
     const session = await requirePermission("closings.manage");
     const clinicId = await resolveClinicId(session);
