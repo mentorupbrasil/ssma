@@ -246,25 +246,6 @@ export type PriceCatalogRow = {
   validUntil: string | null;
 };
 
-export type CompanyPriceRow = {
-  key: string;
-  priceId: string;
-  examId: string | null;
-  name: string;
-  companyId: string;
-  companyName: string;
-  defaultPrice: number | null;
-  negotiatedPrice: number | null;
-  status: PriceListStatus;
-  updatedAt: string;
-  notes: string | null;
-  code: string | null;
-  category: PriceItemCategory;
-  chargeType: string;
-  validFrom: string | null;
-  validUntil: string | null;
-};
-
 function mapExamCategoryToPrice(category: string): PriceItemCategory {
   if (category === "CLINICO_OCUPACIONAL") return "ASO";
   return "EXAME";
@@ -274,10 +255,9 @@ function mapExamStatusToPrice(status: string): PriceListStatus {
   return status === "INATIVO" ? "INATIVA" : "ATIVA";
 }
 
-/** Catálogo unificado: exames do sistema + preços padrão (serviços avulsos). */
+/** Catálogo de preços padrão: exames do sistema + serviços avulsos (sem preços por empresa). */
 export async function listPriceCatalog(): Promise<{
   defaults: PriceCatalogRow[];
-  companyItems: CompanyPriceRow[];
 }> {
   const session = await requirePermission("pricing.manage");
   const scope = scopedWhere(session, {});
@@ -295,11 +275,7 @@ export async function listPriceCatalog(): Promise<{
       orderBy: { name: "asc" },
     }),
     prisma.priceListItem.findMany({
-      where: scope,
-      include: {
-        company: { select: { id: true, tradeName: true, legalName: true } },
-        exam: { select: { id: true, name: true } },
-      },
+      where: { ...scope, companyId: null },
       orderBy: [{ name: "asc" }],
     }),
   ]);
@@ -307,13 +283,8 @@ export async function listPriceCatalog(): Promise<{
   const defaultByExamId = new Map<string, (typeof priceItems)[number]>();
   const defaultByName = new Map<string, (typeof priceItems)[number]>();
   const defaultsStandalone: (typeof priceItems)[number][] = [];
-  const companyItemsRaw: (typeof priceItems)[number][] = [];
 
   for (const item of priceItems) {
-    if (item.companyId) {
-      companyItemsRaw.push(item);
-      continue;
-    }
     if (item.examId) {
       defaultByExamId.set(item.examId, item);
     } else {
@@ -353,7 +324,6 @@ export async function listPriceCatalog(): Promise<{
 
   for (const item of defaultsStandalone) {
     if (linkedPriceIds.has(item.id)) continue;
-    // Skip if already shown via name match to an exam
     const matchedExam = exams.find(
       (e) => e.name.trim().toLowerCase() === item.name.trim().toLowerCase()
     );
@@ -379,44 +349,10 @@ export async function listPriceCatalog(): Promise<{
   }
 
   defaults.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-
-  const companyItems: CompanyPriceRow[] = companyItemsRaw.map((item) => {
-    const base =
-      (item.examId ? defaultByExamId.get(item.examId) : null) ??
-      defaultByName.get(item.name.trim().toLowerCase()) ??
-      null;
-    return {
-      key: `price:${item.id}`,
-      priceId: item.id,
-      examId: item.examId,
-      name: item.name,
-      companyId: item.companyId!,
-      companyName: item.company?.tradeName ?? item.company?.legalName ?? "—",
-      defaultPrice: base && base.defaultPrice > 0 ? base.defaultPrice : null,
-      negotiatedPrice:
-        item.negotiatedPrice != null && item.negotiatedPrice > 0
-          ? item.negotiatedPrice
-          : item.negotiatedPrice === 0
-            ? null
-            : item.negotiatedPrice,
-      status: item.status,
-      updatedAt: item.updatedAt.toISOString(),
-      notes: item.notes,
-      code: item.code,
-      category: item.category,
-      chargeType: item.chargeType,
-      validFrom: item.validFrom?.toISOString() ?? null,
-      validUntil: item.validUntil?.toISOString() ?? null,
-    };
-  });
-
-  companyItems.sort((a, b) =>
-    a.companyName.localeCompare(b.companyName, "pt-BR") || a.name.localeCompare(b.name, "pt-BR")
-  );
-
-  return { defaults, companyItems };
+  return { defaults };
 }
 
+/** Upsert apenas de preços padrão (companyId sempre null). Pacotes de empresa usam saveCompanyExamPackage. */
 export async function upsertCatalogPrice(input: {
   priceId?: string | null;
   examId?: string | null;
@@ -425,8 +361,6 @@ export async function upsertCatalogPrice(input: {
   defaultPrice: number | null;
   status?: PriceListStatus;
   notes?: string;
-  companyId?: string | null;
-  negotiatedPrice?: number | null;
   validFrom?: string | null;
   validUntil?: string | null;
   chargeType?: PriceChargeType;
@@ -439,14 +373,11 @@ export async function upsertCatalogPrice(input: {
     const priceValue = input.defaultPrice != null && input.defaultPrice > 0 ? input.defaultPrice : 0;
 
     if (input.priceId) {
-      const where = scopedWhere(session, { id: input.priceId });
+      const where = scopedWhere(session, { id: input.priceId, companyId: null });
       const existing = await prisma.priceListItem.findFirst({ where });
       if (!existing) return { success: false, error: "Item não encontrado." };
 
-      const newPrice = input.companyId
-        ? input.negotiatedPrice ?? priceValue
-        : priceValue;
-      const oldPrice = effectivePrice(existing);
+      const oldPrice = existing.defaultPrice;
 
       await prisma.priceListItem.updateMany({
         where,
@@ -454,9 +385,9 @@ export async function upsertCatalogPrice(input: {
           name: input.name.trim(),
           category: input.category ?? existing.category,
           examId: input.examId ?? existing.examId,
-          defaultPrice: input.companyId ? existing.defaultPrice : priceValue,
-          companyId: input.companyId || null,
-          negotiatedPrice: input.companyId ? input.negotiatedPrice ?? null : null,
+          defaultPrice: priceValue,
+          companyId: null,
+          negotiatedPrice: null,
           chargeType: input.chargeType ?? existing.chargeType,
           validFrom: input.validFrom ? new Date(input.validFrom) : null,
           validUntil: input.validUntil ? new Date(input.validUntil) : null,
@@ -465,12 +396,12 @@ export async function upsertCatalogPrice(input: {
         },
       });
 
-      if (oldPrice !== newPrice) {
+      if (oldPrice !== priceValue) {
         await prisma.priceListHistory.create({
           data: {
             priceListItemId: input.priceId,
             oldPrice,
-            newPrice,
+            newPrice: priceValue,
             changedByUserId: session.user.id,
           },
         });
@@ -487,8 +418,8 @@ export async function upsertCatalogPrice(input: {
           category: input.category ?? "EXAME",
           examId: input.examId || null,
           defaultPrice: priceValue,
-          companyId: input.companyId || null,
-          negotiatedPrice: input.companyId ? input.negotiatedPrice ?? null : null,
+          companyId: null,
+          negotiatedPrice: null,
           chargeType: input.chargeType ?? "AVULSA",
           validFrom: input.validFrom ? new Date(input.validFrom) : null,
           validUntil: input.validUntil ? new Date(input.validUntil) : null,
@@ -562,13 +493,15 @@ export async function toggleCatalogPriceStatus(input: {
   if (input.priceId) {
     try {
       const session = await requirePermission("pricing.manage");
-      const where = scopedWhere(session, { id: input.priceId });
+      const where = scopedWhere(session, { id: input.priceId, companyId: null });
       await prisma.priceListItem.updateMany({
         where,
         data: { status: nextStatus },
       });
+      const updated = await prisma.priceListItem.findFirst({ where, select: { id: true } });
+      if (!updated) return { success: false, error: "Item não encontrado." };
       revalidatePath("/dashboard/tabela-precos");
-      return { success: true, id: input.priceId };
+      return { success: true, id: updated.id };
     } catch (e) {
       return { success: false, error: actionError(e, "Erro ao alterar status.") };
     }
@@ -630,5 +563,280 @@ export async function importCatalogPricesFromRows(
     return { success: true, updated, skipped };
   } catch (e) {
     return { success: false, error: actionError(e, "Erro ao importar planilha.") };
+  }
+}
+
+export type CompanyPackageCatalogItem = {
+  examId: string;
+  name: string;
+  category: PriceItemCategory;
+  categoryLabel: string;
+  examCategoryLabel: string;
+  defaultPrice: number | null;
+  inPackage: boolean;
+  packageItemId: string | null;
+  negotiatedPrice: number | null;
+};
+
+export async function listCompanyPackageCatalog(
+  companyId: string
+): Promise<CompanyPackageCatalogItem[]> {
+  const session = await requirePermission("pricing.manage");
+  const scope = scopedWhere(session, {});
+
+  const company = await prisma.company.findFirst({
+    where: scopedWhere(session, { id: companyId }),
+    select: { id: true },
+  });
+  if (!company) return [];
+
+  const [exams, defaults, packageItems] = await Promise.all([
+    prisma.exam.findMany({
+      where: { ...scope, status: "ATIVO" },
+      select: { id: true, name: true, category: true, internalTags: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.priceListItem.findMany({
+      where: { ...scope, companyId: null },
+      select: { id: true, examId: true, name: true, defaultPrice: true, category: true },
+    }),
+    prisma.priceListItem.findMany({
+      where: { companyId },
+      select: {
+        id: true,
+        examId: true,
+        name: true,
+        negotiatedPrice: true,
+      },
+    }),
+  ]);
+
+  const { EXAM_CATEGORY_LABELS } = await import("@/lib/exams");
+
+  const defaultByExam = new Map(
+    defaults.filter((d) => d.examId).map((d) => [d.examId!, d])
+  );
+  const defaultByName = new Map(
+    defaults.map((d) => [d.name.trim().toLowerCase(), d])
+  );
+  const pkgByExam = new Map(
+    packageItems.filter((p) => p.examId).map((p) => [p.examId!, p])
+  );
+  const pkgByName = new Map(
+    packageItems.map((p) => [p.name.trim().toLowerCase(), p])
+  );
+
+  return exams.map((exam) => {
+    const def =
+      defaultByExam.get(exam.id) ?? defaultByName.get(exam.name.trim().toLowerCase()) ?? null;
+    const pkg =
+      pkgByExam.get(exam.id) ?? pkgByName.get(exam.name.trim().toLowerCase()) ?? null;
+    const category = def?.category ?? mapExamCategoryToPrice(exam.category);
+    const grupoTag = exam.internalTags
+      ?.split("|")
+      .find((p) => p.startsWith("grupo:"))
+      ?.slice(6);
+    return {
+      examId: exam.id,
+      name: exam.name,
+      category,
+      categoryLabel: PRICE_CATEGORY_LABELS[category] ?? category,
+      examCategoryLabel: grupoTag || EXAM_CATEGORY_LABELS[exam.category] || exam.category,
+      defaultPrice: def && def.defaultPrice > 0 ? def.defaultPrice : null,
+      inPackage: !!pkg,
+      packageItemId: pkg?.id ?? null,
+      negotiatedPrice:
+        pkg?.negotiatedPrice != null && pkg.negotiatedPrice > 0 ? pkg.negotiatedPrice : null,
+    };
+  });
+}
+
+export async function saveCompanyExamPackage(input: {
+  companyId: string;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  items: {
+    examId: string;
+    name: string;
+    category?: PriceItemCategory;
+    defaultPrice: number | null;
+    negotiatedPrice: number | null;
+    useDefault?: boolean;
+  }[];
+}): Promise<Result<{ saved: number }>> {
+  try {
+    const session = await requirePermission("pricing.manage");
+    const clinicId = await resolveClinicId(session);
+    const company = await prisma.company.findFirst({
+      where: scopedWhere(session, { id: input.companyId }),
+      select: { id: true },
+    });
+    if (!company) return { success: false, error: "Empresa não encontrada." };
+
+    // Deduplicate by examId
+    const uniqueItems = new Map<string, (typeof input.items)[number]>();
+    for (const item of input.items) {
+      if (!item.examId) continue;
+      uniqueItems.set(item.examId, item);
+    }
+
+    const existing = await prisma.priceListItem.findMany({
+      where: { companyId: input.companyId },
+      select: { id: true, examId: true, name: true },
+    });
+    const byExam = new Map(existing.filter((e) => e.examId).map((e) => [e.examId!, e]));
+    const byName = new Map(existing.map((e) => [e.name.trim().toLowerCase(), e]));
+
+    const keepIds = new Set<string>();
+    let saved = 0;
+
+    await prisma.$transaction(async (tx) => {
+      for (const item of uniqueItems.values()) {
+        const negotiated =
+          item.useDefault && item.defaultPrice != null && item.defaultPrice > 0
+            ? item.defaultPrice
+            : item.negotiatedPrice != null && item.negotiatedPrice > 0
+              ? item.negotiatedPrice
+              : item.defaultPrice != null && item.defaultPrice > 0
+                ? item.defaultPrice
+                : null;
+
+        if (negotiated == null) {
+          throw new Error(
+            `Informe o preço negociado de "${item.name}" ou use o preço padrão.`
+          );
+        }
+
+        const found =
+          byExam.get(item.examId) ?? byName.get(item.name.trim().toLowerCase()) ?? null;
+
+        const snapshotDefault =
+          item.defaultPrice != null && item.defaultPrice > 0 ? item.defaultPrice : 0;
+
+        const payload = {
+          examId: item.examId,
+          name: item.name.trim(),
+          category: item.category ?? "EXAME",
+          // Snapshot local — nunca altera PriceListItem com companyId null
+          defaultPrice: snapshotDefault,
+          negotiatedPrice: negotiated,
+          chargeType: "AVULSA" as const,
+          validFrom: input.validFrom ? new Date(input.validFrom) : null,
+          validUntil: input.validUntil ? new Date(input.validUntil) : null,
+          status: "ATIVA" as const,
+          notes: "Pacote contratado da empresa",
+        };
+
+        if (found) {
+          await tx.priceListItem.update({
+            where: { id: found.id },
+            data: payload,
+          });
+          keepIds.add(found.id);
+        } else {
+          const created = await tx.priceListItem.create({
+            data: withClinicId(
+              {
+                companyId: input.companyId,
+                ...payload,
+              },
+              clinicId
+            ),
+          });
+          keepIds.add(created.id);
+        }
+        saved += 1;
+      }
+
+      for (const row of existing) {
+        if (!keepIds.has(row.id)) {
+          await tx.priceListItem.delete({ where: { id: row.id } });
+        }
+      }
+    });
+
+    revalidatePath(`/dashboard/empresas/${input.companyId}`);
+    revalidatePath("/dashboard/empresas");
+    return { success: true, saved };
+  } catch (e) {
+    if (e instanceof Error && e.message.startsWith("Informe o preço")) {
+      return { success: false, error: e.message };
+    }
+    return { success: false, error: actionError(e, "Erro ao salvar pacote.") };
+  }
+}
+
+export async function updateCompanyPackageItem(input: {
+  companyId: string;
+  itemId: string;
+  negotiatedPrice: number;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  status?: PriceListStatus;
+}): Promise<Result> {
+  try {
+    const session = await requirePermission("pricing.manage");
+    const item = await prisma.priceListItem.findFirst({
+      where: scopedWhere(session, { id: input.itemId, companyId: input.companyId }),
+    });
+    if (!item) return { success: false, error: "Item do pacote não encontrado." };
+    if (!(input.negotiatedPrice > 0)) {
+      return { success: false, error: "Informe um preço negociado válido." };
+    }
+
+    await prisma.priceListItem.update({
+      where: { id: item.id },
+      data: {
+        negotiatedPrice: input.negotiatedPrice,
+        validFrom:
+          input.validFrom !== undefined
+            ? input.validFrom
+              ? new Date(input.validFrom)
+              : null
+            : item.validFrom,
+        validUntil:
+          input.validUntil !== undefined
+            ? input.validUntil
+              ? new Date(input.validUntil)
+              : null
+            : item.validUntil,
+        status: input.status ?? item.status,
+      },
+    });
+
+    await prisma.priceListHistory.create({
+      data: {
+        priceListItemId: item.id,
+        oldPrice: item.negotiatedPrice ?? item.defaultPrice,
+        newPrice: input.negotiatedPrice,
+        changedByUserId: session.user.id,
+        notes: "Ajuste de valor do pacote da empresa",
+      },
+    });
+
+    revalidatePath(`/dashboard/empresas/${input.companyId}`);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: actionError(e, "Erro ao atualizar valor.") };
+  }
+}
+
+export async function removeCompanyPackageItem(input: {
+  companyId: string;
+  itemId: string;
+}): Promise<Result> {
+  try {
+    const session = await requirePermission("pricing.manage");
+    const item = await prisma.priceListItem.findFirst({
+      where: scopedWhere(session, { id: input.itemId, companyId: input.companyId }),
+      select: { id: true },
+    });
+    if (!item) return { success: false, error: "Item do pacote não encontrado." };
+
+    await prisma.priceListItem.delete({ where: { id: item.id } });
+    revalidatePath(`/dashboard/empresas/${input.companyId}`);
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: actionError(e, "Erro ao remover do pacote.") };
   }
 }

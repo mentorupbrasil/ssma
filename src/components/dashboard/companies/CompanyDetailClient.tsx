@@ -19,6 +19,7 @@ import {
   Plus,
   Search,
   ShieldOff,
+  Trash2,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -52,13 +53,27 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { toggleCompanyPortal } from "@/actions/companies";
+import {
+  updateCompanyPackageItem,
+  removeCompanyPackageItem,
+} from "@/actions/pricing";
 import { createUser, updateUser } from "@/actions/users";
 import { EditCompanyDialog } from "./CompanyDialogs";
+import { CompanyExamPackageDialog } from "./CompanyExamPackageDialog";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import {
+  SystemActionMenu,
+  type SystemActionItem,
+} from "@/components/dashboard/SystemActionMenu";
+import {
+  SystemModalField,
+  SystemModalShell,
+} from "@/components/dashboard/SystemModalShell";
 import { useBreadcrumbSegmentLabel } from "@/components/dashboard/BreadcrumbLabelProvider";
 import { toast } from "sonner";
 import type { CompanyHistoryAction } from "@prisma/client";
 import type { DocumentType } from "@prisma/client";
+import { PRICE_STATUS_LABELS, formatCurrency } from "@/lib/pricing";
 
 type TabId =
   | "overview"
@@ -72,7 +87,7 @@ const COMPANY_TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Visão geral" },
   { id: "employees", label: "Colaboradores" },
   { id: "documents", label: "Documentos" },
-  { id: "contract", label: "Contrato e preços" },
+  { id: "contract", label: "Contrato e exames" },
   { id: "portal", label: "Portal" },
   { id: "history", label: "Histórico" },
 ];
@@ -297,7 +312,11 @@ export function CompanyDetailClient({
         )}
         {activeTab === "documents" && <DocumentsTab company={company} />}
         {activeTab === "contract" && (
-          <ContractTab company={company} canCommercial={canCommercial} />
+          <ContractTab
+            company={company}
+            canCommercial={canCommercial}
+            onRefresh={refresh}
+          />
         )}
         {activeTab === "portal" && (
           <PortalTab
@@ -946,13 +965,107 @@ function DocumentsTab({ company }: { company: CompanyDetailSerialized }) {
   );
 }
 
+function formatPackagePrice(value: number | null) {
+  if (value == null || value <= 0) return "Não definido";
+  return formatCurrency(value);
+}
+
+function formatPackageValidity(from: string | null, until: string | null) {
+  if (!from && !until) return "—";
+  const f = from ? format(new Date(from), "dd/MM/yyyy", { locale: ptBR }) : null;
+  const u = until ? format(new Date(until), "dd/MM/yyyy", { locale: ptBR }) : null;
+  if (f && u) return `${f} – ${u}`;
+  if (u) return `Até ${u}`;
+  return `Desde ${f}`;
+}
+
 function ContractTab({
   company,
   canCommercial,
+  onRefresh,
 }: {
   company: CompanyDetailSerialized;
   canCommercial: boolean;
+  onRefresh: () => void;
 }) {
+  const [packageOpen, setPackageOpen] = useState(false);
+  const [editItem, setEditItem] = useState<CompanyDetailSerialized["priceListItems"][number] | null>(
+    null
+  );
+  const [editPrice, setEditPrice] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const packageItems = company.priceListItems;
+  const hasPackage = packageItems.length > 0;
+  const packageValidFrom = packageItems.find((i) => i.validFrom)?.validFrom ?? null;
+  const packageValidUntil = packageItems.find((i) => i.validUntil)?.validUntil ?? null;
+
+  function openEditValue(item: CompanyDetailSerialized["priceListItems"][number]) {
+    setEditItem(item);
+    setEditPrice(item.negotiatedPrice != null ? String(item.negotiatedPrice) : "");
+  }
+
+  async function handleSaveValue() {
+    if (!editItem) return;
+    const negotiatedPrice = parseFloat(editPrice);
+    if (!(negotiatedPrice > 0)) {
+      toast.error("Informe um preço negociado válido.");
+      return;
+    }
+    setBusy(true);
+    const result = await updateCompanyPackageItem({
+      companyId: company.id,
+      itemId: editItem.id,
+      negotiatedPrice,
+    });
+    setBusy(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Valor atualizado.");
+    setEditItem(null);
+    onRefresh();
+  }
+
+  async function handleRemove(item: CompanyDetailSerialized["priceListItems"][number]) {
+    setBusy(true);
+    const result = await removeCompanyPackageItem({
+      companyId: company.id,
+      itemId: item.id,
+    });
+    setBusy(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Exame removido do pacote.");
+    onRefresh();
+  }
+
+  function itemActions(
+    item: CompanyDetailSerialized["priceListItems"][number]
+  ): SystemActionItem[] {
+    return [
+      {
+        label: "Editar valor",
+        hint: "Alterar preço negociado",
+        icon: Pencil,
+        iconTone: "docs",
+        onClick: () => openEditValue(item),
+        disabled: !canCommercial || busy,
+      },
+      {
+        label: "Remover do pacote",
+        hint: "Retirar este exame do contrato",
+        icon: Trash2,
+        iconTone: "cancel",
+        onClick: () => void handleRemove(item),
+        disabled: !canCommercial || busy,
+      },
+    ];
+  }
+
   return (
     <div className="space-y-4">
       <section className="empresa-erp-panel">
@@ -983,22 +1096,32 @@ function ContractTab({
 
       <section className="empresa-erp-panel">
         <div className="empresa-perfil-tab-toolbar empresa-perfil-tab-toolbar--inner">
-          <h3 className="empresa-perfil-section-title">Preços negociados</h3>
+          <div>
+            <h3 className="empresa-perfil-section-title">Pacote de exames contratado</h3>
+            <p className="empresa-perfil-empty-desc mt-1">
+              Selecione os exames incluídos no contrato e defina os valores negociados para esta
+              empresa.
+            </p>
+          </div>
           {canCommercial && (
-            <Link
-              href={`/dashboard/tabela-precos?companyId=${company.id}`}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "empresa-perfil-btn")}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="empresa-perfil-btn shrink-0"
+              onClick={() => setPackageOpen(true)}
             >
-              Gerenciar preços
-            </Link>
+              {hasPackage ? "Editar pacote" : "Montar pacote"}
+            </Button>
           )}
         </div>
 
-        {company.priceListItems.length === 0 ? (
+        {!hasPackage ? (
           <div className="empresa-perfil-empty-compact empresa-perfil-prices-empty">
-            <p className="empresa-perfil-empty-title">Nenhum preço específico cadastrado</p>
+            <p className="empresa-perfil-empty-title">Nenhum exame no pacote</p>
             <p className="empresa-perfil-empty-desc">
-              Os valores padrão da clínica serão aplicados aos atendimentos desta empresa.
+              Monte o pacote com os exames contratados e os valores negociados desta empresa. Os
+              preços padrão vêm da Tabela de preços.
             </p>
           </div>
         ) : (
@@ -1006,23 +1129,37 @@ function ContractTab({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Serviço</TableHead>
+                  <TableHead>Exame</TableHead>
                   <TableHead>Categoria</TableHead>
-                  <TableHead>Cobrança</TableHead>
-                  <TableHead>Preço</TableHead>
+                  <TableHead>Preço padrão</TableHead>
+                  <TableHead>Preço negociado</TableHead>
+                  <TableHead>Vigência</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-12">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {company.priceListItems.map((item) => (
+                {packageItems.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.category}</TableCell>
-                    <TableCell>{item.chargeType}</TableCell>
+                    <TableCell>{item.categoryLabel}</TableCell>
+                    <TableCell>{formatPackagePrice(item.defaultPrice)}</TableCell>
+                    <TableCell>{formatPackagePrice(item.negotiatedPrice)}</TableCell>
                     <TableCell>
-                      {item.price.toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
+                      {formatPackageValidity(item.validFrom, item.validUntil)}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge
+                        status={item.status}
+                        label={
+                          PRICE_STATUS_LABELS[
+                            item.status as keyof typeof PRICE_STATUS_LABELS
+                          ] ?? item.status
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {canCommercial ? <SystemActionMenu items={itemActions(item)} /> : null}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1031,6 +1168,59 @@ function ContractTab({
           </div>
         )}
       </section>
+
+      <CompanyExamPackageDialog
+        open={packageOpen}
+        onOpenChange={setPackageOpen}
+        companyId={company.id}
+        companyName={company.tradeName ?? company.legalName}
+        initialValidFrom={packageValidFrom}
+        initialValidUntil={packageValidUntil}
+        onSuccess={onRefresh}
+      />
+
+      <SystemModalShell
+        open={!!editItem}
+        onOpenChange={(open) => {
+          if (!open) setEditItem(null);
+        }}
+        title="Editar valor"
+        description={editItem?.name}
+        badges={[{ label: "Pacote da empresa", variant: "category" }]}
+        footer={
+          <div className="collaborator-modal-actions">
+            <Button
+              variant="outline"
+              className="collaborator-modal-btn"
+              onClick={() => setEditItem(null)}
+              disabled={busy}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="brand"
+              className="collaborator-modal-btn"
+              onClick={() => void handleSaveValue()}
+              disabled={busy}
+            >
+              Salvar
+            </Button>
+          </div>
+        }
+      >
+        <SystemModalField label="Preço padrão">
+          <input value={formatPackagePrice(editItem?.defaultPrice ?? null)} disabled />
+        </SystemModalField>
+        <SystemModalField label="Preço negociado (R$)" required>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={editPrice}
+            onChange={(e) => setEditPrice(e.target.value)}
+          />
+        </SystemModalField>
+      </SystemModalShell>
     </div>
   );
 }

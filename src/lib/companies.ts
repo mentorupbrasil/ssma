@@ -374,9 +374,14 @@ export type CompanyDetailSerialized = {
   priceListItems: {
     id: string;
     name: string;
-    price: number;
-    chargeType: string;
+    examId: string | null;
     category: string;
+    categoryLabel: string;
+    defaultPrice: number | null;
+    negotiatedPrice: number | null;
+    validFrom: string | null;
+    validUntil: string | null;
+    status: string;
   }[];
 };
 

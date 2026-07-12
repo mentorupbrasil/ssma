@@ -5416,6 +5416,107 @@
   text-align: left;
 }
 
+.empresa-pacote-modal.exam-modal {
+  max-width: min(52rem, calc(100% - 1.5rem)) !important;
+}
+
+.empresa-pacote-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.empresa-pacote-filters .tabela-precos-search {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.empresa-pacote-list {
+  max-height: min(52vh, 26rem);
+  overflow: auto;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: rgb(248 250 252 / 0.55);
+}
+
+.empresa-pacote-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.empresa-pacote-row:last-child {
+  border-bottom: none;
+}
+
+.empresa-pacote-row--selected {
+  background: white;
+}
+
+.empresa-pacote-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-width: 0;
+  flex: 1 1 14rem;
+  cursor: pointer;
+}
+
+.empresa-pacote-check input {
+  margin-top: 0.2rem;
+}
+
+.empresa-pacote-name {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  line-height: 1.3;
+}
+
+.empresa-pacote-meta {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.empresa-pacote-price-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.empresa-pacote-use-default {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: rgb(71 85 105);
+  white-space: nowrap;
+}
+
+.empresa-pacote-price-input {
+  width: 7.5rem;
+  height: 2rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 0.5rem;
+  padding: 0 0.55rem;
+  font-size: 0.8125rem;
+  background: white;
+}
+
+.empresa-pacote-price-input:disabled {
+  background: rgb(241 245 249);
+  color: rgb(100 116 139);
+}
+
 .empresa-perfil {
   display: flex;
   flex-direction: column;

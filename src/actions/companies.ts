@@ -142,17 +142,40 @@ export async function getCompanyDetail(
     });
 
     const priceListItems = await prisma.priceListItem.findMany({
-      where: { companyId: id, status: "ATIVA" },
+      where: { companyId: id },
       orderBy: { name: "asc" },
       select: {
         id: true,
         name: true,
+        examId: true,
         defaultPrice: true,
         negotiatedPrice: true,
-        chargeType: true,
         category: true,
+        status: true,
+        validFrom: true,
+        validUntil: true,
       },
     });
+
+    const defaultPrices = await prisma.priceListItem.findMany({
+      where: {
+        companyId: null,
+        OR: [
+          { examId: { in: priceListItems.map((i) => i.examId).filter(Boolean) as string[] } },
+          { name: { in: priceListItems.map((i) => i.name), mode: "insensitive" } },
+        ],
+      },
+      select: { examId: true, name: true, defaultPrice: true },
+    });
+
+    const defaultByExam = new Map(
+      defaultPrices.filter((d) => d.examId).map((d) => [d.examId!, d.defaultPrice])
+    );
+    const defaultByName = new Map(
+      defaultPrices.map((d) => [d.name.trim().toLowerCase(), d.defaultPrice])
+    );
+
+    const { PRICE_CATEGORY_LABELS } = await import("@/lib/pricing");
 
     const serialized: CompanyDetailSerialized = {
       id: company.id,
@@ -258,13 +281,30 @@ export async function getCompanyDetail(
         status: m.status,
         createdAt: m.createdAt.toISOString(),
       })),
-      priceListItems: priceListItems.map((i) => ({
-        id: i.id,
-        name: i.name,
-        price: i.negotiatedPrice ?? i.defaultPrice,
-        chargeType: i.chargeType,
-        category: i.category,
-      })),
+      priceListItems: priceListItems.map((i) => {
+        const catalogDefault =
+          (i.examId ? defaultByExam.get(i.examId) : undefined) ??
+          defaultByName.get(i.name.trim().toLowerCase());
+        const resolvedDefault =
+          catalogDefault != null && catalogDefault > 0
+            ? catalogDefault
+            : i.defaultPrice > 0
+              ? i.defaultPrice
+              : null;
+        return {
+          id: i.id,
+          name: i.name,
+          examId: i.examId,
+          category: i.category,
+          categoryLabel: PRICE_CATEGORY_LABELS[i.category] ?? i.category,
+          defaultPrice: resolvedDefault,
+          negotiatedPrice:
+            i.negotiatedPrice != null && i.negotiatedPrice > 0 ? i.negotiatedPrice : null,
+          validFrom: i.validFrom?.toISOString() ?? null,
+          validUntil: i.validUntil?.toISOString() ?? null,
+          status: i.status,
+        };
+      }),
     };
 
     return { success: true, company: serialized };
