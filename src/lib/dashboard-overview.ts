@@ -5,6 +5,14 @@ import { isCompanyHr } from "@/lib/tenant";
 import { countPendingDocuments } from "@/actions/documents";
 import { countPendingQuotes } from "@/actions/commercial";
 import { addDays } from "date-fns";
+import {
+  isCommercialModuleEnabled,
+  isFinanceModuleEnabled,
+  isMonthlyClosingModuleEnabled,
+  isPathModuleEnabled,
+  isTasksModuleEnabled,
+  isTicketsModuleEnabled,
+} from "@/lib/modules";
 
 export type DashboardOverview = {
   stats: {
@@ -119,7 +127,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
         status: { notIn: ["ARQUIVADO", "CANCELADO", "VENCIDO"] },
       },
     }),
-    !isEmpresa ? countPendingQuotes() : Promise.resolve(0),
+    !isEmpresa && isCommercialModuleEnabled() ? countPendingQuotes() : Promise.resolve(0),
     prisma.referral.count({
       where: {
         ...baseWhere,
@@ -174,7 +182,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
         company: { select: { tradeName: true, legalName: true } },
       },
     }),
-    !isEmpresa
+    !isEmpresa && isCommercialModuleEnabled()
       ? prisma.quote.findMany({
           where: {
             ...clinicWhere,
@@ -190,12 +198,12 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           },
         })
       : Promise.resolve([]),
-    !isEmpresa
+    !isEmpresa && isMonthlyClosingModuleEnabled()
       ? prisma.monthlyClosing.count({
           where: { ...clinicWhere, status: { in: ["RASCUNHO", "EM_REVISAO"] } },
         })
       : Promise.resolve(0),
-    !isEmpresa
+    !isEmpresa && isFinanceModuleEnabled()
       ? prisma.financialEntry.count({
           where: {
             ...clinicWhere,
@@ -205,20 +213,22 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           },
         })
       : Promise.resolve(0),
-    prisma.ticket.count({
-      where: isEmpresa
-        ? {
-            scope: "SAAS",
-            companyId: scope.companyId,
-            status: { in: ["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_CLIENTE"] },
-          }
-        : {
-            ...clinicWhere,
-            scope: "CLINIC",
-            status: { in: ["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_CLIENTE"] },
-          },
-    }),
-    !isEmpresa
+    isTicketsModuleEnabled()
+      ? prisma.ticket.count({
+          where: isEmpresa
+            ? {
+                scope: "SAAS",
+                companyId: scope.companyId,
+                status: { in: ["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_CLIENTE"] },
+              }
+            : {
+                ...clinicWhere,
+                scope: "CLINIC",
+                status: { in: ["ABERTO", "EM_ATENDIMENTO", "AGUARDANDO_CLIENTE"] },
+              },
+        })
+      : Promise.resolve(0),
+    !isEmpresa && isTasksModuleEnabled()
       ? prisma.task.count({
           where: {
             ...clinicWhere,
@@ -268,7 +278,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           },
         })
       : Promise.resolve(0),
-    isEmpresa
+    isEmpresa && isTicketsModuleEnabled()
       ? prisma.ticket.count({
           where: {
             scope: "SAAS",
@@ -332,7 +342,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
       : Promise.resolve([]),
   ]);
 
-  const stats = isEmpresa
+  const stats = (isEmpresa
     ? [
         {
           key: "collaborators_active",
@@ -367,7 +377,7 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           title: "Chamados abertos",
           value: openSaasTickets,
           href: "/dashboard/chamados?card=abertos",
-          show: true,
+          show: isTicketsModuleEnabled(),
         },
       ]
     : [
@@ -397,35 +407,35 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           title: "Orçamentos aguardando",
           value: pendingQuotes,
           href: "/dashboard/orcamentos?tab=orcamentos&status=AGUARDANDO_RESPOSTA",
-          show: true,
+          show: isCommercialModuleEnabled(),
         },
         {
           key: "closings_open",
           title: "Fechamentos em aberto",
           value: openClosings,
           href: "/dashboard/fechamento-mensal",
-          show: true,
+          show: isMonthlyClosingModuleEnabled(),
         },
         {
           key: "payments_overdue",
           title: "Pagamentos em atraso",
           value: overduePayments,
           href: "/dashboard/financeiro",
-          show: true,
+          show: isFinanceModuleEnabled(),
         },
         {
           key: "tickets_open",
           title: "Chamados abertos",
           value: openTickets,
           href: "/dashboard/chamados",
-          show: true,
+          show: isTicketsModuleEnabled(),
         },
         {
           key: "tasks_today",
           title: "Tarefas de hoje",
           value: tasksToday,
           href: "/dashboard/tarefas",
-          show: true,
+          show: isTasksModuleEnabled(),
         },
         {
           key: "companies_pending",
@@ -441,9 +451,10 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           href: "/dashboard/documentos?card=disponiveis",
           show: true,
         },
-      ].filter((s) => s.show);
+      ]
+  ).filter((s) => s.show && isPathModuleEnabled(s.href));
 
-  const pendingActions = isEmpresa
+  const pendingActions = (isEmpresa
     ? [
         ...periodicDueCollaborators
           .filter((p) => p.nextPeriodicDate)
@@ -472,7 +483,8 @@ export async function getDashboardOverview(session: AuthSession): Promise<Dashbo
           href: `/dashboard/documentos`,
           type: "documento",
         })),
-      ].slice(0, 8);
+      ].slice(0, 8)
+  ).filter((item) => isPathModuleEnabled(item.href));
 
   return {
     stats,

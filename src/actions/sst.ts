@@ -7,6 +7,7 @@ import { requirePermission, actionError } from "@/lib/authz";
 import { createAuditLog } from "@/lib/server";
 import { resolveClinicId, scopedWhere, withClinicId } from "@/lib/scoped-db";
 import { createNotification } from "@/lib/notifications";
+import { createAutoTask } from "@/lib/auto-tasks";
 import {
   buildAssistedSstText,
   buildSstChecklist,
@@ -701,31 +702,20 @@ export async function finalizeSstDraft(input: {
     });
 
     if (validUntil) {
-      const sourceKey = `sst-review:${draft.id}`;
-      const existing = await prisma.task.findFirst({
-        where: { sourceKey, status: { in: ["PENDENTE", "EM_ANDAMENTO"] } },
+      const clinicId = await resolveClinicId(session);
+      await createAutoTask({
+        clinicId,
+        createdByUserId: session.user.id,
+        title: `Revisar ${draft.title}`,
+        description: `Revisão periódica do documento SST aprovado. Validade: ${validUntil.toLocaleDateString("pt-BR")}.`,
+        priority: "MEDIA",
+        dueDate: validUntil,
+        companyId: draft.companyId,
+        assignedToUserId: draft.technicalResponsibleUserId ?? undefined,
+        origin: "DOCUMENTO",
+        linkUrl: `/dashboard/assistente-sst?id=${draft.id}&tab=aprovados`,
+        sourceKey: `sst-review:${draft.id}`,
       });
-      if (!existing) {
-        const clinicId = await resolveClinicId(session);
-        await prisma.task.create({
-          data: withClinicId(
-            {
-              title: `Revisar ${draft.title}`,
-              description: `Revisão periódica do documento SST aprovado. Validade: ${validUntil.toLocaleDateString("pt-BR")}.`,
-              priority: "MEDIA",
-              dueDate: validUntil,
-              companyId: draft.companyId,
-              assignedToUserId: draft.technicalResponsibleUserId,
-              createdByUserId: session.user.id,
-              origin: "DOCUMENTO",
-              linkUrl: `/dashboard/assistente-sst?id=${draft.id}&tab=aprovados`,
-              systemGenerated: true,
-              sourceKey,
-            },
-            clinicId
-          ),
-        });
-      }
     }
 
     await createAuditLog({

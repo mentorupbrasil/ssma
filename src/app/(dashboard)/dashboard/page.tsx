@@ -31,6 +31,10 @@ import { getMetricMeta } from "@/lib/metric-cards";
 import { empresaReferralDisplayStatus } from "@/lib/empresa-portal";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
+import {
+  filterEnabledHrefItems,
+  isCommercialModuleEnabled,
+} from "@/lib/modules";
 import type { ReferralStatus } from "@prisma/client";
 
 const EMPRESA_STAT_META: Record<
@@ -69,71 +73,73 @@ export default async function DashboardPage() {
   const isEmpresa = isEmpresaUser(session);
   const overview = await getDashboardOverview(session);
 
-  const quickActions = isEmpresa
-    ? [
-        {
-          href: "/dashboard/colaboradores?new=1",
-          label: "Novo colaborador",
-          description: "Cadastrar admissional ou individual",
-          icon: Users,
-        },
-        {
-          href: "/dashboard/encaminhamentos/novo",
-          label: "Solicitar exame",
-          description: "Solicitar exames ocupacionais para colaboradores",
-          icon: FileText,
-        },
-        {
-          href: "/dashboard/encaminhamentos",
-          label: "Acompanhar exames",
-          description: "Status dos encaminhamentos enviados",
-          icon: ClipboardList,
-        },
-        {
-          href: "/dashboard/documentos?card=PARA_BAIXAR",
-          label: "Baixar documentos",
-          description: "Documentos anexados pela Unimetra",
-          icon: FolderOpen,
-        },
-      ]
-    : [
-        {
-          href: "/dashboard/encaminhamentos?status=RECEBIDOS",
-          label: "Fila de atendimentos",
-          description: "Pedidos do RH e do site para confirmar",
-          icon: FileText,
-        },
-        {
-          href: "/dashboard/documentos",
-          label: "Liberar documentos",
-          description: "Anexar ASO e disponibilizar para a empresa",
-          icon: FolderOpen,
-        },
-        {
-          href: "/dashboard/empresas",
-          label: "Empresas",
-          description: "Cadastro e portal dos clientes",
-          icon: Building2,
-        },
-        {
-          href: "/dashboard/fechamento-mensal",
-          label: "Importar produção",
-          description: "Fechamento mensal da clínica",
-          icon: Upload,
-        },
-        {
-          href: "/dashboard/orcamentos?tab=orcamentos",
-          label: "Novo orçamento",
-          description: "Proposta comercial",
-          icon: DollarSign,
-        },
-        {
-          href: "/dashboard/tarefas",
-          label: "Nova tarefa",
-          description: "Pendência interna",
-          icon: ClipboardList,
-        },
-      ];
+  const quickActions = filterEnabledHrefItems(
+    isEmpresa
+      ? [
+          {
+            href: "/dashboard/colaboradores?new=1",
+            label: "Novo colaborador",
+            description: "Cadastrar admissional ou individual",
+            icon: Users,
+          },
+          {
+            href: "/dashboard/encaminhamentos/novo",
+            label: "Solicitar exame",
+            description: "Solicitar exames ocupacionais para colaboradores",
+            icon: FileText,
+          },
+          {
+            href: "/dashboard/encaminhamentos",
+            label: "Acompanhar exames",
+            description: "Status dos encaminhamentos enviados",
+            icon: ClipboardList,
+          },
+          {
+            href: "/dashboard/documentos?card=PARA_BAIXAR",
+            label: "Baixar documentos",
+            description: "Documentos anexados pela Unimetra",
+            icon: FolderOpen,
+          },
+        ]
+      : [
+          {
+            href: "/dashboard/encaminhamentos?status=RECEBIDOS",
+            label: "Fila de atendimentos",
+            description: "Pedidos do RH e do site para confirmar",
+            icon: FileText,
+          },
+          {
+            href: "/dashboard/documentos",
+            label: "Liberar documentos",
+            description: "Anexar ASO e disponibilizar para a empresa",
+            icon: FolderOpen,
+          },
+          {
+            href: "/dashboard/empresas",
+            label: "Empresas",
+            description: "Cadastro e portal dos clientes",
+            icon: Building2,
+          },
+          {
+            href: "/dashboard/fechamento-mensal",
+            label: "Importar produção",
+            description: "Fechamento mensal da clínica",
+            icon: Upload,
+          },
+          {
+            href: "/dashboard/orcamentos?tab=orcamentos",
+            label: "Novo orçamento",
+            description: "Proposta comercial",
+            icon: DollarSign,
+          },
+          {
+            href: "/dashboard/tarefas",
+            label: "Nova tarefa",
+            description: "Pendência interna",
+            icon: ClipboardList,
+          },
+        ]
+  );
 
   if (isEmpresa) {
     const hasPending = overview.pendingActions.length > 0;
@@ -312,7 +318,12 @@ export default async function DashboardPage() {
         </MetricGrid>
       </section>
 
-      <div className="dashboard-panels-grid">
+      <div
+        className={cn(
+          "dashboard-panels-grid",
+          !isCommercialModuleEnabled() && "dashboard-panels-grid--compact"
+        )}
+      >
         <DashboardPanel title="Precisa de ação agora" icon={AlertTriangle}>
           {overview.pendingActions.length === 0 ? (
             <InlineEmptyNote>Nenhuma pendência crítica no momento. Operação em dia.</InlineEmptyNote>
@@ -363,29 +374,31 @@ export default async function DashboardPage() {
           )}
         </DashboardPanel>
 
-        <DashboardPanel title="Orçamentos em negociação" icon={DollarSign}>
-          {overview.negotiatingQuotes.length === 0 ? (
-            <InlineEmptyNote>Nenhum orçamento em negociação.</InlineEmptyNote>
-          ) : (
-            <div className="dashboard-list">
-              {overview.negotiatingQuotes.map((q) => (
-                <Link
-                  key={q.id}
-                  href={`/dashboard/orcamentos?tab=orcamentos&id=${q.id}`}
-                  className="dashboard-list-item dashboard-list-item-row"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--brand-navy)]">
-                      {q.quoteNumber ?? "Sem número"}
-                    </p>
-                    <p className="text-xs text-[var(--dash-text-muted)]">{q.companyName}</p>
-                  </div>
-                  <StatusBadge status={q.status} type="quote" />
-                </Link>
-              ))}
-            </div>
-          )}
-        </DashboardPanel>
+        {isCommercialModuleEnabled() ? (
+          <DashboardPanel title="Orçamentos em negociação" icon={DollarSign}>
+            {overview.negotiatingQuotes.length === 0 ? (
+              <InlineEmptyNote>Nenhum orçamento em negociação.</InlineEmptyNote>
+            ) : (
+              <div className="dashboard-list">
+                {overview.negotiatingQuotes.map((q) => (
+                  <Link
+                    key={q.id}
+                    href={`/dashboard/orcamentos?tab=orcamentos&id=${q.id}`}
+                    className="dashboard-list-item dashboard-list-item-row"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[var(--brand-navy)]">
+                        {q.quoteNumber ?? "Sem número"}
+                      </p>
+                      <p className="text-xs text-[var(--dash-text-muted)]">{q.companyName}</p>
+                    </div>
+                    <StatusBadge status={q.status} type="quote" />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </DashboardPanel>
+        ) : null}
       </div>
     </PageShell>
   );

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/authz";
 import { scopedWhere } from "@/lib/scoped-db";
+import { filterEnabledHrefItems } from "@/lib/modules";
 
 export type SearchResult = {
   type: string;
@@ -43,7 +44,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
     }),
   ]);
 
-  return [
+  return filterEnabledHrefItems([
     ...companies.map((c) => ({
       type: "Empresa",
       id: c.id,
@@ -72,5 +73,5 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
       subtitle: "Documento",
       href: `/dashboard/documentos`,
     })),
-  ];
+  ]);
 }

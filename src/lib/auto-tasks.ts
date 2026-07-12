@@ -4,6 +4,14 @@ import { prisma } from "@/lib/prisma";
 import type { TaskPriority } from "@prisma/client";
 import { addDays, startOfDay } from "date-fns";
 import { withClinicId } from "@/lib/scoped-db";
+import {
+  isCommercialModuleEnabled,
+  isFinanceModuleEnabled,
+  isMonthlyClosingModuleEnabled,
+  isPathModuleEnabled,
+  isTasksModuleEnabled,
+  shouldCreateAutoTaskForOrigin,
+} from "@/lib/modules";
 
 export type TaskOrigin =
   | "EMPRESA"
@@ -29,6 +37,13 @@ export async function createAutoTask(input: {
   linkUrl?: string;
   sourceKey?: string;
 }) {
+  if (!shouldCreateAutoTaskForOrigin(input.origin ?? "MANUAL")) {
+    return null;
+  }
+  if (input.linkUrl && !isPathModuleEnabled(input.linkUrl)) {
+    return null;
+  }
+
   if (input.sourceKey) {
     const existing = await prisma.task.findFirst({
       where: {
@@ -79,6 +94,8 @@ export async function syncOperationalTasks(input: {
   clinicId: string | null;
   actorUserId: string;
 }) {
+  if (!isTasksModuleEnabled()) return;
+
   const scope = input.clinicId ? { clinicId: input.clinicId } : {};
   const now = new Date();
   const in7Days = addDays(startOfDay(now), 7);
@@ -132,104 +149,110 @@ export async function syncOperationalTasks(input: {
     });
   }
 
-  const closings = await prisma.monthlyClosing.findMany({
-    where: {
-      ...scope,
-      status: { in: ["EM_CONFERENCIA", "COM_DIVERGENCIA", "AGUARDANDO_APROVACAO"] },
-      OR: [{ withoutPriceCount: { gt: 0 } }, { divergenceCount: { gt: 0 } }],
-    },
-    select: {
-      id: true,
-      companyId: true,
-      withoutPriceCount: true,
-      divergenceCount: true,
-    },
-    take: 40,
-  });
+  if (isMonthlyClosingModuleEnabled()) {
+    const closings = await prisma.monthlyClosing.findMany({
+      where: {
+        ...scope,
+        status: { in: ["EM_CONFERENCIA", "COM_DIVERGENCIA", "AGUARDANDO_APROVACAO"] },
+        OR: [{ withoutPriceCount: { gt: 0 } }, { divergenceCount: { gt: 0 } }],
+      },
+      select: {
+        id: true,
+        companyId: true,
+        withoutPriceCount: true,
+        divergenceCount: true,
+      },
+      take: 40,
+    });
 
-  for (const closing of closings) {
-    if (closing.withoutPriceCount > 0) {
-      await createAutoTask({
-        clinicId: input.clinicId,
-        createdByUserId: input.actorUserId,
-        title: "Item sem preço no fechamento",
-        description: `${closing.withoutPriceCount} item(ns) sem preço na conferência.`,
-        priority: "URGENTE",
-        companyId: closing.companyId ?? undefined,
-        origin: "FECHAMENTO",
-        linkUrl: `/dashboard/fechamento-mensal`,
-        sourceKey: `closing-no-price:${closing.id}`,
-        dueDate: addDays(now, 1),
-      });
+    for (const closing of closings) {
+      if (closing.withoutPriceCount > 0) {
+        await createAutoTask({
+          clinicId: input.clinicId,
+          createdByUserId: input.actorUserId,
+          title: "Item sem preço no fechamento",
+          description: `${closing.withoutPriceCount} item(ns) sem preço na conferência.`,
+          priority: "URGENTE",
+          companyId: closing.companyId ?? undefined,
+          origin: "FECHAMENTO",
+          linkUrl: `/dashboard/fechamento-mensal`,
+          sourceKey: `closing-no-price:${closing.id}`,
+          dueDate: addDays(now, 1),
+        });
+      }
+      if (closing.divergenceCount > 0) {
+        await createAutoTask({
+          clinicId: input.clinicId,
+          createdByUserId: input.actorUserId,
+          title: "Divergência de fechamento",
+          description: `${closing.divergenceCount} divergência(s) a corrigir antes de fechar.`,
+          priority: "URGENTE",
+          companyId: closing.companyId ?? undefined,
+          origin: "FECHAMENTO",
+          linkUrl: `/dashboard/fechamento-mensal`,
+          sourceKey: `closing-div:${closing.id}`,
+          dueDate: addDays(now, 1),
+        });
+      }
     }
-    if (closing.divergenceCount > 0) {
+  }
+
+  if (isCommercialModuleEnabled()) {
+    const overdueFollowUps = await prisma.commercialFollowUp.findMany({
+      where: {
+        status: "PENDENTE",
+        dueAt: { lt: startOfDay(now) },
+        lead: input.clinicId ? { clinicId: input.clinicId } : undefined,
+      },
+      select: {
+        id: true,
+        action: true,
+        lead: { select: { companyName: true, name: true } },
+      },
+      take: 40,
+    });
+
+    for (const fu of overdueFollowUps) {
       await createAutoTask({
         clinicId: input.clinicId,
         createdByUserId: input.actorUserId,
-        title: "Divergência de fechamento",
-        description: `${closing.divergenceCount} divergência(s) a corrigir antes de fechar.`,
-        priority: "URGENTE",
-        companyId: closing.companyId ?? undefined,
-        origin: "FECHAMENTO",
-        linkUrl: `/dashboard/fechamento-mensal`,
-        sourceKey: `closing-div:${closing.id}`,
-        dueDate: addDays(now, 1),
+        title: `Follow-up comercial vencido: ${fu.action}`,
+        description: fu.lead.companyName || fu.lead.name || "Follow-up comercial em atraso.",
+        priority: "ALTA",
+        origin: "COMERCIAL",
+        linkUrl: `/dashboard/orcamentos`,
+        sourceKey: `followup-overdue:${fu.id}`,
+        dueDate: now,
       });
     }
   }
 
-  const overdueFollowUps = await prisma.commercialFollowUp.findMany({
-    where: {
-      status: "PENDENTE",
-      dueAt: { lt: startOfDay(now) },
-      lead: input.clinicId ? { clinicId: input.clinicId } : undefined,
-    },
-    select: {
-      id: true,
-      action: true,
-      lead: { select: { companyName: true, name: true } },
-    },
-    take: 40,
-  });
-
-  for (const fu of overdueFollowUps) {
-    await createAutoTask({
-      clinicId: input.clinicId,
-      createdByUserId: input.actorUserId,
-      title: `Follow-up comercial vencido: ${fu.action}`,
-      description: fu.lead.companyName || fu.lead.name || "Follow-up comercial em atraso.",
-      priority: "ALTA",
-      origin: "COMERCIAL",
-      linkUrl: `/dashboard/orcamentos`,
-      sourceKey: `followup-overdue:${fu.id}`,
-      dueDate: now,
+  if (isFinanceModuleEnabled()) {
+    const overdueReceivables = await prisma.financialEntry.findMany({
+      where: {
+        ...scope,
+        type: "RECEBER",
+        status: { in: ["PENDENTE", "ATRASADO", "PARCIAL", "AGUARDANDO_FATURAMENTO"] },
+        dueDate: { lt: startOfDay(now) },
+      },
+      select: { id: true, description: true, companyId: true },
+      take: 40,
     });
-  }
 
-  const overdueReceivables = await prisma.financialEntry.findMany({
-    where: {
-      ...scope,
-      type: "RECEBER",
-      status: { in: ["PENDENTE", "ATRASADO", "PARCIAL", "AGUARDANDO_FATURAMENTO"] },
-      dueDate: { lt: startOfDay(now) },
-    },
-    select: { id: true, description: true, companyId: true },
-    take: 40,
-  });
-
-  for (const entry of overdueReceivables) {
-    await createAutoTask({
-      clinicId: input.clinicId,
-      createdByUserId: input.actorUserId,
-      title: "Conta a receber vencida",
-      description: entry.description,
-      priority: "URGENTE",
-      companyId: entry.companyId ?? undefined,
-      origin: "FINANCEIRO",
-      linkUrl: `/dashboard/financeiro`,
-      sourceKey: `receivable-overdue:${entry.id}`,
-      dueDate: now,
-    });
+    for (const entry of overdueReceivables) {
+      await createAutoTask({
+        clinicId: input.clinicId,
+        createdByUserId: input.actorUserId,
+        title: "Conta a receber vencida",
+        description: entry.description,
+        priority: "URGENTE",
+        companyId: entry.companyId ?? undefined,
+        origin: "FINANCEIRO",
+        linkUrl: `/dashboard/financeiro`,
+        sourceKey: `receivable-overdue:${entry.id}`,
+        dueDate: now,
+      });
+    }
   }
 
   const portalPending = await prisma.company.findMany({

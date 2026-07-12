@@ -31,6 +31,7 @@ import { signOut } from "next-auth/react";
 import { useEffect, useId, useState } from "react";
 import type { UserRole } from "@/types/roles";
 import { DASHBOARD_NAV, hasPermission, getRoleLabel, type RolePermissionMap } from "@/lib/permissions";
+import { filterNavSections, isPathModuleEnabled } from "@/lib/modules";
 import {
   EMPRESA_HIDDEN_NAV_HREFS,
   EMPRESA_NAV_SECTIONS,
@@ -67,6 +68,7 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 const SISTEMA_HREFS = [
+  "/dashboard/chamados",
   "/dashboard/usuarios",
   "/dashboard/configuracoes",
   "/dashboard/auditoria",
@@ -98,11 +100,7 @@ const NAV_SECTIONS = [
   },
   {
     label: "Gestão interna",
-    hrefs: [
-      "/dashboard/tarefas",
-      "/dashboard/chamados",
-      "/dashboard/assistente-sst",
-    ],
+    hrefs: ["/dashboard/tarefas", "/dashboard/assistente-sst"],
   },
 ] as const;
 
@@ -188,6 +186,7 @@ function NavContent({
   const initials = userInitials(user.name);
 
   const items = DASHBOARD_NAV.filter((item) => {
+    if (!isPathModuleEnabled(item.href)) return false;
     if (!hasPermission(user.role, item.permission, permissionOverrides)) return false;
     if (isEmpresa) {
       if (!EMPRESA_NAV_HREFS.includes(item.href)) return false;
@@ -196,10 +195,18 @@ function NavContent({
     return true;
   });
   const itemByHref = new Map(items.map((item) => [item.href, item]));
-  const navSections = isEmpresa ? EMPRESA_NAV_SECTIONS : NAV_SECTIONS;
+  const navSections = filterNavSections(
+    (isEmpresa ? EMPRESA_NAV_SECTIONS : NAV_SECTIONS).map((section) => ({
+      label: section.label,
+      hrefs: [...section.hrefs],
+    }))
+  );
 
   const sistemaItems = SISTEMA_HREFS.map((href) => itemByHref.get(href)).filter(
-    (item): item is NavItem => Boolean(item)
+    (item): item is NavItem => {
+      if (!item) return false;
+      return isPathModuleEnabled(item.href);
+    }
   );
   const sistemaChildActive = sistemaItems.some((item) =>
     isNavActive(pathname, item.href, false)

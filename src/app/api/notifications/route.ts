@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { markAllNotificationsRead } from "@/lib/notifications";
+import { isPathModuleEnabled } from "@/lib/modules";
 
 export async function GET() {
   const session = await auth();
@@ -12,11 +13,15 @@ export async function GET() {
   const items = await prisma.notification.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 40,
   });
 
+  const visible = items
+    .filter((n) => !n.link || isPathModuleEnabled(n.link))
+    .slice(0, 20);
+
   return NextResponse.json({
-    items: items.map((n) => ({
+    items: visible.map((n) => ({
       ...n,
       createdAt: n.createdAt.toISOString(),
     })),

@@ -13,7 +13,7 @@ export function PlatformPositioningBanner({ className, compact }: PlatformPositi
       className={cn(compact && "py-3", className)}
     >
       <strong className="font-semibold text-[var(--brand-navy)]">Plataforma complementar:</strong>{" "}
-      organiza portal empresarial, documentos, fechamentos, orçamentos e operações —{" "}
+      organiza portal empresarial, documentos e operações —{" "}
       <span className="text-[var(--dash-text-muted)]">
         não substitui o sistema clínico de atendimento da clínica.
       </span>

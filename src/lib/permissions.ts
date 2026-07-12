@@ -1,5 +1,6 @@
 import type { UserRole } from "@/types/roles";
 import { normalizeRole, isSuperAdmin, isCompanyHr } from "@/lib/tenant";
+import { isPathModuleEnabled, isPermissionModuleEnabled } from "@/lib/modules";
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -232,6 +233,11 @@ export function canAccessRoute(
     return false;
   }
 
+  // Módulos desativados por feature flag: bloqueia inclusive CLINIC_ADMIN.
+  if (pathname.startsWith("/dashboard") && !isPathModuleEnabled(pathname)) {
+    return false;
+  }
+
   if (normalized === "CLINIC_ADMIN") return true;
 
   const routePermissions: { prefix: string; permission: Permission }[] = [
@@ -245,6 +251,7 @@ export function canAccessRoute(
     { prefix: "/dashboard/financeiro", permission: "financial.manage" },
     { prefix: "/dashboard/tabela-precos", permission: "pricing.manage" },
     { prefix: "/dashboard/orcamentos", permission: "leads.manage" },
+    { prefix: "/dashboard/contatos", permission: "leads.manage" },
     { prefix: "/dashboard/tarefas", permission: "tasks.manage" },
     { prefix: "/dashboard/chamados", permission: "tickets.manage" },
     { prefix: "/dashboard/assistente-sst", permission: "sst_assistant.manage" },
@@ -257,6 +264,7 @@ export function canAccessRoute(
 
   const match = routePermissions.find((r) => pathname.startsWith(r.prefix));
   if (!match) return true;
+  if (!isPermissionModuleEnabled(match.permission)) return false;
   return hasPermission(role, match.permission, overrides);
 }
 
@@ -278,6 +286,18 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard/configuracoes", label: "Configurações", icon: "Settings", permission: "settings.manage" as Permission },
   { href: "/dashboard/auditoria", label: "Auditoria", icon: "Shield", permission: "audit.view" as Permission },
 ];
+
+/** Nav filtrada por feature flags (mantém DASHBOARD_NAV completo no código). */
+export function getEnabledDashboardNav() {
+  return DASHBOARD_NAV.filter(
+    (item) => isPathModuleEnabled(item.href) && isPermissionModuleEnabled(item.permission)
+  );
+}
+
+/** Permissões editáveis na UI de perfis, respeitando módulos ativos. */
+export function getVisibleEditablePermissions() {
+  return EDITABLE_PERMISSIONS.filter((perm) => isPermissionModuleEnabled(perm));
+}
 
 export const SUPER_ADMIN_NAV = [
   { href: "/super-admin", label: "Visão geral", icon: "LayoutDashboard" },

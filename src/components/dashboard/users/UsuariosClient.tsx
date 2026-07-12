@@ -46,7 +46,7 @@ import {
   updateUser,
 } from "@/actions/users";
 import {
-  EDITABLE_PERMISSIONS,
+  getVisibleEditablePermissions,
   MANAGEABLE_ROLES,
   PERMISSION_MODULE_LABELS,
   ROLE_LABELS,
@@ -551,7 +551,7 @@ export function UsuariosClient({
               </Button>
             </header>
             <div className="usuarios-perm-grid">
-              {EDITABLE_PERMISSIONS.map((perm) => {
+              {getVisibleEditablePermissions().map((perm) => {
                 const checked = profilePerms.includes(perm);
                 return (
                   <label key={perm} className="usuarios-perm-row">

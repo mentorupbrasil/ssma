@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { notifyUserByEmail } from "@/lib/email";
+import { isPathModuleEnabled } from "@/lib/modules";
 
 export async function createNotification(params: {
   userId: string;
@@ -9,6 +10,11 @@ export async function createNotification(params: {
   link?: string;
   sendEmail?: boolean;
 }) {
+  // Não gera alertas para módulos desativados por feature flag.
+  if (params.link && !isPathModuleEnabled(params.link)) {
+    return null;
+  }
+
   const notification = await prisma.notification.create({
     data: {
       userId: params.userId,

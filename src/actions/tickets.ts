@@ -15,6 +15,7 @@ import {
   getTicketPageSize,
   type TicketFilters,
 } from "@/lib/tickets";
+import { isTasksModuleEnabled } from "@/lib/modules";
 
 type Result = { success: true; id: string } | { success: false; error: string };
 
@@ -322,6 +323,9 @@ export async function addTicketComment(
 
 export async function createTaskFromTicket(ticketId: string): Promise<Result> {
   try {
+    if (!isTasksModuleEnabled()) {
+      return { success: false, error: "Módulo de tarefas está desativado." };
+    }
     const session = await requirePermission("tickets.manage");
     const where = isSuperAdmin(session.user.role)
       ? { id: ticketId }

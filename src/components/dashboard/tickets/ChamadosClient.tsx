@@ -55,6 +55,7 @@ import {
   TICKET_PRIORITY_LABELS,
   TICKET_STATUS_LABELS,
 } from "@/lib/tickets";
+import { isTasksModuleEnabled } from "@/lib/modules";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -252,7 +253,7 @@ export function ChamadosClient({
 
   function rowActions(item: TicketItem): SystemActionItem[] {
     const closed = item.status === "FECHADO";
-    return [
+    const actions: SystemActionItem[] = [
       {
         label: "Abrir chamado",
         hint: "Ver detalhes e mensagens",
@@ -296,7 +297,10 @@ export function ChamadosClient({
         },
         disabled: closed || pending,
       },
-      {
+    ];
+
+    if (isTasksModuleEnabled()) {
+      actions.push({
         label: "Criar tarefa interna",
         hint: "Gera tarefa vinculada ao chamado",
         icon: ListTodo,
@@ -312,22 +316,25 @@ export function ChamadosClient({
             router.refresh();
           }),
         disabled: pending,
-      },
-      {
-        label: "Fechar chamado",
-        hint: "Encerrar solicitação",
-        icon: Ban,
-        iconTone: "cancel",
-        onClick: () =>
-          startTransition(async () => {
-            await updateTicketStatus(item.id, "FECHADO");
-            toast.success("Chamado fechado.");
-            if (detailId === item.id) await loadDetail(item.id);
-            router.refresh();
-          }),
-        disabled: closed || pending,
-      },
-    ];
+      });
+    }
+
+    actions.push({
+      label: "Fechar chamado",
+      hint: "Encerrar solicitação",
+      icon: Ban,
+      iconTone: "cancel",
+      onClick: () =>
+        startTransition(async () => {
+          await updateTicketStatus(item.id, "FECHADO");
+          toast.success("Chamado fechado.");
+          if (detailId === item.id) await loadDetail(item.id);
+          router.refresh();
+        }),
+      disabled: closed || pending,
+    });
+
+    return actions;
   }
 
   const hasFilters = Boolean(
@@ -729,22 +736,24 @@ export function ChamadosClient({
         footer={
           detail?.success && detail.ticket.status !== "FECHADO" ? (
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  startTransition(async () => {
-                    const result = await createTaskFromTicket(detail.ticket.id);
-                    if (!result.success) {
-                      toast.error(result.error);
-                      return;
-                    }
-                    toast.success("Tarefa interna criada.");
-                  })
-                }
-              >
-                Criar tarefa interna
-              </Button>
+              {isTasksModuleEnabled() ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    startTransition(async () => {
+                      const result = await createTaskFromTicket(detail.ticket.id);
+                      if (!result.success) {
+                        toast.error(result.error);
+                        return;
+                      }
+                      toast.success("Tarefa interna criada.");
+                    })
+                  }
+                >
+                  Criar tarefa interna
+                </Button>
+              ) : null}
               <Button
                 variant="brand"
                 size="sm"

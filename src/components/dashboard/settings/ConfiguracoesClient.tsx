@@ -15,10 +15,31 @@ import {
   settingsMapFromRows,
   type SettingFieldDef,
 } from "@/lib/settings-schema";
+import {
+  isCommercialModuleEnabled,
+  isFinanceModuleEnabled,
+} from "@/lib/modules";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 type SettingRow = { key: string; value: string };
+
+function getVisibleSettingsSections() {
+  return SETTINGS_SECTIONS.map((section) => {
+    if (section.id === "financeiro" && !isFinanceModuleEnabled()) {
+      return null;
+    }
+    const fields = section.fields.filter((field) => {
+      if (field.key.startsWith("fin.") && !isFinanceModuleEnabled()) return false;
+      if (field.key === "ops.quote_validity_days" && !isCommercialModuleEnabled()) {
+        return false;
+      }
+      return true;
+    });
+    if (fields.length === 0) return null;
+    return { ...section, fields };
+  }).filter((section): section is (typeof SETTINGS_SECTIONS)[number] => Boolean(section));
+}
 
 function snapshotsEqual(a: Record<string, string>, b: Record<string, string>) {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
@@ -37,7 +58,8 @@ export function ConfiguracoesClient({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [activeTab, setActiveTab] = useState(SETTINGS_SECTIONS[0].id);
+  const visibleSections = useMemo(() => getVisibleSettingsSections(), []);
+  const [activeTab, setActiveTab] = useState(visibleSections[0]?.id ?? "clinica");
   const [values, setValues] = useState<Record<string, string>>(() =>
     settingsMapFromRows(settings, defaults)
   );
@@ -51,16 +73,22 @@ export function ConfiguracoesClient({
     setSaved(next);
   }, [settings, defaults]);
 
+  useEffect(() => {
+    if (!visibleSections.some((s) => s.id === activeTab) && visibleSections[0]) {
+      setActiveTab(visibleSections[0].id);
+    }
+  }, [activeTab, visibleSections]);
+
   const dirtyBySection = useMemo(() => {
     const map: Record<string, boolean> = {};
-    for (const section of SETTINGS_SECTIONS) {
+    for (const section of visibleSections) {
       map[section.id] = !snapshotsEqual(
         sectionValuesSnapshot(section.id, values),
         sectionValuesSnapshot(section.id, saved)
       );
     }
     return map;
-  }, [values, saved]);
+  }, [values, saved, visibleSections]);
 
   const sectionDirty = dirtyBySection[activeTab] ?? false;
 
@@ -69,7 +97,7 @@ export function ConfiguracoesClient({
   };
 
   async function saveSection(sectionId: string) {
-    const section = SETTINGS_SECTIONS.find((s) => s.id === sectionId);
+    const section = visibleSections.find((s) => s.id === sectionId);
     if (!section) return;
     const payload = sectionValuesSnapshot(sectionId, values);
     const result = await upsertSettingsBulk(payload);
@@ -142,7 +170,7 @@ export function ConfiguracoesClient({
         <div className="colaboradores-empresa-header-copy">
           <h1 className="colaboradores-empresa-title">Configurações</h1>
           <p className="colaboradores-empresa-subtitle">
-            Dados da clínica, operação, documentos, financeiro, portal e privacidade.
+            Dados da clínica, operação, documentos, portal e privacidade.
           </p>
         </div>
       </header>
@@ -154,7 +182,7 @@ export function ConfiguracoesClient({
         }}
       >
         <TabsList className="config-tabs mb-4 flex h-auto w-full flex-wrap justify-start gap-1">
-          {SETTINGS_SECTIONS.map((s) => (
+          {visibleSections.map((s) => (
             <TabsTrigger key={s.id} value={s.id} className="config-tab">
               {s.label}
               {dirtyBySection[s.id] ? <span className="config-tab-dot" aria-hidden /> : null}
@@ -162,7 +190,7 @@ export function ConfiguracoesClient({
           ))}
         </TabsList>
 
-        {SETTINGS_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <TabsContent key={section.id} value={section.id} className="mt-0">
             <section className="config-section">
               <header className="config-section-head">

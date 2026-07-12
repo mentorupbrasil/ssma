@@ -1,9 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useBreadcrumbLabels } from "@/components/dashboard/BreadcrumbLabelProvider";
+import { isPathModuleEnabled } from "@/lib/modules";
 
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Painel",
@@ -45,7 +44,8 @@ export function TopbarBreadcrumb() {
     const href = "/" + segments.slice(0, index + 1).join("/");
     const isLast = index === segments.length - 1;
     const label = labelOverrides[segment] ?? labelFor(segment);
-    return { href, label, isLast };
+    const linkEnabled = isPathModuleEnabled(href);
+    return { href, label, isLast, linkEnabled };
   });
 
   return (
@@ -53,7 +53,7 @@ export function TopbarBreadcrumb() {
       {crumbs.map((crumb, index) => (
         <span key={crumb.href} className="flex items-center gap-1.5">
           {index > 0 ? <ChevronRight className="h-3.5 w-3.5 text-slate-300" aria-hidden /> : null}
-          {crumb.isLast ? (
+          {crumb.isLast || !crumb.linkEnabled ? (
             <span className="topbar-breadcrumb-current">{crumb.label}</span>
           ) : (
             <Link href={crumb.href} className="topbar-breadcrumb-link">

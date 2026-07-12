@@ -74,6 +74,10 @@ import { toast } from "sonner";
 import type { CompanyHistoryAction } from "@prisma/client";
 import type { DocumentType } from "@prisma/client";
 import { PRICE_STATUS_LABELS, formatCurrency } from "@/lib/pricing";
+import {
+  isCommercialModuleEnabled,
+  isCompanyContractTabEnabled,
+} from "@/lib/modules";
 
 type TabId =
   | "overview"
@@ -92,15 +96,22 @@ const COMPANY_TABS: { id: TabId; label: string }[] = [
   { id: "history", label: "Histórico" },
 ];
 
+function getVisibleCompanyTabs() {
+  return COMPANY_TABS.filter(
+    (tab) => tab.id !== "contract" || isCompanyContractTabEnabled()
+  );
+}
+
 const LEGACY_TABS = ["contacts", "quotes", "referrals", "agenda"] as const;
 
 function isTabId(value: string | null): value is TabId {
-  return COMPANY_TABS.some((item) => item.id === value);
+  return getVisibleCompanyTabs().some((item) => item.id === value);
 }
 
 function resolveTab(tabParam: string | null): TabId {
   if (!tabParam) return "overview";
   if ((LEGACY_TABS as readonly string[]).includes(tabParam)) return "overview";
+  if (tabParam === "contract" && !isCompanyContractTabEnabled()) return "overview";
   if (isTabId(tabParam)) return tabParam;
   return "overview";
 }
@@ -144,6 +155,8 @@ export function CompanyDetailClient({
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const activeTab = resolveTab(tabParam);
+  const commercialEnabled = canCommercial && isCommercialModuleEnabled();
+  const visibleTabs = getVisibleCompanyTabs();
 
   const [editOpen, setEditOpen] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
@@ -163,11 +176,15 @@ export function CompanyDetailClient({
   };
 
   useEffect(() => {
-    if (!tabParam || !(LEGACY_TABS as readonly string[]).includes(tabParam)) return;
+    if (!tabParam) return;
+    const isLegacy = (LEGACY_TABS as readonly string[]).includes(tabParam);
+    const isDisabledContract =
+      tabParam === "contract" && !isCompanyContractTabEnabled();
+    if (!isLegacy && !isDisabledContract) return;
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", "overview");
     router.replace(`/dashboard/empresas/${company.id}?${params.toString()}`);
-    // Apenas quando o tab legado muda — evita replace em loop por identidade de searchParams
+    // Apenas quando o tab legado/desativado muda — evita replace em loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabParam, company.id]);
 
@@ -251,7 +268,7 @@ export function CompanyDetailClient({
                     </span>
                   </button>
                 )}
-                {canCommercial && (
+                {commercialEnabled && (
                   <button
                     type="button"
                     className="collaborator-action-item"
@@ -287,7 +304,7 @@ export function CompanyDetailClient({
       </header>
 
       <nav className="empresa-perfil-tabs" aria-label="Seções da empresa">
-        {COMPANY_TABS.map((item) => {
+        {visibleTabs.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
@@ -311,10 +328,10 @@ export function CompanyDetailClient({
           <EmployeesTab company={company} canManage={canManage} />
         )}
         {activeTab === "documents" && <DocumentsTab company={company} />}
-        {activeTab === "contract" && (
+        {activeTab === "contract" && isCompanyContractTabEnabled() && (
           <ContractTab
             company={company}
-            canCommercial={canCommercial}
+            canCommercial={commercialEnabled}
             onRefresh={refresh}
           />
         )}
@@ -359,6 +376,7 @@ function OverviewTab({
   onNavigate: (tab: TabId) => void;
 }) {
   const portalState = getPortalState(company);
+  const contractTabEnabled = isCompanyContractTabEnabled();
   const stats = [
     {
       key: "employees",
@@ -374,22 +392,26 @@ function OverviewTab({
       tab: "documents" as TabId,
       icon: AlertTriangle,
     },
-    {
-      key: "contract",
-      label: "Contrato",
-      value: company.contractType
-        ? COMPANY_CONTRACT_LABELS[company.contractType]
-        : "Não definido",
-      tab: "contract" as TabId,
-      isText: true,
-      icon: FileText,
-    },
+    ...(contractTabEnabled
+      ? [
+          {
+            key: "contract",
+            label: "Contrato",
+            value: company.contractType
+              ? COMPANY_CONTRACT_LABELS[company.contractType]
+              : "Não definido",
+            tab: "contract" as TabId,
+            isText: true as const,
+            icon: FileText,
+          },
+        ]
+      : []),
     {
       key: "portal",
       label: "Portal",
       value: PORTAL_STATE_SHORT_LABELS[portalState],
       tab: "portal" as TabId,
-      isText: true,
+      isText: true as const,
       icon: Globe,
     },
   ];
@@ -488,14 +510,16 @@ function OverviewTab({
                 label="Situação cadastral"
                 value={COMPANY_STATUS_LABELS[company.status]}
               />
-              <FieldRow
-                label="Contrato"
-                value={
-                  company.contractType
-                    ? COMPANY_CONTRACT_LABELS[company.contractType]
-                    : "Não informado"
-                }
-              />
+              {contractTabEnabled ? (
+                <FieldRow
+                  label="Contrato"
+                  value={
+                    company.contractType
+                      ? COMPANY_CONTRACT_LABELS[company.contractType]
+                      : "Não informado"
+                  }
+                />
+              ) : null}
               <FieldRow label="Portal" value={PORTAL_STATE_LABELS[portalState]} />
               <FieldRow
                 label="Pendências"

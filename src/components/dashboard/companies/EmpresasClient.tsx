@@ -32,6 +32,7 @@ import { NewCompanyDialog } from "./CompanyDialogs";
 import { CompanyActionMenu } from "./CompanyActionMenu";
 import { formatCNPJ, formatPhone } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
+import { isCommercialModuleEnabled } from "@/lib/modules";
 
 const STAT_ICONS: Record<string, LucideIcon> = {
   ativas: Building2,
@@ -243,7 +244,7 @@ export function EmpresasClient({
     <CompanyActionMenu
       onViewDetails={() => openCompany(c.id)}
       onNewQuote={
-        canManage && canCommercial
+        canManage && canCommercial && isCommercialModuleEnabled()
           ? () => router.push(`/dashboard/orcamentos?companyId=${c.id}`)
           : undefined
       }
@@ -257,7 +258,7 @@ export function EmpresasClient({
         <div className="colaboradores-empresa-header-copy">
           <h1 className="colaboradores-empresa-title">Empresas</h1>
           <p className="colaboradores-empresa-subtitle">
-            Cadastro, colaboradores, contrato e acesso ao portal RH.
+            Cadastro, colaboradores, documentos e acesso ao portal RH.
           </p>
         </div>
         {canManage && (
