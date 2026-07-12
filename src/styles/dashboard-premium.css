@@ -6671,17 +6671,14 @@
 
 @media (min-width: 768px) {
   .exames-catalogo-filters {
-    grid-template-columns: minmax(0, 1fr) 10rem;
+    grid-template-columns: minmax(0, 1.4fr) minmax(10rem, 0.7fr) minmax(8rem, 0.55fr);
     align-items: center;
   }
 }
 
 .exames-catalogo-search {
   position: relative;
-  display: flex;
   min-width: 0;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .exames-catalogo-search-icon {
@@ -6698,28 +6695,10 @@
 
 .exames-catalogo-search-input {
   height: 2.375rem !important;
-  flex: 1;
+  width: 100%;
   border-radius: 0.55rem !important;
   padding-left: 2.25rem !important;
   font-size: 0.8125rem !important;
-}
-
-.exames-catalogo-search-clear {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 0.25rem;
-  border: 0;
-  background: transparent;
-  padding: 0.25rem 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: rgb(100 116 139);
-  cursor: pointer;
-}
-
-.exames-catalogo-search-clear:hover {
-  color: rgb(29 78 216);
 }
 
 .exames-catalogo-select {
@@ -6733,9 +6712,7 @@
   color: rgb(51 65 85);
 }
 
-.exames-catalogo-layout {
-  display: grid;
-  grid-template-columns: 1fr;
+.exames-catalogo-shell {
   margin-top: 0.75rem;
   overflow: hidden;
   border: 1px solid rgb(226 232 240);
@@ -6743,129 +6720,16 @@
   background: white;
 }
 
-@media (min-width: 768px) {
-  .exames-catalogo-layout {
-    grid-template-columns: 14rem minmax(0, 1fr);
-  }
-}
-
-.exames-catalogo-nav {
-  display: none;
-  border-right: 1px solid rgb(226 232 240);
-  background: rgb(248 250 252 / 0.55);
-}
-
-@media (min-width: 768px) {
-  .exames-catalogo-nav {
-    display: block;
-    max-height: min(70vh, 42rem);
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-}
-
-.exames-catalogo-nav-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  padding: 0.55rem 0.45rem;
-}
-
-.exames-catalogo-nav-item {
-  position: relative;
+.exames-catalogo-result-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  min-height: 2.35rem;
-  width: 100%;
-  border: 0;
-  border-radius: 0.45rem;
-  background: transparent;
-  padding: 0.4rem 0.65rem;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.12s ease, color 0.12s ease;
-}
-
-.exames-catalogo-nav-item:hover {
-  background: rgb(241 245 249);
-}
-
-.exames-catalogo-nav-item--active {
-  background: rgb(239 246 255);
-  color: rgb(29 78 216);
-}
-
-.exames-catalogo-nav-item--active::before {
-  content: "";
-  position: absolute;
-  top: 0.45rem;
-  bottom: 0.45rem;
-  left: 0;
-  width: 2.5px;
-  border-radius: 999px;
-  background: rgb(46 103 255);
-}
-
-.exames-catalogo-nav-label {
-  min-width: 0;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: inherit;
-}
-
-.exames-catalogo-nav-item--active .exames-catalogo-nav-label {
-  font-weight: 600;
-}
-
-.exames-catalogo-nav-count {
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-  color: rgb(148 163 184);
-}
-
-.exames-catalogo-nav-item--active .exames-catalogo-nav-count {
-  color: rgb(59 130 246);
-}
-
-.exames-catalogo-mobile-nav {
-  padding: 0.65rem 0.75rem 0;
-}
-
-@media (min-width: 768px) {
-  .exames-catalogo-mobile-nav {
-    display: none;
-  }
-}
-
-.exames-catalogo-main {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.exames-catalogo-panel-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.7rem 0.85rem;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.85rem;
   border-bottom: 1px solid rgb(241 245 249);
-}
-
-.exames-catalogo-panel-title {
-  margin: 0;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: rgb(15 23 42);
-}
-
-.exames-catalogo-panel-subtitle {
-  margin: 0.15rem 0 0;
   font-size: 0.75rem;
   color: rgb(100 116 139);
+  text-align: center;
 }
 
 .exames-catalogo-table-scroll {
@@ -6879,44 +6743,9 @@
   table-layout: fixed;
 }
 
-.exames-catalogo-table--category-hidden th:nth-child(1),
-.exames-catalogo-table--category-hidden td:nth-child(1) {
-  width: 58%;
-}
-
-.exames-catalogo-table--category-hidden th:nth-child(2),
-.exames-catalogo-table--category-hidden td:nth-child(2) {
-  width: 15%;
-}
-
-.exames-catalogo-table--category-hidden th:nth-child(3),
-.exames-catalogo-table--category-hidden td:nth-child(3) {
-  width: 18%;
-}
-
-.exames-catalogo-table--with-category th:nth-child(1),
-.exames-catalogo-table--with-category td:nth-child(1) {
-  width: 42%;
-}
-
-.exames-catalogo-table--with-category th:nth-child(2),
-.exames-catalogo-table--with-category td:nth-child(2) {
-  width: 22%;
-}
-
-.exames-catalogo-table--with-category th:nth-child(3),
-.exames-catalogo-table--with-category td:nth-child(3) {
-  width: 12%;
-}
-
-.exames-catalogo-table--with-category th:nth-child(4),
-.exames-catalogo-table--with-category td:nth-child(4) {
-  width: 16%;
-}
-
 .exames-catalogo-table thead th {
-  height: 2.35rem;
-  padding: 0 0.85rem;
+  height: 2.4rem;
+  padding: 0 0.55rem;
   border-bottom: 1px solid rgb(226 232 240);
   background: rgb(248 250 252);
   font-size: 0.65625rem;
@@ -6924,22 +6753,18 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgb(100 116 139);
-  text-align: left;
+  text-align: center;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
-.exames-catalogo-th-actions,
-.exames-catalogo-td-actions {
-  text-align: right;
-  width: 3.5rem;
-}
-
-.exames-catalogo-row td {
+.exames-catalogo-table tbody td {
   height: 2.75rem;
-  padding: 0 0.85rem;
+  padding: 0 0.55rem;
   border-bottom: 1px solid rgb(241 245 249);
   background: white;
   vertical-align: middle;
+  text-align: center;
   font-size: 0.8125rem;
 }
 
@@ -6951,19 +6776,46 @@
   background: rgb(248 250 252 / 0.7);
 }
 
-.exames-catalogo-name {
+.exames-catalogo-table th:nth-child(1),
+.exames-catalogo-table td:nth-child(1) {
+  width: 34%;
+}
+
+.exames-catalogo-table th:nth-child(2),
+.exames-catalogo-table td:nth-child(2) {
+  width: 22%;
+}
+
+.exames-catalogo-table th:nth-child(3),
+.exames-catalogo-table td:nth-child(3) {
+  width: 16%;
+}
+
+.exames-catalogo-table th:nth-child(4),
+.exames-catalogo-table td:nth-child(4) {
+  width: 16%;
+}
+
+.exames-catalogo-table th:nth-child(5),
+.exames-catalogo-table td:nth-child(5) {
+  width: 12%;
+}
+
+.exames-catalogo-name,
+.exames-catalogo-category {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
+}
+
+.exames-catalogo-name {
   font-weight: 600;
   color: rgb(15 23 42);
 }
 
 .exames-catalogo-category {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: rgb(71 85 105);
 }
 
@@ -6973,9 +6825,18 @@
   color: rgb(71 85 105);
 }
 
+.exames-catalogo-td-actions {
+  text-align: center;
+}
+
+.exames-catalogo-td-actions .empresas-clinica-action-btn {
+  margin-inline: auto;
+}
+
 .exames-catalogo-status {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   height: 1.5rem;
   border-radius: 999px;
@@ -7006,9 +6867,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: auto;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
   padding: 0.65rem 0.85rem;
   border-top: 1px solid rgb(241 245 249);
 }
@@ -7017,6 +6877,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem 1rem;
 }
 
