@@ -6,5 +6,5 @@ export default async function MensagemContatoRedirect({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  redirect(`/dashboard/orcamentos?tab=contatos&contact=${id}`);
+  redirect(`/dashboard/orcamentos?tab=oportunidades`);
 }

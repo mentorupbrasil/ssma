@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import type {
   CommercialEntityType,
   CommercialHistoryAction,
+  CommercialStage,
   LeadStatus,
   QuoteStatus,
   ContactMessageStatus,
@@ -14,19 +15,24 @@ import type {
 import { requirePermission } from "@/lib/authz";
 import { createAuditLog } from "@/lib/server";
 import { createAutoTask, getSettingBool } from "@/lib/auto-tasks";
+import { startOfDay, endOfDay, startOfMonth, endOfMonth } from "date-fns";
 import {
   buildLeadWhere,
   buildQuoteWhere,
-  buildContactWhere,
+  buildFollowUpWhere,
   getCommercialPageSize,
   serializeLeadListItem,
   serializeQuoteListItem,
+  serializeFollowUpListItem,
   serializeContactListItem,
   dedupeLeadListItems,
   generateQuoteNumber,
   calcQuoteTotal,
   OPEN_LEAD_STATUSES,
   PENDING_QUOTE_STATUSES,
+  stageToLeadStatus,
+  resolveCommercialTab,
+  COMMERCIAL_STAGE_LABELS,
   type CommercialFilters,
   type LeadDetailSerialized,
   type QuoteDetailSerialized,
@@ -101,43 +107,49 @@ async function fetchNotes(
 }
 
 export async function listCommercialDashboard(filters: CommercialFilters = {}) {
-  const pageSize = getCommercialPageSize();
+  const pageSize = getCommercialPageSize(filters.pageSize);
   const page = Math.max(1, filters.page ?? 1);
-  const tab = filters.tab ?? "solicitacoes";
+  const tab = resolveCommercialTab(filters.tab);
 
-  const [
-    solicitacoesNovas,
-    emNegociacao,
-    aguardandoResposta,
-    aprovados,
-    recusados,
-    contatosSemRetorno,
-  ] = await Promise.all([
-    prisma.lead.count({ where: { type: "ORCAMENTO", status: "NOVO" } }),
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  const todayEnd = endOfDay(now);
+  const monthStart = startOfMonth(now);
+  const monthEnd = endOfMonth(now);
+
+  const [novosLeads, followupsAtrasados, propostasAguardando, fechadosMes] = await Promise.all([
+    prisma.lead.count({ where: { type: "ORCAMENTO", stage: "NOVO_LEAD" } }),
+    prisma.commercialFollowUp.count({
+      where: { status: "PENDENTE", dueAt: { lt: todayStart } },
+    }),
+    prisma.quote.count({
+      where: { status: { in: ["ENVIADO", "AGUARDANDO_RESPOSTA"] } },
+    }),
     prisma.lead.count({
       where: {
         type: "ORCAMENTO",
-        status: { in: ["EM_ANALISE", "EM_CONTATO", "AGUARDANDO_RETORNO", "PROPOSTA_ENVIADA"] },
+        stage: "GANHO",
+        updatedAt: { gte: monthStart, lte: monthEnd },
       },
     }),
-    prisma.quote.count({ where: { status: "AGUARDANDO_RESPOSTA" } }),
-    prisma.quote.count({ where: { status: "APROVADO" } }),
-    prisma.quote.count({ where: { status: "RECUSADO" } }),
-    prisma.contactMessage.count({ where: { status: "NOVO" } }),
   ]);
 
   const statCounts = {
-    solicitacoes_novas: solicitacoesNovas,
-    em_negociacao: emNegociacao,
-    aguardando_resposta: aguardandoResposta,
-    aprovados,
-    // aliases / filtros secundários
-    em_analise: emNegociacao,
-    recusados,
-    contatos_sem_retorno: contatosSemRetorno,
+    novos_leads: novosLeads,
+    followups_atrasados: followupsAtrasados,
+    propostas_aguardando: propostasAguardando,
+    fechados_mes: fechadosMes,
+    // aliases legados
+    solicitacoes_novas: novosLeads,
+    em_negociacao: 0,
+    aguardando_resposta: propostasAguardando,
+    aprovados: fechadosMes,
+    em_analise: 0,
+    recusados: 0,
+    contatos_sem_retorno: 0,
   };
 
-  if (tab === "orcamentos") {
+  if (tab === "propostas") {
     const where = buildQuoteWhere(filters);
     const [items, total] = await Promise.all([
       prisma.quote.findMany({
@@ -145,7 +157,10 @@ export async function listCommercialDashboard(filters: CommercialFilters = {}) {
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * pageSize,
         take: pageSize,
-        include: { items: { select: { serviceName: true }, orderBy: { sortOrder: "asc" } } },
+        include: {
+          items: { select: { serviceName: true }, orderBy: { sortOrder: "asc" } },
+          createdBy: { select: { name: true } },
+        },
       }),
       prisma.quote.count({ where }),
     ]);
@@ -159,90 +174,58 @@ export async function listCommercialDashboard(filters: CommercialFilters = {}) {
     };
   }
 
-  if (tab === "contatos") {
-    const where = buildContactWhere(filters);
-    const [items, total] = await Promise.all([
-      prisma.contactMessage.findMany({
+  if (tab === "followups") {
+    const where = buildFollowUpWhere(filters);
+    const [items, total, atrasados, hoje, proximos] = await Promise.all([
+      prisma.commercialFollowUp.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy: { dueAt: "asc" },
         skip: (page - 1) * pageSize,
         take: pageSize,
+        include: {
+          lead: { select: { id: true, name: true, companyName: true, phone: true } },
+          assignedTo: { select: { name: true } },
+        },
       }),
-      prisma.contactMessage.count({ where }),
+      prisma.commercialFollowUp.count({ where }),
+      prisma.commercialFollowUp.count({
+        where: { status: "PENDENTE", dueAt: { lt: todayStart } },
+      }),
+      prisma.commercialFollowUp.count({
+        where: { status: "PENDENTE", dueAt: { gte: todayStart, lte: todayEnd } },
+      }),
+      prisma.commercialFollowUp.count({
+        where: { status: "PENDENTE", dueAt: { gt: todayEnd } },
+      }),
     ]);
     return {
       tab,
-      items: items.map(serializeContactListItem),
+      items: items.map(serializeFollowUpListItem),
       total,
       page,
       pageSize,
       statCounts,
+      followUpBuckets: { atrasados, hoje, proximos },
     };
-  }
-
-  if (tab === "historico") {
-    const [items, total] = await Promise.all([
-      prisma.commercialHistory.findMany({
-        orderBy: { createdAt: "desc" },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        include: { performedBy: { select: { name: true } } },
-      }),
-      prisma.commercialHistory.count(),
-    ]);
-    const enriched = await Promise.all(
-      items.map(async (h) => {
-        let entityLabel = h.entityId;
-        if (h.entityType === "LEAD") {
-          const lead = await prisma.lead.findUnique({
-            where: { id: h.entityId },
-            select: { name: true, companyName: true },
-          });
-          entityLabel = lead ? `${lead.name}${lead.companyName ? ` — ${lead.companyName}` : ""}` : entityLabel;
-        } else if (h.entityType === "QUOTE") {
-          const quote = await prisma.quote.findUnique({
-            where: { id: h.entityId },
-            select: { quoteNumber: true, companyName: true },
-          });
-          entityLabel = quote ? `${quote.quoteNumber} — ${quote.companyName}` : entityLabel;
-        } else {
-          const contact = await prisma.contactMessage.findUnique({
-            where: { id: h.entityId },
-            select: { name: true, subject: true },
-          });
-          entityLabel = contact ? `${contact.name} — ${contact.subject}` : entityLabel;
-        }
-        return {
-          id: h.id,
-          entityType: h.entityType,
-          entityId: h.entityId,
-          entityLabel,
-          action: h.action,
-          fromStatus: h.fromStatus,
-          toStatus: h.toStatus,
-          notes: h.notes,
-          performedByName: h.performedBy?.name ?? null,
-          createdAt: h.createdAt.toISOString(),
-        } satisfies CommercialHistoryItem;
-      })
-    );
-    return { tab, items: enriched, total, page, pageSize, statCounts };
   }
 
   const where = buildLeadWhere(filters);
   const [items, total] = await Promise.all([
     prisma.lead.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ nextFollowUpAt: "asc" }, { createdAt: "desc" }],
       skip: (page - 1) * pageSize,
       take: pageSize,
-      include: { assignedTo: { select: { name: true } } },
+      include: {
+        assignedTo: { select: { name: true } },
+        sourcedQuotes: { select: { id: true }, take: 1, orderBy: { createdAt: "desc" } },
+      },
     }),
     prisma.lead.count({ where }),
   ]);
 
   return {
-    tab: "solicitacoes" as const,
+    tab: "oportunidades" as const,
     items: dedupeLeadListItems(items.map(serializeLeadListItem)),
     total,
     page,
@@ -258,9 +241,25 @@ export async function getLeadDetail(
     await requirePermission("leads.manage");
     const lead = await prisma.lead.findUnique({
       where: { id },
-      include: { assignedTo: { select: { name: true } } },
+      include: {
+        assignedTo: { select: { name: true } },
+        sourcedQuotes: {
+          include: {
+            items: { select: { serviceName: true }, orderBy: { sortOrder: "asc" } },
+            createdBy: { select: { name: true } },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        followUps: {
+          include: {
+            lead: { select: { id: true, name: true, companyName: true, phone: true } },
+            assignedTo: { select: { name: true } },
+          },
+          orderBy: { dueAt: "desc" },
+        },
+      },
     });
-    if (!lead) return { success: false, error: "Solicitação não encontrada." };
+    if (!lead) return { success: false, error: "Oportunidade não encontrada." };
     const [history, notes] = await Promise.all([
       fetchHistory("LEAD", id),
       fetchNotes("LEAD", id),
@@ -274,12 +273,17 @@ export async function getLeadDetail(
         companyId: lead.companyId,
         contactMessageId: lead.contactMessageId,
         convertedQuoteId: lead.convertedQuoteId,
+        cnpj: lead.cnpj,
+        estimatedEmployees: lead.estimatedEmployees,
+        lostReason: lead.lostReason,
         notes,
         history,
+        quotes: lead.sourcedQuotes.map(serializeQuoteListItem),
+        followUps: lead.followUps.map(serializeFollowUpListItem),
       },
     };
   } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : "Erro ao carregar solicitação." };
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao carregar oportunidade." };
   }
 }
 
@@ -290,9 +294,12 @@ export async function getQuoteDetail(
     await requirePermission("leads.manage");
     const quote = await prisma.quote.findUnique({
       where: { id },
-      include: { items: { orderBy: { sortOrder: "asc" } } },
+      include: {
+        items: { orderBy: { sortOrder: "asc" } },
+        createdBy: { select: { name: true } },
+      },
     });
-    if (!quote) return { success: false, error: "Orçamento não encontrado." };
+    if (!quote) return { success: false, error: "Proposta não encontrada." };
     const [history, notes] = await Promise.all([
       fetchHistory("QUOTE", id),
       fetchNotes("QUOTE", id),
@@ -325,7 +332,7 @@ export async function getQuoteDetail(
       },
     };
   } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : "Erro ao carregar orçamento." };
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao carregar proposta." };
   }
 }
 
@@ -350,7 +357,537 @@ export async function getContactDetail(
       },
     };
   } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : "Erro ao carregar mensagem." };
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao carregar contato." };
+  }
+}
+
+export type OpportunityFormInput = {
+  name: string;
+  companyName?: string;
+  phone?: string;
+  email?: string;
+  city?: string;
+  cnpj?: string;
+  estimatedEmployees?: number;
+  serviceInterest?: string;
+  message?: string;
+  source?: string;
+  assignedToUserId?: string;
+  stage?: CommercialStage;
+  nextFollowUpAt?: string;
+  followUpAction?: string;
+  notes?: string;
+};
+
+export async function createOpportunity(
+  raw: OpportunityFormInput
+): Promise<ActionResult<{ leadId: string }>> {
+  try {
+    const session = await requirePermission("leads.manage");
+    if (!raw.name?.trim()) return { success: false, error: "Informe o contato principal." };
+    if (!raw.companyName?.trim()) return { success: false, error: "Informe a empresa ou prospect." };
+
+    const stage = raw.stage ?? "NOVO_LEAD";
+    const lead = await prisma.lead.create({
+      data: {
+        type: "ORCAMENTO",
+        status: stageToLeadStatus(stage),
+        stage,
+        name: raw.name.trim(),
+        companyName: raw.companyName.trim(),
+        phone: raw.phone?.trim() || null,
+        email: raw.email?.trim() || null,
+        city: raw.city?.trim() || null,
+        cnpj: raw.cnpj?.replace(/\D/g, "") || null,
+        estimatedEmployees: raw.estimatedEmployees ?? null,
+        serviceInterest: raw.serviceInterest?.trim() || null,
+        serviceTitle: raw.serviceInterest?.trim() || null,
+        message: raw.message?.trim() || null,
+        source: raw.source?.trim() || "manual",
+        assignedToUserId: raw.assignedToUserId || session.user.id,
+        nextFollowUpAt: raw.nextFollowUpAt ? new Date(raw.nextFollowUpAt) : null,
+        followUpAction: raw.followUpAction?.trim() || null,
+        notes: raw.notes?.trim() || null,
+      },
+    });
+
+    await recordHistory("LEAD", lead.id, "CREATED", session.user.id, {
+      notes: "Oportunidade criada manualmente",
+      toStatus: stage,
+    });
+
+    if (raw.nextFollowUpAt) {
+      await prisma.commercialFollowUp.create({
+        data: {
+          leadId: lead.id,
+          dueAt: new Date(raw.nextFollowUpAt),
+          action: raw.followUpAction?.trim() || "Contato comercial",
+          assignedToUserId: raw.assignedToUserId || session.user.id,
+          createdByUserId: session.user.id,
+        },
+      });
+    }
+
+    await createAuditLog({
+      userId: session.user.id,
+      action: "CREATE",
+      entity: "Lead",
+      entityId: lead.id,
+      details: lead.companyName ?? lead.name,
+    });
+
+    revalidatePath("/dashboard/orcamentos");
+    return { success: true, leadId: lead.id };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao criar oportunidade." };
+  }
+}
+
+export async function updateOpportunity(
+  leadId: string,
+  raw: OpportunityFormInput
+): Promise<ActionResult> {
+  try {
+    const session = await requirePermission("leads.manage");
+    const existing = await prisma.lead.findUnique({ where: { id: leadId } });
+    if (!existing) return { success: false, error: "Oportunidade não encontrada." };
+
+    const stage = raw.stage ?? existing.stage;
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        name: raw.name.trim(),
+        companyName: raw.companyName?.trim() || null,
+        phone: raw.phone?.trim() || null,
+        email: raw.email?.trim() || null,
+        city: raw.city?.trim() || null,
+        cnpj: raw.cnpj?.replace(/\D/g, "") || null,
+        estimatedEmployees: raw.estimatedEmployees ?? null,
+        serviceInterest: raw.serviceInterest?.trim() || null,
+        serviceTitle: raw.serviceInterest?.trim() || existing.serviceTitle,
+        message: raw.message?.trim() || null,
+        source: raw.source?.trim() || existing.source,
+        assignedToUserId: raw.assignedToUserId || null,
+        stage,
+        status: stageToLeadStatus(stage),
+        nextFollowUpAt: raw.nextFollowUpAt ? new Date(raw.nextFollowUpAt) : null,
+        followUpAction: raw.followUpAction?.trim() || null,
+        notes: raw.notes?.trim() || null,
+      },
+    });
+
+    if (stage !== existing.stage) {
+      await recordHistory("LEAD", leadId, "STATUS_CHANGED", session.user.id, {
+        fromStatus: existing.stage,
+        toStatus: stage,
+        notes: `${COMMERCIAL_STAGE_LABELS[existing.stage]} → ${COMMERCIAL_STAGE_LABELS[stage]}`,
+      });
+    }
+
+    revalidatePath("/dashboard/orcamentos");
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao atualizar oportunidade." };
+  }
+}
+
+export async function updateOpportunityStage(
+  leadId: string,
+  stage: CommercialStage,
+  opts?: { lostReason?: string; notes?: string }
+): Promise<ActionResult<{ suggestConvert?: boolean }>> {
+  try {
+    const session = await requirePermission("leads.manage");
+    const existing = await prisma.lead.findUnique({ where: { id: leadId } });
+    if (!existing) return { success: false, error: "Oportunidade não encontrada." };
+
+    if (stage === "PERDIDO" && !opts?.lostReason?.trim()) {
+      return { success: false, error: "Informe o motivo da perda." };
+    }
+
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        stage,
+        status: stageToLeadStatus(stage),
+        lostReason: stage === "PERDIDO" ? opts?.lostReason?.trim() || null : existing.lostReason,
+      },
+    });
+
+    await recordHistory("LEAD", leadId, "STATUS_CHANGED", session.user.id, {
+      fromStatus: existing.stage,
+      toStatus: stage,
+      notes:
+        opts?.notes?.trim() ||
+        (stage === "PERDIDO"
+          ? opts?.lostReason
+          : `${COMMERCIAL_STAGE_LABELS[existing.stage]} → ${COMMERCIAL_STAGE_LABELS[stage]}`),
+    });
+
+    revalidatePath("/dashboard/orcamentos");
+    return { success: true, suggestConvert: stage === "GANHO" && !existing.companyId };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao alterar etapa." };
+  }
+}
+
+export async function registerOpportunityContact(
+  leadId: string,
+  content: string,
+  opts?: { nextFollowUpAt?: string; followUpAction?: string; stage?: CommercialStage }
+): Promise<ActionResult> {
+  try {
+    const session = await requirePermission("leads.manage");
+    const existing = await prisma.lead.findUnique({ where: { id: leadId } });
+    if (!existing) return { success: false, error: "Oportunidade não encontrada." };
+    if (!content.trim()) return { success: false, error: "Descreva o contato realizado." };
+
+    const nextStage =
+      opts?.stage ??
+      (existing.stage === "NOVO_LEAD" ? "CONTATO_REALIZADO" : existing.stage);
+
+    await prisma.commercialNote.create({
+      data: {
+        entityType: "LEAD",
+        entityId: leadId,
+        content: content.trim(),
+        createdByUserId: session.user.id,
+      },
+    });
+
+    await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        lastContactAt: new Date(),
+        stage: nextStage,
+        status: stageToLeadStatus(nextStage),
+        nextFollowUpAt: opts?.nextFollowUpAt ? new Date(opts.nextFollowUpAt) : existing.nextFollowUpAt,
+        followUpAction: opts?.followUpAction?.trim() || existing.followUpAction,
+      },
+    });
+
+    await recordHistory("LEAD", leadId, "NOTE_ADDED", session.user.id, {
+      notes: content.trim(),
+      fromStatus: existing.stage,
+      toStatus: nextStage,
+    });
+
+    if (opts?.nextFollowUpAt) {
+      await prisma.commercialFollowUp.create({
+        data: {
+          leadId,
+          dueAt: new Date(opts.nextFollowUpAt),
+          action: opts.followUpAction?.trim() || "Retorno comercial",
+          assignedToUserId: existing.assignedToUserId || session.user.id,
+          createdByUserId: session.user.id,
+        },
+      });
+    }
+
+    revalidatePath("/dashboard/orcamentos");
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao registrar contato." };
+  }
+}
+
+export async function scheduleFollowUp(input: {
+  leadId: string;
+  dueAt: string;
+  action: string;
+  assignedToUserId?: string;
+  notes?: string;
+}): Promise<ActionResult<{ followUpId: string }>> {
+  try {
+    const session = await requirePermission("leads.manage");
+    const lead = await prisma.lead.findUnique({ where: { id: input.leadId } });
+    if (!lead) return { success: false, error: "Oportunidade não encontrada." };
+    if (!input.dueAt) return { success: false, error: "Informe a data do follow-up." };
+    if (!input.action.trim()) return { success: false, error: "Informe a ação prevista." };
+
+    const dueAt = new Date(input.dueAt);
+    const followUp = await prisma.commercialFollowUp.create({
+      data: {
+        leadId: input.leadId,
+        dueAt,
+        action: input.action.trim(),
+        notes: input.notes?.trim() || null,
+        assignedToUserId: input.assignedToUserId || lead.assignedToUserId || session.user.id,
+        createdByUserId: session.user.id,
+      },
+    });
+
+    await prisma.lead.update({
+      where: { id: input.leadId },
+      data: {
+        nextFollowUpAt: dueAt,
+        followUpAction: input.action.trim(),
+      },
+    });
+
+    await recordHistory("LEAD", input.leadId, "NOTE_ADDED", session.user.id, {
+      notes: `Follow-up agendado: ${input.action.trim()}`,
+    });
+
+    revalidatePath("/dashboard/orcamentos");
+    return { success: true, followUpId: followUp.id };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao agendar follow-up." };
+  }
+}
+
+export async function completeFollowUp(input: {
+  followUpId: string;
+  result: string;
+  notes?: string;
+  nextDueAt?: string;
+  nextAction?: string;
+}): Promise<ActionResult> {
+  try {
+    const session = await requirePermission("leads.manage");
+    const existing = await prisma.commercialFollowUp.findUnique({
+      where: { id: input.followUpId },
+      include: { lead: true },
+    });
+    if (!existing) return { success: false, error: "Follow-up não encontrado." };
+    if (!input.result.trim()) return { success: false, error: "Informe o resultado do contato." };
+
+    await prisma.commercialFollowUp.update({
+      where: { id: input.followUpId },
+      data: {
+        status: "REALIZADO",
+        result: input.result.trim(),
+        notes: input.notes?.trim() || existing.notes,
+        completedAt: new Date(),
+      },
+    });
+
+    await prisma.commercialNote.create({
+      data: {
+        entityType: "LEAD",
+        entityId: existing.leadId,
+        content: `Follow-up realizado: ${input.result.trim()}${input.notes ? `\n${input.notes.trim()}` : ""}`,
+        createdByUserId: session.user.id,
+      },
+    });
+
+    await recordHistory("LEAD", existing.leadId, "NOTE_ADDED", session.user.id, {
+      notes: `Follow-up concluído: ${input.result.trim()}`,
+    });
+
+    if (input.nextDueAt) {
+      const nextDue = new Date(input.nextDueAt);
+      const nextAction = input.nextAction?.trim() || "Retorno comercial";
+      await prisma.commercialFollowUp.create({
+        data: {
+          leadId: existing.leadId,
+          dueAt: nextDue,
+          action: nextAction,
+          assignedToUserId: existing.assignedToUserId || session.user.id,
+          createdByUserId: session.user.id,
+        },
+      });
+      await prisma.lead.update({
+        where: { id: existing.leadId },
+        data: {
+          lastContactAt: new Date(),
+          nextFollowUpAt: nextDue,
+          followUpAction: nextAction,
+          stage:
+            existing.lead.stage === "NOVO_LEAD" ? "CONTATO_REALIZADO" : existing.lead.stage,
+          status:
+            existing.lead.stage === "NOVO_LEAD"
+              ? "EM_CONTATO"
+              : existing.lead.status,
+        },
+      });
+    } else {
+      await prisma.lead.update({
+        where: { id: existing.leadId },
+        data: {
+          lastContactAt: new Date(),
+          nextFollowUpAt: null,
+          followUpAction: null,
+        },
+      });
+    }
+
+    revalidatePath("/dashboard/orcamentos");
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao concluir follow-up." };
+  }
+}
+
+export async function rescheduleFollowUp(input: {
+  followUpId: string;
+  dueAt: string;
+  action?: string;
+}): Promise<ActionResult> {
+  try {
+    const session = await requirePermission("leads.manage");
+    const existing = await prisma.commercialFollowUp.findUnique({ where: { id: input.followUpId } });
+    if (!existing) return { success: false, error: "Follow-up não encontrado." };
+
+    const dueAt = new Date(input.dueAt);
+    await prisma.commercialFollowUp.update({
+      where: { id: input.followUpId },
+      data: {
+        dueAt,
+        action: input.action?.trim() || existing.action,
+        status: "PENDENTE",
+        completedAt: null,
+      },
+    });
+
+    await prisma.lead.update({
+      where: { id: existing.leadId },
+      data: {
+        nextFollowUpAt: dueAt,
+        followUpAction: input.action?.trim() || existing.action,
+      },
+    });
+
+    await recordHistory("LEAD", existing.leadId, "NOTE_ADDED", session.user.id, {
+      notes: "Follow-up reagendado",
+    });
+
+    revalidatePath("/dashboard/orcamentos");
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao reagendar." };
+  }
+}
+
+export async function convertOpportunityToCompany(input: {
+  leadId: string;
+  legalName?: string;
+  cnpj: string;
+  tradeName?: string;
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+  city?: string;
+  state?: string;
+  responsibleName?: string;
+  notes?: string;
+}): Promise<ActionResult<{ companyId: string; linkedExisting?: boolean }>> {
+  try {
+    const session = await requirePermission("leads.manage");
+    const lead = await prisma.lead.findUnique({
+      where: { id: input.leadId },
+      include: {
+        sourcedQuotes: {
+          where: { status: "APROVADO" },
+          orderBy: { updatedAt: "desc" },
+          take: 1,
+        },
+      },
+    });
+    if (!lead) return { success: false, error: "Oportunidade não encontrada." };
+
+    const cnpj = input.cnpj.replace(/\D/g, "");
+    if (cnpj.length !== 14) return { success: false, error: "Informe um CNPJ válido." };
+
+    const existingCompany = await prisma.company.findUnique({ where: { cnpj } });
+    if (existingCompany) {
+      await prisma.lead.update({
+        where: { id: lead.id },
+        data: {
+          companyId: existingCompany.id,
+          stage: "GANHO",
+          status: "FECHADO",
+          cnpj,
+        },
+      });
+      if (lead.sourcedQuotes[0]) {
+        await prisma.quote.update({
+          where: { id: lead.sourcedQuotes[0].id },
+          data: { companyId: existingCompany.id },
+        });
+      }
+      await recordHistory("LEAD", lead.id, "COMPANY_LINKED", session.user.id, {
+        notes: `Vinculada à empresa existente ${existingCompany.legalName}`,
+      });
+      revalidatePath("/dashboard/orcamentos");
+      revalidatePath("/dashboard/empresas");
+      return { success: true, companyId: existingCompany.id, linkedExisting: true };
+    }
+
+    const approved = lead.sourcedQuotes[0];
+    const phone = (input.phone || lead.phone || "").replace(/\D/g, "") || "00000000000";
+    const company = await prisma.$transaction(async (tx) => {
+      const created = await tx.company.create({
+        data: {
+          legalName: (input.legalName || lead.companyName || lead.name).trim(),
+          tradeName: input.tradeName?.trim() || null,
+          cnpj,
+          email: input.email?.trim() || lead.email,
+          phone: phone.slice(0, 20),
+          whatsapp: (input.whatsapp || lead.phone || phone).replace(/\D/g, "").slice(0, 20) || phone,
+          city: input.city?.trim() || lead.city,
+          state: input.state?.trim() || null,
+          responsibleName: input.responsibleName?.trim() || lead.name,
+          notes:
+            input.notes?.trim() ||
+            [
+              lead.serviceInterest ? `Serviços: ${lead.serviceInterest}` : null,
+              approved ? `Proposta ${approved.quoteNumber}` : null,
+              lead.message,
+            ]
+              .filter(Boolean)
+              .join("\n") || null,
+          status: "ATIVA",
+          clinicId: session.user.clinicId ?? null,
+        },
+      });
+
+      await tx.companyHistory.create({
+        data: {
+          companyId: created.id,
+          action: "CREATED",
+          notes: `Convertida da oportunidade comercial ${lead.companyName ?? lead.name}`,
+          performedByUserId: session.user.id,
+        },
+      });
+
+      await tx.lead.update({
+        where: { id: lead.id },
+        data: {
+          companyId: created.id,
+          stage: "GANHO",
+          status: "FECHADO",
+          cnpj,
+        },
+      });
+
+      if (approved) {
+        await tx.quote.update({
+          where: { id: approved.id },
+          data: { companyId: created.id },
+        });
+      }
+
+      return created;
+    });
+
+    await recordHistory("LEAD", lead.id, "COMPANY_LINKED", session.user.id, {
+      notes: `Convertida em empresa ${company.legalName}`,
+    });
+
+    await createAuditLog({
+      userId: session.user.id,
+      action: "CREATE",
+      entity: "Company",
+      entityId: company.id,
+      details: `Conversão comercial: ${company.legalName}`,
+    });
+
+    revalidatePath("/dashboard/orcamentos");
+    revalidatePath("/dashboard/empresas");
+    return { success: true, companyId: company.id };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao converter em empresa." };
   }
 }
 
@@ -358,13 +895,13 @@ type QuoteItemInput = {
   serviceName: string;
   category?: string;
   quantity: number;
-  unitPrice?: number | null;
-  totalPrice?: number | null;
+  unitPrice?: number;
+  totalPrice?: number;
   notes?: string;
 };
 
 type QuoteFormInput = {
-  companyId?: string | null;
+  companyId?: string;
   companyName: string;
   responsibleName?: string;
   phone?: string;
@@ -372,11 +909,11 @@ type QuoteFormInput = {
   cnpj?: string;
   city?: string;
   state?: string;
-  validUntil?: string | null;
+  status?: QuoteStatus;
+  validUntil?: string;
   paymentTerms?: string;
   internalNotes?: string;
   clientNotes?: string;
-  status?: QuoteStatus;
   items: QuoteItemInput[];
   sourceLeadId?: string;
   sendOnSave?: boolean;
@@ -389,10 +926,15 @@ export async function createQuote(
     const session = await requirePermission("leads.manage");
     if (!raw.companyName?.trim()) return { success: false, error: "Nome da empresa obrigatório." };
     if (!raw.items?.length) return { success: false, error: "Adicione ao menos um serviço." };
+    if (!raw.sourceLeadId) {
+      return { success: false, error: "Selecione a oportunidade vinculada à proposta." };
+    }
 
     const quoteNumber = await generateQuoteNumber();
     const totalAmount = calcQuoteTotal(raw.items);
-    const status: QuoteStatus = raw.sendOnSave ? "ENVIADO" : raw.status ?? "RASCUNHO";
+    const status: QuoteStatus = raw.sendOnSave
+      ? "AGUARDANDO_RESPOSTA"
+      : raw.status ?? "RASCUNHO";
 
     const quote = await prisma.$transaction(async (tx) => {
       const created = await tx.quote.create({
@@ -445,7 +987,7 @@ export async function createQuote(
             entityType: "QUOTE",
             entityId: created.id,
             action: "QUOTE_SENT",
-            toStatus: "ENVIADO",
+            toStatus: status,
             performedByUserId: session.user.id,
           },
         });
@@ -455,7 +997,8 @@ export async function createQuote(
         await tx.lead.update({
           where: { id: raw.sourceLeadId },
           data: {
-            status: "CONVERTIDO_ORCAMENTO",
+            status: "PROPOSTA_ENVIADA",
+            stage: raw.sendOnSave ? "PROPOSTA_ENVIADA" : "PROPOSTA_ENVIADA",
             convertedQuoteId: created.id,
           },
         });
@@ -465,6 +1008,7 @@ export async function createQuote(
             entityId: raw.sourceLeadId,
             action: "QUOTE_CREATED",
             notes: quoteNumber,
+            toStatus: "PROPOSTA_ENVIADA",
             performedByUserId: session.user.id,
           },
         });
@@ -484,7 +1028,7 @@ export async function createQuote(
     revalidatePath("/dashboard/orcamentos");
     return { success: true, quoteId: quote.id };
   } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : "Erro ao criar orçamento." };
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao criar proposta." };
   }
 }
 
@@ -495,10 +1039,10 @@ export async function updateQuote(
   try {
     const session = await requirePermission("leads.manage");
     const existing = await prisma.quote.findUnique({ where: { id: quoteId } });
-    if (!existing) return { success: false, error: "Orçamento não encontrado." };
+    if (!existing) return { success: false, error: "Proposta não encontrada." };
 
     const totalAmount = calcQuoteTotal(raw.items);
-    const status = raw.sendOnSave ? "ENVIADO" : raw.status ?? existing.status;
+    const status = raw.sendOnSave ? "AGUARDANDO_RESPOSTA" : raw.status ?? existing.status;
 
     await prisma.$transaction(async (tx) => {
       await tx.quoteItem.deleteMany({ where: { quoteId } });
@@ -519,6 +1063,7 @@ export async function updateQuote(
           paymentTerms: raw.paymentTerms?.trim() || null,
           internalNotes: raw.internalNotes?.trim() || null,
           clientNotes: raw.clientNotes?.trim() || null,
+          sourceLeadId: raw.sourceLeadId || existing.sourceLeadId,
           items: {
             create: raw.items.map((item, idx) => ({
               serviceName: item.serviceName.trim(),
@@ -550,7 +1095,7 @@ export async function updateQuote(
     revalidatePath("/dashboard/orcamentos");
     return { success: true };
   } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : "Erro ao atualizar orçamento." };
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao atualizar proposta." };
   }
 }
 
@@ -558,22 +1103,8 @@ export async function updateLeadStatusCommercial(
   leadId: string,
   status: LeadStatus
 ): Promise<ActionResult> {
-  try {
-    const session = await requirePermission("leads.manage");
-    const existing = await prisma.lead.findUnique({ where: { id: leadId } });
-    if (!existing) return { success: false, error: "Solicitação não encontrada." };
-
-    await prisma.lead.update({ where: { id: leadId }, data: { status } });
-    await recordHistory("LEAD", leadId, "STATUS_CHANGED", session.user.id, {
-      fromStatus: existing.status,
-      toStatus: status,
-    });
-
-    revalidatePath("/dashboard/orcamentos");
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : "Erro ao alterar status." };
-  }
+  const { leadStatusToStage } = await import("@/lib/commercial");
+  return updateOpportunityStage(leadId, leadStatusToStage(status));
 }
 
 export async function updateContactStatusCommercial(
@@ -609,14 +1140,14 @@ export async function updateQuoteStatusCommercial(
       where: { id: quoteId },
       include: { items: true },
     });
-    if (!existing) return { success: false, error: "Orçamento não encontrado." };
+    if (!existing) return { success: false, error: "Proposta não encontrada." };
 
     const action: CommercialHistoryAction =
       status === "APROVADO"
         ? "QUOTE_APPROVED"
         : status === "RECUSADO"
           ? "QUOTE_REJECTED"
-          : status === "ENVIADO"
+          : status === "ENVIADO" || status === "AGUARDANDO_RESPOSTA"
             ? "QUOTE_SENT"
             : "STATUS_CHANGED";
 
@@ -634,6 +1165,25 @@ export async function updateQuoteStatusCommercial(
       toStatus: status,
       notes: opts?.notes,
     });
+
+    if (existing.sourceLeadId) {
+      if (status === "APROVADO") {
+        await prisma.lead.update({
+          where: { id: existing.sourceLeadId },
+          data: { stage: "GANHO", status: "FECHADO" },
+        });
+      } else if (status === "RECUSADO") {
+        await prisma.lead.update({
+          where: { id: existing.sourceLeadId },
+          data: { stage: "EM_NEGOCIACAO", status: "EM_ANALISE" },
+        });
+      } else if (status === "ENVIADO" || status === "AGUARDANDO_RESPOSTA") {
+        await prisma.lead.update({
+          where: { id: existing.sourceLeadId },
+          data: { stage: "PROPOSTA_ENVIADA", status: "PROPOSTA_ENVIADA" },
+        });
+      }
+    }
 
     if (status === "APROVADO" && existing.status !== "APROVADO") {
       const clinicId = session.user.clinicId ?? null;
@@ -654,7 +1204,7 @@ export async function updateQuoteStatusCommercial(
               clinicId,
               type: "RECEBER",
               source: "ORCAMENTO",
-              description: `Orçamento ${existing.quoteNumber} — ${existing.companyName}`,
+              description: `Proposta ${existing.quoteNumber} — ${existing.companyName}`,
               amount: total,
               dueDate,
               companyId: existing.companyId,
@@ -669,7 +1219,7 @@ export async function updateQuoteStatusCommercial(
         clinicId,
         createdByUserId: session.user.id,
         title: `Formalizar contrato — ${existing.companyName}`,
-        description: `Orçamento ${existing.quoteNumber} aprovado. Verificar contrato e condições comerciais.`,
+        description: `Proposta ${existing.quoteNumber} aprovada. Verificar contrato e condições comerciais.`,
         priority: "ALTA",
         dueDate: new Date(Date.now() + 3 * 86400000),
         companyId: existing.companyId ?? undefined,
@@ -738,7 +1288,7 @@ export async function duplicateQuote(quoteId: string): Promise<ActionResult<{ qu
       where: { id: quoteId },
       include: { items: true },
     });
-    if (!existing) return { success: false, error: "Orçamento não encontrado." };
+    if (!existing) return { success: false, error: "Proposta não encontrada." };
 
     const quoteNumber = await generateQuoteNumber();
     const copy = await prisma.$transaction(async (tx) => {
@@ -759,6 +1309,7 @@ export async function duplicateQuote(quoteId: string): Promise<ActionResult<{ qu
           paymentTerms: existing.paymentTerms,
           internalNotes: existing.internalNotes,
           clientNotes: existing.clientNotes,
+          sourceLeadId: existing.sourceLeadId,
           createdByUserId: session.user.id,
           items: {
             create: existing.items.map((item, idx) => ({
@@ -788,7 +1339,7 @@ export async function duplicateQuote(quoteId: string): Promise<ActionResult<{ qu
     revalidatePath("/dashboard/orcamentos");
     return { success: true, quoteId: copy.id };
   } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : "Erro ao duplicar orçamento." };
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao duplicar proposta." };
   }
 }
 
@@ -799,6 +1350,12 @@ export async function recordWhatsAppOpened(
   try {
     const session = await requirePermission("leads.manage");
     await recordHistory(entityType, entityId, "WHATSAPP_OPENED", session.user.id);
+    if (entityType === "LEAD") {
+      await prisma.lead.update({
+        where: { id: entityId },
+        data: { lastContactAt: new Date() },
+      });
+    }
     return { success: true };
   } catch {
     return { success: true };
@@ -837,6 +1394,7 @@ export async function createCommercialLeadFromContact(
       data: {
         type: "ORCAMENTO",
         status: "NOVO",
+        stage: "NOVO_LEAD",
         name: contact.name,
         email: contact.email,
         phone: contact.phone,
@@ -857,8 +1415,31 @@ export async function createCommercialLeadFromContact(
     revalidatePath("/dashboard/orcamentos");
     return { success: true, leadId: lead.id };
   } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : "Erro ao criar solicitação." };
+    return { success: false, error: e instanceof Error ? e.message : "Erro ao criar oportunidade." };
   }
+}
+
+export async function listOpportunitiesForSelect() {
+  await requirePermission("leads.manage");
+  return prisma.lead.findMany({
+    where: {
+      type: "ORCAMENTO",
+      stage: { notIn: ["PERDIDO"] },
+    },
+    select: {
+      id: true,
+      name: true,
+      companyName: true,
+      phone: true,
+      email: true,
+      city: true,
+      cnpj: true,
+      companyId: true,
+      serviceInterest: true,
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 300,
+  });
 }
 
 export async function getCompaniesForQuoteSelect() {

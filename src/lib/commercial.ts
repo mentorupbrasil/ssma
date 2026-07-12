@@ -8,57 +8,93 @@ import type {
   ContactMessageStatus,
   CommercialEntityType,
   CommercialHistoryAction,
+  CommercialStage,
+  CommercialFollowUp,
+  CommercialFollowUpStatus,
   QuoteRejectReason,
   Prisma,
 } from "@prisma/client";
-import { startOfDay, endOfDay, parseISO, isValid } from "date-fns";
+import { startOfDay, endOfDay, parseISO, isValid, startOfMonth, endOfMonth } from "date-fns";
 import { getClinicInfo } from "@/lib/helpers";
 
-export type CommercialTab = "solicitacoes" | "orcamentos" | "contatos" | "historico";
+export type CommercialTab = "oportunidades" | "propostas" | "followups";
 
-export const COMMERCIAL_KPI_CARDS: {
+export const COMMERCIAL_TAB_ALIASES: Record<string, CommercialTab> = {
+  solicitacoes: "oportunidades",
+  orcamentos: "propostas",
+  contatos: "oportunidades",
+  historico: "oportunidades",
+  oportunidades: "oportunidades",
+  propostas: "propostas",
+  followups: "followups",
+};
+
+export function resolveCommercialTab(value?: string | null): CommercialTab {
+  if (!value) return "oportunidades";
+  return COMMERCIAL_TAB_ALIASES[value] ?? "oportunidades";
+}
+
+export const COMMERCIAL_KPI_STRIP: {
   key: string;
   filter: string;
   label: string;
-  hint: string;
   tab: CommercialTab;
 }[] = [
+  { key: "novos_leads", filter: "NOVOS_LEADS", label: "Novos leads", tab: "oportunidades" },
   {
-    key: "solicitacoes_novas",
-    filter: "LEAD_NOVO",
-    label: "Novas solicitações",
-    hint: "Recém-recebidas",
-    tab: "solicitacoes",
+    key: "followups_atrasados",
+    filter: "FOLLOWUPS_ATRASADOS",
+    label: "Follow-ups atrasados",
+    tab: "followups",
   },
   {
-    key: "em_negociacao",
-    filter: "EM_NEGOCIACAO",
-    label: "Em negociação",
-    hint: "Em análise ou contato",
-    tab: "solicitacoes",
+    key: "propostas_aguardando",
+    filter: "PROPOSTAS_AGUARDANDO",
+    label: "Propostas aguardando resposta",
+    tab: "propostas",
   },
   {
-    key: "aguardando_resposta",
-    filter: "QUOTE_AGUARDANDO",
-    label: "Aguardando resposta",
-    hint: "Proposta enviada",
-    tab: "orcamentos",
-  },
-  {
-    key: "aprovados",
-    filter: "QUOTE_APROVADO",
-    label: "Orçamentos aprovados",
-    hint: "Fechados com sucesso",
-    tab: "orcamentos",
+    key: "fechados_mes",
+    filter: "FECHADOS_MES",
+    label: "Clientes fechados no mês",
+    tab: "oportunidades",
   },
 ];
 
-/** @deprecated Prefer COMMERCIAL_KPI_CARDS no painel clínico */
-export const COMMERCIAL_STAT_CARDS: { key: string; filter: string; label: string }[] = [
-  ...COMMERCIAL_KPI_CARDS.map(({ key, filter, label }) => ({ key, filter, label })),
-  { key: "recusados", filter: "QUOTE_RECUSADO", label: "Recusados" },
-  { key: "contatos_sem_retorno", filter: "CONTACT_NOVO", label: "Contatos sem retorno" },
-];
+/** @deprecated Prefer COMMERCIAL_KPI_STRIP */
+export const COMMERCIAL_KPI_CARDS = COMMERCIAL_KPI_STRIP.map((c) => ({
+  ...c,
+  hint: c.label,
+}));
+
+/** @deprecated Prefer COMMERCIAL_KPI_STRIP */
+export const COMMERCIAL_STAT_CARDS = COMMERCIAL_KPI_STRIP.map(({ key, filter, label }) => ({
+  key,
+  filter,
+  label,
+}));
+
+export const COMMERCIAL_STAGE_LABELS: Record<CommercialStage, string> = {
+  NOVO_LEAD: "Novo lead",
+  CONTATO_REALIZADO: "Contato realizado",
+  QUALIFICACAO: "Qualificação",
+  PROPOSTA_ENVIADA: "Proposta enviada",
+  EM_NEGOCIACAO: "Em negociação",
+  AGUARDANDO_RETORNO: "Aguardando retorno",
+  GANHO: "Ganho",
+  PERDIDO: "Perdido",
+};
+
+export const COMMERCIAL_STAGES = Object.keys(COMMERCIAL_STAGE_LABELS) as CommercialStage[];
+
+export const LEAD_SOURCE_LABELS: Record<string, string> = {
+  site: "Site",
+  site_contato: "Formulário do site",
+  indicacao: "Indicação",
+  whatsapp: "WhatsApp",
+  manual: "Manual",
+  telefone: "Telefone",
+};
 
 export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
   NOVO: "Novo",
@@ -76,12 +112,12 @@ export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   RASCUNHO: "Rascunho",
   EM_ANALISE: "Em análise",
-  ENVIADO: "Enviado",
+  ENVIADO: "Enviada",
   AGUARDANDO_RESPOSTA: "Aguardando resposta",
-  APROVADO: "Aprovado",
-  RECUSADO: "Recusado",
-  EXPIRADO: "Expirado",
-  CANCELADO: "Cancelado",
+  APROVADO: "Aprovada",
+  RECUSADO: "Recusada",
+  EXPIRADO: "Vencida",
+  CANCELADO: "Cancelada",
 };
 
 export const QUOTE_REJECT_LABELS: Record<QuoteRejectReason, string> = {
@@ -94,34 +130,42 @@ export const QUOTE_REJECT_LABELS: Record<QuoteRejectReason, string> = {
 
 export const COMMERCIAL_HISTORY_LABELS: Record<CommercialHistoryAction, string> = {
   CREATED: "Registro criado",
-  STATUS_CHANGED: "Status alterado",
+  STATUS_CHANGED: "Etapa alterada",
   NOTE_ADDED: "Observação adicionada",
   WHATSAPP_OPENED: "WhatsApp aberto",
   EMAIL_SENT: "E-mail enviado",
-  QUOTE_CREATED: "Orçamento criado",
-  QUOTE_SENT: "Orçamento enviado",
-  QUOTE_APPROVED: "Orçamento aprovado",
-  QUOTE_REJECTED: "Orçamento recusado",
-  QUOTE_DUPLICATED: "Orçamento duplicado",
+  QUOTE_CREATED: "Proposta criada",
+  QUOTE_SENT: "Proposta enviada",
+  QUOTE_APPROVED: "Proposta aprovada",
+  QUOTE_REJECTED: "Proposta recusada",
+  QUOTE_DUPLICATED: "Proposta duplicada",
   COMPANY_LINKED: "Empresa vinculada",
   REFERRAL_CREATED: "Encaminhamento criado",
   PORTAL_ENABLED: "Portal ativado",
   ARCHIVED: "Arquivado",
 };
 
+export const FOLLOW_UP_STATUS_LABELS: Record<CommercialFollowUpStatus, string> = {
+  PENDENTE: "Pendente",
+  REALIZADO: "Realizado",
+  CANCELADO: "Cancelado",
+};
+
 export const SUGGESTED_QUOTE_SERVICES = [
+  "Exames ocupacionais",
+  "Contrato empresarial",
+  "PCMSO",
+  "PGR",
+  "Pacote de serviços",
   "ASO admissional",
   "ASO periódico",
   "ASO demissional",
-  "PCMSO",
-  "PGR",
   "LTCAT",
   "Laudo de insalubridade",
   "Laudo de periculosidade",
   "Exames complementares",
   "Treinamentos",
   "Portal empresarial",
-  "Pacote personalizado",
 ] as const;
 
 export const PENDING_QUOTE_STATUSES: QuoteStatus[] = ["ENVIADO", "AGUARDANDO_RESPOSTA"];
@@ -133,12 +177,69 @@ export const OPEN_LEAD_STATUSES: LeadStatus[] = [
   "AGUARDANDO_RETORNO",
 ];
 
+export const OPEN_COMMERCIAL_STAGES: CommercialStage[] = [
+  "NOVO_LEAD",
+  "CONTATO_REALIZADO",
+  "QUALIFICACAO",
+  "PROPOSTA_ENVIADA",
+  "EM_NEGOCIACAO",
+  "AGUARDANDO_RETORNO",
+];
+
 export const QUOTE_REQUEST_SUBJECT = "Solicitar orçamento";
+
+export function stageToLeadStatus(stage: CommercialStage): LeadStatus {
+  switch (stage) {
+    case "NOVO_LEAD":
+      return "NOVO";
+    case "CONTATO_REALIZADO":
+      return "EM_CONTATO";
+    case "QUALIFICACAO":
+      return "EM_ANALISE";
+    case "PROPOSTA_ENVIADA":
+      return "PROPOSTA_ENVIADA";
+    case "EM_NEGOCIACAO":
+      return "EM_ANALISE";
+    case "AGUARDANDO_RETORNO":
+      return "AGUARDANDO_RETORNO";
+    case "GANHO":
+      return "FECHADO";
+    case "PERDIDO":
+      return "PERDIDO";
+    default:
+      return "NOVO";
+  }
+}
+
+export function leadStatusToStage(status: LeadStatus): CommercialStage {
+  switch (status) {
+    case "NOVO":
+      return "NOVO_LEAD";
+    case "EM_CONTATO":
+      return "CONTATO_REALIZADO";
+    case "EM_ANALISE":
+      return "QUALIFICACAO";
+    case "CONVERTIDO_ORCAMENTO":
+    case "PROPOSTA_ENVIADA":
+      return "PROPOSTA_ENVIADA";
+    case "AGUARDANDO_RETORNO":
+      return "AGUARDANDO_RETORNO";
+    case "FECHADO":
+      return "GANHO";
+    case "PERDIDO":
+    case "EXPIRADO":
+    case "ARQUIVADO":
+      return "PERDIDO";
+    default:
+      return "NOVO_LEAD";
+  }
+}
 
 export type CommercialFilters = {
   q?: string;
   card?: string;
   status?: string;
+  stage?: string;
   tipo?: string;
   origem?: string;
   dateFrom?: string;
@@ -147,8 +248,10 @@ export type CommercialFilters = {
   service?: string;
   assignedTo?: string;
   retorno?: string;
-  tab?: CommercialTab;
+  followUpBucket?: "atrasados" | "hoje" | "proximos" | "all";
+  tab?: CommercialTab | string;
   page?: number;
+  pageSize?: number;
 };
 
 export type LeadListItem = {
@@ -161,9 +264,17 @@ export type LeadListItem = {
   serviceInterest: string | null;
   source: string;
   status: LeadStatus;
+  stage: CommercialStage;
+  city: string | null;
+  nextFollowUpAt: string | null;
+  followUpAction: string | null;
+  lastContactAt: string | null;
   createdAt: string;
   assignedToName: string | null;
+  assignedToUserId: string | null;
   contactMessageId: string | null;
+  companyId: string | null;
+  linkedQuoteId: string | null;
 };
 
 export type QuoteListItem = {
@@ -177,6 +288,8 @@ export type QuoteListItem = {
   sentAt: string | null;
   validUntil: string | null;
   status: QuoteStatus;
+  sourceLeadId: string | null;
+  createdByName: string | null;
 };
 
 export type ContactListItem = {
@@ -188,6 +301,21 @@ export type ContactListItem = {
   status: ContactMessageStatus;
   createdAt: string;
   updatedAt: string;
+};
+
+export type FollowUpListItem = {
+  id: string;
+  leadId: string;
+  dueAt: string;
+  action: string;
+  status: CommercialFollowUpStatus;
+  result: string | null;
+  notes: string | null;
+  companyName: string | null;
+  contactName: string;
+  contactPhone: string | null;
+  assignedToName: string | null;
+  overdue: boolean;
 };
 
 export type CommercialHistoryItem = {
@@ -216,8 +344,13 @@ export type LeadDetailSerialized = LeadListItem & {
   companyId: string | null;
   contactMessageId: string | null;
   convertedQuoteId: string | null;
+  cnpj: string | null;
+  estimatedEmployees: number | null;
+  lostReason: string | null;
   notes: CommercialNoteItem[];
   history: CommercialHistoryItem[];
+  quotes: QuoteListItem[];
+  followUps: FollowUpListItem[];
 };
 
 export type QuoteItemSerialized = {
@@ -255,9 +388,12 @@ export type ContactDetailSerialized = ContactListItem & {
   history: CommercialHistoryItem[];
 };
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 25;
+export const COMMERCIAL_PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
 
-export function getCommercialPageSize() {
+export function getCommercialPageSize(value?: number | string) {
+  const n = typeof value === "string" ? parseInt(value, 10) : value;
+  if (n && (COMMERCIAL_PAGE_SIZE_OPTIONS as readonly number[]).includes(n)) return n;
   return PAGE_SIZE;
 }
 
@@ -284,10 +420,14 @@ export function buildLeadWhere(filters: CommercialFilters): Prisma.LeadWhereInpu
       { phone: { contains: q, mode: "insensitive" } },
       { email: { contains: q, mode: "insensitive" } },
       { serviceInterest: { contains: q, mode: "insensitive" } },
+      { serviceTitle: { contains: q, mode: "insensitive" } },
       { message: { contains: q, mode: "insensitive" } },
+      { city: { contains: q, mode: "insensitive" } },
     ];
   }
-  if (filters.status && filters.status !== "ALL") {
+  if (filters.stage && filters.stage !== "ALL") {
+    where.stage = filters.stage as CommercialStage;
+  } else if (filters.status && filters.status !== "ALL") {
     where.status = filters.status as LeadStatus;
   }
   if (filters.service) {
@@ -302,12 +442,19 @@ export function buildLeadWhere(filters: CommercialFilters): Prisma.LeadWhereInpu
   if (createdAt) where.createdAt = createdAt;
 
   const card = filters.card;
-  if (card === "LEAD_NOVO") where.status = "NOVO";
+  if (card === "LEAD_NOVO" || card === "NOVOS_LEADS") where.stage = "NOVO_LEAD";
+  if (card === "FECHADOS_MES") {
+    const now = new Date();
+    where.stage = "GANHO";
+    where.updatedAt = { gte: startOfMonth(now), lte: endOfMonth(now) };
+  }
   if (card === "EM_ANALISE" || card === "EM_NEGOCIACAO") {
-    where.status = { in: ["EM_ANALISE", "EM_CONTATO", "AGUARDANDO_RETORNO", "PROPOSTA_ENVIADA"] };
+    where.stage = {
+      in: ["QUALIFICACAO", "CONTATO_REALIZADO", "AGUARDANDO_RETORNO", "PROPOSTA_ENVIADA", "EM_NEGOCIACAO"],
+    };
   }
   if (filters.retorno === "aguardando") {
-    where.status = "AGUARDANDO_RETORNO";
+    where.stage = "AGUARDANDO_RETORNO";
   }
 
   return where;
@@ -330,14 +477,52 @@ export function buildQuoteWhere(filters: CommercialFilters): Prisma.QuoteWhereIn
     where.status = filters.status as QuoteStatus;
   }
   if (filters.companyId) where.companyId = filters.companyId;
+  if (filters.assignedTo) where.createdByUserId = filters.assignedTo;
   const createdAt = parseDateRange(filters.dateFrom, filters.dateTo);
   if (createdAt) where.createdAt = createdAt;
 
   const card = filters.card;
   if (card === "QUOTE_ENVIADO") where.status = "ENVIADO";
-  if (card === "QUOTE_AGUARDANDO") where.status = "AGUARDANDO_RESPOSTA";
+  if (card === "QUOTE_AGUARDANDO" || card === "PROPOSTAS_AGUARDANDO") {
+    where.status = { in: ["ENVIADO", "AGUARDANDO_RESPOSTA"] };
+  }
   if (card === "QUOTE_APROVADO") where.status = "APROVADO";
   if (card === "QUOTE_RECUSADO") where.status = "RECUSADO";
+
+  return where;
+}
+
+export function buildFollowUpWhere(filters: CommercialFilters): Prisma.CommercialFollowUpWhereInput {
+  const where: Prisma.CommercialFollowUpWhereInput = {};
+  const q = filters.q?.trim();
+  if (q) {
+    where.OR = [
+      { action: { contains: q, mode: "insensitive" } },
+      { lead: { name: { contains: q, mode: "insensitive" } } },
+      { lead: { companyName: { contains: q, mode: "insensitive" } } },
+      { lead: { phone: { contains: q, mode: "insensitive" } } },
+    ];
+  }
+  if (filters.assignedTo) where.assignedToUserId = filters.assignedTo;
+  if (filters.status === "REALIZADO") where.status = "REALIZADO";
+  else if (filters.status === "CANCELADO") where.status = "CANCELADO";
+  else if (filters.status !== "ALL") where.status = "PENDENTE";
+
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  const todayEnd = endOfDay(now);
+  const bucket = filters.followUpBucket ?? (filters.card === "FOLLOWUPS_ATRASADOS" ? "atrasados" : undefined);
+
+  if (bucket === "atrasados" || filters.card === "FOLLOWUPS_ATRASADOS") {
+    where.status = "PENDENTE";
+    where.dueAt = { lt: todayStart };
+  } else if (bucket === "hoje") {
+    where.status = "PENDENTE";
+    where.dueAt = { gte: todayStart, lte: todayEnd };
+  } else if (bucket === "proximos") {
+    where.status = "PENDENTE";
+    where.dueAt = { gt: todayEnd };
+  }
 
   return where;
 }
@@ -366,8 +551,14 @@ export function buildContactWhere(filters: CommercialFilters): Prisma.ContactMes
 }
 
 export function serializeLeadListItem(
-  lead: Lead & { assignedTo?: { name: string } | null }
+  lead: Lead & {
+    assignedTo?: { name: string } | null;
+    convertedQuoteId?: string | null;
+    sourcedQuotes?: { id: string }[];
+  }
 ): LeadListItem {
+  const linkedQuoteId =
+    lead.convertedQuoteId ?? lead.sourcedQuotes?.[0]?.id ?? null;
   return {
     id: lead.id,
     name: lead.name,
@@ -378,14 +569,25 @@ export function serializeLeadListItem(
     serviceInterest: lead.serviceInterest ?? lead.serviceTitle,
     source: lead.source,
     status: lead.status,
+    stage: lead.stage ?? leadStatusToStage(lead.status),
+    city: lead.city ?? null,
+    nextFollowUpAt: lead.nextFollowUpAt?.toISOString() ?? null,
+    followUpAction: lead.followUpAction ?? null,
+    lastContactAt: lead.lastContactAt?.toISOString() ?? null,
     createdAt: lead.createdAt.toISOString(),
     assignedToName: lead.assignedTo?.name ?? null,
+    assignedToUserId: lead.assignedToUserId ?? null,
     contactMessageId: lead.contactMessageId ?? null,
+    companyId: lead.companyId ?? null,
+    linkedQuoteId,
   };
 }
 
 export function serializeQuoteListItem(
-  quote: Quote & { items: Pick<QuoteItem, "serviceName">[] }
+  quote: Quote & {
+    items: Pick<QuoteItem, "serviceName">[];
+    createdBy?: { name: string } | null;
+  }
 ): QuoteListItem {
   const draftLike = quote.status === "RASCUNHO" || quote.status === "EM_ANALISE";
   return {
@@ -399,6 +601,32 @@ export function serializeQuoteListItem(
     sentAt: draftLike ? null : quote.updatedAt.toISOString(),
     validUntil: quote.validUntil?.toISOString() ?? null,
     status: quote.status,
+    sourceLeadId: quote.sourceLeadId ?? null,
+    createdByName: quote.createdBy?.name ?? null,
+  };
+}
+
+export function serializeFollowUpListItem(
+  row: CommercialFollowUp & {
+    lead: Pick<Lead, "id" | "name" | "companyName" | "phone">;
+    assignedTo?: { name: string } | null;
+  }
+): FollowUpListItem {
+  const due = row.dueAt;
+  const overdue = row.status === "PENDENTE" && due < startOfDay(new Date());
+  return {
+    id: row.id,
+    leadId: row.leadId,
+    dueAt: due.toISOString(),
+    action: row.action,
+    status: row.status,
+    result: row.result,
+    notes: row.notes,
+    companyName: row.lead.companyName,
+    contactName: row.lead.name,
+    contactPhone: row.lead.phone,
+    assignedToName: row.assignedTo?.name ?? null,
+    overdue,
   };
 }
 
@@ -440,12 +668,11 @@ export const CONTACT_STATUS_LABELS: Record<ContactMessageStatus, string> = {
 
 export const QUOTE_STATUS_FILTER_OPTIONS = [
   { value: "RASCUNHO", label: "Rascunho" },
-  { value: "EM_ANALISE", label: "Em análise" },
-  { value: "ENVIADO", label: "Enviado" },
+  { value: "ENVIADO", label: "Enviada" },
   { value: "AGUARDANDO_RESPOSTA", label: "Aguardando resposta" },
-  { value: "APROVADO", label: "Aprovado" },
-  { value: "RECUSADO", label: "Recusado" },
-  { value: "EXPIRADO", label: "Expirado" },
+  { value: "APROVADO", label: "Aprovada" },
+  { value: "RECUSADO", label: "Recusada" },
+  { value: "EXPIRADO", label: "Vencida" },
 ] as const;
 
 export async function generateQuoteNumber(): Promise<string> {
@@ -465,13 +692,17 @@ export function calcQuoteTotal(items: { quantity: number; totalPrice?: number | 
   return items.reduce((sum, item) => {
     if (item.totalPrice != null) return sum + item.totalPrice;
     if (item.unitPrice != null) return sum + item.unitPrice * item.quantity;
-    return sum;
+    return sum + 0;
   }, 0);
 }
 
 export function formatCurrency(value: number | null | undefined) {
   if (value == null) return "—";
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+export function sourceLabel(source: string) {
+  return LEAD_SOURCE_LABELS[source] ?? source;
 }
 
 export function buildQuoteWhatsAppMessage(quote: {
@@ -485,10 +716,10 @@ export function buildQuoteWhatsAppMessage(quote: {
   const validity = quote.validUntil
     ? new Date(quote.validUntil).toLocaleDateString("pt-BR")
     : "a combinar";
-  let msg = `Olá! Segue orçamento da Unimetra para sua empresa.
+  let msg = `Olá! Segue proposta da Unimetra para sua empresa.
 
 Empresa: ${quote.companyName}
-Orçamento: ${quote.quoteNumber}
+Proposta: ${quote.quoteNumber}
 Serviços: ${services}
 Validade: ${validity}
 
@@ -506,10 +737,10 @@ export function buildQuoteEmail(quote: {
   const clinic = getClinicInfo();
   const name = quote.responsibleName ?? "responsável";
   return {
-    subject: `Orçamento Unimetra — ${quote.companyName}`,
+    subject: `Proposta Unimetra — ${quote.companyName}`,
     body: `Olá, ${name}.
 
-Segue orçamento solicitado para os serviços de Medicina e Segurança do Trabalho.
+Segue proposta comercial para os serviços de Medicina e Segurança do Trabalho.
 
 Ficamos à disposição para dúvidas e ajustes.
 

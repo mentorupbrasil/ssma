@@ -266,6 +266,23 @@ enum LeadStatus {
   ARQUIVADO
 }
 
+enum CommercialStage {
+  NOVO_LEAD
+  CONTATO_REALIZADO
+  QUALIFICACAO
+  PROPOSTA_ENVIADA
+  EM_NEGOCIACAO
+  AGUARDANDO_RETORNO
+  GANHO
+  PERDIDO
+}
+
+enum CommercialFollowUpStatus {
+  PENDENTE
+  REALIZADO
+  CANCELADO
+}
+
 enum QuoteStatus {
   RASCUNHO
   EM_ANALISE
@@ -423,6 +440,8 @@ model User {
   patientHistory PatientHistory[]
   examHistory    ExamHistory[]
   assignedLeads  Lead[]              @relation("AssignedLeads")
+  assignedFollowUps CommercialFollowUp[] @relation("FollowUpAssignee")
+  createdFollowUps  CommercialFollowUp[] @relation("FollowUpCreatedBy")
   createdQuotes  Quote[]             @relation("QuoteCreatedBy")
   commercialHistory CommercialHistory[]
   commercialNotes   CommercialNote[]
@@ -724,6 +743,7 @@ model Lead {
   clinic            Clinic?    @relation(fields: [clinicId], references: [id])
   type              LeadType   @default(ORCAMENTO)
   status            LeadStatus @default(NOVO)
+  stage             CommercialStage @default(NOVO_LEAD)
   quoteNumber       String?
   name              String
   email             String?
@@ -738,6 +758,13 @@ model Lead {
   source            String     @default("site")
   sourcePage        String?
   interestType      String?
+  city              String?
+  cnpj              String?
+  estimatedEmployees Int?
+  nextFollowUpAt    DateTime?
+  followUpAction    String?
+  lastContactAt     DateTime?
+  lostReason        String?
   companyId         String?
   company           Company?   @relation(fields: [companyId], references: [id])
   contactMessageId  String?
@@ -746,8 +773,30 @@ model Lead {
   convertedQuoteId  String?    @unique
   convertedQuote    Quote?     @relation("LeadConvertedQuote", fields: [convertedQuoteId], references: [id])
   sourcedQuotes     Quote[]    @relation("QuoteSourceLead")
+  followUps         CommercialFollowUp[]
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
+}
+
+model CommercialFollowUp {
+  id                String                    @id @default(cuid())
+  leadId            String
+  lead              Lead                      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  dueAt             DateTime
+  action            String
+  status            CommercialFollowUpStatus  @default(PENDENTE)
+  result            String?
+  notes             String?
+  assignedToUserId  String?
+  assignedTo        User?                     @relation("FollowUpAssignee", fields: [assignedToUserId], references: [id])
+  createdByUserId   String?
+  createdBy         User?                     @relation("FollowUpCreatedBy", fields: [createdByUserId], references: [id])
+  completedAt       DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@index([dueAt, status])
+  @@index([leadId])
 }
 
 model Quote {

@@ -39,6 +39,17 @@ type QuoteFormDialogProps = {
   onOpenChange: (open: boolean) => void;
   quote?: QuoteDetailSerialized | null;
   companies: CompanyOption[];
+  opportunities?: {
+    id: string;
+    name: string;
+    companyName: string | null;
+    phone: string | null;
+    email: string | null;
+    city: string | null;
+    cnpj: string | null;
+    companyId: string | null;
+    serviceInterest: string | null;
+  }[];
   sourceLeadId?: string;
   prefill?: Partial<{
     companyName: string;
@@ -63,12 +74,14 @@ export function QuoteFormDialog({
   onOpenChange,
   quote,
   companies,
-  sourceLeadId,
+  opportunities = [],
+  sourceLeadId: initialSourceLeadId,
   prefill,
   onSuccess,
 }: QuoteFormDialogProps) {
   const isEdit = !!quote;
   const [loading, setLoading] = useState(false);
+  const [sourceLeadId, setSourceLeadId] = useState(initialSourceLeadId ?? "");
   const [companyId, setCompanyId] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [responsibleName, setResponsibleName] = useState("");
@@ -92,6 +105,7 @@ export function QuoteFormDialog({
   useEffect(() => {
     if (!open) return;
     if (quote) {
+      setSourceLeadId(quote.sourceLeadId ?? "");
       setCompanyId(quote.companyId ?? "");
       setCompanyName(quote.companyName);
       setResponsibleName(quote.responsibleName ?? "");
@@ -116,6 +130,7 @@ export function QuoteFormDialog({
           : [emptyItem()]
       );
     } else {
+      setSourceLeadId(initialSourceLeadId ?? "");
       setCompanyId(prefill?.companyId ?? "");
       setCompanyName(prefill?.companyName ?? "");
       setResponsibleName(prefill?.responsibleName ?? "");
@@ -130,7 +145,31 @@ export function QuoteFormDialog({
       setClientNotes("");
       setItems([emptyItem()]);
     }
-  }, [open, quote, prefill]);
+  }, [open, quote, prefill, initialSourceLeadId]);
+
+  const onOpportunitySelect = (id: string) => {
+    setSourceLeadId(id);
+    const opp = opportunities.find((o) => o.id === id);
+    if (!opp) return;
+    setCompanyName(opp.companyName ?? "");
+    setResponsibleName(opp.name);
+    setPhone(opp.phone ?? "");
+    setEmail(opp.email ?? "");
+    setCity(opp.city ?? "");
+    setCnpj(opp.cnpj ?? "");
+    setCompanyId(opp.companyId ?? "");
+    if (opp.serviceInterest) {
+      setItems([
+        {
+          serviceName: opp.serviceInterest,
+          category: "",
+          quantity: "1",
+          unitPrice: "",
+          notes: "",
+        },
+      ]);
+    }
+  };
 
   const onCompanySelect = (id: string) => {
     setCompanyId(id);
@@ -177,19 +216,19 @@ export function QuoteFormDialog({
   };
 
   const buildPayload = (sendOnSave: boolean) => ({
-    companyId: companyId || null,
+    companyId: companyId || undefined,
     companyName,
-    responsibleName,
-    phone,
-    email,
-    cnpj,
-    city,
-    state,
-    validUntil: validUntil || null,
-    paymentTerms,
-    internalNotes,
-    clientNotes,
-    sourceLeadId,
+    responsibleName: responsibleName || undefined,
+    phone: phone || undefined,
+    email: email || undefined,
+    cnpj: cnpj || undefined,
+    city: city || undefined,
+    state: state || undefined,
+    validUntil: validUntil || undefined,
+    paymentTerms: paymentTerms || undefined,
+    internalNotes: internalNotes || undefined,
+    clientNotes: clientNotes || undefined,
+    sourceLeadId: sourceLeadId || undefined,
     sendOnSave,
     items: items
       .filter((i) => i.serviceName.trim())
@@ -197,12 +236,16 @@ export function QuoteFormDialog({
         serviceName: i.serviceName,
         category: i.category || undefined,
         quantity: parseInt(i.quantity, 10) || 1,
-        unitPrice: i.unitPrice ? parseFloat(i.unitPrice) : null,
+        unitPrice: i.unitPrice ? parseFloat(i.unitPrice) : undefined,
         notes: i.notes || undefined,
       })),
   });
 
   const handleSave = async (sendOnSave = false) => {
+    if (!isEdit && !sourceLeadId) {
+      toast.error("Selecione a oportunidade vinculada à proposta.");
+      return;
+    }
     setLoading(true);
     const payload = buildPayload(sendOnSave);
     const result = isEdit
@@ -213,7 +256,7 @@ export function QuoteFormDialog({
       toast.error(result.error);
       return;
     }
-    toast.success(isEdit ? "Orçamento atualizado." : "Orçamento criado.");
+    toast.success(isEdit ? "Proposta atualizada." : "Proposta criada.");
     onOpenChange(false);
     const savedQuoteId = isEdit
       ? quote?.id
@@ -227,8 +270,8 @@ export function QuoteFormDialog({
     <SystemModalShell
       open={open}
       onOpenChange={onOpenChange}
-      title={isEdit ? "Editar orçamento" : "Novo orçamento"}
-      description="Preencha os dados da proposta comercial para a empresa."
+      title={isEdit ? "Editar proposta" : "Nova proposta"}
+      description="Toda proposta deve estar vinculada a uma oportunidade."
       badges={[
         { label: "Comercial", variant: "category" },
         { label: isEdit ? "Edição" : "Nova proposta", variant: "status" },
@@ -263,6 +306,21 @@ export function QuoteFormDialog({
         </div>
       }
     >
+      <SystemModalField label="Oportunidade vinculada" required wide>
+        <select
+          value={sourceLeadId}
+          onChange={(e) => onOpportunitySelect(e.target.value)}
+          disabled={isEdit && !!quote?.sourceLeadId}
+        >
+          <option value="">Selecione a oportunidade</option>
+          {opportunities.map((o) => (
+            <option key={o.id} value={o.id}>
+              {(o.companyName || "Sem empresa") + " — " + o.name}
+            </option>
+          ))}
+        </select>
+      </SystemModalField>
+
       <SystemModalField label="Empresa existente" wide>
         <select value={companyId} onChange={(e) => onCompanySelect(e.target.value)}>
           <option value="">Nova empresa / digitar manualmente</option>

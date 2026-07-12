@@ -4932,6 +4932,167 @@
   gap: 1rem;
 }
 
+.comercial-kpi-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.comercial-kpi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 999px;
+  background: white;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.comercial-kpi-chip:hover {
+  border-color: rgb(191 219 254);
+  background: rgb(248 250 252);
+}
+
+.comercial-kpi-chip--active {
+  border-color: rgb(147 197 253);
+  background: rgb(239 246 255);
+}
+
+.comercial-kpi-chip-count {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: rgb(15 23 42);
+}
+
+.comercial-kpi-chip-label {
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.comercial-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comercial-search {
+  position: relative;
+  min-width: min(100%, 14rem);
+  flex: 1 1 14rem;
+}
+
+.comercial-search-icon {
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 0.7rem;
+  z-index: 1;
+  height: 0.95rem;
+  width: 0.95rem;
+  transform: translateY(-50%);
+  color: rgb(148 163 184);
+}
+
+.comercial-search-input {
+  height: 2.25rem !important;
+  width: 100%;
+  border-radius: 0.5rem !important;
+  padding-left: 2.1rem !important;
+  font-size: 0.8125rem !important;
+}
+
+.comercial-select {
+  height: 2.25rem;
+  min-width: 8.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0 0.65rem;
+  font-size: 0.8125rem;
+  color: rgb(51 65 85);
+}
+
+.comercial-followup-buckets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.comercial-bucket-chip {
+  height: 2.25rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  background: white;
+  padding: 0 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(71 85 105);
+  cursor: pointer;
+}
+
+.comercial-bucket-chip--active {
+  border-color: rgb(147 197 253);
+  background: rgb(239 246 255);
+  color: rgb(29 78 216);
+}
+
+.comercial-secondary {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.6875rem;
+  color: rgb(148 163 184);
+}
+
+.comercial-stage-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 1.45rem;
+  border-radius: 999px;
+  background: rgb(241 245 249);
+  padding: 0 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgb(51 65 85);
+  white-space: nowrap;
+}
+
+.comercial-td-actions {
+  width: 3rem;
+  text-align: right;
+}
+
+.comercial-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-top: 1px solid rgb(241 245 249);
+}
+
+.comercial-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.comercial-page-size select {
+  height: 2rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  padding: 0 0.45rem;
+  font-size: 0.75rem;
+}
+
 .comercial-clinica-stats {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }

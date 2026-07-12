@@ -353,6 +353,7 @@ export async function submitContactMessage(data: unknown): Promise<ActionResult>
           clinicId,
           type: "ORCAMENTO",
           status: "NOVO",
+          stage: "NOVO_LEAD",
           name: d.name,
           email: email ?? undefined,
           phone: d.phone,
@@ -369,7 +370,8 @@ export async function submitContactMessage(data: unknown): Promise<ActionResult>
           entityType: "LEAD",
           entityId: lead.id,
           action: "CREATED",
-          notes: "Solicitação recebida pelo site",
+          notes: "Solicitação recebida pelo site — Novo lead",
+          toStatus: "NOVO_LEAD",
         },
       });
     }
