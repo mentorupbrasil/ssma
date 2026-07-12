@@ -8090,24 +8090,162 @@
   gap: 1rem;
 }
 
-.visao-geral-clinica-stats {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.visao-geral-clinica .empresa-overview-ok {
+  margin: 0;
 }
 
-@media (min-width: 640px) {
-  .visao-geral-clinica-stats {
+.vg-shortcuts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.vg-shortcuts-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  border-radius: 0.625rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+}
+
+.vg-shortcut-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.25rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(51 65 85);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.vg-shortcut-link:hover {
+  background: white;
+  color: var(--brand-navy);
+}
+
+.vg-shortcut-link-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+  color: var(--brand-green);
+}
+
+.vg-shortcut-link-arrow {
+  width: 0.8rem;
+  height: 0.8rem;
+  flex-shrink: 0;
+  color: rgb(148 163 184);
+  opacity: 0;
+  transform: translateX(-2px);
+  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+.vg-shortcut-link:hover .vg-shortcut-link-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--brand-green);
+}
+
+.vg-kpi-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .vg-kpi-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1280px) {
-  .visao-geral-clinica-stats {
+  .vg-kpi-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 
-.visao-geral-clinica .empresa-overview-ok {
-  margin: 0;
+.vg-kpi-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  min-height: 8.25rem;
+  height: 100%;
+  padding: 1rem 1.05rem;
+  border-radius: 0.8125rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  text-decoration: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.vg-kpi-card:hover {
+  border-color: rgb(46 103 255 / 0.28);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
+}
+
+.vg-kpi-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.vg-kpi-card--primary .vg-kpi-card-icon {
+  background: rgb(230 237 255);
+  color: rgb(46 103 255);
+}
+
+.vg-kpi-card--warning .vg-kpi-card-icon {
+  background: rgb(255 247 237);
+  color: rgb(217 119 6);
+}
+
+.vg-kpi-value {
+  margin-top: 0.65rem;
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--brand-navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.vg-kpi-title {
+  margin-top: 0.35rem;
+  min-height: 2.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: rgb(51 65 85);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.vg-kpi-hint {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: rgb(100 116 139);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 /* —— Assinatura SaaS (SyncPay) —— */

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { format, isToday, isYesterday } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Building2,
@@ -11,7 +11,6 @@ import {
   LifeBuoy,
   Clock,
   CheckCircle2,
-  Activity,
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
@@ -64,40 +63,39 @@ const EMPRESA_STAT_META: Record<
 
 const CLINIC_STAT_META: Record<
   string,
-  { icon: LucideIcon; tone: "primary" | "warning"; hint: string }
+  { icon: LucideIcon; tone: "primary" | "warning"; label: string; hint: string }
 > = {
   referrals_open: {
     icon: ClipboardList,
     tone: "primary",
+    label: "Atendimentos em aberto",
     hint: "Aguardando confirmação ou atendimento",
   },
   pending_docs: {
     icon: FolderOpen,
     tone: "warning",
+    label: "Documentos pendentes",
     hint: "Emissão ou elaboração pendente",
   },
   docs_expiring: {
     icon: Clock,
     tone: "warning",
+    label: "Documentos a vencer",
     hint: "Vencem nos próximos 30 dias",
   },
   tickets_open: {
     icon: LifeBuoy,
     tone: "primary",
+    label: "Chamados abertos",
     hint: "Suporte em andamento",
   },
   companies_pending: {
     icon: Building2,
     tone: "warning",
+    label: "Empresas pendentes",
     hint: "Documentação incompleta",
   },
 };
-
-function formatCompactActivityAt(at: Date) {
-  if (isToday(at)) return format(at, "HH:mm");
-  if (isYesterday(at)) return `ontem ${format(at, "HH:mm")}`;
-  return format(at, "dd/MM HH:mm", { locale: ptBR });
-}
 
 export default async function DashboardPage() {
   const session = await requireAuthSession();
@@ -279,26 +277,21 @@ export default async function DashboardPage() {
     {
       href: "/dashboard/encaminhamentos",
       label: "Fila de atendimentos",
-      description: "Pedidos do portal RH e do site",
       icon: ClipboardList,
     },
     {
       href: "/dashboard/documentos",
       label: "Documentos",
-      description: "ASOs, laudos e liberações",
       icon: FolderOpen,
     },
     {
       href: "/dashboard/empresas",
       label: "Empresas",
-      description: "Contratos e pendências documentais",
       icon: Building2,
     },
   ];
 
   const priorityItems = overview.priorityItems;
-  const activities = overview.recentActivities;
-
   const hasPriority = priorityItems.length > 0;
 
   return (
@@ -328,18 +321,27 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      <section className="empresa-quick-actions">
+      <section className="vg-shortcuts-section">
         <h2 className="empresa-quick-actions-label">Atalhos rápidos</h2>
-        <QuickActionGrid actions={clinicShortcuts} />
+        <nav className="vg-shortcuts-bar" aria-label="Atalhos rápidos">
+          {clinicShortcuts.map(({ href, label, icon: Icon }) => (
+            <Link key={href} href={href} className="vg-shortcut-link">
+              <Icon className="vg-shortcut-link-icon" aria-hidden />
+              <span>{label}</span>
+              <ArrowRight className="vg-shortcut-link-arrow" aria-hidden />
+            </Link>
+          ))}
+        </nav>
       </section>
 
       <section>
         <h2 className="empresa-quick-actions-label">Indicadores</h2>
-        <div className="colaboradores-empresa-stats visao-geral-clinica-stats">
+        <div className="vg-kpi-grid">
           {overview.stats.map((stat) => {
             const meta = CLINIC_STAT_META[stat.key] ?? {
               icon: ClipboardList,
               tone: "primary" as const,
+              label: stat.title,
               hint: "",
             };
             const Icon = meta.icon;
@@ -347,23 +349,14 @@ export default async function DashboardPage() {
               <Link
                 key={stat.key}
                 href={stat.href}
-                className="colaboradores-empresa-stat colaboradores-empresa-stat--clickable"
+                className={cn("vg-kpi-card", `vg-kpi-card--${meta.tone}`)}
               >
-                <span
-                  className={cn(
-                    "colaboradores-empresa-stat-icon",
-                    `colaboradores-empresa-stat-icon--${meta.tone}`
-                  )}
-                >
-                  <Icon className="h-4 w-4" aria-hidden />
+                <span className="vg-kpi-card-icon" aria-hidden>
+                  <Icon className="h-4 w-4" />
                 </span>
-                <span className="colaboradores-empresa-stat-body">
-                  <span className="colaboradores-empresa-stat-value">{stat.value}</span>
-                  <span className="colaboradores-empresa-stat-title">{stat.title}</span>
-                  {meta.hint ? (
-                    <span className="colaboradores-empresa-stat-hint">{meta.hint}</span>
-                  ) : null}
-                </span>
+                <span className="vg-kpi-value">{stat.value}</span>
+                <span className="vg-kpi-title">{meta.label}</span>
+                {meta.hint ? <span className="vg-kpi-hint">{meta.hint}</span> : null}
               </Link>
             );
           })}
@@ -412,63 +405,6 @@ export default async function DashboardPage() {
           <p>Tudo em dia — nenhuma pendência crítica.</p>
         </div>
       )}
-
-      <DashboardPanel
-        title="Atividades recentes"
-        icon={Activity}
-        action={
-          <Link
-            href="/dashboard/auditoria"
-            className="text-xs font-semibold text-[var(--brand-green)] hover:underline"
-          >
-            Ver todas
-          </Link>
-        }
-      >
-        {activities.length === 0 ? (
-          <InlineEmptyNote>Nenhuma atividade recente.</InlineEmptyNote>
-        ) : (
-          <div className="dashboard-list visao-geral-activity-list">
-            {activities.map((item) => {
-              const content = (
-                <>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--brand-navy)]">
-                      {item.description}
-                    </p>
-                    <p className="text-xs text-[var(--dash-text-muted)]">
-                      {item.actor} ·{" "}
-                      <time dateTime={item.at.toISOString()}>
-                        {formatCompactActivityAt(item.at)}
-                      </time>
-                    </p>
-                  </div>
-                  {item.href ? (
-                    <ArrowRight
-                      className="h-4 w-4 shrink-0 text-[var(--dash-text-subtle)]"
-                      aria-hidden
-                    />
-                  ) : null}
-                </>
-              );
-
-              return item.href ? (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className="dashboard-list-item dashboard-list-item-row"
-                >
-                  {content}
-                </Link>
-              ) : (
-                <div key={item.id} className="dashboard-list-item dashboard-list-item-row">
-                  {content}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </DashboardPanel>
     </PageShell>
   );
 }
