@@ -26,7 +26,6 @@ import {
   type PriceCatalogRow,
 } from "@/actions/pricing";
 import {
-  PRICE_CATEGORY_LABELS,
   PRICE_STATUS_LABELS,
   formatCurrency,
 } from "@/lib/pricing";
@@ -63,7 +62,7 @@ export function TabelaPrecosClient({ defaults }: { defaults: PriceCatalogRow[] }
 
   const filteredDefaults = useMemo(() => {
     return defaults.filter((item) => {
-      if (category && item.category !== category) return false;
+      if (category && item.categoryLabel !== category) return false;
       if (status && item.status !== status) return false;
       if (!q.trim()) return true;
       const term = q.toLowerCase();
@@ -74,6 +73,11 @@ export function TabelaPrecosClient({ defaults }: { defaults: PriceCatalogRow[] }
       );
     });
   }, [defaults, category, status, q]);
+
+  const categoryOptions = useMemo(() => {
+    const set = new Set(defaults.map((item) => item.categoryLabel).filter(Boolean));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [defaults]);
 
   const total = filteredDefaults.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -311,8 +315,8 @@ export function TabelaPrecosClient({ defaults }: { defaults: PriceCatalogRow[] }
           aria-label="Categoria"
         >
           <option value="">Categoria</option>
-          {Object.entries(PRICE_CATEGORY_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
+          {categoryOptions.map((label) => (
+            <option key={label} value={label}>
               {label}
             </option>
           ))}
@@ -383,7 +387,6 @@ export function TabelaPrecosClient({ defaults }: { defaults: PriceCatalogRow[] }
                       />
                     </th>
                     <th>Item</th>
-                    <th>Tipo</th>
                     <th>Categoria</th>
                     <th>Preço padrão</th>
                     <th>Status</th>
@@ -405,7 +408,6 @@ export function TabelaPrecosClient({ defaults }: { defaults: PriceCatalogRow[] }
                       <td>
                         <span className="tabela-precos-clinica-primary">{item.name}</span>
                       </td>
-                      <td>{item.itemType === "EXAME" ? "Exame" : "Serviço"}</td>
                       <td>{item.categoryLabel}</td>
                       <td
                         className={cn(
@@ -445,10 +447,7 @@ export function TabelaPrecosClient({ defaults }: { defaults: PriceCatalogRow[] }
                     />
                     <div className="min-w-0 flex-1">
                       <span className="tabela-precos-clinica-primary">{item.name}</span>
-                      <p className="text-xs text-slate-500">
-                        {item.itemType === "EXAME" ? "Exame" : "Serviço"} ·{" "}
-                        {item.categoryLabel}
-                      </p>
+                      <p className="text-xs text-slate-500">{item.categoryLabel}</p>
                       <p
                         className={cn(
                           "mt-1 text-sm font-semibold",

@@ -235,6 +235,7 @@ export type PriceCatalogRow = {
   name: string;
   itemType: "EXAME" | "SERVICO";
   category: PriceItemCategory;
+  /** Categoria de exibição (grupo do exame ou rótulo do exame cadastrado). */
   categoryLabel: string;
   defaultPrice: number | null;
   status: PriceListStatus;
@@ -261,6 +262,7 @@ export async function listPriceCatalog(): Promise<{
 }> {
   const session = await requirePermission("pricing.manage");
   const scope = scopedWhere(session, {});
+  const { EXAM_CATEGORY_LABELS } = await import("@/lib/exams");
 
   const [exams, priceItems] = await Promise.all([
     prisma.exam.findMany({
@@ -269,6 +271,7 @@ export async function listPriceCatalog(): Promise<{
         id: true,
         name: true,
         category: true,
+        internalTags: true,
         status: true,
         updatedAt: true,
       },
@@ -303,6 +306,14 @@ export async function listPriceCatalog(): Promise<{
       null;
     if (linked) linkedPriceIds.add(linked.id);
 
+    const grupo = exam.internalTags
+      ?.split("|")
+      .find((part) => part.startsWith("grupo:"))
+      ?.slice(6)
+      .trim();
+    const categoryLabel =
+      grupo || EXAM_CATEGORY_LABELS[exam.category] || exam.category;
+
     defaults.push({
       key: linked ? `price:${linked.id}` : `exam:${exam.id}`,
       priceId: linked?.id ?? null,
@@ -310,7 +321,7 @@ export async function listPriceCatalog(): Promise<{
       name: exam.name,
       itemType: "EXAME",
       category: linked?.category ?? mapExamCategoryToPrice(exam.category),
-      categoryLabel: PRICE_CATEGORY_LABELS[linked?.category ?? mapExamCategoryToPrice(exam.category)],
+      categoryLabel,
       defaultPrice: linked ? (linked.defaultPrice > 0 ? linked.defaultPrice : null) : null,
       status: linked?.status ?? mapExamStatusToPrice(exam.status),
       updatedAt: (linked?.updatedAt ?? exam.updatedAt).toISOString(),
@@ -329,6 +340,7 @@ export async function listPriceCatalog(): Promise<{
     );
     if (matchedExam) continue;
 
+    const priceLabel = PRICE_CATEGORY_LABELS[item.category];
     defaults.push({
       key: `price:${item.id}`,
       priceId: item.id,
@@ -336,7 +348,8 @@ export async function listPriceCatalog(): Promise<{
       name: item.name,
       itemType: item.category === "EXAME" || item.category === "ASO" ? "EXAME" : "SERVICO",
       category: item.category,
-      categoryLabel: PRICE_CATEGORY_LABELS[item.category],
+      // Evita exibir o genérico "Exame" em itens avulsos sem vínculo
+      categoryLabel: priceLabel === "Exame" ? "Serviço" : priceLabel,
       defaultPrice: item.defaultPrice > 0 ? item.defaultPrice : null,
       status: item.status,
       updatedAt: item.updatedAt.toISOString(),
