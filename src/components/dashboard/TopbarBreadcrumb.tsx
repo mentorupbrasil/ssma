@@ -24,6 +24,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   exames: "Exames",
   usuarios: "Usuários",
   configuracoes: "Configurações",
+  assinatura: "Assinatura",
   auditoria: "Auditoria",
   novo: "Novo",
   editar: "Editar",

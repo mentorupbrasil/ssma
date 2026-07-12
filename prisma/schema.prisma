@@ -78,6 +78,77 @@ model Clinic {
   priceListItems  PriceListItem[]
   productionImports ProductionImport[]
   sstDrafts       SstDraft[]
+  subscriptions   ClinicSubscription[]
+}
+
+/// Assinatura SaaS da clínica (SyncPay — cobrança Pix manual por QR Code).
+model ClinicSubscription {
+  id                        String   @id @default(cuid())
+  clinicId                  String
+  clinic                    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  provider                  String   @default("syncpay")
+  providerPlanToken         String
+  providerSubscriptionToken String   @unique
+  billingMethod             String   @default("qr_code")
+  amount                    Int
+  status                    String   @default("pending_first_payment")
+  nextDueAt                 DateTime?
+  gracePeriodDays           Int      @default(5)
+  checkoutUrl               String?
+  lastPaidAt                DateTime?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  charges                   SubscriptionCharge[]
+
+  @@unique([clinicId, provider])
+  @@index([status])
+  @@index([nextDueAt])
+}
+
+model SubscriptionCharge {
+  id               String             @id @default(cuid())
+  subscriptionId   String
+  subscription     ClinicSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  providerChargeId String?
+  cycleNumber      Int
+  competence       String
+  amount           Int
+  status           String             @default("pending")
+  dueDate          DateTime?
+  expiresAt        DateTime?
+  paidAt           DateTime?
+  pixCode          String?            @db.Text
+  qrCode           String?            @db.Text
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@unique([subscriptionId, cycleNumber])
+  @@index([subscriptionId, status])
+  @@index([providerChargeId])
+  @@index([dueDate])
+}
+
+model ProviderWebhookEvent {
+  id               String    @id @default(cuid())
+  provider         String    @default("syncpay")
+  providerEventId  String
+  eventType        String
+  payload          Json
+  receivedAt       DateTime  @default(now())
+  processedAt      DateTime?
+  processingStatus String    @default("pending")
+
+  @@unique([provider, providerEventId])
+  @@index([eventType, receivedAt])
+  @@index([processingStatus])
+}
+
+/// Cache server-side do Bearer Token SyncPay (não expor ao cliente).
+model SyncPayAuthCache {
+  id          String   @id @default("singleton")
+  accessToken String   @db.Text
+  expiresAt   DateTime
+  updatedAt   DateTime @updatedAt
 }
 
 enum CompanyStatus {

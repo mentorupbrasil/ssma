@@ -39,11 +39,15 @@ export type Permission =
   | "sst_assistant.manage"
   | "users.manage"
   | "settings.manage"
+  | "subscription.manage"
   | "audit.view"
   | "superadmin.access";
 
-/** Módulos editáveis na aba Perfis e permissões (sem superadmin). */
-export const PERMISSION_MODULE_LABELS: Record<Exclude<Permission, "superadmin.access">, string> = {
+/** Módulos editáveis na aba Perfis e permissões (sem superadmin / assinatura). */
+export const PERMISSION_MODULE_LABELS: Record<
+  Exclude<Permission, "superadmin.access" | "subscription.manage">,
+  string
+> = {
   "dashboard.view": "Visão geral",
   "companies.manage": "Empresas",
   "patients.manage": "Colaboradores",
@@ -126,6 +130,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "sst_assistant.manage",
     "users.manage",
     "settings.manage",
+    "subscription.manage",
     "audit.view",
   ],
   RECEPTION: [
@@ -238,6 +243,11 @@ export function canAccessRoute(
     return false;
   }
 
+  // Assinatura SaaS: somente Administrador da clínica.
+  if (pathname.startsWith("/dashboard/assinatura")) {
+    return normalized === "CLINIC_ADMIN";
+  }
+
   if (normalized === "CLINIC_ADMIN") return true;
 
   const routePermissions: { prefix: string; permission: Permission }[] = [
@@ -259,6 +269,7 @@ export function canAccessRoute(
     { prefix: "/dashboard/exames", permission: "exams.view" },
     { prefix: "/dashboard/usuarios", permission: "users.manage" },
     { prefix: "/dashboard/configuracoes", permission: "settings.manage" },
+    { prefix: "/dashboard/assinatura", permission: "subscription.manage" },
     { prefix: "/dashboard/auditoria", permission: "audit.view" },
   ];
 
@@ -284,6 +295,7 @@ export const DASHBOARD_NAV = [
   { href: "/dashboard/assistente-sst", label: "Assistente SST", icon: "Sparkles", permission: "sst_assistant.manage" as Permission },
   { href: "/dashboard/usuarios", label: "Usuários", icon: "UserCog", permission: "users.manage" as Permission },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: "Settings", permission: "settings.manage" as Permission },
+  { href: "/dashboard/assinatura", label: "Assinatura", icon: "CreditCard", permission: "subscription.manage" as Permission },
   { href: "/dashboard/auditoria", label: "Auditoria", icon: "Shield", permission: "audit.view" as Permission },
 ];
 

@@ -26,6 +26,7 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   SstDraft: "Documento SST",
   ContactMessage: "Mensagem de contato",
   ReferralDocument: "Anexo de encaminhamento",
+  ClinicSubscription: "Assinatura",
 };
 
 /** Entidade → módulo (feature flag). Sem mapeamento = oculto na UI. */
@@ -40,6 +41,7 @@ const AUDIT_ENTITY_MODULE: Record<string, AppModuleId | null> = {
   User: "users",
   RolePermissions: "users",
   Setting: "settings",
+  ClinicSubscription: "subscription",
   Quote: "commercial",
   Lead: "commercial",
   ContactMessage: "commercial",
@@ -68,6 +70,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   SEED: "Carga inicial",
   SYNC: "Sincronização",
   IMPORT: "Importação",
+  PAYMENT_CONFIRMED: "Pagamento confirmado",
+  INTEGRATION_FAILURE: "Falha de integração",
 };
 
 /** Ações técnicas ocultas na listagem (registros permanecem no banco). */

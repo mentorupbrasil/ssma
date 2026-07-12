@@ -25,6 +25,7 @@ import {
   ClipboardList,
   ChevronDown,
   ChevronUp,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
@@ -45,6 +46,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { normalizeRole } from "@/lib/tenant";
 
 const ICONS: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -65,12 +67,14 @@ const ICONS: Record<string, LucideIcon> = {
   CalendarDays,
   Tags,
   ClipboardList,
+  CreditCard,
 };
 
 const SISTEMA_HREFS = [
   "/dashboard/chamados",
   "/dashboard/usuarios",
   "/dashboard/configuracoes",
+  "/dashboard/assinatura",
   "/dashboard/auditoria",
 ] as const;
 
@@ -187,6 +191,9 @@ function NavContent({
 
   const items = DASHBOARD_NAV.filter((item) => {
     if (!isPathModuleEnabled(item.href)) return false;
+    if (item.href === "/dashboard/assinatura" && normalizeRole(user.role) !== "CLINIC_ADMIN") {
+      return false;
+    }
     if (!hasPermission(user.role, item.permission, permissionOverrides)) return false;
     if (isEmpresa) {
       if (!EMPRESA_NAV_HREFS.includes(item.href)) return false;

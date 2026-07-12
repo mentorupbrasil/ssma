@@ -25,6 +25,9 @@ import { empresaReferralDisplayStatus } from "@/lib/empresa-portal";
 import { CLINICAL_EXAM_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 import type { ReferralStatus } from "@prisma/client";
+import { normalizeRole } from "@/lib/tenant";
+import { resolveClinicId } from "@/lib/scoped-db";
+import { getClinicBillingNotice } from "@/lib/syncpay/billing-notice";
 
 const EMPRESA_STAT_META: Record<
   string,
@@ -83,6 +86,10 @@ export default async function DashboardPage() {
   const session = await requireAuthSession();
   const isEmpresa = isEmpresaUser(session);
   const overview = await getDashboardOverview(session);
+  const isClinicAdmin = !isEmpresa && normalizeRole(session.user.role) === "CLINIC_ADMIN";
+  const billingNotice = isClinicAdmin
+    ? await getClinicBillingNotice(await resolveClinicId(session)).catch(() => null)
+    : null;
 
   if (isEmpresa) {
     const quickActions = [
@@ -280,6 +287,22 @@ export default async function DashboardPage() {
           Acompanhe atendimentos, documentos e pendências da operação.
         </p>
       </header>
+
+      {billingNotice ? (
+        <div
+          className={cn(
+            "vg-billing-notice",
+            billingNotice.tone === "danger" && "vg-billing-notice--danger",
+            billingNotice.tone === "warning" && "vg-billing-notice--warning"
+          )}
+          role="status"
+        >
+          <p>{billingNotice.message}</p>
+          <Link href="/dashboard/assinatura" className="vg-billing-notice-action">
+            Pagar mensalidade
+          </Link>
+        </div>
+      ) : null}
 
       <section className="vg-shortcuts" aria-label="Atalhos rápidos">
         {clinicShortcuts.map(({ href, label, icon: Icon }) => (

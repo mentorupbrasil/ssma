@@ -19,6 +19,7 @@ export const MODULE_FLAGS = {
   documents: true,
   users: true,
   settings: true,
+  subscription: true,
   audit: true,
 } as const;
 
@@ -40,6 +41,7 @@ export type AppModuleId =
   | "documents"
   | "users"
   | "settings"
+  | "subscription"
   | "audit"
   | "dashboard";
 
@@ -52,6 +54,7 @@ const MODULE_TO_FLAG: Record<AppModuleId, ModuleFlagKey | null> = {
   tickets: "tickets",
   users: "users",
   settings: "settings",
+  subscription: "subscription",
   audit: "audit",
   commercial: "commercial",
   pricing: "pricing",
@@ -82,6 +85,7 @@ const ROUTE_MODULE_PREFIXES: { prefix: string; module: AppModuleId }[] = [
   { prefix: "/dashboard/documentos", module: "documents" },
   { prefix: "/dashboard/usuarios", module: "users" },
   { prefix: "/dashboard/configuracoes", module: "settings" },
+  { prefix: "/dashboard/assinatura", module: "subscription" },
   { prefix: "/dashboard/auditoria", module: "audit" },
   { prefix: "/dashboard", module: "dashboard" },
 ];
@@ -103,6 +107,7 @@ const PERMISSION_MODULE: Record<string, AppModuleId> = {
   "documents.manage": "documents",
   "users.manage": "users",
   "settings.manage": "settings",
+  "subscription.manage": "subscription",
   "audit.view": "audit",
 };
 
