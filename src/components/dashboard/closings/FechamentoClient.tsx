@@ -302,7 +302,7 @@ export function FechamentoClient({
         icon: RotateCcw,
         iconTone: "schedule",
         onClick: () => void handleReopen(item.id),
-        disabled: pending || !canReopenClosing(item.status) || item.status === "FATURADO",
+        disabled: pending || !canReopenClosing(item.status),
       },
       {
         label: "Enviar ao financeiro",
