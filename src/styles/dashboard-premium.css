@@ -8094,66 +8094,6 @@
   margin: 0;
 }
 
-.vg-shortcuts-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.vg-shortcuts-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem;
-  border-radius: 0.625rem;
-  border: 1px solid rgb(226 232 240);
-  background: rgb(248 250 252);
-}
-
-.vg-shortcut-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  min-height: 2.25rem;
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.45rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: rgb(51 65 85);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.vg-shortcut-link:hover {
-  background: white;
-  color: var(--brand-navy);
-}
-
-.vg-shortcut-link-icon {
-  width: 0.95rem;
-  height: 0.95rem;
-  flex-shrink: 0;
-  color: var(--brand-green);
-}
-
-.vg-shortcut-link-arrow {
-  width: 0.8rem;
-  height: 0.8rem;
-  flex-shrink: 0;
-  color: rgb(148 163 184);
-  opacity: 0;
-  transform: translateX(-2px);
-  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
-}
-
-.vg-shortcut-link:hover .vg-shortcut-link-arrow {
-  opacity: 1;
-  transform: translateX(0);
-  color: var(--brand-green);
-}
-
 .vg-kpi-grid {
   display: grid;
   gap: 0.75rem;

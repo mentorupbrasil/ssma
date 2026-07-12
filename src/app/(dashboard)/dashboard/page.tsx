@@ -273,24 +273,6 @@ export default async function DashboardPage() {
     );
   }
 
-  const clinicShortcuts = [
-    {
-      href: "/dashboard/encaminhamentos",
-      label: "Fila de atendimentos",
-      icon: ClipboardList,
-    },
-    {
-      href: "/dashboard/documentos",
-      label: "Documentos",
-      icon: FolderOpen,
-    },
-    {
-      href: "/dashboard/empresas",
-      label: "Empresas",
-      icon: Building2,
-    },
-  ];
-
   const priorityItems = overview.priorityItems;
   const hasPriority = priorityItems.length > 0;
 
@@ -320,19 +302,6 @@ export default async function DashboardPage() {
           </Link>
         </div>
       ) : null}
-
-      <section className="vg-shortcuts-section">
-        <h2 className="empresa-quick-actions-label">Atalhos rápidos</h2>
-        <nav className="vg-shortcuts-bar" aria-label="Atalhos rápidos">
-          {clinicShortcuts.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href} className="vg-shortcut-link">
-              <Icon className="vg-shortcut-link-icon" aria-hidden />
-              <span>{label}</span>
-              <ArrowRight className="vg-shortcut-link-arrow" aria-hidden />
-            </Link>
-          ))}
-        </nav>
-      </section>
 
       <section>
         <h2 className="empresa-quick-actions-label">Indicadores</h2>
