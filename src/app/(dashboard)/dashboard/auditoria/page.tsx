@@ -25,16 +25,18 @@ export default async function AuditoriaPage({
   const pageSize = getAuditPageSize();
   const page = Math.max(1, params.page ? parseInt(params.page, 10) : 1);
 
+  const filters = {
+    q: params.q,
+    entity: params.entity && params.entity !== "ALL" ? params.entity : undefined,
+    action: params.action && params.action !== "ALL" ? params.action : undefined,
+    userId: params.userId && params.userId !== "ALL" ? params.userId : undefined,
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+  };
+
   const where = {
     ...scope,
-    ...buildAuditWhere({
-      q: params.q,
-      entity: params.entity,
-      action: params.action,
-      userId: params.userId,
-      dateFrom: params.dateFrom,
-      dateTo: params.dateTo,
-    }),
+    ...buildAuditWhere(filters),
   };
 
   const [logs, total, users] = await Promise.all([
@@ -70,14 +72,7 @@ export default async function AuditoriaPage({
       page={page}
       pageSize={pageSize}
       users={users}
-      filters={{
-        q: params.q,
-        entity: params.entity,
-        action: params.action,
-        userId: params.userId,
-        dateFrom: params.dateFrom,
-        dateTo: params.dateTo,
-      }}
+      filters={filters}
     />
   );
 }

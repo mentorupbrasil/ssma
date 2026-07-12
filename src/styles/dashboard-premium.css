@@ -7831,6 +7831,115 @@
   color: rgb(148 163 184);
 }
 
+/* ── Auditoria ──────────────────────────────────────────── */
+.auditoria-logs .auditoria-filters {
+  margin-bottom: 0.55rem;
+  align-items: center;
+}
+.auditoria-logs .auditoria-date {
+  min-width: 8.5rem;
+}
+.auditoria-logs .auditoria-result-meta {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+.auditoria-logs .auditoria-action-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  color: rgb(51 65 85);
+  font-size: 0.72rem;
+  font-weight: 550;
+}
+.auditoria-logs .auditoria-action-badge--critical {
+  border-color: rgb(254 202 202);
+  background: rgb(254 242 242);
+  color: rgb(185 28 28);
+}
+.auditoria-logs .auditoria-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  margin: 0;
+}
+.auditoria-logs .auditoria-detail-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+}
+.auditoria-logs .auditoria-detail-wide {
+  grid-column: 1 / -1;
+}
+.auditoria-logs .auditoria-detail-grid dt {
+  font-size: 0.68rem;
+  color: rgb(100 116 139);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.auditoria-logs .auditoria-detail-grid dd {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 550;
+  color: var(--brand-navy);
+  line-height: 1.35;
+}
+.auditoria-logs .auditoria-detail-changes {
+  margin-top: 1rem;
+}
+.auditoria-logs .auditoria-detail-changes h3 {
+  margin: 0 0 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--brand-navy);
+}
+.auditoria-logs .auditoria-detail-changes ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.auditoria-logs .auditoria-detail-changes li,
+.auditoria-logs .auditoria-detail-raw {
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgb(226 232 240);
+  background: white;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.auditoria-logs .auditoria-before {
+  color: rgb(148 163 184);
+  text-decoration: line-through;
+}
+.auditoria-logs .auditoria-after {
+  color: rgb(21 128 61);
+  font-weight: 600;
+}
+.auditoria-logs .auditoria-arrow {
+  color: rgb(148 163 184);
+}
+.auditoria-logs .auditoria-detail-raw p {
+  margin: 0 0 0.35rem;
+}
+.auditoria-logs .auditoria-detail-raw p:last-child {
+  margin-bottom: 0;
+}
+@media (max-width: 700px) {
+  .auditoria-logs .auditoria-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Configurações ──────────────────────────────────────── */
 .configuracoes-clinica .config-tabs {
   padding: 0.3rem;
