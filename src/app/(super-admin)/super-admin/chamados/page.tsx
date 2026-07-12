@@ -7,12 +7,28 @@ export const metadata = { title: "Chamados SaaS" };
 export default async function SuperAdminChamadosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; card?: string; page?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    status?: string;
+    priority?: string;
+    category?: string;
+    assignedTo?: string;
+    companyId?: string;
+    page?: string;
+  }>;
 }) {
   const params = await searchParams;
-  const [dashboard, users] = await Promise.all([
+  const [dashboard, users, companies] = await Promise.all([
     listTicketsDashboard(
-      { q: params.q, card: params.card, page: params.page ? parseInt(params.page, 10) : 1 },
+      {
+        q: params.q,
+        status: params.status,
+        priority: params.priority,
+        category: params.category,
+        assignedTo: params.assignedTo,
+        companyId: params.companyId,
+        page: params.page ? parseInt(params.page, 10) : 1,
+      },
       "SAAS"
     ),
     prisma.user.findMany({
@@ -20,15 +36,32 @@ export default async function SuperAdminChamadosPage({
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+    prisma.company.findMany({
+      select: { id: true, tradeName: true, legalName: true },
+      orderBy: { legalName: "asc" },
+      take: 400,
+    }),
   ]);
 
   return (
     <ChamadosClient
       items={dashboard.items}
       total={dashboard.total}
-      statCounts={dashboard.statCounts}
+      page={dashboard.page}
+      pageSize={dashboard.pageSize}
       users={users}
-      filters={{ q: params.q, card: params.card }}
+      companies={companies.map((c) => ({
+        id: c.id,
+        name: c.tradeName ?? c.legalName,
+      }))}
+      filters={{
+        q: params.q,
+        status: params.status,
+        priority: params.priority,
+        category: params.category,
+        assignedTo: params.assignedTo,
+        companyId: params.companyId,
+      }}
       saasMode
     />
   );

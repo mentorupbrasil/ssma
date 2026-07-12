@@ -55,6 +55,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const valid = await bcrypt.compare(password, user.passwordHash);
           if (!valid) return null;
 
+          // Atualiza último acesso sem bloquear o login
+          void prisma.user
+            .update({
+              where: { id: user.id },
+              data: { lastAccessAt: new Date() },
+            })
+            .catch(() => undefined);
+
           return {
             id: user.id,
             email: user.email,

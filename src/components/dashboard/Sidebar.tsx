@@ -31,7 +31,7 @@ import {
 import { signOut } from "next-auth/react";
 import { useEffect, useId, useState } from "react";
 import type { UserRole } from "@/types/roles";
-import { DASHBOARD_NAV, hasPermission, getRoleLabel } from "@/lib/permissions";
+import { DASHBOARD_NAV, hasPermission, getRoleLabel, type RolePermissionMap } from "@/lib/permissions";
 import {
   EMPRESA_HIDDEN_NAV_HREFS,
   EMPRESA_NAV_SECTIONS,
@@ -113,6 +113,7 @@ type NavItem = (typeof DASHBOARD_NAV)[number];
 
 type SidebarProps = {
   user: { name: string; email: string; role: UserRole };
+  permissionOverrides?: RolePermissionMap | null;
 };
 
 function userInitials(name: string) {
@@ -175,14 +176,22 @@ function NavLink({
   );
 }
 
-function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNavigate?: () => void }) {
+function NavContent({
+  user,
+  permissionOverrides,
+  onNavigate,
+}: {
+  user: SidebarProps["user"];
+  permissionOverrides?: RolePermissionMap | null;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const isEmpresa = isEmpresaPortalRole(user.role);
   const sistemaPanelId = useId();
   const initials = userInitials(user.name);
 
   const items = DASHBOARD_NAV.filter((item) => {
-    if (!hasPermission(user.role, item.permission)) return false;
+    if (!hasPermission(user.role, item.permission, permissionOverrides)) return false;
     if (isEmpresa) {
       if (!EMPRESA_NAV_HREFS.includes(item.href)) return false;
       if (EMPRESA_HIDDEN_NAV_HREFS.includes(item.href)) return false;
@@ -339,7 +348,7 @@ function NavContent({ user, onNavigate }: { user: SidebarProps["user"]; onNaviga
   );
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, permissionOverrides }: SidebarProps) {
   const [open, setOpen] = useState(false);
   const isEmpresa = isEmpresaPortalRole(user.role);
 
@@ -351,7 +360,7 @@ export function Sidebar({ user }: SidebarProps) {
           isEmpresa && "app-shell-sidebar--empresa"
         )}
       >
-        <NavContent user={user} />
+        <NavContent user={user} permissionOverrides={permissionOverrides} />
       </aside>
 
       <div className="app-shell-mobile-trigger md:hidden">
@@ -372,7 +381,11 @@ export function Sidebar({ user }: SidebarProps) {
             side="left"
             className="app-shell-sidebar-sheet w-[var(--dash-sidebar-w)] max-w-[85vw] p-0"
           >
-            <NavContent user={user} onNavigate={() => setOpen(false)} />
+            <NavContent
+              user={user}
+              permissionOverrides={permissionOverrides}
+              onNavigate={() => setOpen(false)}
+            />
           </SheetContent>
         </Sheet>
       </div>

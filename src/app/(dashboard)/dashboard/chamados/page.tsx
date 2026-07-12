@@ -17,6 +17,8 @@ export default async function ChamadosPage({
     priority?: string;
     card?: string;
     category?: string;
+    assignedTo?: string;
+    companyId?: string;
     id?: string;
     page?: string;
   }>;
@@ -27,7 +29,7 @@ export default async function ChamadosPage({
   const scope = session?.user ? scopedWhere({ user: session.user as never }) : {};
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
 
-  const [dashboard, users] = await Promise.all([
+  const [dashboard, users, companies] = await Promise.all([
     listTicketsDashboard(
       {
         q: params.q,
@@ -35,6 +37,8 @@ export default async function ChamadosPage({
         priority: params.priority,
         card: params.card,
         category: params.category,
+        assignedTo: params.assignedTo,
+        companyId: params.companyId,
         page,
       },
       isEmpresa ? "SAAS" : "CLINIC"
@@ -45,6 +49,14 @@ export default async function ChamadosPage({
           where: { ...scope, status: "ACTIVE", role: { not: "SUPER_ADMIN" } },
           select: { id: true, name: true },
           orderBy: { name: "asc" },
+        }),
+    isEmpresa
+      ? Promise.resolve([])
+      : prisma.company.findMany({
+          where: { ...scope, status: "ATIVA" },
+          select: { id: true, tradeName: true, legalName: true },
+          orderBy: { legalName: "asc" },
+          take: 400,
         }),
   ]);
 
@@ -71,10 +83,21 @@ export default async function ChamadosPage({
     <ChamadosClient
       items={dashboard.items}
       total={dashboard.total}
-      statCounts={dashboard.statCounts}
+      page={dashboard.page}
+      pageSize={dashboard.pageSize}
       users={users}
-      filters={{ q: params.q, status: params.status, priority: params.priority, card: params.card }}
-      isEmpresaPortal={false}
+      companies={companies.map((c) => ({
+        id: c.id,
+        name: c.tradeName ?? c.legalName,
+      }))}
+      filters={{
+        q: params.q,
+        status: params.status,
+        priority: params.priority,
+        category: params.category,
+        assignedTo: params.assignedTo,
+        companyId: params.companyId,
+      }}
     />
   );
 }

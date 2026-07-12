@@ -9,14 +9,14 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   FINANCIAL: "Financeiro",
   SST_TECHNICIAN: "Técnico SST",
   HEALTH_PROFESSIONAL: "Profissional de saúde",
-  COMPANY_HR: "Empresa / RH",
+  COMPANY_HR: "Portal RH / Empresa",
   READ_ONLY: "Somente leitura",
   ADMIN: "Administrador",
   RECEPCAO: "Recepção",
   MEDICO: "Médico",
   TECNICO: "Técnico",
   FINANCEIRO: "Financeiro",
-  EMPRESA: "Empresa",
+  EMPRESA: "Portal RH / Empresa",
   VISUALIZADOR: "Visualizador",
 };
 
@@ -41,7 +41,71 @@ export type Permission =
   | "audit.view"
   | "superadmin.access";
 
-const ROLE_PERMISSIONS: Record<string, Permission[]> = {
+/** Módulos editáveis na aba Perfis e permissões (sem superadmin). */
+export const PERMISSION_MODULE_LABELS: Record<Exclude<Permission, "superadmin.access">, string> = {
+  "dashboard.view": "Visão geral",
+  "companies.manage": "Empresas",
+  "patients.manage": "Colaboradores",
+  "referrals.manage": "Encaminhamentos / fila",
+  "appointments.manage": "Agenda",
+  "exams.manage": "Exames (gestão)",
+  "exams.view": "Exames (consulta)",
+  "leads.manage": "Comercial",
+  "documents.manage": "Documentos",
+  "closings.manage": "Fechamento mensal",
+  "financial.manage": "Financeiro",
+  "pricing.manage": "Tabela de preços",
+  "tasks.manage": "Tarefas",
+  "tickets.manage": "Chamados",
+  "sst_assistant.manage": "Assistente SST",
+  "users.manage": "Usuários e permissões",
+  "settings.manage": "Configurações",
+  "audit.view": "Auditoria",
+};
+
+export const EDITABLE_PERMISSIONS = Object.keys(PERMISSION_MODULE_LABELS) as Array<
+  keyof typeof PERMISSION_MODULE_LABELS
+>;
+
+/** Perfis gerenciáveis na clínica (exceto Super Admin). */
+export const MANAGEABLE_ROLES: UserRole[] = [
+  "CLINIC_ADMIN",
+  "RECEPTION",
+  "COMMERCIAL",
+  "FINANCIAL",
+  "SST_TECHNICIAN",
+  "HEALTH_PROFESSIONAL",
+  "COMPANY_HR",
+  "READ_ONLY",
+];
+
+export const INTERNAL_ROLES: UserRole[] = [
+  "CLINIC_ADMIN",
+  "RECEPTION",
+  "COMMERCIAL",
+  "FINANCIAL",
+  "SST_TECHNICIAN",
+  "HEALTH_PROFESSIONAL",
+  "READ_ONLY",
+  "ADMIN",
+  "RECEPCAO",
+  "MEDICO",
+  "TECNICO",
+  "FINANCEIRO",
+  "VISUALIZADOR",
+];
+
+export const PORTAL_RH_ROLES: UserRole[] = ["COMPANY_HR", "EMPRESA"];
+
+export function isPortalRhRole(role: UserRole) {
+  return PORTAL_RH_ROLES.includes(normalizeRole(role)) || isCompanyHr(role);
+}
+
+export const ROLE_PERMISSIONS_SETTING_KEY = "role_permissions";
+
+export type RolePermissionMap = Partial<Record<string, Permission[]>>;
+
+export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
   SUPER_ADMIN: ["superadmin.access"],
   CLINIC_ADMIN: [
     "dashboard.view",
@@ -129,15 +193,35 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   READ_ONLY: ["dashboard.view", "exams.view"],
 };
 
-export function hasPermission(role: UserRole, permission: Permission): boolean {
+/** Alias mantido para compatibilidade. */
+export const ROLE_PERMISSIONS = DEFAULT_ROLE_PERMISSIONS;
+
+export function getPermissionsForRole(
+  role: UserRole,
+  overrides?: RolePermissionMap | null
+): Permission[] {
+  const normalized = normalizeRole(role);
+  if (overrides?.[normalized]?.length) return overrides[normalized]!;
+  return DEFAULT_ROLE_PERMISSIONS[normalized] ?? [];
+}
+
+export function hasPermission(
+  role: UserRole,
+  permission: Permission,
+  overrides?: RolePermissionMap | null
+): boolean {
   const normalized = normalizeRole(role);
   if (normalized === "SUPER_ADMIN") {
     return permission === "superadmin.access";
   }
-  return ROLE_PERMISSIONS[normalized]?.includes(permission) ?? false;
+  return getPermissionsForRole(role, overrides).includes(permission);
 }
 
-export function canAccessRoute(role: UserRole, pathname: string): boolean {
+export function canAccessRoute(
+  role: UserRole,
+  pathname: string,
+  overrides?: RolePermissionMap | null
+): boolean {
   const normalized = normalizeRole(role);
 
   if (normalized === "SUPER_ADMIN") {
@@ -174,7 +258,7 @@ export function canAccessRoute(role: UserRole, pathname: string): boolean {
 
   const match = routePermissions.find((r) => pathname.startsWith(r.prefix));
   if (!match) return true;
-  return hasPermission(role, match.permission);
+  return hasPermission(role, match.permission, overrides);
 }
 
 export const DASHBOARD_NAV = [

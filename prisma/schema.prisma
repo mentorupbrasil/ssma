@@ -77,6 +77,7 @@ model Clinic {
   settings        Setting[]
   priceListItems  PriceListItem[]
   productionImports ProductionImport[]
+  sstDrafts       SstDraft[]
 }
 
 enum CompanyStatus {
@@ -425,6 +426,7 @@ model User {
   clinic         Clinic?    @relation(fields: [clinicId], references: [id])
   companyId      String?
   company        Company?   @relation(fields: [companyId], references: [id])
+  lastAccessAt   DateTime?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   assignedReferrals Referral[] @relation("AssignedReferrals")
@@ -458,6 +460,12 @@ model User {
   createdClosings MonthlyClosing[]   @relation("ClosingCreatedBy")
   productionImports ProductionImport[] @relation("ProductionImportCreatedBy")
   priceListHistory  PriceListHistory[] @relation("PriceListChangedBy")
+  sstDraftsCreated   SstDraft[]         @relation("SstDraftCreatedBy")
+  sstDraftsResponsible SstDraft[]       @relation("SstDraftResponsible")
+  sstDraftsReviewed  SstDraft[]         @relation("SstDraftReviewedBy")
+  sstDraftsApproved  SstDraft[]         @relation("SstDraftApprovedBy")
+  sstDraftVersions   SstDraftVersion[]  @relation("SstDraftVersionAuthor")
+  sstDraftComments   SstDraftComment[]  @relation("SstDraftCommentAuthor")
 }
 
 model Company {
@@ -501,6 +509,7 @@ model Company {
   priceListItems    PriceListItem[]
   productionImportRows ProductionImportRow[]
   closingLineItems  ClosingLineItem[]
+  sstDrafts         SstDraft[]
 }
 
 model CompanyContact {
@@ -907,6 +916,7 @@ model Document {
   updatedAt           DateTime       @updatedAt
   history             DocumentHistory[]
   accessLogs          DocumentAccessLog[]
+  sstDraftsPublished  SstDraft[]
 }
 
 model DocumentHistory {
@@ -982,6 +992,7 @@ enum TicketPriority {
   BAIXA
   MEDIA
   ALTA
+  URGENTE
 }
 
 enum TicketScope {
@@ -1057,6 +1068,7 @@ model Ticket {
   clinicId          String?
   clinic            Clinic?        @relation(fields: [clinicId], references: [id])
   scope             TicketScope    @default(CLINIC)
+  protocol          String?
   subject           String
   description       String
   status            TicketStatus   @default(ABERTO)
@@ -1071,6 +1083,104 @@ model Ticket {
   comments          TicketComment[]
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+
+  @@index([clinicId, status])
+  @@index([protocol])
+}
+
+enum SstDocKind {
+  PGR
+  PCMSO
+  LTCAT
+  LAUDO_INSALUBRIDADE
+  LAUDO_PERICULOSIDADE
+  ORDEM_SERVICO
+  APR
+  INVENTARIO_RISCOS
+  RELATORIO_INSPECAO
+  PLANO_ACAO
+  OUTROS
+}
+
+enum SstDocStage {
+  RASCUNHO
+  EM_ELABORACAO
+  AGUARDANDO_REVISAO
+  APROVADO
+  ARQUIVADO
+}
+
+enum SstDocComplexity {
+  TECNICO
+  SIMPLIFICADO
+}
+
+/// Rascunho de documento SST com fluxo de elaboração → revisão → aprovação.
+model SstDraft {
+  id                         String           @id @default(cuid())
+  clinicId                   String?
+  clinic                     Clinic?          @relation(fields: [clinicId], references: [id])
+  companyId                  String
+  company                    Company          @relation(fields: [companyId], references: [id])
+  kind                       SstDocKind
+  title                      String
+  stage                      SstDocStage      @default(RASCUNHO)
+  complexity                 SstDocComplexity
+  version                    Int              @default(1)
+  /// Seções preenchidas do formulário específico do tipo (JSON).
+  contentJson                String           @default("{}")
+  /// Snapshot do checklist de dados no momento da criação/atualização (JSON).
+  checklistJson              String?
+  /// Anexos: medições, laudos, evidências [{name,url,notes}].
+  attachmentsJson            String           @default("[]")
+  technicalResponsibleUserId String?
+  technicalResponsible       User?            @relation("SstDraftResponsible", fields: [technicalResponsibleUserId], references: [id])
+  createdByUserId            String
+  createdBy                  User             @relation("SstDraftCreatedBy", fields: [createdByUserId], references: [id])
+  reviewedByUserId           String?
+  reviewedBy                 User?            @relation("SstDraftReviewedBy", fields: [reviewedByUserId], references: [id])
+  approvedByUserId           String?
+  approvedBy                 User?            @relation("SstDraftApprovedBy", fields: [approvedByUserId], references: [id])
+  approvedAt                 DateTime?
+  publishedDocumentId        String?
+  publishedDocument          Document?        @relation(fields: [publishedDocumentId], references: [id])
+  validUntil                 DateTime?
+  notes                      String?
+  createdAt                  DateTime         @default(now())
+  updatedAt                  DateTime         @updatedAt
+  versions                   SstDraftVersion[]
+  comments                   SstDraftComment[]
+
+  @@index([clinicId, stage])
+  @@index([companyId, kind])
+}
+
+model SstDraftVersion {
+  id              String   @id @default(cuid())
+  draftId         String
+  draft           SstDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  version         Int
+  contentJson     String
+  stage           SstDocStage
+  notes           String?
+  createdByUserId String
+  createdBy       User     @relation("SstDraftVersionAuthor", fields: [createdByUserId], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@index([draftId, version])
+}
+
+model SstDraftComment {
+  id              String   @id @default(cuid())
+  draftId         String
+  draft           SstDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  sectionKey      String?
+  content         String
+  createdByUserId String
+  createdBy       User     @relation("SstDraftCommentAuthor", fields: [createdByUserId], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@index([draftId])
 }
 
 model TicketComment {
@@ -1078,6 +1188,8 @@ model TicketComment {
   ticketId        String
   ticket          Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   content         String
+  isInternal      Boolean  @default(false)
+  attachmentUrl   String?
   createdByUserId String
   createdBy       User     @relation("TicketComments", fields: [createdByUserId], references: [id])
   createdAt       DateTime @default(now())

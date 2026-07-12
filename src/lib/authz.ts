@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { hasPermission, type Permission } from "@/lib/permissions";
+import { loadRolePermissionOverrides } from "@/lib/role-permissions";
 import type { UserRole } from "@/types/roles";
 import { getTenantScope, mergeTenantWhere, type TenantScope } from "@/lib/tenant";
 import { isCompanyHr } from "@/lib/tenant";
@@ -25,7 +26,8 @@ export async function requireSession(): Promise<AuthSession> {
 
 export async function requirePermission(permission: Permission): Promise<AuthSession> {
   const session = await requireSession();
-  if (!hasPermission(session.user.role, permission)) {
+  const overrides = await loadRolePermissionOverrides(session.user.clinicId);
+  if (!hasPermission(session.user.role, permission, overrides)) {
     throw new Error("FORBIDDEN");
   }
   return session;

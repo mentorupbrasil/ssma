@@ -1710,6 +1710,10 @@
     color: rgb(148 163 184);
   }
 
+  .chamados-filters {
+    margin-bottom: 0.75rem;
+  }
+
   @media (max-width: 900px) {
     .tarefas-board {
       grid-template-columns: 1fr;
@@ -7539,3 +7543,290 @@
   color: rgb(148 163 184);
 }
 
+
+/* ── Assistente SST ─────────────────────────────────────── */
+.assistente-sst .sst-models-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.assistente-sst .sst-model-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--dash-border);
+  border-radius: var(--dash-radius-lg);
+  background: white;
+}
+.assistente-sst .sst-model-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: var(--brand-navy);
+}
+.assistente-sst .sst-model-desc {
+  margin: 0.25rem 0 0;
+  max-width: 42rem;
+  font-size: 0.78rem;
+  color: var(--dash-text-muted);
+  line-height: 1.45;
+}
+.assistente-sst .sst-model-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.assistente-sst .sst-complexity {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgb(71 85 105);
+  background: rgb(248 250 252);
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.4rem;
+  padding: 0.2rem 0.5rem;
+}
+.assistente-sst .sst-complexity-tech {
+  color: rgb(146 64 14);
+  background: rgb(255 251 235);
+  border-color: rgb(253 230 138);
+}
+.assistente-sst .sst-wizard-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+.assistente-sst .sst-wizard-step {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgb(148 163 184);
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: rgb(248 250 252);
+}
+.assistente-sst .sst-wizard-step-active {
+  color: var(--brand-navy);
+  background: rgb(239 246 255);
+}
+.assistente-sst .sst-data-list,
+.assistente-sst .sst-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.assistente-sst .sst-data-list li,
+.assistente-sst .sst-checklist li {
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+.assistente-sst .sst-checklist li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.assistente-sst .sst-checklist li.sst-check-ok {
+  border-color: rgb(167 243 208);
+  background: rgb(236 253 245);
+}
+.assistente-sst .sst-checklist li.sst-check-incomplete,
+.assistente-sst .sst-checklist li.sst-check-pending {
+  border-color: rgb(253 230 138);
+  background: rgb(255 251 235);
+}
+.assistente-sst .sst-checklist li.sst-check-missing {
+  border-color: rgb(254 202 202);
+  background: rgb(254 242 242);
+}
+.assistente-sst .sst-detail-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.65rem;
+}
+.assistente-sst .sst-detail-meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.5rem;
+  background: rgb(248 250 252);
+  border: 1px solid rgb(226 232 240);
+}
+.assistente-sst .sst-detail-meta span {
+  font-size: 0.68rem;
+  color: rgb(100 116 139);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.assistente-sst .sst-detail-meta strong {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--brand-navy);
+}
+.assistente-sst .sst-preview-page {
+  max-height: 22rem;
+  overflow: auto;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--dash-border);
+  background: rgb(248 250 252);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--brand-text);
+}
+.sst-wizard-modal {
+  max-width: 40rem;
+}
+
+/* ── Usuários e permissões ──────────────────────────────── */
+.usuarios-permissoes .usuarios-filters {
+  margin-bottom: 0.55rem;
+}
+.usuarios-permissoes .usuarios-result-meta {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+.usuarios-permissoes .usuarios-role-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  color: rgb(51 65 85);
+  font-size: 0.72rem;
+  font-weight: 550;
+  line-height: 1.3;
+}
+.usuarios-permissoes .usuarios-perfis-layout {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) 1fr;
+  gap: 0.85rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .usuarios-permissoes .usuarios-perfis-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.usuarios-permissoes .usuarios-perfis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid var(--dash-border);
+  border-radius: var(--dash-radius-lg);
+  background: white;
+  padding: 0.45rem;
+}
+.usuarios-permissoes .usuarios-perfil-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  background: transparent;
+  padding: 0.55rem 0.65rem;
+  cursor: pointer;
+}
+.usuarios-permissoes .usuarios-perfil-item:hover {
+  background: rgb(248 250 252);
+}
+.usuarios-permissoes .usuarios-perfil-item-active {
+  border-color: rgb(46 103 255 / 0.18);
+  background: rgb(239 246 255);
+}
+.usuarios-permissoes .usuarios-perfil-item span:first-child {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand-navy);
+}
+.usuarios-permissoes .usuarios-perfil-scope {
+  font-size: 0.68rem;
+  color: rgb(148 163 184);
+}
+.usuarios-permissoes .usuarios-perfis-modules {
+  border: 1px solid var(--dash-border);
+  border-radius: var(--dash-radius-lg);
+  background: white;
+  padding: 0.9rem 1rem 1rem;
+}
+.usuarios-permissoes .usuarios-perfis-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+.usuarios-permissoes .usuarios-perfis-head h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--brand-navy);
+}
+.usuarios-permissoes .usuarios-perfis-head p {
+  margin: 0.25rem 0 0;
+  max-width: 36rem;
+  font-size: 0.78rem;
+  color: var(--dash-text-muted);
+  line-height: 1.4;
+}
+.usuarios-permissoes .usuarios-perm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.4rem;
+}
+.usuarios-permissoes .usuarios-perm-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgb(241 245 249);
+  background: rgb(248 250 252);
+  font-size: 0.8rem;
+  color: rgb(51 65 85);
+  cursor: pointer;
+}
+.usuarios-permissoes .usuarios-perm-preview {
+  margin-top: 0.35rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+}
+.usuarios-permissoes .usuarios-perm-preview-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: rgb(71 85 105);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.usuarios-permissoes .usuarios-perm-preview ul {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.78rem;
+  color: rgb(51 65 85);
+}
+.usuarios-permissoes .usuarios-perm-preview-hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.7rem;
+  color: rgb(148 163 184);
+}

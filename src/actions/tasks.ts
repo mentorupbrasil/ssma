@@ -197,19 +197,39 @@ export async function convertTicketToTask(ticketId: string): Promise<Result> {
     const where = scopedWhere(session, { id: ticketId });
     const ticket = await prisma.ticket.findFirst({ where });
     if (!ticket) return { success: false, error: "Chamado não encontrado." };
+
+    const sourceKey = `ticket:${ticket.id}`;
+    const existing = await prisma.task.findFirst({
+      where: {
+        sourceKey,
+        status: { in: ["PENDENTE", "EM_ANDAMENTO"] },
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      return { success: true, id: existing.id };
+    }
+
     const clinicId = await resolveClinicId(session);
+    const protocol = ticket.protocol ?? ticket.id.slice(-8).toUpperCase();
     const task = await prisma.task.create({
       data: withClinicId(
         {
-          title: `Chamado: ${ticket.subject}`,
+          title: `Chamado ${protocol}: ${ticket.subject}`,
           description: ticket.description,
-          priority: ticket.priority === "ALTA" ? "URGENTE" : ticket.priority === "MEDIA" ? "MEDIA" : "BAIXA",
+          priority:
+            ticket.priority === "URGENTE" || ticket.priority === "ALTA"
+              ? "URGENTE"
+              : ticket.priority === "MEDIA"
+                ? "MEDIA"
+                : "BAIXA",
           companyId: ticket.companyId,
           assignedToUserId: ticket.assignedToUserId,
           createdByUserId: session.user.id,
           origin: "CHAMADO",
-          linkUrl: `/dashboard/chamados`,
+          linkUrl: `/dashboard/chamados?id=${ticket.id}`,
           systemGenerated: false,
+          sourceKey,
         },
         clinicId
       ),
